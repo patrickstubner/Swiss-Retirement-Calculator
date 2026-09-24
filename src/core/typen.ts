@@ -73,6 +73,23 @@ export interface PkEingabe {
   bezugsAlter: number | null;
 }
 
+/** Freizügigkeitskonto/-police: Bezug frühestens 5 Jahre vor, spätestens im RA (Art. 16 FZV). */
+export interface FreizuegigkeitEingabe {
+  guthaben: number;
+  /** Nominaler Zins */
+  zins: number;
+  /** Optional fixes Bezugsalter; null = bei Erwerbsaufgabe (innerhalb RA−5 … RA) */
+  bezugsAlter: number | null;
+}
+
+/** Sonstiges Vermögen (z.B. Beteiligung, Darlehen, Kunst) mit eigener Renditeannahme. */
+export interface SonstigesVermoegen {
+  bezeichnung: string;
+  wert: number;
+  /** Nominale Rendite */
+  rendite: number;
+}
+
 export interface Saeule3aEingabe {
   guthaben: number;
   beitragJahr: number;
@@ -91,6 +108,27 @@ export interface Wohneigentum {
   hypothek: number;
 }
 
+/** Eingaben der AHV-Schätzhilfe (Jahrgang/Geschlecht kommen aus der Person). */
+export interface AhvSchaetzhilfeEingabe {
+  /** 'luecken': fehlende Beitragsjahre angeben; 'jahreCh': Beitragsjahre in der Schweiz bis zum RA */
+  beitragsModus: 'luecken' | 'jahreCh';
+  /** Fehlende Beitragsjahre in der Schweiz (ohne Auslandsjahre) */
+  luecken: number;
+  /** Beitragsjahre in der Schweiz bis zum Referenzalter (inkl. künftige) */
+  jahreCh: number;
+  /** Durchschnittliches AHV-pflichtiges Jahreseinkommen in heutigen Franken */
+  einkommen: number;
+  /** Anzahl Kalenderjahre der Ehe vor dem Referenzalter (für das Splitting) */
+  ehejahre: number;
+  /** Durchschnittseinkommen des Ehepartners während der Ehe (0 = aus der anderen Person übernehmen) */
+  einkommenEhepartner: number;
+  /** Jahre mit mindestens einem Kind unter 16 (Erziehungsgutschriften) */
+  erziehungsJahre: number;
+  /** Beitragsjahre im Ausland vorhanden? */
+  ausland: boolean;
+  auslandJahre: number;
+}
+
 export interface Person {
   name: string;
   geburtsjahr: number;
@@ -104,12 +142,50 @@ export interface Person {
   /** Gewünschtes Alter der Erwerbsaufgabe (Jahre, Dezimal = Monate/12) */
   stoppAlter: number;
   ahv: AhvEingabe;
+  /** Eingaben der AHV-Schätzhilfe (nur Hilfsmittel; massgebend ist `ahv.renteMonat`) */
+  ahvSchaetzhilfe: AhvSchaetzhilfeEingabe;
   pk: PkEingabe;
   saeule3a: Saeule3aEingabe;
   auslandRenten: AuslandRente[];
-  /** Freies Vermögen dieser Person heute (Wertschriften, Konten; ohne PK/3a) */
-  vermoegen: number;
+  /** Bargeld / Konten (verfügbar, Rendite `annahmen.renditeBargeld`) */
+  bargeld: number;
+  /** Wertschriften an der Börse (verfügbar, Rendite `annahmen.renditeNominal`) */
+  wertschriften: number;
+  freizuegigkeit: FreizuegigkeitEingabe;
+  sonstiges: SonstigesVermoegen;
   wohneigentum: Wohneigentum;
+}
+
+export type PostenArt = 'einnahme' | 'ausgabe';
+export type PostenKategorie = 'mieteinnahmen' | 'sonstigeEinnahme' | 'wohnen' | 'gesundheit' | 'sonstigeAusgabe';
+
+/** Wiederkehrender Posten (Einnahme oder Ausgabe) mit Start-/Endalter einer Person. */
+export interface Posten {
+  id: string;
+  bezeichnung: string;
+  art: PostenArt;
+  kategorie: PostenKategorie;
+  /** Betrag pro Jahr in heutigen Franken */
+  betragJahr: number;
+  /** Index der Person, deren Alter massgebend ist */
+  person: number;
+  startAlter: number;
+  /** null = bis zum Planungshorizont */
+  endAlter: number | null;
+  indexierung: Indexierung;
+  /** Nur Einnahmen: in der Schweiz als Einkommen steuerbar */
+  steuerbar: boolean;
+}
+
+/** Einmaliges Ereignis: positiver Betrag = Zufluss (z.B. Erbschaft), negativ = Abfluss (z.B. Auto). */
+export interface Einmalereignis {
+  id: string;
+  bezeichnung: string;
+  /** In heutigen Franken; + Zufluss, − Abfluss */
+  betrag: number;
+  person: number;
+  /** Alter der Person beim Ereignis (Jahre, Dezimal = Monate/12) */
+  alter: number;
 }
 
 export interface Ausgaben {
@@ -121,7 +197,10 @@ export interface Ausgaben {
 }
 
 export interface Annahmen {
+  /** Nominale Rendite Wertschriften (Börse); gilt vereinfacht auch für Wohneigentum */
   renditeNominal: number;
+  /** Nominaler Zins auf Bargeld/Konten */
+  renditeBargeld: number;
   inflation: number;
   /** Anlagekosten (TER) p.a. */
   kosten: number;
@@ -154,11 +233,28 @@ export interface Haushalt {
   personen: Person[];
   /** Planungshorizont: Alter der jüngeren Person (bis 999) */
   planungsalter: number;
+  /** Weitere wiederkehrende Einnahmen und Ausgaben */
+  posten: Posten[];
+  ereignisse: Einmalereignis[];
   ausgaben: Ausgaben;
   annahmen: Annahmen;
   steuern: KantonSteuerEingabe;
   wohnsitz: Wohnsitz;
 }
+
+/** Vermögens-Töpfe (nie vermischt). */
+export interface Toepfe {
+  bargeld: number;
+  wertschriften: number;
+  sonstiges: number;
+  wohneigentum: number;
+  pk: number;
+  freizuegigkeit: number;
+  saeule3a: number;
+}
+
+export const VERFUEGBARE_TOEPFE = ['bargeld', 'wertschriften', 'sonstiges', 'wohneigentum'] as const;
+export const GEBUNDENE_TOEPFE = ['pk', 'freizuegigkeit', 'saeule3a'] as const;
 
 export interface JahresZeile {
   jahr: number;
@@ -168,16 +264,36 @@ export interface JahresZeile {
   ahv: number;
   pkRente: number;
   auslandRenten: number;
+  /** Weitere wiederkehrende Einnahmen (Miete usw.) */
+  weitereEinnahmen: number;
+  /** Einmalige Zu- (+) und Abflüsse (−) */
+  einmalig: number;
+  /** Kapitalbezüge PK/FZ/3a (fliessen in die Wertschriften der Person) */
   kapitalBezuege: number;
   sozialabgaben: number;
   neBeitraege: number;
   steuernEinkommen: number;
   steuernKapital: number;
   steuernVermoegen: number;
+  /** Lebenshaltung + weitere Ausgaben */
   ausgaben: number;
   sparbeitraegeVorsorge: number;
   saldo: number;
+  /** Töpfe am Jahresende, Summe aller Personen */
+  toepfe: Toepfe;
+  /** Töpfe am Jahresende pro Person */
+  toepfeProPerson: Toepfe[];
+  verfuegbar: number;
+  gebunden: number;
+  /** Nicht gedeckter Fehlbetrag (kumuliert) */
+  fehlbetrag: number;
+  /** Verfügbares Vermögen abzüglich Fehlbetrag (kompatibel: «vermoegen») */
   vermoegen: number;
+  total: number;
+  /** Fehlbetrag, obwohl noch gebundenes Vorsorgevermögen vorhanden ist */
+  liquiditaetsluecke: boolean;
+  /** Wohneigentum musste angetastet werden */
+  wohneigentumAngetastet: boolean;
   pkGuthaben: number;
   saeule3aGuthaben: number;
 }
@@ -192,6 +308,8 @@ export interface PersonInfo {
   pkKapital: number;
   saeule3aStart: Monat;
   saeule3aKapital: number;
+  freizuegigkeitStart: Monat;
+  freizuegigkeitKapital: number;
   hinweise: string[];
 }
 
@@ -202,5 +320,9 @@ export interface SimulationsErgebnis {
   /** Alter der Referenzperson (jüngere) im Ruinjahr */
   ruinAlter: number | null;
   endVermoegen: number;
+  /** Jahre mit Liquiditätslücke (Fehlbetrag bei noch gesperrtem Vorsorgevermögen) */
+  liquiditaetsluecken: number[];
+  /** Erstes Jahr, in dem Wohneigentum für Ausgaben angetastet wird */
+  wohneigentumAngetastetJahr: number | null;
   personen: PersonInfo[];
 }

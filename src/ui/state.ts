@@ -3,8 +3,16 @@
  * localStorage (nur nach Opt-in). Das Fragment wird nie an einen Server gesendet.
  */
 import LZString from 'lz-string';
-import type { AuslandRente, Haushalt, Indexierung, Person } from '../core/typen';
-import { MAX_PLANUNGSALTER, neueAuslandRente, neuePerson, standardHaushalt } from '../data/defaults';
+import { ahvRenteSkala44, ahvTeilrente } from '../core/ahv';
+import type { AuslandRente, Haushalt, Indexierung, Person, PostenArt } from '../core/typen';
+import {
+  MAX_PLANUNGSALTER,
+  neueAuslandRente,
+  neuePerson,
+  neuerPosten,
+  neuesEreignis,
+  standardHaushalt,
+} from '../data/defaults';
 import type { Regeln } from '../rules';
 
 export const SCHEMA_VERSION = 1;
@@ -55,8 +63,20 @@ function person(roh: unknown, regeln: Regeln, i: number): Person {
     ...p,
     geschlecht: p.geschlecht === 'w' ? 'w' : 'm',
     geburtsmonat: Math.min(12, Math.max(1, Math.round(p.geburtsmonat))),
-    ahv: { ...p.ahv, modus: p.ahv.modus === 'skala44' ? 'skala44' : 'eingabe' },
-    pk: { ...p.pk, beitragModus: p.pk.beitragModus === 'bvgMinimum' ? 'bvgMinimum' : 'eingabe' },
+    // Frühere Modi (Skala-44-Schätzung, BVG-Minimum) werden in direkte Eingaben überführt.
+    ahv: {
+      ...p.ahv,
+      modus: 'eingabe',
+      renteMonat:
+        p.ahv.modus === 'skala44'
+          ? Math.round(ahvTeilrente(ahvRenteSkala44(p.ahv.mdje, regeln.ahv), p.ahv.beitragsjahre, regeln.ahv))
+          : p.ahv.renteMonat,
+    },
+    ahvSchaetzhilfe: {
+      ...p.ahvSchaetzhilfe,
+      beitragsModus: p.ahvSchaetzhilfe.beitragsModus === 'jahreCh' ? 'jahreCh' : 'luecken',
+    },
+    pk: { ...p.pk, beitragModus: 'eingabe' },
     auslandRenten: renten.slice(0, 10).map(auslandRente),
   };
 }
@@ -75,15 +95,36 @@ export function normalisiere(roh: unknown, regeln: Regeln): Haushalt {
         ? (def.personen[0] as Person)
         : neuePerson(regeln, { name: 'Person 2', geschlecht: 'w' }),
   );
-  // Migration: früheres gemeinsames Feld `freiesVermoegen` → Vermögen von Person 1
+  // Migrationen früherer Versionen: gemeinsames `freiesVermoegen` bzw. `vermoegen` pro Person → Wertschriften
+  personen.forEach((p, i) => {
+    const r = rohPersonen[i];
+    if (istObj(r) && typeof r.vermoegen === 'number' && !('wertschriften' in r))
+      personen[i] = { ...p, wertschriften: Math.max(0, r.vermoegen) };
+  });
   const p0 = rohPersonen[0];
-  if (istObj(roh) && typeof roh.freiesVermoegen === 'number' && personen[0] && !(istObj(p0) && 'vermoegen' in p0)) {
-    personen[0] = { ...personen[0], vermoegen: Math.max(0, roh.freiesVermoegen) };
+  if (istObj(roh) && typeof roh.freiesVermoegen === 'number' && personen[0] && !(istObj(p0) && 'wertschriften' in p0)) {
+    personen[0] = { ...personen[0], wertschriften: Math.max(0, roh.freiesVermoegen) };
   }
+  const posten = (istObj(roh) && Array.isArray(roh.posten) ? roh.posten : []).slice(0, 50).map((x) => {
+    const art: PostenArt = istObj(x) && x.art === 'einnahme' ? 'einnahme' : 'ausgabe';
+    const po = mische(neuerPosten(art), x);
+    return {
+      ...po,
+      art,
+      person: Math.min(anzahl - 1, Math.max(0, Math.round(po.person))),
+      indexierung: indexierung(istObj(x) ? x.indexierung : undefined),
+    };
+  });
+  const ereignisse = (istObj(roh) && Array.isArray(roh.ereignisse) ? roh.ereignisse : []).slice(0, 50).map((x) => {
+    const ev = mische(neuesEreignis(), x);
+    return { ...ev, person: Math.min(anzahl - 1, Math.max(0, Math.round(ev.person))) };
+  });
   return {
     ...h,
     zivilstand,
     personen,
+    posten,
+    ereignisse,
     planungsalter: Math.min(MAX_PLANUNGSALTER, Math.max(1, Math.round(h.planungsalter))),
     wohnsitz: { land: 'CH', wegzug: null },
   };

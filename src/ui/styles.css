@@ -575,3 +575,37 @@ tr.negativ td {
   background: #e3f4e8;
   color: var(--farbe-ok);
 }
+
+/* AHV-Schätzhilfe */
+.schaetzhilfe {
+  margin: 0.75rem 0;
+}
+.schaetzhilfe > .knopf {
+  width: 100%;
+  text-align: left;
+}
+.schaetzhilfe__ergebnis {
+  background: #eef6f7;
+  border-radius: 10px;
+  padding: 0.75rem;
+  margin: 0.75rem 0;
+}
+.schaetzhilfe__ergebnis p {
+  margin: 0.35rem 0;
+}
+.schaetzhilfe__ergebnis .gross {
+  font-size: 1.4rem;
+}
+
+/* Posten */
+.knopfreihe {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.unterkarte--einnahme {
+  border-left: 4px solid #2a9d8f;
+}
+.unterkarte--ausgabe {
+  border-left: 4px solid #e36414;
+}

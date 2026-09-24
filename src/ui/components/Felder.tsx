@@ -39,6 +39,8 @@ interface ZahlFeldProps extends Basis {
 }
 
 function anzeige(v: number, prozent: boolean, nachkomma: number, gruppieren: boolean): string {
+  // 0 wird als leeres Feld (Platzhalter «0») angezeigt: neutrale Voreinstellung
+  if (v === 0) return '';
   const x = prozent ? v * 100 : v;
   if (gruppieren && Math.abs(x) >= 1000) return fmtZahl(x);
   return String(Number(x.toFixed(nachkomma)));
@@ -81,15 +83,16 @@ export function ZahlFeld({
           inputMode="decimal"
           autoComplete="off"
           value={text}
+          placeholder="0"
           aria-describedby={hinweis ? `${id}-h` : undefined}
           aria-invalid={fehler ? true : undefined}
           onFocus={() => {
             setFokus(true);
-            setText(String(Number((value * faktor).toFixed(nachkomma))));
+            setText(value === 0 ? '' : String(Number((value * faktor).toFixed(nachkomma))));
           }}
           onChange={(e) => {
             setText(e.target.value);
-            const n = parseZahl(e.target.value);
+            const n = e.target.value.trim() === '' ? 0 : parseZahl(e.target.value);
             if (n === null) {
               setFehler('Bitte eine Zahl eingeben.');
               return;
@@ -104,7 +107,7 @@ export function ZahlFeld({
           }}
           onBlur={() => {
             setFokus(false);
-            const n = parseZahl(text);
+            const n = text.trim() === '' ? 0 : parseZahl(text);
             if (n !== null) onChange(Math.min(max, Math.max(min, n / faktor)));
             setFehler(null);
           }}

@@ -1,4 +1,5 @@
 /** Ausländische Renten – reine Funktionen. */
+import { realerBetrag } from './indexierung';
 import type { AuslandRente } from './typen';
 
 /**
@@ -7,15 +8,7 @@ import type { AuslandRente } from './typen';
  * @param deflator kumulierte CH-Teuerung seit Start (Π(1+i))
  */
 export function auslandRenteRealJahr(rente: AuslandRente, t: number, deflator: number): number {
-  const nominalHeute = rente.betrag * rente.zahlungenProJahr * rente.wechselkursChf;
-  switch (rente.indexierung.art) {
-    case 'teuerung':
-      return nominalHeute;
-    case 'keine':
-      return nominalHeute / deflator;
-    case 'satz':
-      return (nominalHeute * (1 + rente.indexierung.satz) ** t) / deflator;
-  }
+  return realerBetrag(rente.betrag * rente.zahlungenProJahr * rente.wechselkursChf, rente.indexierung, t, deflator);
 }
 
 export function pruefeAuslandRente(r: AuslandRente): string[] {

@@ -11,6 +11,10 @@ export interface Serie {
   werte: number[];
   farbe: string;
   fuellung?: string;
+  /** gestapelt (kumuliert) darstellen; Legende zeigt den Einzelwert */
+  stapel?: boolean;
+  /** gestrichelte Linie */
+  gestrichelt?: boolean;
 }
 
 interface Props {
@@ -27,6 +31,19 @@ export function LinienChart({ x, xLabel, serien, beschreibung, hoehe = 280 }: Pr
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    // Gestapelte Serien kumulieren (in der gegebenen Reihenfolge von unten nach oben) und von
+    // oben nach unten zeichnen, damit jede Fläche sichtbar bleibt.
+    const kum: number[][] = [];
+    let summe = x.map(() => 0);
+    const gestapelt = serien.filter((s) => s.stapel);
+    for (const s of gestapelt) {
+      summe = summe.map((v, i) => v + Math.max(0, s.werte[i] ?? 0));
+      kum.push(summe);
+    }
+    const geordnet = [
+      ...gestapelt.map((s, i) => ({ s, daten: kum[i] ?? [] })).reverse(),
+      ...serien.filter((s) => !s.stapel).map((s) => ({ s, daten: s.werte })),
+    ];
     const opts: uPlot.Options = {
       width: Math.max(280, el.clientWidth),
       height: hoehe,
@@ -44,12 +61,14 @@ export function LinienChart({ x, xLabel, serien, beschreibung, hoehe = 280 }: Pr
       ],
       series: [
         { label: xLabel, value: (_u, v) => (v == null ? '–' : String(v)) },
-        ...serien.map((s) => ({
+        ...geordnet.map(({ s }) => ({
           label: s.label,
           stroke: s.farbe,
-          width: 2,
+          width: s.stapel ? 1 : 2,
+          ...(s.gestrichelt ? { dash: [6, 4] } : {}),
           ...(s.fuellung ? { fill: s.fuellung } : {}),
-          value: (_u: uPlot, v: number | null) => (v == null ? '–' : fmtChf(v)),
+          value: (_u: uPlot, v: number | null, _si: number, idx: number | null) =>
+            v == null || idx == null ? '–' : fmtChf(s.werte[idx] ?? 0),
         })),
       ],
       hooks: {
@@ -72,7 +91,7 @@ export function LinienChart({ x, xLabel, serien, beschreibung, hoehe = 280 }: Pr
         ],
       },
     };
-    const daten: uPlot.AlignedData = [x, ...serien.map((s) => s.werte)];
+    const daten: uPlot.AlignedData = [x, ...geordnet.map((g) => g.daten)];
     const plot = new uPlot(opts, daten, el);
     const ro = new ResizeObserver(() => plot.setSize({ width: Math.max(280, el.clientWidth), height: hoehe }));
     ro.observe(el);

@@ -16,7 +16,13 @@ Abkürzungen: MB = Merkblatt der Informationsstelle AHV/IV (ahv-iv.ch), mdJE = m
 | Rentenformel (Art. 34 AHVG) | mdJE ≤ 36× Minimalrente (45'360): 0,74 × Min + 13/600 × mdJE; darüber: 1,04 × Min + 8/600 × mdJE; Minimum bis mdJE 15'120, Maximum ab 90'720 | https://www.fedlex.admin.ch/eli/cc/63/837_843_843/de | geltendes Recht, 2026 |
 | Rententabellen (Skala 44, Stufen à 1'512) | 15'120→1'260; 30'240→1'588; 45'360→1'915; 60'480→2'117; 75'600→2'318; 90'720→2'520 | https://sozialversicherungen.admin.ch/de/d/6850/download | Rententabellen 2025, gültig bis zur nächsten Anpassung (auch 2026) |
 | Vollrente / Teilrente | Vollrente (Skala 44) bei lückenloser Beitragsdauer ab 1.1. nach dem 20. Geburtstag bis RA; pro fehlendes Beitragsjahr ca. 1/44 weniger (Skalen 1–43, Art. 52 AHVV); Auffüllen mit Jugendjahren möglich | MB 3.01 https://www.ahv-iv.ch/p/3.01.d ; AHVV Art. 52 | 1.1.2026 |
-| Erziehungs- und Betreuungsgutschriften | 3× jährliche Minimalrente (45'360) pro Jahr, bei Ehepaaren hälftig geteilt | MB 3.01 | 1.1.2026 |
+| Erziehungs- und Betreuungsgutschriften | 3× jährliche Minimalrente (45'360) pro Jahr, bei Ehepaaren hälftig geteilt; Durchschnitt = Summe ÷ Beitragsdauer | MB 3.01 Ziff. 19/30 | 1.1.2026 |
+| mdJE-Rundung | auf den nächsten Tabellenwert **aufgerundet** (Beispiele 35'477 → 36'288, 46'268 → 46'872) | MB 3.01 Ausgabe Nov. 2025, Ziff. 30/31 https://www.ahv-iv.ch/p/3.01.d | 1.1.2026 |
+| Einkommenssplitting | Einkommen der Kalenderjahre der Ehe je hälftig, sobald beide rentenberechtigt sind | MB 3.01 Ziff. 18 | 1.1.2026 |
+| Vollständige Rententabelle Skala 44 (51 Stufen) | 15'120 → 1'260 … 90'720 → 2'520 | MB 3.01 Anhang «AHV/IV-Renten ab 1. Januar 2025» | gültig 2026 |
+| Offizielle Online-Rentenschätzung (ESCAL) | https://www.ahv-iv.ch/de/Formulare/Online-Rentensch%C3%A4tzung-ESCAL (→ www.acor-avs.ch) | ahv-iv.ch, MB 3.06 | geprüft 25.09.2026 |
+| Individuelle Rentenvorausberechnung | https://www.ahv-iv.ch/de/Sozialversicherungen/Alters-und-Hinterlassenenversicherung-AHV/Rentenvorausberechnung ; Formular 318.282 https://www.ahv-iv.ch/p/318.282.d ; MB 3.06 https://www.ahv-iv.ch/p/3.06.d | ahv-iv.ch | geprüft 25.09.2026 |
+| Exakte Teilrentenskalen (Art. 52 AHVV), Aufwertungsfaktoren künftiger Jahre, Plafonierungsgrenze bei Teilrenten | in der Schätzhilfe vereinfacht → **OFFEN** | MB 3.01 | – |
 | Verwitwetenzuschlag | 20% der eigenen Rente, zusammen höchstens die Maximalrente | MB 3.01 | 1.1.2026 |
 | Referenzalter Männer | 65 | MB 3.04 https://www.ahv-iv.ch/p/3.04.d ; https://www.bsv.admin.ch/de/ahv-21 | 1.1.2026 |
 | Referenzalter Frauen (AHV 21) | Jg. ≤1960: 64; 1961: 64 J. 3 Mt; 1962: 64 J. 6 Mt; 1963: 64 J. 9 Mt; ab 1964: 65 | MB 3.04; BSV AHV 21 | 1.1.2026 |
@@ -102,7 +108,7 @@ Abkürzungen: MB = Merkblatt der Informationsstelle AHV/IV (ahv-iv.ch), mdJE = m
 | Kanton SZ (Quellensteuer Vorsorge für Personen im Ausland) | Kapital: kantonal 2,5% brutto zuzüglich Bundessteuer; Renten: 5% kantonal + 1% Bund; unter 2'000 Fr. keine Quellensteuer; Rückforderung gemäss DBA innert 3 Jahren | https://www.sz.ch/public/upload/assets/91262/Merkblatt_Quellenbesteuerung_privatrechtlicher_Vorsorgeleistungen_an_Personen_ohne_Wohnsitz_oder_Aufenthalt_in_der_Schweiz_Stand_1_Januar_2026.pdf?fp=1 | 1.1.2026 |
 | Übrige Kantone (Quellensteuer Vorsorge) | massgebend ist der Sitzkanton der Vorsorge- bzw. Freizügigkeitseinrichtung; Sätze → **OFFEN** (nur SZ verifiziert) | kantonale Steuerämter | – |
 | DBA-Rückforderung (ESTV RS 2-217) – Spalten: 2. Säule Rente QSt? / 2. Säule Kapital rückforderbar? / 3a Rente QSt? / 3a Kapital rückforderbar? | DE: nein/ja/nein/ja; FR, IT: nein/ja*/nein/ja*; AT, ES, PT, US, PL, CZ, HR, GR: nein/ja/nein/ja; TH, SG: nein/ja/ja/nein; CA: ja (max. 15%)/nein/ja (max. 15%)/nein; AU: ja*/nein/ja*/nein; HU, AE: ja/nein/ja/nein; CY: ja*/ja*/nein/ja; nicht aufgeführte Länder: Rente mit Quellensteuer, Kapital nicht rückforderbar (* nur mit Besteuerungsnachweis bzw. Bedingungen) | ESTV RS 2-217 https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf | 1.1.2026 |
-| AHV-Renten ins Ausland | nicht im Katalog von Art. 95/96 DBG (betrifft nur Vorsorgeleistungen); dass keine Schweizer Quellensteuer anfällt, ist abgeleitet, aber nicht explizit verifiziert → **OFFEN** | DBG Art. 95/96 | – |
+| AHV-Renten ins Ausland | nicht im Katalog von Art. 95/96 DBG (betrifft nur Vorsorgeleistungen); keine Schweizer Steuer auf AHV-Renten an Personen im Ausland (keine gesetzliche Grundlage) → **verifiziert** (siehe Abschnitt 8) | DBG Art. 95/96; ESTV-Dossier https://www.estv2.admin.ch/stp/ds/e-besteuerung-an-der-quelle-de.pdf | 2026 |
 | Besteuerung von CH-Liegenschaften nach Wegzug | beschränkte Steuerpflicht aufgrund wirtschaftlicher Zugehörigkeit (Grundsatz); Details → **OFFEN** | ESTV «Vermögenssteuer natürlicher Personen» (Abschnitt beschränkte Steuerpflicht) | – |
 
 ## 5. Historische Markt- und Inflationsdaten
@@ -124,3 +130,63 @@ Abkürzungen: MB = Merkblatt der Informationsstelle AHV/IV (ahv-iv.ch), mdJE = m
 | BFS Periodensterbetafeln | 1876–2150 (inkl. Projektion) | https://www.bfs.admin.ch/asset/de/30025875 | 2023 |
 | Lebenserwartung mit 65 (2024) | Männer 20,4 Jahre, Frauen 23,0 Jahre | https://www.bfs.admin.ch/bfs/de/home/statistiken/bevoelkerung/geburten-todesfaelle/lebenserwartung.html | 2025 publiziert |
 | Anteil Hundertjährige, Jahrgang 1967 (BFS-Schätzung) | ca. 4% der Männer, 11% der Frauen erreichen 100 | BFS Lebenserwartung (s. oben) | 2023/2024 |
+
+## 7. Brasilien (Ehefrau: INSS und AHV) – Details in docs/brasilien.md
+
+| Regel/Wert | Wert | Quelle-URL | Stand |
+|---|---|---|---|
+| SV-Abkommen CH–BR | SR 0.831.109.198.1, in Kraft 1.10.2019; Zusammenrechnung für BR-Leistungen (Art. 14), Export ohne Kürzung (Art. 5), CH-Renten nur aus CH-Zeiten (Art. 17) | https://www.fedlex.admin.ch/eli/cc/2019/523/de | 1.10.2019 |
+| Verwaltungsvereinbarung | SR 0.831.109.198.11; Antrag bei Wohnsitz CH über SAK Genf (Art. 6) | https://www.fedlex.admin.ch/eli/cc/2019/524/de | 1.10.2019 |
+| BSV-Infoblatt CH–BR | Überblick Abkommen | https://sozialversicherungen.admin.ch/de/d/12328/download | – |
+| ZAS bilaterale Abkommen | BR: ordentliche Rente, Abfindung, Rückvergütung, IV-Zusammenrechnung | https://www.zas.admin.ch/de/bilaterale-abkommen | 2026 |
+| INSS-Formulare CH–BR | BRA/SWI 4 (Altersrente), BRA/SWI 12 (Lebensbestätigung) | https://www.gov.br/previdencia/pt-br/assuntos/acordos-internacionais/pagina-antiga/formularios/formularios-brasil-suica | – |
+| Meu INSS Abkommensantrag | Online-Antrag Altersrente Abkommen | https://www.gov.br/pt-br/servicos/solicitar-aposentadoria-por-idade-urbana-acordo-internacional | 2026 |
+| INSS aposentadoria por idade (Übergangsregel Frauen) | 62 Jahre, 15 Beitragsjahre, 180 Monate Karenz | https://www.gov.br/inss/pt-br/direitos-e-deveres/aposentadorias/aposentadoria-por-idade-urbana | 2026 |
+| Rentenformel EC 103/2019 | 60% + 2% je Jahr über 15 (Frauen) × Durchschnitt aller Löhne ab 7/1994 | https://www.gov.br/previdencia/pt-br/assuntos/legislacao/arquivos/20191121BRASILIACNPSNOVAPREVIDENCIAEC1032019.pdf | 2019 |
+| Mindestlohn = Mindestrente 2026 | R$ 1'621/Monat (Decreto 12.797/2025) | Decreto 12.797/2025 (planalto.gov.br) | 1.1.2026 |
+| Höchstrente / Anpassung 2026 | R$ 8'475,55; +3,90% INPC (Portaria Interministerial MPS/MF 13/2026) | sekundär: normaslegais.com.br, g1 | 2026 |
+| INSS-Pro-rata-Detail, 13. Rente bei Abkommensrenten | **OFFEN** | – | – |
+| DBA CH–BR | SR 0.672.919.81, in Kraft 16.3.2021, anwendbar ab 1.1.2022; Art. 19 Abs. 1 Quellenstaat darf besteuern; Art. 23 Abs. 2 lit. a CH-Befreiung nur bei Nachweis der Besteuerung in BR | https://www.fedlex.admin.ch/eli/cc/2021/210/de ; https://www.estv.admin.ch/de/brasilien | 2026 |
+| STF Tema 1174 (25%-Quellensteuer für Nichtansässige verfassungswidrig) | Urteil Okt. 2024, rechtskräftig 28.11.2024 | https://noticias.stf.jus.br/postsnoticias/stf-invalida-aliquota-de-25-de-ir-sobre-aposentadoria-recebida-por-residentes-no-exterior/ | 2024 |
+| Lei 15.270/2025 (IR-Befreiung bis R$ 5'000/Monat ab 2026) | Anwendung auf Nichtansässige **OFFEN** | Lei 15.270/2025 (planalto.gov.br) | 2026 |
+| AHVG (Art. 1a, 3 Abs. 3–4, 29, 29ter, 29quinquies, 29sexies) | nichterwerbstätige Ehegatten, Splitting, Erziehungsgutschriften | https://www.fedlex.admin.ch/eli/cc/63/837_843_843/de | 1.1.2026 |
+| AHVV (Art. 52b, 52d, 52f) | Jugendjahre, Zusatzjahre, Aufteilung Erziehungsgutschriften | https://www.fedlex.admin.ch/eli/cc/63/1185_1183_1185/de | 1.1.2026 |
+| Merkblätter 2.03 / 3.01 | NE-Beiträge; Altersrenten und Splitting | https://www.ahv-iv.ch/de/Merkblätter-Formulare | 1.1.2026 |
+
+## 8. Wegzugsländer – Details in docs/laender.md und data/laender-2026.json
+
+| Regel/Wert | Wert | Quelle-URL | Stand |
+|---|---|---|---|
+| DBA-Liste SIF | PA, PY ohne DBA; PH, TH, AE, CY, MT, PT, ES, IT mit DBA (Daten siehe laender.md) | https://www.sif.admin.ch/dam/de/sd-web/Rq53YeWNalWg/DBA-Liste%20DE-per%2001.01.2026.pdf | 1.1.2026 |
+| ESTV 2-217 (Art. 95/96 DBG) | Werte je Land in laender.md; nicht aufgeführte Länder: Rente mit QSt, Kapital nicht rückforderbar | https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf | 1.1.2026 |
+| AHV-Renten ins Ausland | keine Schweizer Steuer (keine gesetzliche Grundlage) → **verifiziert** | https://www.estv2.admin.ch/stp/ds/e-besteuerung-an-der-quelle-de.pdf | 2026 |
+| Art. 25f FZG | Barauszahlungssperre nur BVG-Obligatorium, EU/EFTA; Altersleistung als Kapital nicht betroffen | https://sfbvg.ch/aufgaben/barauszahlung-nach-ausreise | 2026 |
+| Thailand Remittance-Regel | Por. 161/2566 und 162/2566: ab 2024 erzieltes Auslandseinkommen bei Überweisung steuerbar | https://www.rd.go.th ; https://rd.go.th/fileadmin/download/nation/Norwegian_answer.pdf | 2024 |
+| Zypern Auslandsrente | 5% über Freibetrag (5'000 EUR ab 2026, sekundär PwC; Formular Tax Dept.) | https://www.mof.gov.cy/mof/tax/taxdep.nsf/all/DD21C0CB47E54513C2258710003A1367/$file/Foreign%20Pension.pdf | 2026 |
+| Malta Retirement Programme | 15%, Minimum 7'500 EUR + 500 EUR je Angehörigen (LN 317/2012) | KPMG/BDO Malta (sekundär) | 2026 |
+| Portugal NHR/IFICI | NHR beendet (Lei 82/2023), IFICI ohne Renten; IRS 12,5–48% (PwC sekundär) | https://taxsummaries.pwc.com/portugal/individual/taxes-on-personal-income | 2026 |
+| Azoren IRS-Reduktion | −30% auf alle nationalen Sätze seit 1.1.2022 (DLR 15-A/2021/A Art. 47) | https://diariodarepublica.pt/dr/detalhe/decreto-legislativo-regional/15-a-2021-164454929 | 2022 |
+| Portugal Senkung IRS 2026 | Ministerratsbeschluss 17.9.2026, Details **OFFEN** | https://www.portugal.gov.pt | 17.9.2026 |
+| Italien 7%-Regime | Art. 24-ter TUIR, 10 Jahre, Gemeinden ≤ 20'000 Einw. in 8 Südregionen | https://www.agenziaentrate.gov.it/portale/schede/agevolazioni/np-regime-opzionale-per-i-pensionati-esteri | 2026 |
+| Italien 5% auf AHV/LPP | Art. 76 L. 413/1991; Risoluzione 3/E 2020; Risposta 125/2024 | https://www.agenziaentrate.gov.it | 2024 |
+| PwC Worldwide Tax Summaries (PA, PY, PH, AE, ES, PT, CY) | lokale Regimes (**sekundär**) | https://taxsummaries.pwc.com | 2026 |
+| Wohnsitzstaatsteuer auf PK-/3a-Kapital (TH, MT, PT, ES; IT 3a) | **OFFEN** | – | – |
+
+## 9. Kantonssteuern 2026 – Details in docs/kantone.md und data/kantone-2026.json
+
+| Regel/Wert | Wert | Quelle-URL | Stand |
+|---|---|---|---|
+| ESTV-Kantonsblätter (26 Kantone) | Kapitalleistungsmethoden, Tarife, Abzüge | https://www.estv2.admin.ch/stp/kb/zh-de.pdf (Muster {kt}-{de/fr/it}) | Februar 2026 |
+| ESTV-Steuerrechner (Tarife, Steuerfüsse, Referenzberechnungen 2026) | Tarifexport, Steuerfüsse 2'110 Gemeinden, Referenzraster Hauptorte | https://swisstaxcalculator.estv.admin.ch | abgerufen 24.9.2026 |
+| ESTV-Rechner Nutzungsbedingungen | nicht gefunden → **OFFEN** (nur Build-Zeit-Referenz) | https://www.estv.admin.ch/dam/de/sd-web/4wCmxZ0qNcsD/Erlaeuterungen-Steuerberechnungen_de-fr-it-en.pdf | – |
+| ZH Tarife § 35/§ 47 StG ab 2026 | siehe kantone.md | https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-48-1/zstb-nr-48-1.pdf | 1.1.2026 |
+| ZH § 37 StG Kapitalleistungen | 1/20-Satz, einfache Staatssteuer mind. 2% | https://www.estv2.admin.ch/stp/kb/zh-de.pdf | Februar 2026 |
+| ZH Staatssteuerfuss 2026/27 | 95% | https://www.zh.ch/de/politik-staat/gesetze-beschluesse/gesetzessammlung/zhlex-ls/erlass-631_21-2025_12_15-2026_01_01-132.html | 15.12.2025 |
+| ZH Gemeinde- und Kirchensteuerfüsse 2026 | 160 Gemeinden | https://www.web.statistik.zh.ch/ogd/data/steuerfuesse/kanton_zuerich_stf_aktuell.csv | 24.3.2026 |
+| AG Tarif § 43 (Progressionsverordnung 2025, 2026 unverändert) | Tarif A; Tarif B = Satz des halben Einkommens | https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/natuerliche-personen/steuerberechnung-tarife-natuerliche-personen/einkommenssteuertarif-2025.pdf | 2025/2026 |
+| AG Vermögenstarif § 55 und Freibeträge § 54 | 0,7–1,6‰; 260'000/130'000/16'000 | https://gesetzessammlungen.ag.ch/api/de/change_documents/file_dictionaries/1834/pdf_file | 1.1.2025 |
+| AG § 45 StG Kapitalleistungen | 30% des Tarifs, mind. 1% | https://www.estv2.admin.ch/stp/kb/ag-de.pdf | Februar 2026 |
+| AG Kantonssteuerfuss 2026 | 103% (100% + 3% Zuschlag § 57a) | https://www.ag.ch/de/themen/steuern-finanzen/steuern/steuern-berechnen/steuerberechnungen-neu ; derfreiaemter.ch (sekundär) | 2026 |
+| AG Gemeinde- und Kirchensteuerfüsse 2026 | 196 Gemeinden | https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/natuerliche-personen/steuerberechnung-tarife-natuerliche-personen/gemeinde-und-kirchensteuerf-sse-2026-v5.pdf | 16.6.2026 |
+| AG Versicherungsabzug 2026 | 7'600 / 3'800 | https://www.ag.ch/de/medien/medienmitteilungen?mm=rechtsaenderungen-per-1-januar-2026-c32e26a7-5201-4e01-abe9-adda85a75a3d_de | 2026 |
+| ESTV-Steuermäppchen Kapitalleistungen | nur StP 2024 (veraltet für LU, SZ) | https://www.estv2.admin.ch/stp/sm/2024/kapitalleistungen-saeulen-de-fr.pdf | 1.4.2025 |

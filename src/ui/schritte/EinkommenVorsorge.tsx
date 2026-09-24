@@ -3,15 +3,13 @@ import {
   ahvAufschubZuschlag,
   ahvMaxVorbezugMonate,
   ahvMdjeAusRente,
-  ahvRenteSkala44,
-  ahvTeilrente,
   ahvVorbezugKuerzung,
   istUebergangsFrau,
   pruefeAhvVerschiebung,
 } from '../../core/ahv';
-import { bvgKoordinierterLohn } from '../../core/bvg';
 import type { AuslandRente, Person } from '../../core/typen';
 import { neueAuslandRente, WAEHRUNGEN } from '../../data/defaults';
+import { AhvSchaetzhilfe } from '../components/AhvSchaetzhilfe';
 import { AuswahlFeld, Schalter, Segmente, TextFeld, ZahlFeld } from '../components/Felder';
 import { Karte } from '../components/Karte';
 import { fmtChf, fmtProzent } from '../format';
@@ -48,14 +46,13 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
   const bezugArt = verschiebung < 0 ? 'vorbezug' : verschiebung > 0 ? 'aufschub' : 'ordentlich';
   const maxVorbezug = ahvMaxVorbezugMonate(p.geburtsjahr, p.geschlecht, r);
   const fehlerVerschiebung = pruefeAhvVerschiebung(verschiebung, p.geburtsjahr, p.geschlecht, r);
-  const mdje = p.ahv.modus === 'skala44' ? p.ahv.mdje : ahvMdjeAusRente(p.ahv.renteMonat, r);
+  const mdje = p.ahv.mdje > 0 ? p.ahv.mdje : ahvMdjeAusRente(p.ahv.renteMonat, r);
   let bezugInfo = '';
   if (!fehlerVerschiebung) {
     if (verschiebung < 0)
       bezugInfo = `Kürzung ${fmtProzent(ahvVorbezugKuerzung(-verschiebung, p.geburtsjahr, p.geschlecht, mdje, r))} lebenslang`;
     if (verschiebung > 0) bezugInfo = `Zuschlag ${fmtProzent(ahvAufschubZuschlag(verschiebung, r))} lebenslang`;
   }
-  const geschaetzt = ahvTeilrente(ahvRenteSkala44(p.ahv.mdje, r), p.ahv.beitragsjahre, r);
   const uebergang = istUebergangsFrau(p.geburtsjahr, p.geschlecht, r);
 
   return (
@@ -83,54 +80,23 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
       </Karte>
 
       <Karte titel="AHV (1. Säule)">
-        <Segmente
-          label="Rentenhöhe"
-          value={p.ahv.modus}
-          optionen={[
-            { value: 'eingabe', label: 'Aus Vorausberechnung' },
-            { value: 'skala44', label: 'Schätzen' },
-          ]}
-          onChange={(m) => set((x) => ({ ...x, ahv: { ...x.ahv, modus: m } }))}
+        <ZahlFeld
+          label="Erwartete AHV-Rente pro Monat"
+          einheit="CHF"
+          value={p.ahv.renteMonat}
+          min={0}
+          max={10000}
+          nachkomma={0}
+          onChange={(v) => set((x) => ({ ...x, ahv: { ...x.ahv, modus: 'eingabe', renteMonat: v } }))}
+          hinweis={`Gemäss Rentenvorausberechnung der Ausgleichskasse oder AHV-Schätzhilfe, in heutigen Franken, ungekürzt im Referenzalter (Einzelrente max. ${fmtChf(r.maximalrenteMonat)}). 13. Rente und Plafonierung rechnet die Simulation.`}
         />
-        {p.ahv.modus === 'eingabe' ? (
-          <ZahlFeld
-            label="Erwartete AHV-Rente pro Monat"
-            einheit="CHF"
-            value={p.ahv.renteMonat}
-            min={0}
-            max={10000}
-            nachkomma={0}
-            onChange={(v) => set((x) => ({ ...x, ahv: { ...x.ahv, renteMonat: v } }))}
-            hinweis={`Gemäss Rentenvorausberechnung der Ausgleichskasse, in heutigen Franken, ungekürzt im Referenzalter (Einzelrente max. ${fmtChf(r.maximalrenteMonat)}). Empfohlen.`}
-          />
-        ) : (
-          <>
-            <ZahlFeld
-              label="Massgebendes durchschnittliches Jahreseinkommen"
-              einheit="CHF"
-              value={p.ahv.mdje}
-              min={0}
-              max={1_000_000}
-              nachkomma={0}
-              onChange={(v) => set((x) => ({ ...x, ahv: { ...x.ahv, mdje: v } }))}
-              hinweis={`Durchschnitt inkl. Erziehungsgutschriften. Volle Maximalrente ab ${fmtChf(r.rentenformel.mdjeMaximum)}.`}
-            />
-            <ZahlFeld
-              label="Beitragsjahre bis zum Referenzalter"
-              einheit="von 44"
-              value={p.ahv.beitragsjahre}
-              min={0}
-              max={r.vollrenteBeitragsjahre}
-              nachkomma={0}
-              gruppieren={false}
-              onChange={(v) => set((x) => ({ ...x, ahv: { ...x.ahv, beitragsjahre: Math.round(v) } }))}
-              hinweis="Pro fehlendes Jahr ca. 1/44 weniger Rente (vereinfacht)."
-            />
-            <p className="info">
-              Geschätzte Rente (Skala 44, Art. 34 AHVG): <strong>{fmtChf(geschaetzt)}</strong> pro Monat
-            </p>
-          </>
-        )}
+        <AhvSchaetzhilfe
+          p={p}
+          partner={props.h.personen.find((_, j) => j !== i) ?? null}
+          verheiratet={props.h.zivilstand === 'verheiratet'}
+          regeln={regeln}
+          set={set}
+        />
         <div className="raster">
           <AuswahlFeld
             label="Bezug"
@@ -188,31 +154,16 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
           nachkomma={0}
           onChange={(v) => set((x) => ({ ...x, pk: { ...x.pk, guthaben: v } }))}
         />
-        <AuswahlFeld
-          label="Künftige Sparbeiträge"
-          value={p.pk.beitragModus}
-          optionen={[
-            { value: 'eingabe', label: 'Gemäss Ausweis (Betrag)' },
-            { value: 'bvgMinimum', label: 'BVG-Minimum (Altersgutschrift)' },
-          ]}
-          onChange={(v) => set((x) => ({ ...x, pk: { ...x.pk, beitragModus: v } }))}
-          hinweis={
-            p.pk.beitragModus === 'bvgMinimum'
-              ? `Koordinierter Lohn heute: ${fmtChf(bvgKoordinierterLohn(p.lohn, regeln.bvg))}; Gutschrift 7–18% je nach Alter.`
-              : undefined
-          }
+        <ZahlFeld
+          label="Sparbeitrag pro Jahr (Arbeitnehmer + Arbeitgeber)"
+          einheit="CHF"
+          value={p.pk.sparbeitragJahr}
+          min={0}
+          max={1_000_000}
+          nachkomma={0}
+          onChange={(v) => set((x) => ({ ...x, pk: { ...x.pk, beitragModus: 'eingabe', sparbeitragJahr: v } }))}
+          hinweis="Gemäss Vorsorgeausweis (Altersgutschriften pro Jahr)."
         />
-        {p.pk.beitragModus === 'eingabe' ? (
-          <ZahlFeld
-            label="Sparbeitrag pro Jahr (Arbeitnehmer + Arbeitgeber)"
-            einheit="CHF"
-            value={p.pk.sparbeitragJahr}
-            min={0}
-            max={1_000_000}
-            nachkomma={0}
-            onChange={(v) => set((x) => ({ ...x, pk: { ...x.pk, sparbeitragJahr: v } }))}
-          />
-        ) : null}
         <div className="raster">
           <ZahlFeld
             label="Davon Arbeitnehmeranteil"
@@ -261,8 +212,39 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
           nachkomma={0}
           gruppieren={false}
           onChange={(v) => set((x) => ({ ...x, pk: { ...x.pk, fruehestesAlter: Math.round(v) } }))}
-          hinweis="Bezug bei Erwerbsaufgabe, frühestens ab diesem Alter (gesetzlich ab 58 möglich)."
+          hinweis="Gemäss Reglement Ihrer Pensionskasse (Standard 63; gesetzlich frühestens 58, spätestens 70). Bis dahin bleibt das Guthaben gesperrt und verzinst sich weiter – auch wenn Sie früher aufhören zu arbeiten."
         />
+        <p className="klein">
+          Der Wohnkanton beeinflusst nur die Besteuerung des Kapitalbezugs, nicht das früheste Bezugsalter. Eine
+          Barauszahlung vor 58 ist nur in Ausnahmefällen möglich (z.B. definitiver Wegzug ausserhalb EU/EFTA,
+          Selbstständigkeit) – noch nicht abgebildet.
+        </p>
+      </Karte>
+
+      <Karte titel="Freizügigkeitsguthaben" untertitel="Freizügigkeitskonto oder -depot, z.B. nach Stellenwechsel">
+        <div className="raster">
+          <ZahlFeld
+            label="Guthaben heute"
+            einheit="CHF"
+            value={p.freizuegigkeit.guthaben}
+            min={0}
+            max={100_000_000}
+            nachkomma={0}
+            onChange={(v) => set((x) => ({ ...x, freizuegigkeit: { ...x.freizuegigkeit, guthaben: v } }))}
+          />
+          <ZahlFeld
+            label="Verzinsung / Rendite (nominal)"
+            prozent
+            value={p.freizuegigkeit.zins}
+            min={-0.1}
+            max={0.15}
+            onChange={(v) => set((x) => ({ ...x, freizuegigkeit: { ...x.freizuegigkeit, zins: v } }))}
+          />
+        </div>
+        <p className="klein">
+          Gesperrt bis frühestens 5 Jahre vor dem Referenzalter; Bezug bei Erwerbsaufgabe, spätestens im Referenzalter
+          (bei Weiterarbeit bis 5 Jahre später). Kapitalbezug mit Kapitalleistungssteuer.
+        </p>
       </Karte>
 
       <Karte titel="Säule 3a">
@@ -295,7 +277,10 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
             onChange={(v) => set((x) => ({ ...x, saeule3a: { ...x.saeule3a, rendite: v } }))}
           />
         </div>
-        <p className="klein">Bezug bei Erwerbsaufgabe, frühestens 5 Jahre vor dem Referenzalter.</p>
+        <p className="klein">
+          Gesperrt bis frühestens 5 Jahre vor dem Referenzalter; Bezug bei Erwerbsaufgabe, spätestens im Referenzalter
+          (bei Weiterarbeit bis 5 Jahre später).
+        </p>
       </Karte>
 
       <AuslandRentenKarte p={p} set={set} />

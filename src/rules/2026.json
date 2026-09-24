@@ -16,8 +16,26 @@
       "source": "https://www.fedlex.admin.ch/eli/cc/63/837_843_843/de", "stand": "Art. 34 AHVG, geltendes Recht 2026", "status": "verifiziert"
     },
     "rententabelleStufe": { "value": 1512, "einheit": "CHF mdJE", "source": "https://sozialversicherungen.admin.ch/de/d/6850/download", "stand": "Rententabellen 2025, gültig auch 2026", "status": "verifiziert" },
-    "mdjeRundung": { "value": "aufrunden", "source": "Rententabellen (Annahme: mdJE wird auf die nächsthöhere Tabellenstufe aufgerundet)", "stand": "2026", "status": "offen", "hinweis": "Rundungsrichtung nicht in quellen.md verifiziert; Einfluss max. eine Tabellenstufe." },
+    "mdjeRundung": { "value": "aufrunden", "source": "https://www.ahv-iv.ch/p/3.01.d", "stand": "MB 3.01 Ausgabe November 2025, Ziff. 30/31 («aufgerundet auf Tabellenwert»)", "status": "verifiziert" },
     "rententabelleReferenz": { "value": [[15120, 1260], [30240, 1588], [45360, 1915], [60480, 2117], [75600, 2318], [90720, 2520]], "einheit": "[mdJE, CHF/Monat] Skala 44", "source": "https://sozialversicherungen.admin.ch/de/d/6850/download", "stand": "Rententabellen 2025, gültig auch 2026", "status": "verifiziert" },
+    "rententabelleSkala44": {
+      "value": [[15120,1260],[16632,1293],[18144,1326],[19656,1358],[21168,1391],[22680,1424],[24192,1457],[25704,1489],[27216,1522],[28728,1555],[30240,1588],[31752,1620],[33264,1653],[34776,1686],[36288,1719],[37800,1751],[39312,1784],[40824,1817],[42336,1850],[43848,1882],[45360,1915],[46872,1935],[48384,1956],[49896,1976],[51408,1996],[52920,2016],[54432,2036],[55944,2056],[57456,2076],[58968,2097],[60480,2117],[61992,2137],[63504,2157],[65016,2177],[66528,2197],[68040,2218],[69552,2238],[71064,2258],[72576,2278],[74088,2298],[75600,2318],[77112,2339],[78624,2359],[80136,2379],[81648,2399],[83160,2419],[84672,2439],[86184,2460],[87696,2480],[89208,2500],[90720,2520]],
+      "einheit": "[mdJE, CHF/Monat] Altersrente 1/1, Skala 44", "source": "https://www.ahv-iv.ch/p/3.01.d", "stand": "MB 3.01 Ausgabe November 2025, Anhang «AHV/IV-Renten ab 1. Januar 2025» (gültig 2026)", "status": "verifiziert"
+    },
+    "schaetzhilfe": {
+      "value": {
+        "splittingAnteil": 0.5,
+        "erziehungsgutschriftTeilungVerheiratet": 0.5,
+        "erziehungsgutschriftDivisor": "Beitragsdauer",
+        "beitragsdauerBeginnAlter": 21,
+        "auslandsjahreZaehlenFuerChRente": false
+      },
+      "source": "https://www.ahv-iv.ch/p/3.01.d", "stand": "MB 3.01 Ausgabe November 2025, Ziff. 12, 13, 17–19, 30, 31", "status": "verifiziert",
+      "hinweis": "Splitting: Einkommen der Kalenderjahre der Ehe je hälftig (erst wenn beide rentenberechtigt sind). Erziehungsgutschrift = 3 × jährliche Minimalrente pro Jahr mit Kind unter 16, während der Ehe hälftig; Durchschnitt = Summe ÷ Beitragsdauer. Beitragsdauer ab 1.1. nach dem 20. Geburtstag bis 31.12. vor dem Referenzalter."
+    },
+    "teilrenteSkala": { "value": "linear (Beitragsjahre ÷ volle Beitragsdauer des Jahrgangs)", "source": "https://www.ahv-iv.ch/p/3.01.d ; AHVV Art. 52", "stand": "1.1.2026", "status": "offen", "hinweis": "MB 3.01: «Ein fehlendes Beitragsjahr führt in der Regel zu einer Rentenkürzung von mindestens 1/44». Die exakte Skalenzuordnung (Skalen 1–43, Art. 52 AHVV), Jugendjahre und beitragslose Ehejahre vor 1997 sind nicht abgebildet." },
+    "aufwertungsfaktorSchaetzhilfe": { "value": 1, "source": "https://www.ahv-iv.ch/p/3.01.d (Tabelle «Eintrittsabhängige pauschale Aufwertungsfaktoren», Versicherungsfall 2026)", "stand": "2026", "status": "offen", "hinweis": "Die Schätzhilfe erwartet das Durchschnittseinkommen in heutigen Franken und wendet keinen Aufwertungsfaktor an (für ersten IK-Eintrag ≥ 1986 ist der Faktor 2026 ohnehin 1,000). Künftige Faktoren sind nicht bekannt." },
+    "plafonierungTeilrenten": { "value": "150% der Maximalrente, auch bei Teilrenten", "source": "https://www.ahv-iv.ch/p/3.01.d Ziff. 23", "stand": "1.1.2026", "status": "offen", "hinweis": "Bei Teilrenten liegt die Plafonierungsgrenze tiefer (MB 3.01); der Rechner verwendet vereinfacht immer 3'780/Monat." },
     "vollrenteBeitragsjahre": { "value": 44, "source": "https://www.ahv-iv.ch/p/3.01.d ; AHVV Art. 52", "stand": "1.1.2026", "status": "verifiziert", "hinweis": "Teilrente vereinfacht linear (Jahre/44)." },
     "erziehungsgutschriftFaktorMinimalrente": { "value": 3, "einheit": "× jährliche Minimalrente (45'360)", "source": "https://www.ahv-iv.ch/p/3.01.d", "stand": "1.1.2026", "status": "verifiziert" },
     "verwitwetenzuschlag": { "value": 0.2, "source": "https://www.ahv-iv.ch/p/3.01.d", "stand": "1.1.2026", "status": "verifiziert", "hinweis": "20% der eigenen Rente, zusammen höchstens die Maximalrente." },

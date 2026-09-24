@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { referenzPerson } from '../../core/simulation';
-import type { SimulationsErgebnis } from '../../core/typen';
+import { referenzPerson, startvermoegen } from '../../core/simulation';
+import type { Haushalt, SimulationsErgebnis, Toepfe } from '../../core/typen';
 import { regelEintraege } from '../../rules';
 import { LinienChart, type Serie } from '../components/Chart';
 import { DisclaimerVoll } from '../components/Disclaimer';
@@ -29,19 +29,54 @@ export function Ergebnis({ h, berechnung, heute, suchModus, setSuchModus }: Prop
   const chart = useMemo(() => {
     if (!anzeige) return null;
     const x = anzeige.zeilen.map((z) => z.alter[ref] ?? 0);
+    const t = (k: keyof Toepfe) => anzeige.zeilen.map((z) => z.toepfe[k]);
     const serien: Serie[] = [
+      { label: 'Bargeld', werte: t('bargeld'), farbe: '#2a9d8f', fuellung: 'rgba(42,157,143,0.55)', stapel: true },
       {
-        label: 'Anlagevermögen',
-        werte: anzeige.zeilen.map((z) => z.vermoegen),
+        label: 'Wertschriften',
+        werte: t('wertschriften'),
         farbe: '#0f4c5c',
-        fuellung: 'rgba(15,76,92,0.12)',
+        fuellung: 'rgba(15,76,92,0.55)',
+        stapel: true,
+      },
+      { label: 'Sonstiges', werte: t('sonstiges'), farbe: '#8a5a44', fuellung: 'rgba(138,90,68,0.5)', stapel: true },
+      {
+        label: 'Wohneigentum',
+        werte: t('wohneigentum'),
+        farbe: '#6d597a',
+        fuellung: 'rgba(109,89,122,0.45)',
+        stapel: true,
       },
       {
-        label: 'inkl. PK und 3a',
-        werte: anzeige.zeilen.map((z) => z.vermoegen + z.pkGuthaben + z.saeule3aGuthaben),
-        farbe: '#e36414',
+        label: 'Freizügigkeit (gesperrt)',
+        werte: t('freizuegigkeit'),
+        farbe: '#f4a261',
+        fuellung: 'rgba(244,162,97,0.35)',
+        stapel: true,
       },
-    ];
+      {
+        label: '3a (gesperrt)',
+        werte: t('saeule3a'),
+        farbe: '#e9c46a',
+        fuellung: 'rgba(233,196,106,0.4)',
+        stapel: true,
+      },
+      {
+        label: 'Pensionskasse (gesperrt)',
+        werte: t('pk'),
+        farbe: '#e36414',
+        fuellung: 'rgba(227,100,20,0.3)',
+        stapel: true,
+      },
+    ].filter((s) => s.werte.some((v) => v > 0.5));
+    if (anzeige.zeilen.some((z) => z.fehlbetrag > 0.5)) {
+      serien.push({
+        label: 'Fehlbetrag',
+        werte: anzeige.zeilen.map((z) => -z.fehlbetrag),
+        farbe: '#b3261e',
+        gestrichelt: true,
+      });
+    }
     return { x, serien };
   }, [anzeige, ref]);
 
@@ -93,28 +128,33 @@ export function Ergebnis({ h, berechnung, heute, suchModus, setSuchModus }: Prop
         ) : null}
       </section>
 
+      {keineEingaben(h) ? (
+        <p className="warnung" role="status">
+          Noch keine Beträge erfasst. Alle Felder sind bewusst leer (0) – bitte Lohn, AHV-Rente, Vorsorge, Vermögen und
+          Ausgaben eintragen, damit das Ergebnis aussagekräftig ist.
+        </p>
+      ) : null}
+
       {wunsch ? (
         <Karte titel="Mit Ihrem Wunsch-Rücktrittsalter">
           <p>{h.personen.map((p, i) => `${namen[i]}: ${fmtAlter(Math.round(p.stoppAlter * 12))}`).join(' · ')}</p>
           {wunsch.erfolg ? (
             <p className="ok">
-              ✓ Das Vermögen reicht bis zum Planungsalter. Am Ende (real):{' '}
+              ✓ Das Geld reicht jederzeit bis zum Planungsalter. Am Ende (real):{' '}
               <strong>{fmtChf(wunsch.endVermoegen)}</strong>
             </p>
           ) : (
             <p className="warnung">
-              ✗ Das Vermögen ist im Jahr {wunsch.ruinJahr} aufgebraucht (Alter {wunsch.ruinAlter}
-              {h.personen.length > 1 ? ' der jüngeren Person' : ''}).
+              ✗ Ab {wunsch.ruinJahr} (Alter {wunsch.ruinAlter}
+              {h.personen.length > 1 ? ' der jüngeren Person' : ''}) reichen die verfügbaren Mittel nicht.
             </p>
           )}
+          <LiquiditaetsHinweise e={wunsch} />
         </Karte>
       ) : null}
 
       {chart && anzeige ? (
-        <Karte
-          titel="Vermögensverlauf"
-          untertitel="In heutigen Franken (real); Anlagevermögen inkl. Nettowert Wohneigentum"
-        >
+        <Karte titel="Vermögensverlauf" untertitel="In heutigen Franken (real), nach Vermögenstopf">
           {solver?.ergebnis ? (
             <Segmente
               label="Szenario"
@@ -130,8 +170,14 @@ export function Ergebnis({ h, berechnung, heute, suchModus, setSuchModus }: Prop
             x={chart.x}
             xLabel={h.personen.length > 1 ? `Alter ${namen[ref]}` : 'Alter'}
             serien={chart.serien}
-            beschreibung="Diagramm: Anlagevermögen (inkl. Nettowert Wohneigentum) und Vermögen inklusive Pensionskasse und Säule 3a pro Jahr. Die Tabelle unten enthält dieselben Werte."
+            beschreibung="Gestapeltes Diagramm des Vermögens pro Jahr nach Topf: Bargeld, Wertschriften, Sonstiges, Wohneigentum sowie gesperrte Freizügigkeit, Säule 3a und Pensionskasse. Die Tabelle unten enthält die Summen."
           />
+          <p className="klein">
+            Gestapelt: verfügbare Töpfe (unten) und gesperrte Vorsorgegelder (oben, bis zum Bezug). Die Legende zeigt
+            die Einzelwerte. Wohneigentum wird erst zuletzt angetastet. Wird das PK-Guthaben als Rente bezogen,
+            verschwindet es aus der Grafik und erscheint als Einkommen.
+          </p>
+          {szenario === 'frueh' ? <LiquiditaetsHinweise e={anzeige} /> : null}
           <JahresTabelle e={anzeige} refIdx={ref} />
         </Karte>
       ) : null}
@@ -165,6 +211,10 @@ export function Ergebnis({ h, berechnung, heute, suchModus, setSuchModus }: Prop
                 <dt>3a-Bezug</dt>
                 <dd>
                   {fmtMonat(info.saeule3aStart)}: {fmtChf(info.saeule3aKapital)}
+                </dd>
+                <dt>Freizügigkeit</dt>
+                <dd>
+                  {fmtMonat(info.freizuegigkeitStart)}: {fmtChf(info.freizuegigkeitKapital)}
                 </dd>
               </dl>
               {h.zivilstand === 'verheiratet' ? (
@@ -218,18 +268,34 @@ function JahresTabelle({ e, refIdx }: { e: SimulationsErgebnis; refIdx: number }
                 <th>Einnahmen</th>
                 <th>Steuern</th>
                 <th>Ausgaben</th>
-                <th>Vermögen</th>
+                <th>Verfügbar</th>
+                <th>Gesperrt</th>
+                <th>Total</th>
+                <th>Lücke</th>
               </tr>
             </thead>
             <tbody>
               {e.zeilen.map((z) => (
-                <tr key={z.jahr} className={z.vermoegen < 0 ? 'negativ' : undefined}>
+                <tr key={z.jahr} className={z.fehlbetrag > 0 ? 'negativ' : undefined}>
                   <td>{z.jahr}</td>
                   <td>{z.alter[refIdx]}</td>
-                  <td>{fmtChf(z.lohn + z.ahv + z.pkRente + z.auslandRenten + z.kapitalBezuege)}</td>
+                  <td>
+                    {fmtChf(
+                      z.lohn +
+                        z.ahv +
+                        z.pkRente +
+                        z.auslandRenten +
+                        z.weitereEinnahmen +
+                        z.kapitalBezuege +
+                        Math.max(0, z.einmalig),
+                    )}
+                  </td>
                   <td>{fmtChf(z.steuernEinkommen + z.steuernKapital + z.steuernVermoegen)}</td>
-                  <td>{fmtChf(z.ausgaben + z.neBeitraege + z.sozialabgaben)}</td>
-                  <td>{fmtChf(z.vermoegen)}</td>
+                  <td>{fmtChf(z.ausgaben + z.neBeitraege + z.sozialabgaben - Math.min(0, z.einmalig))}</td>
+                  <td>{fmtChf(z.verfuegbar - z.fehlbetrag)}</td>
+                  <td>{fmtChf(z.gebunden)}</td>
+                  <td>{fmtChf(z.total)}</td>
+                  <td>{z.fehlbetrag > 0 ? fmtChf(z.fehlbetrag) : '–'}</td>
                 </tr>
               ))}
             </tbody>
@@ -284,5 +350,61 @@ function QuelleLink({ text }: { text: string }) {
         {host}
       </a>{' '}
     </span>
+  );
+}
+
+function keineEingaben(h: Haushalt): boolean {
+  return (
+    startvermoegen(h) === 0 &&
+    h.ausgaben.lebenshaltung === 0 &&
+    h.posten.length === 0 &&
+    h.ereignisse.length === 0 &&
+    h.personen.every(
+      (p) =>
+        p.lohn === 0 &&
+        p.ahv.renteMonat === 0 &&
+        p.pk.guthaben === 0 &&
+        p.pk.sparbeitragJahr === 0 &&
+        p.saeule3a.guthaben === 0 &&
+        p.freizuegigkeit.guthaben === 0 &&
+        p.auslandRenten.length === 0,
+    )
+  );
+}
+
+/** Fasst Jahre zu Bereichen zusammen: [2026, 2027, 2028, 2031] → «2026–2028, 2031». */
+export function jahresBereiche(jahre: number[]): string {
+  const teile: string[] = [];
+  let start: number | null = null;
+  let vorher: number | null = null;
+  for (const j of [...jahre].sort((a, b) => a - b)) {
+    if (start === null) start = j;
+    else if (vorher !== null && j !== vorher + 1) {
+      teile.push(start === vorher ? String(start) : `${start}–${vorher}`);
+      start = j;
+    }
+    vorher = j;
+  }
+  if (start !== null && vorher !== null) teile.push(start === vorher ? String(start) : `${start}–${vorher}`);
+  return teile.join(', ');
+}
+
+function LiquiditaetsHinweise({ e }: { e: SimulationsErgebnis }) {
+  return (
+    <>
+      {e.liquiditaetsluecken.length > 0 ? (
+        <p className="warnung" role="alert">
+          ⚠ Liquiditätslücke {jahresBereiche(e.liquiditaetsluecken)}: Die verfügbaren Mittel reichen nicht, obwohl noch
+          gesperrte Vorsorgegelder (PK, Freizügigkeit, 3a) vorhanden sind. Diese sind erst ab dem Bezugsalter
+          zugänglich.
+        </p>
+      ) : null}
+      {e.wohneigentumAngetastetJahr !== null ? (
+        <p className="warnung">
+          ⚠ Ab {e.wohneigentumAngetastetJahr} muss auf das Wohneigentum zurückgegriffen werden (Verkauf, Belehnung oder
+          Hypothekenerhöhung nötig).
+        </p>
+      ) : null}
+    </>
   );
 }

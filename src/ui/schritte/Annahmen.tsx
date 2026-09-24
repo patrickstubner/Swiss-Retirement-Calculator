@@ -39,6 +39,14 @@ export function Annahmen({ h, setH, regeln, speichern, onSpeichern, onZurueckset
           />
         </div>
         <ZahlFeld
+          label="Zins Bargeld / Konten (nominal)"
+          prozent
+          value={a.renditeBargeld}
+          min={-0.05}
+          max={0.2}
+          onChange={(v) => setA({ renditeBargeld: v })}
+        />
+        <ZahlFeld
           label="Teuerung (Inflation)"
           prozent
           value={a.inflation}
