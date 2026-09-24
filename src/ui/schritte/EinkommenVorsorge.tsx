@@ -346,7 +346,7 @@ function AuslandRentenKarte({ p, set }: { p: Person; set: (fn: (p: Person) => Pe
               nachkomma={6}
               gruppieren={false}
               onChange={(v) => setRente(r.id, (x) => ({ ...x, wechselkursChf: v }))}
-              hinweis="Annahme, wird real konstant gehalten."
+              hinweis="Heutige Annahme; Entwicklung siehe Wechselkursänderung."
             />
             <ZahlFeld
               label="Beginn mit Alter"
@@ -386,6 +386,26 @@ function AuslandRentenKarte({ p, set }: { p: Person; set: (fn: (p: Person) => Pe
                 onChange={(v) => setRente(r.id, (x) => ({ ...x, indexierung: { art: 'satz', satz: v } }))}
               />
             ) : null}
+          </div>
+          <div className="raster">
+            <ZahlFeld
+              label="Wechselkursänderung pro Jahr (real)"
+              prozent
+              value={r.wechselkursAenderung}
+              min={-0.5}
+              max={0.5}
+              onChange={(v) => setRente(r.id, (x) => ({ ...x, wechselkursAenderung: v }))}
+              hinweis="Szenario: negativ = Abwertung der Fremdwährung gegenüber dem CHF (z.B. −2%)."
+            />
+            <ZahlFeld
+              label="Steuer im Quellenstaat"
+              prozent
+              value={r.quellensteuerSatz}
+              min={0}
+              max={1}
+              onChange={(v) => setRente(r.id, (x) => ({ ...x, quellensteuerSatz: v }))}
+              hinweis="In % der Bruttorente, gemäss DBA. Anrechnung in der Schweiz nicht modelliert."
+            />
           </div>
           <Schalter
             label="In der Schweiz als Einkommen steuerbar"

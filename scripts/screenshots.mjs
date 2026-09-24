@@ -121,8 +121,13 @@ await page
   .locator('.karte')
   .first()
   .screenshot({ path: `${out}06a-vermoegen-wohneigentum-360.png` });
-await page.getByLabel('Wohnkanton').selectOption('ZH');
 const steuerKarte = page.locator('.karte', { hasText: 'Kantons- und Gemeindesteuern' });
+await page.getByLabel('Wohnkanton').selectOption('BE');
+await steuerKarte.scrollIntoViewIfNeeded();
+await steuerKarte.screenshot({ path: `${out}06b-kanton-naeherung-360.png` });
+await page.getByLabel('Wohnkanton').selectOption('ZH');
+await page.getByLabel('Gemeinde', { exact: true }).selectOption('Winterthur');
+await page.getByLabel('Kirchensteuer').selectOption('reformiert');
 await steuerKarte.scrollIntoViewIfNeeded();
 await steuerKarte.screenshot({ path: `${out}06-kanton-360.png` });
 await schritt(/Ergebnis/);

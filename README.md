@@ -57,11 +57,16 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
 - Pensionskasse (Werte manuell aus dem Vorsorgeausweis): Altersguthaben, Sparbeiträge, Verzinsung,
   Umwandlungssatz, Kapital/Rente-Mix, frühestes Bezugsalter gemäss Reglement.
 - Säule 3a und Freizügigkeit: Guthaben, Rendite, Einzahlungen (3a-Maximum 2026).
-- Ausländische Renten pro Person (z.B. Brasilien): Betrag, Währung, Zahlungen/Jahr, Wechselkurs, Startalter,
-  Indexierung, in der Schweiz steuerbar ja/nein.
-- Steuern: **direkte Bundessteuer exakt nach Tarif 2026** (Einkommen und Kapitalleistungen zu 1/5). Kantons- und
-  Gemeindesteuern: Auswahl aller 26 Kantone, vorläufig mit **effektiven Sätzen als Eingabe (Näherung)** – exakte
-  Tarife folgen (zuerst ZH und AG).
+- Ausländische Renten pro Person (z.B. Brasilien, Felder gemäss `docs/brasilien.md` §6): Betrag, Währung,
+  Zahlungen/Jahr, Wechselkurs mit realer Auf-/Abwertung pro Jahr, Startalter, Indexierung, Steuer im Quellenstaat,
+  in der Schweiz steuerbar ja/nein.
+- Steuern: **direkte Bundessteuer exakt nach Tarif 2026** (Einkommen und Kapitalleistungen zu 1/5).
+  Kantons- und Gemeindesteuern aus `data/kantone-2026.json` (Recherche: `docs/kantone.md`):
+  - **Zürich und Aargau exakt**: Einkommens-, Vermögens- und Kapitalleistungstarif 2026, Auswahl aller Gemeinden
+    (ZH 160, AG 196) und der Kirchensteuer; Unit-Tests gegen die ESTV-Steuerrechner-Referenzfälle (frankengenau).
+  - **Übrige 24 Kantone: Näherung** (sichtbares Badge) über effektive Sätze des Kantonshauptorts
+    (ESTV-Steuerrechner 2026), interpoliert, ohne Kirchensteuer und kantonale Abzüge.
+  - Optional eigene effektive Sätze statt der Kantonsdaten.
 - Ergebnis: frühestes Rücktrittsalter (Einzelperson, Ehepaar gemeinsam oder nur eine Person), **gestapeltes
   Diagramm nach Vermögenstopf** (verfügbar/gesperrt, Fehlbetrag), Jahrestabelle (verfügbar, gesperrt, total, Lücke),
   Warnungen (Liquiditätslücke, Wohneigentum angetastet, fehlende Eingaben), Renten- und Kapitalübersicht,
@@ -71,7 +76,7 @@ Vereinfachungen: Wohneigentum wird wie Börsenkapital behandelt (ohne Eigenmietw
 Vermögenssteuer auf dem Verkehrswert (effektiver Satz). Barauszahlung der PK vor 58 (Wegzug, Selbstständigkeit) ist
 noch nicht abgebildet.
 
-Geplant: kantonale Tarife, Wegzug ins Ausland (Quellensteuer, DBA), historische Krisenszenarien, Monte Carlo,
+Geplant: exakte Tarife weiterer Kantone, Wegzug ins Ausland (Quellensteuer, DBA), historische Krisenszenarien, Monte Carlo,
 Sterbetafeln. Siehe `docs/konzept.md`.
 
 ## Quellen
@@ -104,7 +109,8 @@ Deployment: GitHub Actions → GitHub Pages (`.github/workflows/deploy.yml`, Bas
 ```
 src/core/    reine Rechenfunktionen (AHV, BVG, Steuern, NE-Beiträge, Simulation, Solver) + Tests
 src/rules/   versionierte Regelwerte (2026.json) mit Quelle/Stand/Status, Loader und Schema-Prüfung
-src/data/    Standardwerte, Kantonsliste (später Länder-/Kantonsdaten)
+src/data/    Standardwerte, Kantonsdaten-Anbindung (data/kantone-2026.json)
+data/        recherchierte Kantons- und Länderdaten 2026 (JSON)
 src/ui/      React-Oberfläche (mobile-first)
 docs/        Konzept und Quellen
 ```

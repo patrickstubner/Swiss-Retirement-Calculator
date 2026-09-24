@@ -1,7 +1,7 @@
 import { startvermoegen, wohneigentumNetto } from '../../core/simulation';
 import type { Haushalt, Posten, PostenKategorie } from '../../core/typen';
 import { neuerPosten, neuesEreignis } from '../../data/defaults';
-import { KANTON_STATUS_TEXT, KANTONE, kantonNach } from '../../data/kantone';
+import { gemeindenVon, KANTON_STATUS_TEXT, KANTONE, kantonNach, kantonsModellFuer } from '../../data/kantone';
 import { AuswahlFeld, Schalter, TextFeld, ZahlFeld } from '../components/Felder';
 import { Karte } from '../components/Karte';
 import { fmtChf } from '../format';
@@ -10,7 +10,6 @@ import { VEREINFACHUNG_BOERSE, VEREINFACHUNG_WOHNEIGENTUM } from '../texte';
 
 export function VermoegenAusgaben({ h, setH, regeln }: SchrittProps) {
   const ehepaar = h.zivilstand === 'verheiratet';
-  const kanton = kantonNach(h.steuern.kanton);
   return (
     <>
       {h.personen.map((p, i) => (
@@ -147,56 +146,7 @@ export function VermoegenAusgaben({ h, setH, regeln }: SchrittProps) {
       </Karte>
       <PostenKarte h={h} setH={setH} />
       <EreignisKarte h={h} setH={setH} />
-      <Karte
-        titel="Kantons- und Gemeindesteuern"
-        untertitel="Bundessteuer exakt nach Tarif 2026. Kanton und Gemeinde vorläufig über effektive Sätze; exakte Tarife (zuerst ZH und AG) folgen."
-      >
-        <AuswahlFeld
-          label="Wohnkanton"
-          value={kanton?.code ?? ''}
-          optionen={[
-            { value: '', label: 'Bitte wählen' },
-            ...KANTONE.map((k) => ({ value: k.code, label: `${k.name} (${k.code})` })),
-          ]}
-          onChange={(v) => setH((x) => ({ ...x, steuern: { ...x.steuern, kanton: v } }))}
-        />
-        <p className={`badge badge--${kanton?.status ?? 'naeherung'}`} role="status">
-          {KANTON_STATUS_TEXT[kanton?.status ?? 'naeherung']}
-        </p>
-        <ZahlFeld
-          label="Effektiver Einkommenssteuersatz Kanton + Gemeinde"
-          prozent
-          value={h.steuern.einkommenSatz}
-          min={0}
-          max={0.5}
-          onChange={(v) => setH((x) => ({ ...x, steuern: { ...x.steuern, einkommenSatz: v } }))}
-        />
-        <div className="raster">
-          <ZahlFeld
-            label="Vermögenssteuer"
-            einheit="‰"
-            value={h.steuern.vermoegenPromille}
-            min={0}
-            max={20}
-            onChange={(v) => setH((x) => ({ ...x, steuern: { ...x.steuern, vermoegenPromille: v } }))}
-          />
-          <ZahlFeld
-            label="Kapitalbezugssteuer Kanton"
-            prozent
-            value={h.steuern.kapitalSatz}
-            min={0}
-            max={0.3}
-            onChange={(v) => setH((x) => ({ ...x, steuern: { ...x.steuern, kapitalSatz: v } }))}
-          />
-        </div>
-        <p className="klein">
-          Sätze ermitteln z.B. mit dem{' '}
-          <a href="https://swisstaxcalculator.estv.admin.ch/" target="_blank" rel="noreferrer noopener">
-            Steuerrechner der ESTV
-          </a>
-          . Die direkte Bundessteuer wird exakt nach Tarif 2026 berechnet.
-        </p>
-      </Karte>
+      <SteuerKarte h={h} setH={setH} />
     </>
   );
 }
@@ -406,6 +356,123 @@ function EreignisKarte({ h, setH }: { h: Haushalt; setH: Setzer }) {
       >
         + Ereignis hinzufügen
       </button>
+    </Karte>
+  );
+}
+
+function SteuerKarte({ h, setH }: { h: Haushalt; setH: Setzer }) {
+  const st = h.steuern;
+  const kanton = kantonNach(st.kanton);
+  const setS = (patch: Partial<Haushalt['steuern']>) => setH((x) => ({ ...x, steuern: { ...x.steuern, ...patch } }));
+  const gemeinden = kanton ? gemeindenVon(kanton.code) : [];
+  const modell = kantonsModellFuer(st);
+  const beispiel = st.kanton && !st.eigeneSaetze ? modell : null;
+  const zs = h.zivilstand === 'verheiratet' ? 'verheiratet' : 'alleinstehend';
+  return (
+    <Karte
+      titel="Kantons- und Gemeindesteuern"
+      untertitel="Direkte Bundessteuer exakt nach Tarif 2026. Kanton und Gemeinde gemäss Kantonsdaten 2026."
+    >
+      <AuswahlFeld
+        label="Wohnkanton"
+        value={kanton?.code ?? ''}
+        optionen={[
+          { value: '', label: 'Bitte wählen' },
+          ...KANTONE.map((k) => ({ value: k.code, label: `${k.name} (${k.code})` })),
+        ]}
+        onChange={(v) => setS({ kanton: v, gemeinde: '' })}
+      />
+      {kanton ? (
+        <p className={`badge badge--${st.eigeneSaetze ? 'naeherung' : kanton.status}`} role="status">
+          {st.eigeneSaetze ? 'Eigene effektive Sätze' : KANTON_STATUS_TEXT[kanton.status]}
+        </p>
+      ) : (
+        <p className="warnung">
+          Ohne Kantonswahl werden nur die unten eingegebenen effektiven Sätze verwendet (Standard 0).
+        </p>
+      )}
+      {kanton && !st.eigeneSaetze && gemeinden.length > 0 ? (
+        <div className="raster">
+          <AuswahlFeld
+            label="Gemeinde"
+            value={st.gemeinde || kanton.hauptort}
+            optionen={gemeinden.map((g) => ({ value: g, label: g }))}
+            onChange={(v) => setS({ gemeinde: v })}
+          />
+          <AuswahlFeld
+            label="Kirchensteuer"
+            value={st.kirche}
+            optionen={[
+              { value: 'keine', label: 'Keine' },
+              { value: 'reformiert', label: 'Reformiert' },
+              { value: 'katholisch', label: 'Römisch-katholisch' },
+              { value: 'christkatholisch', label: 'Christkatholisch' },
+            ]}
+            onChange={(v) => setS({ kirche: v })}
+          />
+        </div>
+      ) : null}
+      {kanton && !st.eigeneSaetze && kanton.status === 'naeherung' ? (
+        <p className="klein">
+          Näherung: Einkommens- und Vermögenssteuer werden aus effektiven Sätzen für den Hauptort {kanton.hauptort}{' '}
+          interpoliert (ESTV-Steuerrechner 2026), ohne Kirchensteuer und ohne kantonale Abzüge. Kapitalleistungen:
+          effektive Referenzsätze (Hauptort). Regel gemäss Kantonsblatt: {kanton.kapitalMethode}. Exakte Tarife und
+          Gemeinden folgen.
+        </p>
+      ) : null}
+      {beispiel ? (
+        <p className="info">
+          {beispiel.beschreibung}. Beispiel {zs === 'verheiratet' ? 'Ehepaar' : 'Einzelperson'}: steuerbares Einkommen
+          100'000 → {fmtChf(beispiel.einkommenssteuer(100000, zs))}; Kapitalbezug 500'000 →{' '}
+          {fmtChf(beispiel.kapitalleistungssteuer(500000, zs))} (Kanton + Gemeinde
+          {st.kirche !== 'keine' && kanton?.status === 'exakt' ? ' + Kirche' : ''}, ohne Bund).
+        </p>
+      ) : null}
+      {kanton ? (
+        <Schalter
+          label="Eigene effektive Sätze verwenden"
+          hinweis="z.B. aus dem ESTV-Steuerrechner, wenn Sie Ihre Abzüge genauer abbilden möchten."
+          checked={st.eigeneSaetze}
+          onChange={(v) => setS({ eigeneSaetze: v })}
+        />
+      ) : null}
+      {!kanton || st.eigeneSaetze ? (
+        <>
+          <ZahlFeld
+            label="Effektiver Einkommenssteuersatz Kanton + Gemeinde"
+            prozent
+            value={st.einkommenSatz}
+            min={0}
+            max={0.5}
+            onChange={(v) => setS({ einkommenSatz: v })}
+          />
+          <div className="raster">
+            <ZahlFeld
+              label="Vermögenssteuer"
+              einheit="‰"
+              value={st.vermoegenPromille}
+              min={0}
+              max={20}
+              onChange={(v) => setS({ vermoegenPromille: v })}
+            />
+            <ZahlFeld
+              label="Kapitalbezugssteuer Kanton"
+              prozent
+              value={st.kapitalSatz}
+              min={0}
+              max={0.3}
+              onChange={(v) => setS({ kapitalSatz: v })}
+            />
+          </div>
+        </>
+      ) : null}
+      <p className="klein">
+        Vergleich und eigene Sätze:{' '}
+        <a href="https://swisstaxcalculator.estv.admin.ch/" target="_blank" rel="noreferrer noopener">
+          Steuerrechner der ESTV
+        </a>
+        . Steuerbares Einkommen vereinfacht (ohne kantonale Abzüge).
+      </p>
     </Karte>
   );
 }

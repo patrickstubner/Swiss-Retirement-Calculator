@@ -119,12 +119,24 @@ export function normalisiere(roh: unknown, regeln: Regeln): Haushalt {
     const ev = mische(neuesEreignis(), x);
     return { ...ev, person: Math.min(anzahl - 1, Math.max(0, Math.round(ev.person))) };
   });
+  const rohSteuern = istObj(roh) && istObj(roh.steuern) ? roh.steuern : {};
+  const kirchen = ['reformiert', 'katholisch', 'christkatholisch'] as const;
+  const steuern = {
+    ...h.steuern,
+    kirche: kirchen.find((k) => k === h.steuern.kirche) ?? ('keine' as const),
+    // Frühere Versionen kannten nur eigene Sätze: diese beibehalten
+    eigeneSaetze:
+      'eigeneSaetze' in rohSteuern
+        ? h.steuern.eigeneSaetze
+        : h.steuern.einkommenSatz > 0 || h.steuern.vermoegenPromille > 0 || h.steuern.kapitalSatz > 0,
+  };
   return {
     ...h,
     zivilstand,
     personen,
     posten,
     ereignisse,
+    steuern,
     planungsalter: Math.min(MAX_PLANUNGSALTER, Math.max(1, Math.round(h.planungsalter))),
     wohnsitz: { land: 'CH', wegzug: null },
   };

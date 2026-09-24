@@ -19,6 +19,8 @@
  * - Rendite auf den Anfangsbeständen; Kapitalbezüge und Jahressaldo am Jahresende.
  * - TODO(wegzug): Barauszahlung von PK/FZ bei endgültiger Ausreise (Art. 5 FZG, Art. 25f FZG).
  */
+
+import { kantonsModellFuer } from '../data/kantone';
 import type { Regeln } from '../rules';
 import {
   ahv13,
@@ -34,10 +36,9 @@ import {
   monatIndex,
   pruefeAhvVerschiebung,
 } from './ahv';
-import { auslandRenteRealJahr } from './auslandRenten';
+import { auslandRenteNetto, auslandRenteRealJahr } from './auslandRenten';
 import { bvgAltersgutschrift, pkLeistung } from './bvg';
 import { realerBetrag } from './indexierung';
-import { waehleKantonsModell } from './kantone';
 import { neBefreitDurchEhegatte, neBeitrag } from './neBeitrag';
 import { deterministisch, type RenditeModell } from './renditen';
 import { dbgEinkommen, dbgKapital } from './steuern';
@@ -268,7 +269,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
   const verheiratet = h.zivilstand === 'verheiratet' && h.personen.length >= 2;
   const a = h.annahmen;
   const modell = opt.renditeModell ?? deterministisch(a.renditeNominal, a.inflation);
-  const kanton = waehleKantonsModell(h.steuern, opt.start.jahr);
+  const kanton = kantonsModellFuer(h.steuern);
   const plaene = h.personen.map((p, i) =>
     planePerson(p, regeln, opt.stoppAlterMonate?.[i] ?? Math.round(p.stoppAlter * 12)),
   );
@@ -407,7 +408,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
         p.auslandRenten.forEach((r, k) => {
           if (idx >= (pl.auslandStartIdx[k] ?? Number.POSITIVE_INFINITY)) {
             const v = auslandRenteRealJahr(r, t, deflator) / 12;
-            ausland[i] = (ausland[i] ?? 0) + v;
+            ausland[i] = (ausland[i] ?? 0) + auslandRenteNetto(v, r);
             if (r.steuerbarInCh) auslandSteuerbar[i] = (auslandSteuerbar[i] ?? 0) + v;
           }
         });

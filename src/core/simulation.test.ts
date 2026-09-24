@@ -304,7 +304,13 @@ describe('Individuelle Personen, Vermögen und Wohneigentum', () => {
     const p = person({ wertschriften: 0, wohneigentum: { vorhanden: true, verkehrswert: 1_000_000, hypothek: 0 } });
     const h = einfach({
       personen: [p],
-      steuern: { kanton: 'ZH', einkommenSatz: 0, vermoegenPromille: 3, kapitalSatz: 0 },
+      steuern: {
+        ...standardHaushalt(regeln).steuern,
+        eigeneSaetze: true,
+        einkommenSatz: 0,
+        vermoegenPromille: 3,
+        kapitalSatz: 0,
+      },
     });
     expect(simuliere(h, regeln, { start }).zeilen[0]?.steuernVermoegen).toBeCloseTo(3000, 6);
   });
@@ -360,5 +366,25 @@ describe('fruehestesRuecktrittsalter', () => {
     expect(s.gefunden).toBe(true);
     const [a1, a2] = s.stoppAlterMonate ?? [];
     expect((a1 ?? 0) - (a2 ?? 0)).toBe(24);
+  });
+});
+
+describe('Ausländische Renten: Wechselkursszenario und Quellensteuer', () => {
+  it('Abwertung reduziert die Rente real, Quellensteuer den Nettozufluss', () => {
+    const p = neuePerson(regeln, { geburtsjahr: 1960, geburtsmonat: 1, lohn: 0, stoppAlter: 0 });
+    p.auslandRenten = [
+      {
+        ...neueAuslandRente(),
+        betrag: 1000,
+        zahlungenProJahr: 12,
+        wechselkursChf: 1,
+        startAlter: 60,
+        wechselkursAenderung: -0.1,
+        quellensteuerSatz: 0.2,
+      },
+    ];
+    const e = simuliere(einfach({ personen: [p] }), regeln, { start });
+    expect(e.zeilen[0]?.auslandRenten).toBeCloseTo(12000 * 0.8, 6);
+    expect(e.zeilen[1]?.auslandRenten).toBeCloseTo(12000 * 0.9 * 0.8, 6);
   });
 });

@@ -34,6 +34,10 @@ export interface AuslandRente {
   /** Beginn der Rente (Alter in Jahren, Dezimal erlaubt) */
   startAlter: number;
   indexierung: Indexierung;
+  /** Reale Auf- (+) bzw. Abwertung (−) der Fremdwährung gegenüber dem CHF pro Jahr (Szenario, Standard 0) */
+  wechselkursAenderung: number;
+  /** Steuer im Quellenstaat in % der Bruttorente (Standard 0) */
+  quellensteuerSatz: number;
   /** In der Schweiz als Einkommen steuerbar (DBA prüfen) */
   steuerbarInCh: boolean;
 }
@@ -213,9 +217,17 @@ export interface Annahmen {
 }
 
 /** Kantons-/Gemeindesteuer im MVP als effektive Sätze (Nutzereingabe). */
+export type Konfession = 'keine' | 'reformiert' | 'katholisch' | 'christkatholisch';
+
 export interface KantonSteuerEingabe {
-  /** Kantonskürzel (Daten folgen), optional */
+  /** Kantonskürzel ('' = nicht gewählt → effektive Sätze) */
   kanton: string;
+  /** Gemeinde (nur ZH/AG mit exakten Steuerfüssen; '' = Hauptort) */
+  gemeinde: string;
+  /** Kirchensteuer (nur ZH/AG) */
+  kirche: Konfession;
+  /** Eigene effektive Sätze statt Kantonsdaten verwenden */
+  eigeneSaetze: boolean;
   einkommenSatz: number;
   vermoegenPromille: number;
   kapitalSatz: number;

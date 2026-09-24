@@ -1,0 +1,606 @@
+{
+ "meta": {
+  "titel": "Zielländer für Wegzug – steuerliche Behandlung Schweizer Vorsorgeleistungen",
+  "stand": "25.9.2026",
+  "statusWerte": {
+   "verifiziert": "amtliche Quelle geprüft",
+   "verifiziert_ch": "Schweizer Seite (ESTV 2-217) geprüft, Wohnsitzstaat teils sekundär/OFFEN",
+   "naeherung": "teilweise Sekundärquellen, in der App als Näherung kennzeichnen",
+   "offen": "nicht verifiziert"
+  },
+  "quellen": {
+   "dbaListe": "https://www.sif.admin.ch/dam/de/sd-web/Rq53YeWNalWg/DBA-Liste%20DE-per%2001.01.2026.pdf",
+   "estv2_217": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+   "quellensteuerDossier": "https://www.estv2.admin.ch/stp/ds/e-besteuerung-an-der-quelle-de.pdf",
+   "art25fFZG": "https://sfbvg.ch/aufgaben/barauszahlung-nach-ausreise"
+  },
+  "art25fFZG": {
+   "text": "Barauszahlungssperre nur für das BVG-Obligatorium bei Ausreise in einen EU/EFTA-Staat, wenn dort obligatorisch rentenversichert; Kapitalbezug als Altersleistung (ab reglementarischem Alter bzw. Freizügigkeitsguthaben ab 5 Jahre vor AHV-Alter) nicht betroffen; Überobligatorium frei",
+   "quelle": "https://sfbvg.ch/aufgaben/barauszahlung-nach-ausreise",
+   "status": "verifiziert"
+  },
+  "hinweisQuellensteuer": "Satz der Schweizer Quellensteuer auf Vorsorgeleistungen richtet sich nach dem Sitzkanton der Vorsorge- bzw. Freizügigkeitseinrichtung (Übersicht: https://www.estv.admin.ch/dam/de/sd-web/wOVGrjPStMQ4/qst-tarife-renten-kapitalleistungen-2026.pdf)"
+ },
+ "laender": [
+  {
+   "code": "PA",
+   "name": "Panama",
+   "eu": false,
+   "dba": {
+    "besteht": false,
+    "quelle": "https://www.sif.admin.ch/dam/de/sd-web/Rq53YeWNalWg/DBA-Liste%20DE-per%2001.01.2026.pdf",
+    "stand": "1.1.2026"
+   },
+   "rs217": {
+    "aufgefuehrt": false,
+    "folge": "Renten (PK/3a) mit Schweizer Quellensteuer; Kapital-Quellensteuer nicht rückforderbar",
+    "quelle": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+    "stand": "1.1.2026"
+   },
+   "ahv": {
+    "chQuellensteuer": "nein",
+    "text": "Keine Schweizer Steuer auf AHV-Renten an Personen im Ausland (keine gesetzliche Grundlage in DBG/StHG), unabhängig vom DBA",
+    "quelle": "https://www.estv2.admin.ch/stp/ds/e-besteuerung-an-der-quelle-de.pdf",
+    "status": "verifiziert"
+   },
+   "pkKapital": {
+    "ch": "Quellensteuer definitiv (Satz des Sitzkantons der Vorsorgeeinrichtung)",
+    "wohnsitzstaat": "Territoriale Besteuerung: Auslandseinkommen nicht steuerbar",
+    "status": "naeherung",
+    "quelle": "PwC Worldwide Tax Summaries Panama (sekundär, reviewed 4.8.2026)"
+   },
+   "pkRente": {
+    "ch": "Quellensteuer",
+    "wohnsitzstaat": "nicht steuerbar (territorial)",
+    "status": "naeherung"
+   },
+   "s3aKapital": {
+    "ch": "Quellensteuer definitiv",
+    "wohnsitzstaat": "nicht steuerbar (territorial)",
+    "status": "naeherung"
+   },
+   "lokalesRegime": {
+    "text": "Territorialprinzip; nur Einkommen aus panamaischer Quelle steuerbar",
+    "quelle": "https://taxsummaries.pwc.com/panama/individual/taxes-on-personal-income",
+    "quelleTyp": "sekundaer",
+    "stand": "4.8.2026"
+   },
+   "art25fFZG": false,
+   "status": "naeherung"
+  },
+  {
+   "code": "PY",
+   "name": "Paraguay",
+   "eu": false,
+   "dba": {
+    "besteht": false,
+    "quelle": "https://www.sif.admin.ch/dam/de/sd-web/Rq53YeWNalWg/DBA-Liste%20DE-per%2001.01.2026.pdf",
+    "stand": "1.1.2026"
+   },
+   "rs217": {
+    "aufgefuehrt": false,
+    "folge": "Renten mit Schweizer Quellensteuer; Kapital-Quellensteuer nicht rückforderbar",
+    "quelle": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+    "stand": "1.1.2026"
+   },
+   "ahv": {
+    "chQuellensteuer": "nein",
+    "text": "Keine Schweizer Steuer auf AHV-Renten an Personen im Ausland (keine gesetzliche Grundlage in DBG/StHG), unabhängig vom DBA",
+    "quelle": "https://www.estv2.admin.ch/stp/ds/e-besteuerung-an-der-quelle-de.pdf",
+    "status": "verifiziert"
+   },
+   "pkKapital": {
+    "ch": "Quellensteuer definitiv",
+    "wohnsitzstaat": "nur Einkommen aus paraguayischer Quelle steuerbar (IRP 8–10%) → Auslandskapital voraussichtlich nicht steuerbar",
+    "status": "naeherung",
+    "quelle": "PwC (sekundär, 7.2.2026)"
+   },
+   "pkRente": {
+    "ch": "Quellensteuer",
+    "wohnsitzstaat": "voraussichtlich nicht steuerbar (Quellenprinzip)",
+    "status": "naeherung"
+   },
+   "s3aKapital": {
+    "ch": "Quellensteuer definitiv",
+    "wohnsitzstaat": "voraussichtlich nicht steuerbar",
+    "status": "naeherung"
+   },
+   "lokalesRegime": {
+    "text": "IRP nur auf Einkommen aus paraguayischer Quelle, Sätze 8–10%",
+    "quelle": "https://taxsummaries.pwc.com/paraguay/individual/taxes-on-personal-income",
+    "quelleTyp": "sekundaer",
+    "stand": "7.2.2026"
+   },
+   "art25fFZG": false,
+   "status": "naeherung"
+  },
+  {
+   "code": "PH",
+   "name": "Philippinen",
+   "eu": false,
+   "dba": {
+    "besteht": true,
+    "abkommen": "24.6.1998",
+    "sr": "0.672.964.51",
+    "quelle": "https://www.sif.admin.ch/dam/de/sd-web/Rq53YeWNalWg/DBA-Liste%20DE-per%2001.01.2026.pdf",
+    "stand": "1.1.2026"
+   },
+   "rs217": {
+    "pkRenteQuellensteuer": "ja (Rückerstattung mit Ansässigkeitsbescheinigung, Fn. 7)",
+    "pkKapitalRueckforderbar": "ja (Fn. 7)",
+    "s3aRenteQuellensteuer": "ja",
+    "s3aKapitalRueckforderbar": "nein",
+    "fussnote": "Fn. 7: Rückerstattung nur mit Ansässigkeitsbescheinigung der philippinischen Behörden",
+    "quelle": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+    "stand": "1.1.2026",
+    "art": "Art. 96 DBG (privatrechtliche Vorsorge)"
+   },
+   "ahv": {
+    "chQuellensteuer": "nein",
+    "text": "Keine Schweizer Steuer auf AHV-Renten an Personen im Ausland (keine gesetzliche Grundlage in DBG/StHG), unabhängig vom DBA",
+    "quelle": "https://www.estv2.admin.ch/stp/ds/e-besteuerung-an-der-quelle-de.pdf",
+    "status": "verifiziert"
+   },
+   "pkKapital": {
+    "ch": "Quellensteuer; Rückforderung mit philippinischer Ansässigkeitsbescheinigung",
+    "wohnsitzstaat": "Ausländer (auch ansässige) nur mit Einkommen aus philippinischer Quelle steuerpflichtig; philippinische Staatsbürger weltweit",
+    "status": "naeherung",
+    "quelle": "PwC Philippines (sekundär, 2.7.2026)"
+   },
+   "pkRente": {
+    "ch": "Quellensteuer, Rückerstattung mit Bescheinigung (Fn. 7)",
+    "wohnsitzstaat": "für Ausländer nicht steuerbar (Quellenprinzip)",
+    "status": "naeherung"
+   },
+   "s3aKapital": {
+    "ch": "Quellensteuer definitiv (nicht rückforderbar)",
+    "wohnsitzstaat": "für Ausländer nicht steuerbar",
+    "status": "verifiziert_ch"
+   },
+   "lokalesRegime": {
+    "text": "Nicht-Staatsbürger nur mit PH-Einkommen steuerpflichtig",
+    "quelle": "https://taxsummaries.pwc.com/philippines/individual/taxes-on-personal-income",
+    "quelleTyp": "sekundaer",
+    "stand": "2.7.2026"
+   },
+   "sozialversicherungsabkommen": "ja (CH–PH)",
+   "art25fFZG": false,
+   "status": "naeherung"
+  },
+  {
+   "code": "TH",
+   "name": "Thailand",
+   "eu": false,
+   "dba": {
+    "besteht": true,
+    "abkommen": "12.2.1996",
+    "sr": "0.672.974.51",
+    "quelle": "https://www.sif.admin.ch/dam/de/sd-web/Rq53YeWNalWg/DBA-Liste%20DE-per%2001.01.2026.pdf",
+    "stand": "1.1.2026"
+   },
+   "rs217": {
+    "pkRenteQuellensteuer": "nein",
+    "pkKapitalRueckforderbar": "ja",
+    "s3aRenteQuellensteuer": "ja",
+    "s3aKapitalRueckforderbar": "nein",
+    "fussnote": null,
+    "quelle": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+    "stand": "1.1.2026",
+    "art": "Art. 96 DBG (privatrechtliche Vorsorge)"
+   },
+   "ahv": {
+    "chQuellensteuer": "nein",
+    "text": "Keine Schweizer Steuer auf AHV-Renten an Personen im Ausland (keine gesetzliche Grundlage in DBG/StHG), unabhängig vom DBA",
+    "quelle": "https://www.estv2.admin.ch/stp/ds/e-besteuerung-an-der-quelle-de.pdf",
+    "status": "verifiziert"
+   },
+   "pkKapital": {
+    "ch": "Quellensteuer rückforderbar",
+    "wohnsitzstaat": "Seit 1.1.2024: im Ausland erzieltes Einkommen steuerbar, wenn es in einem späteren Jahr nach Thailand überwiesen wird (Ansässige ab 180 Tagen); vor 2024 erzieltes Einkommen nicht. Behandlung eines Vorsorgekapitals in TH → OFFEN",
+    "status": "offen",
+    "quelle": "Thai Revenue Department Por. 161/2566 und 162/2566"
+   },
+   "pkRente": {
+    "ch": "keine Quellensteuer (Auszahlung ungekürzt mit Wohnsitzbestätigung)",
+    "wohnsitzstaat": "Renten = Section 40(1) Revenue Code; steuerbar bei Überweisung nach TH (progressiv 0–35%)",
+    "status": "naeherung",
+    "quelle": "https://rd.go.th/fileadmin/download/nation/Norwegian_answer.pdf ; PwC/KPMG/Forvis Mazars (sekundär)"
+   },
+   "s3aKapital": {
+    "ch": "Quellensteuer definitiv (nicht rückforderbar)",
+    "wohnsitzstaat": "OFFEN",
+    "status": "verifiziert_ch"
+   },
+   "lokalesRegime": {
+    "text": "Remittance-Regel seit 2024 (Por. 161/2566, 162/2566); LTR-Visum-Befreiung für Auslandseinkommen OFFEN",
+    "quelle": "https://www.rd.go.th",
+    "quelleTyp": "amtlich/sekundaer",
+    "stand": "2024"
+   },
+   "art25fFZG": false,
+   "status": "naeherung"
+  },
+  {
+   "code": "AE",
+   "name": "Vereinigte Arabische Emirate (Dubai)",
+   "eu": false,
+   "dba": {
+    "besteht": true,
+    "abkommen": "6.10.2011",
+    "sr": "0.672.932.51",
+    "bemerkung": "Revisionsprotokoll paraphiert",
+    "quelle": "https://www.sif.admin.ch/dam/de/sd-web/Rq53YeWNalWg/DBA-Liste%20DE-per%2001.01.2026.pdf",
+    "stand": "1.1.2026"
+   },
+   "rs217": {
+    "pkRenteQuellensteuer": "ja",
+    "pkKapitalRueckforderbar": "nein",
+    "s3aRenteQuellensteuer": "ja",
+    "s3aKapitalRueckforderbar": "nein",
+    "fussnote": null,
+    "quelle": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+    "stand": "1.1.2026",
+    "art": "Art. 96 DBG (privatrechtliche Vorsorge)"
+   },
+   "ahv": {
+    "chQuellensteuer": "nein",
+    "text": "Keine Schweizer Steuer auf AHV-Renten an Personen im Ausland (keine gesetzliche Grundlage in DBG/StHG), unabhängig vom DBA",
+    "quelle": "https://www.estv2.admin.ch/stp/ds/e-besteuerung-an-der-quelle-de.pdf",
+    "status": "verifiziert"
+   },
+   "pkKapital": {
+    "ch": "Quellensteuer definitiv (nicht rückforderbar)",
+    "wohnsitzstaat": "keine Einkommenssteuer für Privatpersonen",
+    "status": "verifiziert_ch",
+    "quelle": "PwC UAE (sekundär, 9.9.2026)"
+   },
+   "pkRente": {
+    "ch": "Quellensteuer (definitiv)",
+    "wohnsitzstaat": "keine Einkommenssteuer",
+    "status": "verifiziert_ch"
+   },
+   "s3aKapital": {
+    "ch": "Quellensteuer definitiv",
+    "wohnsitzstaat": "keine Einkommenssteuer",
+    "status": "verifiziert_ch"
+   },
+   "lokalesRegime": {
+    "text": "Keine persönliche Einkommenssteuer",
+    "quelle": "https://taxsummaries.pwc.com/united-arab-emirates/individual/taxes-on-personal-income",
+    "quelleTyp": "sekundaer",
+    "stand": "9.9.2026"
+   },
+   "art25fFZG": false,
+   "status": "naeherung"
+  },
+  {
+   "code": "CY",
+   "name": "Zypern",
+   "eu": true,
+   "dba": {
+    "besteht": true,
+    "abkommen": "25.7.2014",
+    "sr": "0.672.925.81",
+    "protokoll": "20.7.2020, in Kraft 3.11.2021, anwendbar ab 1.1.2022",
+    "quelle": "https://www.sif.admin.ch/dam/de/sd-web/Rq53YeWNalWg/DBA-Liste%20DE-per%2001.01.2026.pdf",
+    "stand": "1.1.2026"
+   },
+   "rs217": {
+    "pkRenteQuellensteuer": "ja (Fn. 3)",
+    "pkKapitalRueckforderbar": "ja (Fn. 3: nur mit Besteuerungsnachweis in Zypern)",
+    "s3aRenteQuellensteuer": "nein",
+    "s3aKapitalRueckforderbar": "ja",
+    "fussnote": "Fn. 3: Rückerstattung nur bei Nachweis der Besteuerung im Wohnsitzstaat",
+    "quelle": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+    "stand": "1.1.2026",
+    "art": "Art. 96 DBG (privatrechtliche Vorsorge)"
+   },
+   "ahv": {
+    "chQuellensteuer": "nein",
+    "text": "Keine Schweizer Steuer auf AHV-Renten an Personen im Ausland (keine gesetzliche Grundlage in DBG/StHG), unabhängig vom DBA",
+    "quelle": "https://www.estv2.admin.ch/stp/ds/e-besteuerung-an-der-quelle-de.pdf",
+    "status": "verifiziert"
+   },
+   "pkKapital": {
+    "ch": "Quellensteuer nur rückforderbar bei Nachweis der Besteuerung in Zypern",
+    "wohnsitzstaat": "Pauschalen aus Vorsorge in Zypern grundsätzlich steuerfrei (sekundär) → kein Besteuerungsnachweis → CH-Quellensteuer bleibt (Falle)",
+    "status": "naeherung",
+    "quelle": "PwC Cyprus (sekundär)"
+   },
+   "pkRente": {
+    "ch": "Quellensteuer; Rückforderung nur mit Besteuerungsnachweis",
+    "wohnsitzstaat": "Auslandsrente wahlweise 5% über 5000 EUR (ab 2026; bis 2025: 3420 EUR) oder ordentlicher Tarif, jährlich wählbar",
+    "status": "naeherung",
+    "quelle": "https://www.mof.gov.cy/mof/tax/taxdep.nsf/all/DD21C0CB47E54513C2258710003A1367/$file/Foreign%20Pension.pdf ; PwC (sekundär) für 5000 EUR"
+   },
+   "s3aKapital": {
+    "ch": "Quellensteuer rückforderbar",
+    "wohnsitzstaat": "OFFEN",
+    "status": "verifiziert_ch"
+   },
+   "lokalesRegime": {
+    "text": "Foreign-Pension-Option 5% über Freibetrag",
+    "quelle": "Cyprus Tax Department (Formular) / PwC",
+    "quelleTyp": "amtlich/sekundaer",
+    "stand": "2026"
+   },
+   "art25fFZG": true,
+   "status": "naeherung"
+  },
+  {
+   "code": "MT",
+   "name": "Malta",
+   "eu": true,
+   "dba": {
+    "besteht": true,
+    "abkommen": "25.2.2011",
+    "sr": "0.672.954.51",
+    "protokoll": "16.7.2020, in Kraft 3.11.2021, anwendbar ab 1.1.2022",
+    "quelle": "https://www.sif.admin.ch/dam/de/sd-web/Rq53YeWNalWg/DBA-Liste%20DE-per%2001.01.2026.pdf",
+    "stand": "1.1.2026"
+   },
+   "rs217": {
+    "pkRenteQuellensteuer": "nein",
+    "pkKapitalRueckforderbar": "ja",
+    "s3aRenteQuellensteuer": "nein",
+    "s3aKapitalRueckforderbar": "ja",
+    "fussnote": null,
+    "quelle": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+    "stand": "1.1.2026",
+    "art": "Art. 96 DBG (privatrechtliche Vorsorge)"
+   },
+   "ahv": {
+    "chQuellensteuer": "nein",
+    "text": "Keine Schweizer Steuer auf AHV-Renten an Personen im Ausland (keine gesetzliche Grundlage in DBG/StHG), unabhängig vom DBA",
+    "quelle": "https://www.estv2.admin.ch/stp/ds/e-besteuerung-an-der-quelle-de.pdf",
+    "status": "verifiziert"
+   },
+   "pkKapital": {
+    "ch": "Quellensteuer rückforderbar",
+    "wohnsitzstaat": "OFFEN (Pauschalen zählen im Retirement Programme nicht als Rente)",
+    "status": "offen"
+   },
+   "pkRente": {
+    "ch": "keine Quellensteuer",
+    "wohnsitzstaat": "Retirement Programme: 15% auf nach Malta überwiesenes Auslandseinkommen, mind. 7500 EUR + 500 EUR je Angehörigen; Rente muss ganz nach Malta fliessen und mind. 75% des steuerbaren Einkommens ausmachen; sonst Remittance-Basis für Non-Doms",
+    "status": "naeherung",
+    "quelle": "LN 317/2012; KPMG/BDO (sekundär)"
+   },
+   "s3aKapital": {
+    "ch": "Quellensteuer rückforderbar",
+    "wohnsitzstaat": "OFFEN",
+    "status": "verifiziert_ch"
+   },
+   "lokalesRegime": {
+    "text": "Retirement Programme 15% / Non-Dom Remittance Basis",
+    "quelle": "KPMG/BDO Malta",
+    "quelleTyp": "sekundaer",
+    "stand": "2026"
+   },
+   "art25fFZG": true,
+   "status": "naeherung"
+  },
+  {
+   "code": "PT",
+   "name": "Portugal",
+   "eu": true,
+   "dba": {
+    "besteht": true,
+    "abkommen": "26.9.1974",
+    "sr": "0.672.965.41",
+    "protokoll": "25.6.2012",
+    "quelle": "https://www.sif.admin.ch/dam/de/sd-web/Rq53YeWNalWg/DBA-Liste%20DE-per%2001.01.2026.pdf",
+    "stand": "1.1.2026"
+   },
+   "rs217": {
+    "pkRenteQuellensteuer": "nein",
+    "pkKapitalRueckforderbar": "ja",
+    "s3aRenteQuellensteuer": "nein",
+    "s3aKapitalRueckforderbar": "ja",
+    "fussnote": null,
+    "quelle": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+    "stand": "1.1.2026",
+    "art": "Art. 96 DBG (privatrechtliche Vorsorge)"
+   },
+   "ahv": {
+    "chQuellensteuer": "nein",
+    "text": "Keine Schweizer Steuer auf AHV-Renten an Personen im Ausland (keine gesetzliche Grundlage in DBG/StHG), unabhängig vom DBA",
+    "quelle": "https://www.estv2.admin.ch/stp/ds/e-besteuerung-an-der-quelle-de.pdf",
+    "status": "verifiziert"
+   },
+   "pkKapital": {
+    "ch": "Quellensteuer rückforderbar",
+    "wohnsitzstaat": "OFFEN (Behandlung ausländischer Vorsorgepauschalen im IRS)",
+    "status": "offen"
+   },
+   "pkRente": {
+    "ch": "keine Quellensteuer",
+    "wohnsitzstaat": "IRS Kategorie H, progressiv 12,5–48% plus Solidaritätszuschlag (2026, PwC sekundär); NHR beendet (Lei 82/2023), IFICI schliesst Renten aus; Azoren −30% auf alle nationalen IRS-Sätze (DLR 15-A/2021/A Art. 47), Madeira −30% bis zur 9. Stufe",
+    "status": "naeherung",
+    "quelle": "https://diariodarepublica.pt/dr/detalhe/decreto-legislativo-regional/15-a-2021-164454929 ; PwC Portugal (sekundär)"
+   },
+   "s3aKapital": {
+    "ch": "Quellensteuer rückforderbar",
+    "wohnsitzstaat": "OFFEN",
+    "status": "verifiziert_ch"
+   },
+   "lokalesRegime": {
+    "text": "Progressiver IRS; Azoren-Reduktion 30%; Senkung der nationalen Sätze am 17.9.2026 vom Ministerrat beschlossen (Details/Inkrafttreten OFFEN)",
+    "quelle": "https://www.portugal.gov.pt ; OCC-Analyse OE 2026",
+    "quelleTyp": "amtlich/sekundaer",
+    "stand": "17.9.2026"
+   },
+   "regionen": [
+    {
+     "name": "Azoren",
+     "reduktionIRS": 0.3,
+     "gilt": "alle Stufen, seit 1.1.2022",
+     "quelle": "DLR 15-A/2021/A Art. 47 (ändert Art. 4 DLR 2/99/A)",
+     "status": "verifiziert"
+    },
+    {
+     "name": "Madeira",
+     "reduktionIRS": 0.3,
+     "gilt": "bis 9. Stufe",
+     "quelle": "OCC (sekundär)",
+     "status": "naeherung"
+    }
+   ],
+   "art25fFZG": true,
+   "status": "naeherung"
+  },
+  {
+   "code": "ES",
+   "name": "Spanien",
+   "eu": true,
+   "dba": {
+    "besteht": true,
+    "abkommen": "26.4.1966",
+    "sr": "0.672.933.21",
+    "protokoll": "2006, 2011",
+    "quelle": "https://www.sif.admin.ch/dam/de/sd-web/Rq53YeWNalWg/DBA-Liste%20DE-per%2001.01.2026.pdf",
+    "stand": "1.1.2026"
+   },
+   "rs217": {
+    "pkRenteQuellensteuer": "nein",
+    "pkKapitalRueckforderbar": "ja",
+    "s3aRenteQuellensteuer": "nein",
+    "s3aKapitalRueckforderbar": "ja",
+    "fussnote": null,
+    "quelle": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+    "stand": "1.1.2026",
+    "art": "Art. 96 DBG (privatrechtliche Vorsorge)"
+   },
+   "ahv": {
+    "chQuellensteuer": "nein",
+    "text": "Keine Schweizer Steuer auf AHV-Renten an Personen im Ausland (keine gesetzliche Grundlage in DBG/StHG), unabhängig vom DBA",
+    "quelle": "https://www.estv2.admin.ch/stp/ds/e-besteuerung-an-der-quelle-de.pdf",
+    "status": "verifiziert"
+   },
+   "pkKapital": {
+    "ch": "Quellensteuer rückforderbar",
+    "wohnsitzstaat": "OFFEN",
+    "status": "offen"
+   },
+   "pkRente": {
+    "ch": "keine Quellensteuer",
+    "wohnsitzstaat": "Welteinkommen; allgemeine Bemessungsgrundlage progressiv (Staatsskala 19–47% inkl. autonomer Anteil, je nach Autonomer Gemeinschaft)",
+    "status": "naeherung",
+    "quelle": "PwC Spain (sekundär)"
+   },
+   "s3aKapital": {
+    "ch": "Quellensteuer rückforderbar",
+    "wohnsitzstaat": "OFFEN",
+    "status": "verifiziert_ch"
+   },
+   "lokalesRegime": {
+    "text": "Welteinkommensprinzip, progressiv; Sätze je Autonomer Gemeinschaft",
+    "quelle": "https://taxsummaries.pwc.com/spain/individual/taxes-on-personal-income",
+    "quelleTyp": "sekundaer",
+    "stand": "2026"
+   },
+   "art25fFZG": true,
+   "status": "naeherung"
+  },
+  {
+   "code": "IT",
+   "name": "Italien",
+   "eu": true,
+   "dba": {
+    "besteht": true,
+    "abkommen": "9.3.1976",
+    "sr": "0.672.945.41",
+    "protokoll": "23.12.2020, in Kraft 17.7.2023, anwendbar ab 1.1.2024",
+    "quelle": "https://www.sif.admin.ch/dam/de/sd-web/Rq53YeWNalWg/DBA-Liste%20DE-per%2001.01.2026.pdf",
+    "stand": "1.1.2026"
+   },
+   "rs217": {
+    "pkRenteQuellensteuer": "nein",
+    "pkKapitalRueckforderbar": "ja (Fn. 3: nur mit Besteuerungsnachweis)",
+    "s3aRenteQuellensteuer": "nein",
+    "s3aKapitalRueckforderbar": "ja (Fn. 3)",
+    "fussnote": "Fn. 3: Rückerstattung nur bei Nachweis der Besteuerung in Italien",
+    "quelle": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+    "stand": "1.1.2026",
+    "art": "Art. 96 DBG (privatrechtliche Vorsorge)"
+   },
+   "ahv": {
+    "chQuellensteuer": "nein",
+    "text": "Keine Schweizer Steuer auf AHV-Renten an Personen im Ausland (keine gesetzliche Grundlage in DBG/StHG), unabhängig vom DBA; in Italien 5% Abgeltungssteuer auf AHV-Renten (Art. 76 L. 413/1991)",
+    "quelle": "https://www.estv2.admin.ch/stp/ds/e-besteuerung-an-der-quelle-de.pdf",
+    "status": "verifiziert"
+   },
+   "pkKapital": {
+    "ch": "Quellensteuer rückforderbar mit Nachweis der italienischen Besteuerung",
+    "wohnsitzstaat": "5% Abgeltungssteuer auf LPP-Leistungen (Rente und Kapital), Art. 76 L. 413/1991; seit 2023 auch ohne italienischen Intermediär (F24-Code 1242)",
+    "status": "naeherung",
+    "quelle": "Agenzia delle Entrate Risoluzione 3/E 2020; Risposta 125/2024"
+   },
+   "pkRente": {
+    "ch": "keine Quellensteuer",
+    "wohnsitzstaat": "5% (Art. 76 L. 413/1991) oder – bei Option Art. 24-ter TUIR – 7% auf alle Auslandseinkünfte",
+    "status": "naeherung"
+   },
+   "s3aKapital": {
+    "ch": "Quellensteuer rückforderbar mit Besteuerungsnachweis",
+    "wohnsitzstaat": "OFFEN",
+    "status": "verifiziert_ch"
+   },
+   "lokalesRegime": {
+    "text": "Art. 24-ter TUIR: 7% Ersatzsteuer auf alle Auslandseinkünfte während 10 Jahren (Zuzugsjahr + 9) bei Zuzug in Gemeinde ≤ 20000 Einwohner in Sizilien, Kalabrien, Sardinien, Kampanien, Basilikata, Abruzzen, Molise, Apulien (oder Erdbebengemeinden 2009/2016); Circolare 21/E 2020",
+    "quelle": "https://www.agenziaentrate.gov.it/portale/schede/agevolazioni/np-regime-opzionale-per-i-pensionati-esteri",
+    "quelleTyp": "amtlich",
+    "stand": "2026"
+   },
+   "art25fFZG": true,
+   "status": "naeherung"
+  },
+  {
+   "code": "BR",
+   "name": "Brasilien (Referenz)",
+   "eu": false,
+   "dba": {
+    "besteht": true,
+    "abkommen": "3.5.2018",
+    "sr": "0.672.919.81",
+    "inKraft": "16.3.2021, anwendbar ab 1.1.2022",
+    "quelle": "https://www.fedlex.admin.ch/eli/cc/2021/210/de",
+    "stand": "2026"
+   },
+   "rs217": {
+    "pkRenteQuellensteuer": "ja",
+    "pkKapitalRueckforderbar": "nein",
+    "s3aRenteQuellensteuer": "ja",
+    "s3aKapitalRueckforderbar": "nein",
+    "fussnote": null,
+    "quelle": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+    "stand": "1.1.2026",
+    "art": "Art. 96 DBG (privatrechtliche Vorsorge)"
+   },
+   "ahv": {
+    "chQuellensteuer": "nein",
+    "text": "Keine Schweizer Steuer auf AHV-Renten an Personen im Ausland (keine gesetzliche Grundlage in DBG/StHG), unabhängig vom DBA",
+    "quelle": "https://www.estv2.admin.ch/stp/ds/e-besteuerung-an-der-quelle-de.pdf",
+    "status": "verifiziert"
+   },
+   "pkKapital": {
+    "ch": "Quellensteuer definitiv (nicht rückforderbar)",
+    "wohnsitzstaat": "OFFEN",
+    "status": "verifiziert_ch"
+   },
+   "pkRente": {
+    "ch": "Quellensteuer (Art. 19 Abs. 1 DBA: auch Quellenstaat darf besteuern)",
+    "wohnsitzstaat": "progressive Tabelle, ab 2026 faktisch steuerfrei bis R$ 5000/Monat (Lei 15.270/2025) – für Ansässige; Anrechnung CH-Steuer OFFEN",
+    "status": "naeherung"
+   },
+   "s3aKapital": {
+    "ch": "Quellensteuer definitiv",
+    "wohnsitzstaat": "OFFEN",
+    "status": "verifiziert_ch"
+   },
+   "sozialversicherungsabkommen": "ja, SR 0.831.109.198.1, in Kraft 1.10.2019",
+   "art25fFZG": false,
+   "status": "naeherung"
+  }
+ ]
+}

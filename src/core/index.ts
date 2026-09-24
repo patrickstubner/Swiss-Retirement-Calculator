@@ -4,6 +4,7 @@ export * from './auslandRenten';
 export * from './bvg';
 export * from './indexierung';
 export * from './kantone';
+export * from './kantonsTarife';
 export * from './neBeitrag';
 export * from './renditen';
 export * from './simulation';

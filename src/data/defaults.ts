@@ -87,6 +87,8 @@ export function neueAuslandRente(): AuslandRente {
     wechselkursChf: 1,
     startAlter: 65,
     indexierung: { art: 'teuerung' },
+    wechselkursAenderung: 0,
+    quellensteuerSatz: 0,
     steuerbarInCh: true,
   };
 }
@@ -127,7 +129,15 @@ export function standardHaushalt(regeln: Regeln): Haushalt {
       steuerbarerErtrag: 0.015,
       neVerwaltungskosten: regeln.beitraege.nichterwerbstaetige.verwaltungskostenMax,
     },
-    steuern: { kanton: '', einkommenSatz: 0, vermoegenPromille: 0, kapitalSatz: 0 },
+    steuern: {
+      kanton: '',
+      gemeinde: '',
+      kirche: 'keine',
+      eigeneSaetze: false,
+      einkommenSatz: 0,
+      vermoegenPromille: 0,
+      kapitalSatz: 0,
+    },
     wohnsitz: { land: 'CH', wegzug: null },
   };
 }
