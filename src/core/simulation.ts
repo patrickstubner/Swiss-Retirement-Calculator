@@ -72,6 +72,22 @@ export function referenzPerson(personen: readonly Person[]): number {
   return best;
 }
 
+/** Nettowert des Wohneigentums (Verkehrswert − Hypothek), 0 ohne Wohneigentum. */
+export function wohneigentumNetto(p: Person): number {
+  const w = p.wohneigentum;
+  return w.vorhanden ? Math.max(0, w.verkehrswert) - Math.max(0, w.hypothek) : 0;
+}
+
+/**
+ * Anlagevermögen zu Beginn: Summe aller Personen aus freiem Vermögen und Nettowert des
+ * Wohneigentums. Vereinfachung (Vorgabe): Wohneigentum wird wie an der Börse angelegtes
+ * Kapital behandelt (gleiche Rendite, jederzeit verfügbar); Eigenmietwert, Unterhalt und
+ * Verkaufskosten werden nicht berücksichtigt.
+ */
+export function startvermoegen(h: Haushalt): number {
+  return h.personen.reduce((s, p) => s + Math.max(0, p.vermoegen) + wohneigentumNetto(p), 0);
+}
+
 export const geburtIndex = (p: Person): number => p.geburtsjahr * 12 + (p.geburtsmonat - 1);
 
 function planePerson(p: Person, regeln: Regeln, stoppMonate: number): PersonPlan {
@@ -170,7 +186,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
   const beitr = regeln.beitraege;
   const ne = beitr.nichterwerbstaetige;
 
-  let vermoegen = h.freiesVermoegen;
+  let vermoegen = startvermoegen(h);
   let deflator = 1;
   let ruinJahr: number | null = null;
   const zeilen: JahresZeile[] = [];
@@ -311,6 +327,9 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
             dbgKapital(k, 'alleinstehend', regeln.steuern) + kanton.kapitalleistungssteuer(k, 'alleinstehend');
       });
     }
+    // Vermögenssteuer auf dem Anlagevermögen inkl. Nettowert Wohneigentum (Verkehrswert).
+    // TODO(kantone): kantonaler Steuerwert der Liegenschaft (meist unter Verkehrswert) und
+    // Schuldenabzug gemäss Kantonsmodell, sobald tarifbasierte Kantonsdaten vorliegen.
     const steuernVermoegen =
       (kanton.vermoegenssteuer(Math.max(0, vermoegen), verheiratet ? 'verheiratet' : 'alleinstehend') * nMonate) / 12;
 

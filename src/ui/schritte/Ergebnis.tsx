@@ -31,7 +31,7 @@ export function Ergebnis({ h, berechnung, heute, suchModus, setSuchModus }: Prop
     const x = anzeige.zeilen.map((z) => z.alter[ref] ?? 0);
     const serien: Serie[] = [
       {
-        label: 'Freies Vermögen',
+        label: 'Anlagevermögen',
         werte: anzeige.zeilen.map((z) => z.vermoegen),
         farbe: '#0f4c5c',
         fuellung: 'rgba(15,76,92,0.12)',
@@ -78,7 +78,7 @@ export function Ergebnis({ h, berechnung, heute, suchModus, setSuchModus }: Prop
                   ? `Alter von ${namen[0]}; beide hören am selben Datum auf (${namen[1]}: ${fmtAlter(solver.stoppAlterMonate?.[1] ?? 0)}).`
                   : `Alter von ${namen[suchPerson]}; die andere Person hört wie eingegeben auf.`
                 : null}{' '}
-              Das freie Vermögen reicht dann bis zum Planungsalter {h.planungsalter}
+              Das Vermögen reicht dann bis zum Planungsalter {h.planungsalter}
               {h.personen.length > 1 ? ' (der jüngeren Person)' : ''}.
             </p>
           </>
@@ -98,12 +98,12 @@ export function Ergebnis({ h, berechnung, heute, suchModus, setSuchModus }: Prop
           <p>{h.personen.map((p, i) => `${namen[i]}: ${fmtAlter(Math.round(p.stoppAlter * 12))}`).join(' · ')}</p>
           {wunsch.erfolg ? (
             <p className="ok">
-              ✓ Das freie Vermögen reicht bis zum Planungsalter. Am Ende (real):{' '}
+              ✓ Das Vermögen reicht bis zum Planungsalter. Am Ende (real):{' '}
               <strong>{fmtChf(wunsch.endVermoegen)}</strong>
             </p>
           ) : (
             <p className="warnung">
-              ✗ Das freie Vermögen ist im Jahr {wunsch.ruinJahr} aufgebraucht (Alter {wunsch.ruinAlter}
+              ✗ Das Vermögen ist im Jahr {wunsch.ruinJahr} aufgebraucht (Alter {wunsch.ruinAlter}
               {h.personen.length > 1 ? ' der jüngeren Person' : ''}).
             </p>
           )}
@@ -111,7 +111,10 @@ export function Ergebnis({ h, berechnung, heute, suchModus, setSuchModus }: Prop
       ) : null}
 
       {chart && anzeige ? (
-        <Karte titel="Vermögensverlauf" untertitel="In heutigen Franken (real)">
+        <Karte
+          titel="Vermögensverlauf"
+          untertitel="In heutigen Franken (real); Anlagevermögen inkl. Nettowert Wohneigentum"
+        >
           {solver?.ergebnis ? (
             <Segmente
               label="Szenario"
@@ -127,7 +130,7 @@ export function Ergebnis({ h, berechnung, heute, suchModus, setSuchModus }: Prop
             x={chart.x}
             xLabel={h.personen.length > 1 ? `Alter ${namen[ref]}` : 'Alter'}
             serien={chart.serien}
-            beschreibung="Diagramm: freies Vermögen und Vermögen inklusive Pensionskasse und Säule 3a pro Jahr. Die Tabelle unten enthält dieselben Werte."
+            beschreibung="Diagramm: Anlagevermögen (inkl. Nettowert Wohneigentum) und Vermögen inklusive Pensionskasse und Säule 3a pro Jahr. Die Tabelle unten enthält dieselben Werte."
           />
           <JahresTabelle e={anzeige} refIdx={ref} />
         </Karte>

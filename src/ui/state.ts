@@ -75,6 +75,11 @@ export function normalisiere(roh: unknown, regeln: Regeln): Haushalt {
         ? (def.personen[0] as Person)
         : neuePerson(regeln, { name: 'Person 2', geschlecht: 'w' }),
   );
+  // Migration: früheres gemeinsames Feld `freiesVermoegen` → Vermögen von Person 1
+  const p0 = rohPersonen[0];
+  if (istObj(roh) && typeof roh.freiesVermoegen === 'number' && personen[0] && !(istObj(p0) && 'vermoegen' in p0)) {
+    personen[0] = { ...personen[0], vermoegen: Math.max(0, roh.freiesVermoegen) };
+  }
   return {
     ...h,
     zivilstand,

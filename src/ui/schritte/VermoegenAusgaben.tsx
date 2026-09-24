@@ -1,26 +1,69 @@
+import { startvermoegen, wohneigentumNetto } from '../../core/simulation';
 import { KANTON_STATUS_TEXT, KANTONE, kantonNach } from '../../data/kantone';
-import { AuswahlFeld, ZahlFeld } from '../components/Felder';
+import { AuswahlFeld, Schalter, ZahlFeld } from '../components/Felder';
 import { Karte } from '../components/Karte';
 import { fmtChf } from '../format';
-import type { SchrittProps } from '../kontext';
+import { type SchrittProps, setzePerson } from '../kontext';
+import { VEREINFACHUNG_BOERSE, VEREINFACHUNG_WOHNEIGENTUM } from '../texte';
 
 export function VermoegenAusgaben({ h, setH, regeln }: SchrittProps) {
   const ehepaar = h.zivilstand === 'verheiratet';
   const kanton = kantonNach(h.steuern.kanton);
   return (
     <>
-      <Karte titel="Freies Vermögen">
-        <ZahlFeld
-          label={ehepaar ? 'Wertschriften und Konten (gemeinsam)' : 'Wertschriften und Konten'}
-          einheit="CHF"
-          value={h.freiesVermoegen}
-          min={0}
-          max={1_000_000_000}
-          nachkomma={0}
-          onChange={(v) => setH((x) => ({ ...x, freiesVermoegen: v }))}
-          hinweis="Ohne Pensionskasse und Säule 3a (diese werden separat erfasst). Liegenschaften folgen."
-        />
-      </Karte>
+      {h.personen.map((p, i) => (
+        <Karte key={`vermoegen-${i === 0 ? 'a' : 'b'}`} titel={`Vermögen ${p.name || `Person ${i + 1}`}`}>
+          <ZahlFeld
+            label="Vermögen heute (Wertschriften, Konten)"
+            einheit="CHF"
+            value={p.vermoegen}
+            min={0}
+            max={1_000_000_000}
+            nachkomma={0}
+            onChange={(v) => setzePerson(setH, i, (x) => ({ ...x, vermoegen: v }))}
+            hinweis="Ohne Pensionskasse und Säule 3a (werden separat erfasst)."
+          />
+          <Schalter
+            label="Wohneigentum"
+            checked={p.wohneigentum.vorhanden}
+            onChange={(v) => setzePerson(setH, i, (x) => ({ ...x, wohneigentum: { ...x.wohneigentum, vorhanden: v } }))}
+          />
+          {p.wohneigentum.vorhanden ? (
+            <>
+              <div className="raster">
+                <ZahlFeld
+                  label="Verkehrswert"
+                  einheit="CHF"
+                  value={p.wohneigentum.verkehrswert}
+                  min={0}
+                  max={1_000_000_000}
+                  nachkomma={0}
+                  onChange={(v) =>
+                    setzePerson(setH, i, (x) => ({ ...x, wohneigentum: { ...x.wohneigentum, verkehrswert: v } }))
+                  }
+                />
+                <ZahlFeld
+                  label="Hypothek (optional)"
+                  einheit="CHF"
+                  value={p.wohneigentum.hypothek}
+                  min={0}
+                  max={1_000_000_000}
+                  nachkomma={0}
+                  onChange={(v) =>
+                    setzePerson(setH, i, (x) => ({ ...x, wohneigentum: { ...x.wohneigentum, hypothek: v } }))
+                  }
+                />
+              </div>
+              <p className="info">
+                Nettowert: <strong>{fmtChf(wohneigentumNetto(p))}</strong>. {VEREINFACHUNG_WOHNEIGENTUM}
+              </p>
+            </>
+          ) : null}
+        </Karte>
+      ))}
+      <p className="info">
+        Gesamtes Anlagevermögen heute: <strong>{fmtChf(startvermoegen(h))}</strong>. {VEREINFACHUNG_BOERSE}
+      </p>
       <Karte titel="Ausgaben">
         <ZahlFeld
           label="Lebenshaltungskosten pro Jahr (heute)"

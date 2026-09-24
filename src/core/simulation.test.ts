@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { neueAuslandRente, neuePerson, standardHaushalt } from '../data/defaults';
 import { ladeRegeln } from '../rules';
-import { simuliere } from './simulation';
+import { simuliere, startvermoegen, wohneigentumNetto } from './simulation';
 import { fruehestesRuecktrittsalter } from './solver';
 import type { Haushalt } from './typen';
 
@@ -17,6 +17,11 @@ function einfach(overrides: Partial<Haushalt> = {}): Haushalt {
     steuern: { ...h.steuern, einkommenSatz: 0, vermoegenPromille: 0, kapitalSatz: 0 },
     ...overrides,
   };
+}
+
+function mitVermoegen(v: number, overrides: Partial<Haushalt> = {}): Haushalt {
+  const h = einfach(overrides);
+  return { ...h, personen: h.personen.map((p, i) => (i === 0 ? { ...p, vermoegen: v } : p)) };
 }
 
 describe('simuliere – Grundlagen', () => {
@@ -40,7 +45,8 @@ describe('simuliere – Grundlagen', () => {
     p.pk.sparbeitragJahr = 0;
     p.saeule3a.guthaben = 0;
     p.saeule3a.beitragJahr = 0;
-    const h = einfach({ personen: [p], freiesVermoegen: 0 });
+    p.vermoegen = 0;
+    const h = einfach({ personen: [p] });
     const e = simuliere(h, regeln, { start });
     expect(e.erfolg).toBe(false);
     expect(e.ruinJahr).toBe(2026);
@@ -51,9 +57,9 @@ describe('simuliere – Grundlagen', () => {
     p.ahv.renteMonat = 0;
     p.pk.guthaben = 0;
     p.saeule3a.guthaben = 0;
+    p.vermoegen = 1_000_000;
     const h = einfach({
       personen: [p],
-      freiesVermoegen: 1_000_000,
       ausgaben: { lebenshaltung: 50000, faktorAb75: 1, faktorAb85: 1 },
     });
     const e = simuliere(h, regeln, { start });
@@ -129,8 +135,8 @@ describe('simuliere – Grundlagen', () => {
   });
 
   it('mehr Vermögen → nie schlechteres Endvermögen', () => {
-    const a = simuliere(einfach({ freiesVermoegen: 100000 }), regeln, { start });
-    const b = simuliere(einfach({ freiesVermoegen: 200000 }), regeln, { start });
+    const a = simuliere(mitVermoegen(100000), regeln, { start });
+    const b = simuliere(mitVermoegen(200000), regeln, { start });
     expect(b.endVermoegen).toBeGreaterThan(a.endVermoegen);
   });
 });
@@ -147,7 +153,7 @@ describe('fruehestesRuecktrittsalter', () => {
   });
 
   it('sehr grosses Vermögen → sofort möglich', () => {
-    const s = fruehestesRuecktrittsalter(einfach({ freiesVermoegen: 50_000_000 }), regeln, {
+    const s = fruehestesRuecktrittsalter(mitVermoegen(50_000_000), regeln, {
       start,
       modus: 'gemeinsam',
       person: 0,
@@ -173,5 +179,81 @@ describe('fruehestesRuecktrittsalter', () => {
     expect(s.gefunden).toBe(true);
     const [a1, a2] = s.stoppAlterMonate ?? [];
     expect((a1 ?? 0) - (a2 ?? 0)).toBe(24);
+  });
+});
+
+describe('Individuelle Personen, Vermögen und Wohneigentum', () => {
+  it('Startvermögen = Summe freies Vermögen + Wohneigentum netto beider Personen', () => {
+    const p1 = neuePerson(regeln, {
+      vermoegen: 200000,
+      wohneigentum: { vorhanden: true, verkehrswert: 1_000_000, hypothek: 600000 },
+    });
+    const p2 = neuePerson(regeln, { vermoegen: 50000 });
+    const h = einfach({ zivilstand: 'verheiratet', personen: [p1, p2] });
+    expect(wohneigentumNetto(p1)).toBe(400000);
+    expect(wohneigentumNetto(p2)).toBe(0);
+    expect(startvermoegen(h)).toBe(650000);
+  });
+
+  it('Hypothek hat Default 0; ohne Wohneigentum zählt der Verkehrswert nicht', () => {
+    const p = neuePerson(regeln);
+    expect(p.wohneigentum).toEqual({ vorhanden: false, verkehrswert: 0, hypothek: 0 });
+    const q = { ...p, wohneigentum: { vorhanden: false, verkehrswert: 900000, hypothek: 0 } };
+    expect(wohneigentumNetto(q)).toBe(0);
+    expect(wohneigentumNetto({ ...q, wohneigentum: { ...q.wohneigentum, vorhanden: true } })).toBe(900000);
+  });
+
+  it('Wohneigentum wird wie Börsenkapital verzinst (gleiche Rendite)', () => {
+    const basis = (p: ReturnType<typeof neuePerson>) => {
+      p.lohn = 0;
+      p.stoppAlter = 0;
+      p.ahv.renteMonat = 0;
+      p.pk.guthaben = 0;
+      p.saeule3a.guthaben = 0;
+      return p;
+    };
+    const annahmen = { ...einfach().annahmen, renditeNominal: 0.05, inflation: 0 };
+    const ausgaben = { lebenshaltung: 0, faktorAb75: 1, faktorAb85: 1 };
+    const mitHaus = basis(
+      neuePerson(regeln, {
+        geburtsjahr: 1990,
+        vermoegen: 0,
+        wohneigentum: { vorhanden: true, verkehrswert: 500000, hypothek: 0 },
+      }),
+    );
+    const mitDepot = basis(neuePerson(regeln, { geburtsjahr: 1990, vermoegen: 500000 }));
+    const a = simuliere(einfach({ personen: [mitHaus], annahmen, ausgaben }), regeln, { start });
+    const b = simuliere(einfach({ personen: [mitDepot], annahmen, ausgaben }), regeln, { start });
+    expect(a.zeilen[0]?.vermoegen).toBeCloseTo(b.zeilen[0]?.vermoegen ?? 0, 6);
+  });
+
+  it('Vermögenssteuer bezieht den Nettowert des Wohneigentums ein', () => {
+    const p = neuePerson(regeln, {
+      vermoegen: 0,
+      wohneigentum: { vorhanden: true, verkehrswert: 1_000_000, hypothek: 0 },
+    });
+    const h = einfach({
+      personen: [p],
+      steuern: { kanton: 'ZH', einkommenSatz: 0, vermoegenPromille: 3, kapitalSatz: 0 },
+    });
+    const e = simuliere(h, regeln, { start });
+    expect(e.zeilen[0]?.steuernVermoegen).toBeCloseTo(3000, 6);
+  });
+
+  it('Jede Person hat eigenes Geschlecht/Jahrgang → eigenes Referenzalter und eigene Vorsorge', () => {
+    const frau = neuePerson(regeln, { geburtsjahr: 1962, geburtsmonat: 3, geschlecht: 'w', lohn: 60000 });
+    frau.pk.umwandlungssatz = 0.05;
+    frau.pk.guthaben = 200000;
+    frau.pk.kapitalanteil = 0.5;
+    const mann = neuePerson(regeln, { geburtsjahr: 1964, geburtsmonat: 3, geschlecht: 'm', lohn: 120000 });
+    mann.pk.umwandlungssatz = 0.06;
+    mann.pk.guthaben = 500000;
+    mann.pk.kapitalanteil = 0;
+    const e = simuliere(einfach({ zivilstand: 'verheiratet', personen: [frau, mann] }), regeln, { start });
+    expect(e.personen[0]?.referenzalterMonate).toBe(64 * 12 + 6);
+    expect(e.personen[1]?.referenzalterMonate).toBe(65 * 12);
+    expect(e.personen[0]?.pkKapital).toBeGreaterThan(0);
+    expect(e.personen[1]?.pkKapital).toBe(0);
+    expect(e.personen[1]?.pkRenteJahr).toBeGreaterThan(e.personen[0]?.pkRenteJahr ?? 0);
   });
 });

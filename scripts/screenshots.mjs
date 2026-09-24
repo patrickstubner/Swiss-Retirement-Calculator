@@ -64,7 +64,15 @@ await page.waitForTimeout(200);
 const renten = page.locator('.karte', { hasText: 'Ausländische Renten' });
 await renten.scrollIntoViewIfNeeded();
 await renten.screenshot({ path: `${out}05-auslandrente-360.png` });
-await page.getByRole('button', { name: /Vermögen/ }).first().click();
+await page
+  .getByRole('button', { name: /Vermögen/ })
+  .first()
+  .click();
+await page.getByText('Wohneigentum', { exact: true }).first().click();
+await page.getByLabel('Verkehrswert').first().fill('900000');
+await page.getByLabel('Verkehrswert').first().blur();
+const vermoegenKarte = page.locator('.karte').first();
+await vermoegenKarte.screenshot({ path: `${out}06a-vermoegen-wohneigentum-360.png` });
 await page.getByLabel('Wohnkanton').selectOption('ZH');
 const steuerKarte = page.locator('.karte', { hasText: 'Kantons- und Gemeindesteuern' });
 await steuerKarte.scrollIntoViewIfNeeded();

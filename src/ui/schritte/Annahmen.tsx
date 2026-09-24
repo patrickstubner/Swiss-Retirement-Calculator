@@ -3,6 +3,7 @@ import { Schalter, ZahlFeld } from '../components/Felder';
 import { Karte } from '../components/Karte';
 import { fmtProzent } from '../format';
 import type { SchrittProps } from '../kontext';
+import { VEREINFACHUNG_BOERSE, VEREINFACHUNG_WOHNEIGENTUM } from '../texte';
 
 interface Props extends SchrittProps {
   speichern: boolean;
@@ -21,7 +22,7 @@ export function Annahmen({ h, setH, regeln, speichern, onSpeichern, onZurueckset
       <Karte titel="Rendite und Teuerung" untertitel="Deterministisch (konstant). Historische Szenarien folgen.">
         <div className="raster">
           <ZahlFeld
-            label="Rendite freies Vermögen (nominal)"
+            label="Rendite Börse (nominal)"
             prozent
             value={a.renditeNominal}
             min={-0.2}
@@ -46,6 +47,9 @@ export function Annahmen({ h, setH, regeln, speichern, onSpeichern, onZurueckset
           onChange={(v) => setA({ inflation: v })}
         />
         <p className="info">
+          {VEREINFACHUNG_BOERSE} {VEREINFACHUNG_WOHNEIGENTUM}
+        </p>
+        <p className="info">
           Reale Nettorendite: <strong>{fmtProzent(real, 2)}</strong> pro Jahr
         </p>
         <ZahlFeld
@@ -64,7 +68,7 @@ export function Annahmen({ h, setH, regeln, speichern, onSpeichern, onZurueckset
           min={0}
           max={0.2}
           onChange={(v) => setA({ steuerbarerErtrag: v })}
-          hinweis="Zinsen und Dividenden in % des freien Vermögens (Kapitalgewinne sind steuerfrei)."
+          hinweis="Zinsen und Dividenden in % des Anlagevermögens (Kapitalgewinne sind steuerfrei)."
         />
         <ZahlFeld
           label="Verwaltungskosten auf AHV-Beiträgen Nichterwerbstätiger"

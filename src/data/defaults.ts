@@ -43,6 +43,8 @@ export function neuePerson(regeln: Regeln, overrides: Partial<Person> = {}): Per
       bezugsAlter: null,
     },
     auslandRenten: [],
+    vermoegen: 150000,
+    wohneigentum: { vorhanden: false, verkehrswert: 0, hypothek: 0 },
     ...overrides,
   };
 }
@@ -67,9 +69,8 @@ export function neueAuslandRente(): AuslandRente {
 export function standardHaushalt(regeln: Regeln): Haushalt {
   return {
     zivilstand: 'alleinstehend',
-    personen: [neuePerson(regeln, { name: 'Person 1' })],
+    personen: [neuePerson(regeln, { name: 'Person 1', vermoegen: 300000 })],
     planungsalter: STANDARD_PLANUNGSALTER,
-    freiesVermoegen: 300000,
     ausgaben: { lebenshaltung: 70000, faktorAb75: 0.9, faktorAb85: 1.1 },
     annahmen: {
       renditeNominal: 0.035,

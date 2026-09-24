@@ -82,6 +82,15 @@ export interface Saeule3aEingabe {
   bezugsAlter: number | null;
 }
 
+/** Selbstbewohntes Wohneigentum (vereinfacht wie angelegtes Kapital behandelt). */
+export interface Wohneigentum {
+  vorhanden: boolean;
+  /** Verkehrswert heute */
+  verkehrswert: number;
+  /** Hypothek (Default 0) */
+  hypothek: number;
+}
+
 export interface Person {
   name: string;
   geburtsjahr: number;
@@ -98,6 +107,9 @@ export interface Person {
   pk: PkEingabe;
   saeule3a: Saeule3aEingabe;
   auslandRenten: AuslandRente[];
+  /** Freies Vermögen dieser Person heute (Wertschriften, Konten; ohne PK/3a) */
+  vermoegen: number;
+  wohneigentum: Wohneigentum;
 }
 
 export interface Ausgaben {
@@ -142,7 +154,6 @@ export interface Haushalt {
   personen: Person[];
   /** Planungshorizont: Alter der jüngeren Person (bis 999) */
   planungsalter: number;
-  freiesVermoegen: number;
   ausgaben: Ausgaben;
   annahmen: Annahmen;
   steuern: KantonSteuerEingabe;

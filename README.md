@@ -24,6 +24,12 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
 ## Funktionsumfang (Version 0.1)
 
 - Haushalt: Einzelperson oder Ehepaar; Planungshorizont (Lebensende) Standard **120**, frei wählbar bis 999.
+- Jede Person mit vollständig eigenen Angaben: Geburtsjahr/-monat, Geschlecht, Lohn, Rücktrittsalter, AHV, PK, 3a,
+  ausländische Renten, Vermögen und Wohneigentum (Verkehrswert, optionale Hypothek).
+- **Vereinfachung:** Das gesamte Vermögen gilt als an der Börse angelegt (Marktrendite). Wohneigentum wird wie an der
+  Börse angelegtes Kapital behandelt (Nettowert = Verkehrswert − Hypothek); Eigenmietwert, Unterhalt und
+  Verkaufskosten sind nicht berücksichtigt. Die Vermögenssteuer (effektiver Satz) umfasst den Nettowert zum
+  Verkehrswert; der kantonale Steuerwert folgt mit den Kantonsdaten.
 - AHV: Referenzalter nach Jahrgang/Geschlecht (inkl. Übergang Frauen 1961–1963), Rentenformel Skala 44 oder Eingabe
   aus der Rentenvorausberechnung, Teilrente, Vorbezug/Aufschub (Tabellen MB 3.04, reduzierte Sätze der
   Übergangsgeneration), Rentenzuschlag, Plafonierung 150% für Ehepaare, 13. AHV-Rente.
