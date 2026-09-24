@@ -12,7 +12,17 @@ import { EinkommenVorsorge } from './schritte/EinkommenVorsorge';
 import { Ergebnis, type SuchModus } from './schritte/Ergebnis';
 import { Personen } from './schritte/Personen';
 import { VermoegenAusgaben } from './schritte/VermoegenAusgaben';
-import { ausHash, ladeStartzustand, schreibeHash, setzeSpeichern, speichereLokal, speichernAktiv } from './state';
+import {
+  type AppZustand,
+  ausHash,
+  browserSpeicher,
+  entferneHash,
+  ladeStartzustand,
+  type StartQuelle,
+  setzeSpeichern,
+  speichereLokal,
+  speichernAktiv,
+} from './state';
 
 const SCHRITTE = ['Personen', 'Einkommen & Vorsorge', 'Vermögen & Ausgaben', 'Annahmen', 'Ergebnis'] as const;
 const KURZ = ['Personen', 'Vorsorge', 'Vermögen', 'Annahmen', 'Ergebnis'] as const;
@@ -45,32 +55,59 @@ export function App() {
     return { jahr: d.getFullYear(), monat: d.getMonth() + 1 };
   }, []);
   const regeln = useMemo(() => ladeRegeln(heute.jahr), [heute.jahr]);
-  const [haushalt, setHaushalt] = useState<Haushalt>(() => ladeStartzustand(regeln));
-  const [speichern, setSpeichernState] = useState<boolean>(() => speichernAktiv());
-  const [schritt, setSchritt] = useState(0);
-  const [suchModus, setSuchModus] = useState<SuchModus>('gemeinsam');
+  const speicher = useMemo(() => browserSpeicher(), []);
+  const [start] = useState(() => ladeStartzustand(regeln, window.location.hash, speicher));
+  const [haushalt, setHaushalt] = useState<Haushalt>(start.haushalt);
+  const [speichern, setSpeichernState] = useState<boolean>(() => speichernAktiv(speicher));
+  const [schritt, setSchritt] = useState(start.ui.schritt);
+  const [suchModus, setSuchModus] = useState<SuchModus>(start.ui.suchModus);
+  // Geteilter Link: erst speichern, wenn übernommen oder geändert (die eigenen Daten bleiben sonst unberührt)
+  const [linkQuelle, setLinkQuelle] = useState<{ quelle: StartQuelle; lokal: AppZustand | null } | null>(() =>
+    start.quelle === 'link' ? { quelle: 'link', lokal: start.lokal } : null,
+  );
   const hauptRef = useRef<HTMLElement>(null);
+  const ersterLauf = useRef(true);
 
-  const setH: Setzer = useCallback((fn) => setHaushalt((h) => fn(h)), []);
+  const setH: Setzer = useCallback((fn) => {
+    setHaushalt((h) => fn(h));
+    setLinkQuelle(null);
+  }, []);
 
-  // Zustand ins URL-Fragment (und optional localStorage) schreiben – entprellt
+  // Fragment nach dem Laden aus der Adresszeile entfernen (Daten nicht versehentlich weitergeben)
   useEffect(() => {
-    const t = window.setTimeout(() => {
-      schreibeHash(haushalt);
-      speichereLokal(haushalt);
-    }, 300);
-    return () => window.clearTimeout(t);
-  }, [haushalt]);
+    entferneHash();
+  }, []);
 
-  // Zurück/Vor im Browser bzw. manuell geänderter Link
+  // Ganzen Zustand im localStorage speichern (falls an) – entprellt
+  useEffect(() => {
+    const z: AppZustand = { haushalt, ui: { schritt, suchModus } };
+    if (ersterLauf.current) {
+      ersterLauf.current = false;
+      return;
+    }
+    if (!speichern || linkQuelle) return;
+    const t = window.setTimeout(() => speichereLokal(speicher, z), 300);
+    return () => window.clearTimeout(t);
+  }, [haushalt, schritt, suchModus, speichern, linkQuelle, speicher]);
+
+  // Manuell eingefügter oder geänderter Link (#s=…)
   useEffect(() => {
     const onHash = () => {
       const h = ausHash(window.location.hash, regeln);
-      if (h) setHaushalt(h);
+      if (!h) return;
+      setHaushalt(h);
+      setLinkQuelle((alt) => ({ quelle: 'link', lokal: alt?.lokal ?? null }));
+      entferneHash();
     };
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, [regeln]);
+
+  const onSpeichern = (v: boolean) => {
+    setSpeichernState(v);
+    setzeSpeichern(speicher, v, { haushalt, ui: { schritt, suchModus } });
+    if (v) setLinkQuelle(null);
+  };
 
   const modus: SuchModus = haushalt.personen.length > 1 ? suchModus : 'gemeinsam';
   const verzoegert = useDeferredValue(haushalt);
@@ -94,6 +131,28 @@ export function App() {
 
   return (
     <div className="app">
+      <section className="speicherleiste" aria-label="Speichern im Browser">
+        <div className="speicherleiste__inner">
+          <label className="speicherleiste__schalter">
+            <input
+              type="checkbox"
+              role="switch"
+              aria-checked={speichern}
+              checked={speichern}
+              disabled={speicher === null}
+              onChange={(e) => onSpeichern(e.target.checked)}
+            />
+            <span>Eingaben im Browser speichern</span>
+          </label>
+          <small className="speicherleiste__hinweis">
+            {speicher === null
+              ? 'Speichern ist in diesem Browser nicht möglich.'
+              : speichern
+                ? 'Die Daten bleiben nur in diesem Browser (localStorage) und werden nirgends hin gesendet.'
+                : 'Aus: Es ist nichts gespeichert. Beim Schliessen der Seite gehen die Eingaben verloren.'}
+          </small>
+        </div>
+      </section>
       <header className="kopf">
         <div className="kopf__inner">
           <h1>Ruhestandsrechner</h1>
@@ -101,6 +160,37 @@ export function App() {
         </div>
       </header>
       <div className="inhalt">
+        {linkQuelle ? (
+          <div className="info link-banner" role="status">
+            <p>
+              <strong>Eingaben aus einem geteilten Link geladen.</strong>{' '}
+              {speichern
+                ? 'Ihre im Browser gespeicherten Eingaben bleiben unverändert, bis Sie übernehmen oder etwas ändern.'
+                : ''}
+            </p>
+            <div className="link-banner__knoepfe">
+              <button type="button" className="knopf" onClick={() => setLinkQuelle(null)}>
+                Übernehmen
+              </button>
+              {linkQuelle.lokal ? (
+                <button
+                  type="button"
+                  className="knopf knopf--sekundaer"
+                  onClick={() => {
+                    const l = linkQuelle.lokal;
+                    if (!l) return;
+                    setHaushalt(l.haushalt);
+                    setSchritt(l.ui.schritt);
+                    setSuchModus(l.ui.suchModus);
+                    setLinkQuelle(null);
+                  }}
+                >
+                  Meine gespeicherten Eingaben laden
+                </button>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
         <DisclaimerBanner />
         <nav className="stepper" aria-label="Schritte">
           <ol>
@@ -127,14 +217,10 @@ export function App() {
           {schritt === 3 ? (
             <Annahmen
               {...props}
-              speichern={speichern}
-              onSpeichern={(v) => {
-                setSpeichernState(v);
-                setzeSpeichern(v, haushalt);
-              }}
               onZuruecksetzen={() => {
                 if (window.confirm('Alle Eingaben auf die Standardwerte zurücksetzen?')) {
                   setHaushalt(standardHaushalt(regeln));
+                  setLinkQuelle(null);
                   geheZu(0);
                 }
               }}
@@ -145,7 +231,7 @@ export function App() {
         <footer className="fuss">
           <p>
             Nicht-kommerzielles Projekt · Open Source (MIT) · Regelwerte Stand {regeln.meta.stand} · Keine Cookies, kein
-            Tracking, keine Datenübermittlung.
+            Tracking, keine Datenübermittlung. Gespeichert wird nur lokal im Browser (abschaltbar ganz oben).
           </p>
         </footer>
       </div>

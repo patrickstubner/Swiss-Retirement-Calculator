@@ -3,7 +3,7 @@ import { AHV_LINKS, ahvSchaetzung } from '../../core/ahvSchaetzung';
 import type { AhvSchaetzhilfeEingabe, Person } from '../../core/typen';
 import type { Regeln } from '../../rules';
 import { fmtChf } from '../format';
-import { Schalter, Segmente, ZahlFeld } from './Felder';
+import { BetragFeld, Schalter, Segmente, ZahlFeld } from './Felder';
 
 interface Props {
   p: Person;
@@ -106,13 +106,11 @@ export function AhvSchaetzhilfe({ p, partner, verheiratet, regeln, set }: Props)
               hinweis={`Inklusive künftiger Jahre. Volle Beitragsdauer Ihres Jahrgangs: ${res.vollDauer} Jahre.`}
             />
           )}
-          <ZahlFeld
+          <BetragFeld
             label="Durchschnittliches AHV-Jahreseinkommen (heutige CHF)"
-            einheit="CHF"
             value={e.einkommen}
             min={0}
             max={10_000_000}
-            nachkomma={0}
             onChange={(v) => setE((x) => ({ ...x, einkommen: v }))}
             hinweis="Massgebendes Einkommen: Durchschnitt über alle Beitragsjahre (nicht nur der heutige Lohn)."
           />
@@ -129,13 +127,11 @@ export function AhvSchaetzhilfe({ p, partner, verheiratet, regeln, set }: Props)
               hinweis="Für das Einkommenssplitting (50/50)."
             />
             {e.ehejahre > 0 ? (
-              <ZahlFeld
+              <BetragFeld
                 label="Ø Einkommen Ehepartner/in in den Ehejahren"
-                einheit="CHF"
                 value={e.einkommenEhepartner}
                 min={0}
                 max={10_000_000}
-                nachkomma={0}
                 onChange={(v) => setE((x) => ({ ...x, einkommenEhepartner: v }))}
                 hinweis={
                   verheiratet && partner

@@ -2,6 +2,8 @@
 import type { Regeln } from '../rules';
 
 type NeRegeln = Regeln['beitraege']['nichterwerbstaetige'];
+/** Beitragstabelle (gleicher Aufbau für obligatorische und freiwillige Versicherung). */
+export type BeitragsTabelle = NeRegeln['tabelle'];
 
 /** Bemessungsgrundlage: Vermögen + 20 × Renteneinkommen; Verheiratete je die Hälfte. */
 export function neBemessung(vermoegen: number, renteneinkommenJahr: number, verheiratet: boolean, r: NeRegeln): number {
@@ -11,7 +13,14 @@ export function neBemessung(vermoegen: number, renteneinkommenJahr: number, verh
 
 /** Jahresbeitrag gemäss Tabelle 2026 (ohne Verwaltungskosten). */
 export function neBeitragTabelle(bemessung: number, r: NeRegeln): number {
-  const t = r.tabelle;
+  return beitragAusTabelle(bemessung, r.tabelle);
+}
+
+/**
+ * Jahresbeitrag aus einer Beitragstabelle: Bemessung auf die nächsttiefere Stufe
+ * abgerundet (Art. 28 Abs. 3 AHVV), ohne Verwaltungskosten.
+ */
+export function beitragAusTabelle(bemessung: number, t: BeitragsTabelle): number {
   if (bemessung < t.untergrenze) return t.minimalbeitrag;
   if (bemessung < t.grenzeStufe2) {
     const n = Math.floor((bemessung - t.untergrenze) / t.schritt);

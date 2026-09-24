@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { referenzPerson, startvermoegen } from '../../core/simulation';
 import type { Haushalt, SimulationsErgebnis, Toepfe } from '../../core/typen';
+import { stoppAlterMonate } from '../../core/zeitpunkt';
+import { wegzugsLand } from '../../data/laender';
 import { regelEintraege } from '../../rules';
 import { LinienChart, type Serie } from '../components/Chart';
 import { DisclaimerVoll } from '../components/Disclaimer';
@@ -137,7 +139,7 @@ export function Ergebnis({ h, berechnung, heute, suchModus, setSuchModus }: Prop
 
       {wunsch ? (
         <Karte titel="Mit Ihrem Wunsch-Rücktrittsalter">
-          <p>{h.personen.map((p, i) => `${namen[i]}: ${fmtAlter(Math.round(p.stoppAlter * 12))}`).join(' · ')}</p>
+          <p>{h.personen.map((p, i) => `${namen[i]}: ${fmtAlter(stoppAlterMonate(p))}`).join(' · ')}</p>
           {wunsch.erfolg ? (
             <p className="ok">
               ✓ Das Geld reicht jederzeit bis zum Planungsalter. Am Ende (real):{' '}
@@ -216,6 +218,37 @@ export function Ergebnis({ h, berechnung, heute, suchModus, setSuchModus }: Prop
                 <dd>
                   {fmtMonat(info.freizuegigkeitStart)}: {fmtChf(info.freizuegigkeitKapital)}
                 </dd>
+                {summe(info.neBeitraegeJahre) > 0 ? (
+                  <>
+                    <dt>AHV-Beiträge als Nichterwerbstätige(r)</dt>
+                    <dd>{fmtChf(summe(info.neBeitraegeJahre))} total</dd>
+                  </>
+                ) : null}
+                {info.wegzug ? (
+                  <>
+                    <dt>Wohnsitz im Ausland</dt>
+                    <dd>
+                      ab {fmtMonat(info.wegzug)}
+                      {wegzugsLand(h.personen[i]?.wohnsitzAusland.land ?? '')
+                        ? ` (${wegzugsLand(h.personen[i]?.wohnsitzAusland.land ?? '')?.name})`
+                        : ''}
+                    </dd>
+                    <dt>Freiwillige AHV</dt>
+                    <dd>
+                      {info.freiwilligeAhvAktiv
+                        ? `${fmtChf(summe(info.freiwilligeAhvJahre))} total bis zum Referenzalter`
+                        : 'nein'}
+                    </dd>
+                    {info.ahvLueckenAusland > 0 ? (
+                      <>
+                        <dt>AHV-Beitragslücken</dt>
+                        <dd>
+                          {info.ahvLueckenAusland} Jahre (Rente × {info.ahvLueckenFaktor.toFixed(3)})
+                        </dd>
+                      </>
+                    ) : null}
+                  </>
+                ) : null}
               </dl>
               {h.zivilstand === 'verheiratet' ? (
                 <p className="klein">
@@ -253,6 +286,8 @@ export function Ergebnis({ h, berechnung, heute, suchModus, setSuchModus }: Prop
   );
 }
 
+const summe = (j: { betrag: number }[]): number => j.reduce((a, x) => a + x.betrag, 0);
+
 function JahresTabelle({ e, refIdx }: { e: SimulationsErgebnis; refIdx: number }) {
   const [offen, setOffen] = useState(false);
   return (
@@ -268,6 +303,7 @@ function JahresTabelle({ e, refIdx }: { e: SimulationsErgebnis; refIdx: number }
                 <th>Einnahmen</th>
                 <th>Steuern</th>
                 <th>Ausgaben</th>
+                <th>davon AHV-Beiträge</th>
                 <th>Verfügbar</th>
                 <th>Gesperrt</th>
                 <th>Total</th>
@@ -291,7 +327,10 @@ function JahresTabelle({ e, refIdx }: { e: SimulationsErgebnis; refIdx: number }
                     )}
                   </td>
                   <td>{fmtChf(z.steuernEinkommen + z.steuernKapital + z.steuernVermoegen)}</td>
-                  <td>{fmtChf(z.ausgaben + z.neBeitraege + z.sozialabgaben - Math.min(0, z.einmalig))}</td>
+                  <td>
+                    {fmtChf(z.ausgaben + z.neBeitraege + z.freiwilligeAhv + z.sozialabgaben - Math.min(0, z.einmalig))}
+                  </td>
+                  <td>{z.neBeitraege + z.freiwilligeAhv > 0 ? fmtChf(z.neBeitraege + z.freiwilligeAhv) : '–'}</td>
                   <td>{fmtChf(z.verfuegbar - z.fehlbetrag)}</td>
                   <td>{fmtChf(z.gebunden)}</td>
                   <td>{fmtChf(z.total)}</td>

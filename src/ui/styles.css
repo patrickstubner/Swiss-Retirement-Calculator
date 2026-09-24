@@ -49,6 +49,48 @@ h3 {
   font-size: 1rem;
 }
 
+/* Speicherleiste (ganz oben) */
+.speicherleiste {
+  background: #0b2a4a;
+  color: #fff;
+  padding: 8px var(--abstand);
+}
+.speicherleiste__inner {
+  max-width: 760px;
+  margin: 0 auto;
+}
+.speicherleiste__schalter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  min-height: var(--touch);
+  cursor: pointer;
+}
+.speicherleiste__schalter input {
+  width: 26px;
+  height: 26px;
+  margin: 0;
+  flex: none;
+  accent-color: #7cc4ff;
+}
+.speicherleiste__hinweis {
+  display: block;
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+.link-banner p {
+  margin: 0 0 8px;
+}
+.link-banner__knoepfe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.link-banner__knoepfe .knopf {
+  flex: 1 1 140px;
+}
+
 /* Kopf */
 .kopf {
   background: var(--farbe-primaer);
@@ -608,4 +650,51 @@ tr.negativ td {
 }
 .unterkarte--ausgabe {
   border-left: 4px solid #e36414;
+}
+
+/* Wohnsitz im Ausland (Personen-Karte) */
+.wegzug {
+  border-top: 1px solid var(--farbe-rand);
+  margin-top: 8px;
+  padding-top: 4px;
+}
+.liste {
+  margin: 4px 0 8px;
+  padding-left: 1.2em;
+}
+.liste li + li {
+  margin-top: 4px;
+}
+.warnung p,
+.info p {
+  margin: 0 0 6px;
+}
+
+/* Schreibgeschützter Wert (z.B. frühester AHV-Bezug) */
+.feld--nurlesen {
+  background: var(--farbe-primaer-hell);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 14px;
+}
+.feld__titel {
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: block;
+}
+.feld__wert {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--farbe-primaer);
+}
+.eingabe__vorzeichen {
+  min-width: var(--touch);
+  border: 1px solid var(--farbe-rand);
+  border-left: 0;
+  background: #fff;
+  color: var(--farbe-primaer);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
 }

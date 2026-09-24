@@ -1,4 +1,5 @@
 # Build, Test und Deployment auf GitHub Pages
+# Pull Requests: nur Lint, Typecheck, Tests und Build (kein Deployment).
 # Einmalig im Repo einstellen: Settings → Pages → Source: «GitHub Actions».
 name: Deploy GitHub Pages
 
@@ -14,8 +15,9 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  # PR-Läufe blockieren das Pages-Deployment von main nicht; neue Pushes auf einen PR brechen alte Läufe ab
+  group: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'pages' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:

@@ -98,6 +98,17 @@ export function istUebergangsFrau(geburtsjahr: number, geschlecht: Geschlecht, r
   return geschlecht === 'w' && geburtsjahr >= v.uebergangJahrgangVon && geburtsjahr <= v.uebergangJahrgangBis;
 }
 
+/**
+ * Frühestes AHV-Bezugsalter (Vorbezug) in Jahren, abgeleitet aus Jahrgang und Geschlecht:
+ * 63, Frauen der Übergangsgeneration (Jg. 1961–1969) 62 (MB 3.04). Keine Eingabe –
+ * gilt nur für die AHV, nicht für die Pensionskasse.
+ */
+export function ahvFruehestesBezugsalter(geburtsjahr: number, geschlecht: Geschlecht, r: AhvRegeln): number {
+  return istUebergangsFrau(geburtsjahr, geschlecht, r)
+    ? r.vorbezug.fruehestesAlterUebergangFrauen
+    : r.vorbezug.fruehestesAlter;
+}
+
 /** Maximal zulässiger Vorbezug in Monaten (ab 63, Frauen Jg. 1961–1969 ab 62). */
 export function ahvMaxVorbezugMonate(geburtsjahr: number, geschlecht: Geschlecht, r: AhvRegeln): number {
   const ra = inMonaten(ahvReferenzalter(geburtsjahr, geschlecht, r));

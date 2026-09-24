@@ -31,6 +31,9 @@ export const VEREINFACHUNGEN: readonly string[] = [
   'PK- und Rentenzuschlag nominal fix (verlieren real an Wert). PK-Bezug bei Erwerbsaufgabe, frühestens gemäss Reglement.',
   'Ausländische Renten: Wechselkurs mit optionaler realer Auf-/Abwertung pro Jahr; Quellensteuer im Ausland als Satz, ohne Anrechnung in der Schweiz.',
   'Vermögenssteuer auf dem Anlagevermögen inkl. Nettowert Wohneigentum zum Verkehrswert (kantonaler Steuerwert folgt).',
-  'Kein Wegzug ins Ausland und keine PK-Einkäufe (folgen). Einmalereignisse und wiederkehrende Posten in heutigen Franken.',
+  'Wegzug ins Ausland: bildet nur die AHV ab (Ende der NE-Beiträge bzw. freiwillige AHV und Beitragslücken). Steuern und Sozialversicherung im Ausland, PK-Barauszahlung und Quellensteuer auf Vorsorgekapital sind nicht abgebildet; Schweizer Steuern werden weiter gerechnet.',
+  'AHV-Beitragslücken durch Auslandwohnsitz: Rente vereinfacht linear gekürzt (fehlende Jahre / Beitragsjahre), ohne Einfluss auf das massgebende durchschnittliche Jahreseinkommen.',
+  'AHV-Beiträge als Nichterwerbstätige (in der Schweiz und freiwillige AHV): Vermögen am 31.12. (ohne noch gesperrte PK/FZ/3a, bezogene Kapitalien ab dem Bezugsjahr) + 20× Renteneinkommen inkl. AHV und PK; Ehepaare je hälftig. Tabellengrenzen real konstant. Vergleich mit Erwerbsbeiträgen bei Teilzeit nicht abgebildet.',
+  'Keine PK-Einkäufe (folgen). Einmalereignisse und wiederkehrende Posten in heutigen Franken.',
   'Das Planungsalter gilt für die jüngere Person; beide Personen werden als lebend bis zum Planungshorizont angenommen.',
 ];

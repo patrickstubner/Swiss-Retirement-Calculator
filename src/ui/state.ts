@@ -1,10 +1,14 @@
 /**
- * Zustand im URL-Fragment (#s=…, lz-string-komprimiert, versioniert) und optional im
- * localStorage (nur nach Opt-in). Das Fragment wird nie an einen Server gesendet.
+ * App-Zustand:
+ * - localStorage (Standard: an): der ganze Zustand als EIN JSON-Objekt unter `STORAGE_KEY`
+ *   mit Schema-Version. Beim Ausschalten werden dieser und alle früheren Schlüssel sofort
+ *   gelöscht; übrig bleibt nur das Merkmal «aus» (`AUS_KEY`, ohne Finanzdaten).
+ * - Teilen per Link: Zustand im URL-Fragment (#s=…, lz-string-komprimiert). Das Fragment wird
+ *   nie an einen Server gesendet. Ein geteilter Link hat Vorrang vor dem localStorage.
  */
 import LZString from 'lz-string';
 import { ahvRenteSkala44, ahvTeilrente } from '../core/ahv';
-import type { AuslandRente, Haushalt, Indexierung, Person, PostenArt } from '../core/typen';
+import type { AuslandRente, Haushalt, Indexierung, Monat, Person, PostenArt } from '../core/typen';
 import {
   MAX_PLANUNGSALTER,
   neueAuslandRente,
@@ -13,12 +17,19 @@ import {
   neuesEreignis,
   standardHaushalt,
 } from '../data/defaults';
+import { wegzugsLand } from '../data/laender';
 import type { Regeln } from '../rules';
 
 export const SCHEMA_VERSION = 1;
 const HASH_PREFIX = '#s=';
-const STORAGE_KEY = 'ruhestandsrechner:zustand';
-const OPTIN_KEY = 'ruhestandsrechner:speichern';
+/** Einziger Schlüssel mit Daten (ganzer Zustand als JSON). */
+export const STORAGE_KEY = 'ruhestandsrechner:v1';
+/** Merkmal «Speichern ausgeschaltet» (enthält keine Finanzdaten). */
+export const AUS_KEY = 'ruhestandsrechner:speichern-aus';
+/** Schlüssel früherer Versionen (Opt-in-Speicherung), werden migriert bzw. gelöscht. */
+export const ALTE_KEYS = ['ruhestandsrechner:zustand', 'ruhestandsrechner:speichern'] as const;
+/** Version des gespeicherten JSON-Objekts. */
+export const SPEICHER_VERSION = 1;
 
 interface Gespeichert {
   v: number;
@@ -56,13 +67,27 @@ function auslandRente(roh: unknown): AuslandRente {
   return { ...r, indexierung: indexierung(istObj(roh) ? roh.indexierung : undefined) };
 }
 
+function monat(m: Monat): Monat {
+  return { jahr: Math.round(m.jahr), monat: Math.min(12, Math.max(1, Math.round(m.monat))) };
+}
+
 function person(roh: unknown, regeln: Regeln, i: number): Person {
   const p = mische(neuePerson(regeln, { name: `Person ${i + 1}` }), roh);
   const renten = istObj(roh) && Array.isArray(roh.auslandRenten) ? roh.auslandRenten : [];
+  const w = p.wohnsitzAusland;
   return {
     ...p,
     geschlecht: p.geschlecht === 'w' ? 'w' : 'm',
     geburtsmonat: Math.min(12, Math.max(1, Math.round(p.geburtsmonat))),
+    stoppModus: p.stoppModus === 'datum' ? 'datum' : 'alter',
+    stoppDatum: monat(p.stoppDatum),
+    wohnsitzAusland: {
+      ...w,
+      modus: w.modus === 'datum' ? 'datum' : 'alter',
+      datum: monat(w.datum),
+      land: wegzugsLand(w.land) ? w.land : '',
+      nationalitaet: w.nationalitaet === 'EU' || w.nationalitaet === 'andere' ? w.nationalitaet : 'CH',
+    },
     // Frühere Modi (Skala-44-Schätzung, BVG-Minimum) werden in direkte Eingaben überführt.
     ahv: {
       ...p.ahv,
@@ -164,12 +189,53 @@ export function ausHash(hash: string, regeln: Regeln): Haushalt | null {
   return hash.startsWith(HASH_PREFIX) ? dekodiere(hash.slice(HASH_PREFIX.length), regeln) : null;
 }
 
-export function schreibeHash(h: Haushalt): void {
-  const neu = `${HASH_PREFIX}${kodiere(h)}`;
-  if (window.location.hash !== neu) window.history.replaceState(null, '', neu);
+/** Link zum Teilen: aktuelle Adresse ohne Fragment + #s=… */
+export function teilenLink(h: Haushalt, basis: string): string {
+  return `${basis.split('#')[0]}${HASH_PREFIX}${kodiere(h)}`;
 }
 
-function storage(): Storage | null {
+/** Entfernt das Fragment aus der Adresszeile (nach dem Laden eines geteilten Links). */
+export function entferneHash(): void {
+  if (window.location.hash) window.history.replaceState(null, '', window.location.pathname + window.location.search);
+}
+
+// ---------------------------------------------------------------------------------------
+// localStorage
+
+export type SuchModusZustand = 'gemeinsam' | 'p0' | 'p1';
+
+/** Oberflächenzustand, der zusammen mit dem Haushalt gespeichert wird. */
+export interface UiZustand {
+  schritt: number;
+  suchModus: SuchModusZustand;
+}
+
+export interface AppZustand {
+  haushalt: Haushalt;
+  ui: UiZustand;
+}
+
+/** Aufbau des gespeicherten JSON-Objekts. */
+interface SpeicherObjekt {
+  app: 'ruhestandsrechner';
+  version: number;
+  /** Version des Haushalt-Schemas (wie im URL-Fragment) */
+  schema: number;
+  gespeichertAm: string;
+  haushalt: Haushalt;
+  ui: UiZustand;
+}
+
+export const STANDARD_UI: UiZustand = { schritt: 0, suchModus: 'gemeinsam' };
+
+function ui(roh: unknown): UiZustand {
+  if (!istObj(roh)) return STANDARD_UI;
+  const schritt = typeof roh.schritt === 'number' && Number.isFinite(roh.schritt) ? Math.round(roh.schritt) : 0;
+  const suchModus = roh.suchModus === 'p0' || roh.suchModus === 'p1' ? roh.suchModus : 'gemeinsam';
+  return { schritt: Math.min(4, Math.max(0, schritt)), suchModus };
+}
+
+export function browserSpeicher(): Storage | null {
   try {
     return window.localStorage;
   } catch {
@@ -177,32 +243,89 @@ function storage(): Storage | null {
   }
 }
 
-export const speichernAktiv = (): boolean => storage()?.getItem(OPTIN_KEY) === '1';
+/** Speichern ist standardmässig an; aus nur, wenn das Merkmal «aus» gesetzt ist. */
+export const speichernAktiv = (s: Storage | null): boolean => s !== null && s.getItem(AUS_KEY) !== '1';
 
-export function setzeSpeichern(aktiv: boolean, h: Haushalt): void {
-  const s = storage();
+/** Löscht alle gespeicherten Daten (aktueller und frühere Schlüssel). */
+export function loescheLokal(s: Storage | null): void {
+  if (!s) return;
+  for (const k of [STORAGE_KEY, ...ALTE_KEYS]) s.removeItem(k);
+}
+
+export function speichereLokal(s: Storage | null, z: AppZustand): void {
+  if (!s || !speichernAktiv(s)) return;
+  const obj: SpeicherObjekt = {
+    app: 'ruhestandsrechner',
+    version: SPEICHER_VERSION,
+    schema: SCHEMA_VERSION,
+    gespeichertAm: new Date().toISOString(),
+    haushalt: z.haushalt,
+    ui: z.ui,
+  };
+  try {
+    s.setItem(STORAGE_KEY, JSON.stringify(obj));
+  } catch {
+    // Speicher voll oder gesperrt: ignorieren (die App funktioniert auch ohne)
+  }
+}
+
+/**
+ * Liest den gespeicherten Zustand. Migriert einmalig die frühere Opt-in-Speicherung
+ * (lz-komprimiert unter `ruhestandsrechner:zustand`) und löscht die alten Schlüssel.
+ */
+export function ladeLokal(s: Storage | null, regeln: Regeln): AppZustand | null {
+  if (!s || !speichernAktiv(s)) return null;
+  const roh = s.getItem(STORAGE_KEY);
+  if (roh) {
+    try {
+      const obj: unknown = JSON.parse(roh);
+      if (istObj(obj) && typeof obj.version === 'number' && istObj(obj.haushalt)) {
+        // Migrationen künftiger Speicher-Versionen hier einfügen.
+        return { haushalt: normalisiere(obj.haushalt, regeln), ui: ui(obj.ui) };
+      }
+    } catch {
+      // defekter Eintrag → ignorieren
+    }
+    return null;
+  }
+  const alt = s.getItem(ALTE_KEYS[0]);
+  if (alt) {
+    const h = dekodiere(alt, regeln);
+    for (const k of ALTE_KEYS) s.removeItem(k);
+    if (h) {
+      const z = { haushalt: h, ui: STANDARD_UI };
+      speichereLokal(s, z);
+      return z;
+    }
+  }
+  return null;
+}
+
+/** Schalter «Eingaben im Browser speichern». Aus: sofort alles löschen und nur das Merkmal merken. */
+export function setzeSpeichern(s: Storage | null, aktiv: boolean, z: AppZustand): void {
   if (!s) return;
   if (aktiv) {
-    s.setItem(OPTIN_KEY, '1');
-    s.setItem(STORAGE_KEY, kodiere(h));
+    s.removeItem(AUS_KEY);
+    speichereLokal(s, z);
   } else {
-    s.removeItem(OPTIN_KEY);
-    s.removeItem(STORAGE_KEY);
+    loescheLokal(s);
+    s.setItem(AUS_KEY, '1');
   }
 }
 
-export function speichereLokal(h: Haushalt): void {
-  if (speichernAktiv()) storage()?.setItem(STORAGE_KEY, kodiere(h));
+export type StartQuelle = 'link' | 'lokal' | 'standard';
+
+export interface Start extends AppZustand {
+  quelle: StartQuelle;
+  /** Beim Start aus einem Link: der im Browser gespeicherte Zustand (falls vorhanden) */
+  lokal: AppZustand | null;
 }
 
-/** Startzustand: URL-Fragment > localStorage (nur mit Opt-in) > Standardwerte. */
-export function ladeStartzustand(regeln: Regeln): Haushalt {
-  const ausUrl = ausHash(window.location.hash, regeln);
-  if (ausUrl) return ausUrl;
-  if (speichernAktiv()) {
-    const lokal = storage()?.getItem(STORAGE_KEY);
-    const h = lokal ? dekodiere(lokal, regeln) : null;
-    if (h) return h;
-  }
-  return standardHaushalt(regeln);
+/** Startzustand: geteilter Link (#s=…) > localStorage (falls an) > Standardwerte. */
+export function ladeStartzustand(regeln: Regeln, hash: string, s: Storage | null): Start {
+  const lokal = ladeLokal(s, regeln);
+  const ausUrl = ausHash(hash, regeln);
+  if (ausUrl) return { haushalt: ausUrl, ui: STANDARD_UI, quelle: 'link', lokal };
+  if (lokal) return { ...lokal, quelle: 'lokal', lokal };
+  return { haushalt: standardHaushalt(regeln), ui: STANDARD_UI, quelle: 'standard', lokal: null };
 }

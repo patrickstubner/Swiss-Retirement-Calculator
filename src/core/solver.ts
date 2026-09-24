@@ -8,6 +8,7 @@ import type { Regeln } from '../rules';
 import { monatIndex } from './ahv';
 import { geburtIndex, type SimOptionen, simuliere } from './simulation';
 import type { Haushalt, SimulationsErgebnis } from './typen';
+import { stoppAlterMonate } from './zeitpunkt';
 
 export interface SolverOptionen extends Omit<SimOptionen, 'stoppAlterMonate'> {
   /** 'gemeinsam': alle hören am selben Datum auf; 'person': nur `person` variiert */
@@ -42,7 +43,7 @@ export function fruehestesRuecktrittsalter(h: Haushalt, regeln: Regeln, opt: Sol
     h.personen.map((p, i) => {
       if (i === opt.person) return a;
       if (opt.modus === 'gemeinsam') return a + refGeb - geburtIndex(p);
-      return Math.round(p.stoppAlter * 12);
+      return stoppAlterMonate(p);
     });
   const teste = (a: number): SimulationsErgebnis => {
     simulationen++;

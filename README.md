@@ -8,9 +8,15 @@ Rechner sucht das **früheste Rücktrittsalter**, bei dem das Vermögen bis zum 
 
 **Live:** https://patrickstubner.github.io/Swiss-Retirement-Calculator/
 
-Alle Berechnungen laufen ausschliesslich im Browser. Es gibt keinen Server, keine Cookies und kein Tracking. Die
-Eingaben stehen im URL-Fragment (`#s=…`, wird nicht an den Server gesendet) und – nur nach ausdrücklicher Zustimmung –
-im `localStorage` des Geräts.
+Alle Berechnungen laufen ausschliesslich im Browser. Es gibt keinen Server, keine Cookies und kein Tracking.
+
+**Speichern:** Ganz oben in der App steht der Schalter «Eingaben im Browser speichern» (Standard: an). Ist er an, wird
+der ganze App-Zustand als ein JSON-Objekt unter dem Schlüssel `ruhestandsrechner:v1` im `localStorage` gespeichert
+(mit Versionsnummer, entprellt 300 ms) und beim nächsten Besuch wiederhergestellt. Beim Ausschalten werden dieser und
+alle früher verwendeten Schlüssel (`ruhestandsrechner:zustand`, `ruhestandsrechner:speichern`) sofort gelöscht; übrig
+bleibt nur das Merkmal `ruhestandsrechner:speichern-aus` = `1` (ohne Finanzdaten). **Teilen:** «Link erstellen» packt
+die Eingaben ins URL-Fragment (`#s=…`, wird nicht an den Server gesendet). Ein geöffneter Link hat Vorrang vor den
+gespeicherten Eingaben; diese werden erst überschrieben, wenn man den Link übernimmt oder etwas ändert.
 
 ## Wichtiger Hinweis
 
@@ -25,9 +31,23 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
 
 - **Neutrale Standardwerte:** Alle Beträge sind anfangs leer (0) und frei editierbar – keine Beispielvermögen.
   Gesetzliche Werte (z.B. BVG-Mindestzins) und vorsichtige Annahmen (Rendite, Teuerung) sind vorbelegt und anpassbar.
+- **Beträge mit Tausendertrennzeichen:** Alle Betragsfelder (CHF und Fremdwährungen) zeigen schon beim Tippen das
+  Schweizer Format mit Apostroph (1’250’000, Zeichen ’ app-weit einheitlich, auch in den Ergebnissen). Einfügen von
+  «1 250 000» oder «1,250,000» funktioniert, der Cursor bleibt an seiner Stelle. Jahre, Alter, Prozente und Anzahlen
+  werden nicht gruppiert.
 - Haushalt: Einzelperson oder Ehepaar; Planungshorizont (Lebensende) Standard **120**, frei wählbar bis 999.
-- Jede Person mit vollständig eigenen Angaben: Geburtsjahr/-monat, Geschlecht, Lohn, Rücktrittsalter, AHV, PK,
+- Jede Person mit vollständig eigenen Angaben: Geburtsjahr/-monat, Geschlecht, Lohn, Erwerbsaufgabe, AHV, PK,
   Freizügigkeit, 3a, ausländische Renten und eigene **Vermögenstöpfe**.
+- **Erwerbsaufgabe als Alter oder Datum:** Alter (Jahre + Monate) oder «per Ende» Monat + Jahr (z.B. November 2027);
+  beim Datum zeigt die App das resultierende Alter. Der gewählte Modus wird gespeichert.
+- **Frühester AHV-Bezug** wird aus Jahrgang und Geschlecht abgeleitet und nur angezeigt (Vorbezug ab 63; Frauen der
+  Jahrgänge 1961–1969 ab 62). Das früheste PK-Bezugsalter ist ein eigenes, klar beschriftetes Feld
+  («Pensionskasse: frühester Bezug laut Reglement (58–70)»).
+- **Wohnsitz im Ausland und freiwillige AHV/IV** pro Person: Wegzug ab Alter oder Datum, Land (EU/EFTA oder nicht,
+  aus `data/laender-2026.json`), Staatsangehörigkeit, Prüfung der Beitrittsvoraussetzungen (Art. 2 AHVG, VFV).
+  Mit freiwilliger AHV: Jahresbeitrag aus Vermögen am 31.12. + 20× Renteneinkommen (Tabelle 1'010–25'250 plus 5%
+  Verwaltungskosten), bis zum Referenzalter als Ausgabe; die Jahre zählen als Beitragsjahre. Ohne: keine
+  NE-Beiträge mehr, dafür Beitragslücken (AHV-Rente vereinfacht linear gekürzt).
 - **Vermögenstöpfe pro Person** mit eigener Rendite und Zugriffsregel:
   - verfügbar: Bargeld/Konten (Zins Bargeld), Wertschriften (Börsenrendite), Sonstiges (eigene Rendite),
     Wohneigentum (Nettowert = Verkehrswert − optionale Hypothek, wie Börsenkapital verzinst);
@@ -53,7 +73,10 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
   [individuellen Rentenvorausberechnung](https://www.ahv-iv.ch/de/Sozialversicherungen/Alters-und-Hinterlassenenversicherung-AHV/Rentenvorausberechnung)
   ([Formular 318.282](https://www.ahv-iv.ch/p/318.282.d)). Tests gegen alle 51 Stufen der offiziellen Rententabelle
   und die Berechnungsbeispiele im Merkblatt 3.01.
-- AHV-Beiträge für Nichterwerbstätige nach Tabelle 2026 (bei Frühpensionierung bis zum Referenzalter).
+- AHV-Beiträge für Nichterwerbstätige nach Tabelle 2026 (bei Frühpensionierung bis zum Referenzalter, nur bei
+  Wohnsitz in der Schweiz): Vermögen am 31.12. inkl. im Jahr bezogener Kapitalien (noch gesperrte PK/FZ/3a nicht)
+  + 20× Renteneinkommen inkl. AHV (auch Vorbezug) und PK-Renten; Ehepaare je hälftig; Befreiung, wenn der
+  erwerbstätige Ehegatte genug bezahlt.
 - Pensionskasse (Werte manuell aus dem Vorsorgeausweis): Altersguthaben, Sparbeiträge, Verzinsung,
   Umwandlungssatz, Kapital/Rente-Mix, frühestes Bezugsalter gemäss Reglement.
 - Säule 3a und Freizügigkeit: Guthaben, Rendite, Einzahlungen (3a-Maximum 2026).
@@ -76,14 +99,15 @@ Vereinfachungen: Wohneigentum wird wie Börsenkapital behandelt (ohne Eigenmietw
 Vermögenssteuer auf dem Verkehrswert (effektiver Satz). Barauszahlung der PK vor 58 (Wegzug, Selbstständigkeit) ist
 noch nicht abgebildet.
 
-Geplant: exakte Tarife weiterer Kantone, Wegzug ins Ausland (Quellensteuer, DBA), historische Krisenszenarien, Monte Carlo,
+Geplant: exakte Tarife weiterer Kantone, Steuern bei Wegzug ins Ausland (Quellensteuer, DBA, Wohnsitzstaat), historische Krisenszenarien, Monte Carlo,
 Sterbetafeln. Siehe `docs/konzept.md`.
 
 ## Quellen
 
 Alle gesetzlichen Werte stehen versioniert in `src/rules/2026.json` – jeder Wert mit `value`, `source`, `stand` und
 `status` (`verifiziert` oder `offen`). Die Recherche mit URLs ist in `docs/quellen.md` dokumentiert. Wichtigste
-Quellen: BSV «Beträge gültig ab 1.1.2026», Merkblätter der Informationsstelle AHV/IV (3.01, 3.04, 2.03), AHVG/BVG/DBG
+Quellen: BSV «Beträge gültig ab 1.1.2026», Merkblätter der Informationsstelle AHV/IV (3.01, 3.04, 2.03, 10.02),
+Wegleitung freiwillige Versicherung (WFV), AHVG/VFV/BVG/DBG
 (fedlex), ESTV (Tarife direkte Bundessteuer 2026, RS 2-216/2-217), BFS.
 
 ## Entwicklung

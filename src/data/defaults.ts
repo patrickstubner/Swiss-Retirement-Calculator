@@ -11,6 +11,7 @@ import type {
   Person,
   Posten,
   PostenArt,
+  WohnsitzAusland,
 } from '../core/typen';
 import type { Regeln } from '../rules';
 
@@ -31,6 +32,19 @@ export function neueAhvSchaetzhilfe(): AhvSchaetzhilfeEingabe {
   };
 }
 
+export function neuerWohnsitzAusland(): WohnsitzAusland {
+  return {
+    aktiv: false,
+    modus: 'alter',
+    alter: 65,
+    datum: { jahr: 2030, monat: 1 },
+    land: '',
+    nationalitaet: 'CH',
+    vorherVersichert5Jahre: true,
+    freiwilligeAhv: false,
+  };
+}
+
 export function neuePerson(regeln: Regeln, overrides: Partial<Person> = {}): Person {
   return {
     name: '',
@@ -40,6 +54,9 @@ export function neuePerson(regeln: Regeln, overrides: Partial<Person> = {}): Per
     lohn: 0,
     lohnwachstumReal: 0,
     stoppAlter: 65,
+    stoppModus: 'alter',
+    stoppDatum: { jahr: 2034, monat: 12 },
+    wohnsitzAusland: neuerWohnsitzAusland(),
     ahv: {
       modus: 'eingabe',
       renteMonat: 0,

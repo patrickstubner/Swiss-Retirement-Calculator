@@ -133,6 +133,30 @@ export interface AhvSchaetzhilfeEingabe {
   auslandJahre: number;
 }
 
+/** Zeitpunkt als Alter (Jahre + Monate) oder als Kalendermonat. */
+export type ZeitpunktModus = 'alter' | 'datum';
+
+/** Staatsangehörigkeit für die freiwillige AHV (Art. 2 Abs. 1 AHVG). */
+export type Nationalitaet = 'CH' | 'EU' | 'andere';
+
+/** Wohnsitz ausserhalb der Schweiz ab einem Zeitpunkt (pro Person). */
+export interface WohnsitzAusland {
+  /** Wegzug geplant */
+  aktiv: boolean;
+  modus: ZeitpunktModus;
+  /** Alter beim Wegzug (Jahre, Dezimal = Monate/12), bei modus 'alter' */
+  alter: number;
+  /** Erster Monat mit Wohnsitz im Ausland, bei modus 'datum' */
+  datum: Monat;
+  /** ISO-Code aus data/laender-2026.json oder 'XE' (anderes EU/EFTA-Land) / 'XX' (anderes Land) */
+  land: string;
+  nationalitaet: Nationalitaet;
+  /** Unmittelbar vor dem Wegzug mindestens 5 Jahre ununterbrochen in der AHV versichert */
+  vorherVersichert5Jahre: boolean;
+  /** Beitritt zur freiwilligen AHV/IV gewünscht */
+  freiwilligeAhv: boolean;
+}
+
 export interface Person {
   name: string;
   geburtsjahr: number;
@@ -143,8 +167,14 @@ export interface Person {
   lohn: number;
   /** Erwartete reale Lohnentwicklung p.a. */
   lohnwachstumReal: number;
-  /** Gewünschtes Alter der Erwerbsaufgabe (Jahre, Dezimal = Monate/12) */
+  /** Gewünschtes Alter der Erwerbsaufgabe (Jahre, Dezimal = Monate/12), bei stoppModus 'alter' */
   stoppAlter: number;
+  /** Erwerbsaufgabe als Alter oder als Datum (letzter Arbeitsmonat) */
+  stoppModus: ZeitpunktModus;
+  /** Letzter Monat mit Erwerbseinkommen, bei stoppModus 'datum' */
+  stoppDatum: Monat;
+  /** Wohnsitz ausserhalb der Schweiz (Wegzug) */
+  wohnsitzAusland: WohnsitzAusland;
   ahv: AhvEingabe;
   /** Eingaben der AHV-Schätzhilfe (nur Hilfsmittel; massgebend ist `ahv.renteMonat`) */
   ahvSchaetzhilfe: AhvSchaetzhilfeEingabe;
@@ -283,7 +313,10 @@ export interface JahresZeile {
   /** Kapitalbezüge PK/FZ/3a (fliessen in die Wertschriften der Person) */
   kapitalBezuege: number;
   sozialabgaben: number;
+  /** AHV/IV/EO-Beiträge als Nichterwerbstätige (obligatorisch, Wohnsitz CH) */
   neBeitraege: number;
+  /** Beiträge an die freiwillige AHV/IV (Wohnsitz ausserhalb EU/EFTA) inkl. Verwaltungskosten */
+  freiwilligeAhv: number;
   steuernEinkommen: number;
   steuernKapital: number;
   steuernVermoegen: number;
@@ -322,6 +355,18 @@ export interface PersonInfo {
   saeule3aKapital: number;
   freizuegigkeitStart: Monat;
   freizuegigkeitKapital: number;
+  /** Erster Monat mit Wohnsitz im Ausland (null = kein Wegzug) */
+  wegzug: Monat | null;
+  /** Freiwillige AHV wird gerechnet (Wunsch und Voraussetzungen erfüllt) */
+  freiwilligeAhvAktiv: boolean;
+  /** Beitragsjahre, die wegen Auslandswohnsitz ohne freiwillige AHV fehlen (gerundet) */
+  ahvLueckenAusland: number;
+  /** Faktor auf die AHV-Rente wegen dieser Lücken (1 = keine Kürzung) */
+  ahvLueckenFaktor: number;
+  /** Beiträge an die freiwillige AHV pro Kalenderjahr (heutige CHF) */
+  freiwilligeAhvJahre: { jahr: number; betrag: number }[];
+  /** Obligatorische NE-Beiträge pro Kalenderjahr (heutige CHF) */
+  neBeitraegeJahre: { jahr: number; betrag: number }[];
   hinweise: string[];
 }
 

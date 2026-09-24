@@ -134,7 +134,93 @@ await schritt(/Ergebnis/);
 await page.waitForTimeout(600);
 await ganzeSeite('07-ergebnis-ehepaar-ganz-360.png');
 
-console.log('URL mit Zustand:', page.url().slice(0, 120), '…');
+// 5) Neue Teile (frische Seite): Speicherleiste, Rücktritt per Datum, AHV/PK-Bezugsalter, Wohnsitz im Ausland
+const ctx2 = await browser.newContext({
+  viewport: { width: 360, height: 780 },
+  deviceScaleFactor: 2,
+  isMobile: true,
+  hasTouch: true,
+  locale: 'de-CH',
+});
+const p2 = await ctx2.newPage();
+p2.on('pageerror', (e) => fehler.push(String(e)));
+p2.on('console', (m) => m.type() === 'error' && fehler.push(m.text()));
+await p2.goto(url, { waitUntil: 'networkidle' });
+const fuelle2 = async (label, wert, nr = 0) => {
+  const feld = p2.getByLabel(label, { exact: true }).nth(nr);
+  await feld.fill(String(wert));
+  await feld.blur();
+};
+const schritt2 = (name) => p2.getByRole('button', { name }).first().click();
+await p2.locator('.speicherleiste').screenshot({ path: `${out}15-speicherleiste-an-360.png` });
+
+const karteP1 = p2.locator('.karte').nth(1);
+await karteP1.getByText('Frau', { exact: true }).click();
+await fuelle2('Geburtsjahr', 1969);
+await p2.getByLabel('Geburtsmonat').selectOption('1');
+await karteP1.getByText('Datum', { exact: true }).first().click();
+await p2.getByLabel('Erwerbsaufgabe per Ende (Monat)').selectOption('11');
+await fuelle2('Jahr', 2027);
+await karteP1.screenshot({ path: `${out}16-ruecktritt-datum-360.png` });
+
+// Wohnsitz im Ausland: Thailand mit freiwilliger AHV
+await karteP1.getByText('Wohnsitz im Ausland (Wegzug)').click();
+await karteP1.getByText('Wegzug aus der Schweiz geplant').click();
+await fuelle2('Wegzug mit', 59);
+await p2.getByLabel('Land', { exact: true }).selectOption('TH');
+await karteP1.getByRole('checkbox', { name: /^Freiwillige AHV\/IV/ }).check();
+await karteP1.locator('.wegzug').screenshot({ path: `${out}17-wohnsitz-ausland-freiwillige-ahv-360.png` });
+await p2.getByLabel('Land', { exact: true }).selectOption('PT');
+await karteP1.locator('.wegzug').screenshot({ path: `${out}18-wohnsitz-eu-nicht-moeglich-360.png` });
+await p2.getByLabel('Land', { exact: true }).selectOption('TH');
+
+// AHV: frühester Bezug abgeleitet; PK-Feld klar getrennt (mit Warnung bei 62)
+await schritt2(/Vorsorge/);
+await fuelle2('Bruttolohn pro Jahr (heute)', 90000);
+await fuelle2('Erwartete AHV-Rente pro Monat', 2300);
+const ahv2 = p2.locator('.karte', { hasText: 'AHV (1. Säule)' });
+await ahv2.scrollIntoViewIfNeeded();
+await ahv2.screenshot({ path: `${out}19-ahv-fruehester-bezug-360.png` });
+await fuelle2('Altersguthaben heute', 500000);
+await fuelle2('Pensionskasse: frühester Bezug laut Reglement (58–70)', 62);
+await p2
+  .locator('.karte', { hasText: 'Pensionskasse (2. Säule)' })
+  .screenshot({ path: `${out}20-pk-reglement-360.png` });
+await fuelle2('Pensionskasse: frühester Bezug laut Reglement (58–70)', 60);
+
+await schritt2(/Vermögen/);
+// Live-Tausendertrennzeichen: Ziffern einzeln tippen, dann in der Mitte eine Ziffer einfügen und löschen
+const wert = p2.getByLabel('Wertschriften (Börse)', { exact: true });
+await wert.click();
+await wert.pressSequentially('1250000');
+const nachTippen = await wert.evaluate((el) => [el.value, el.selectionStart]);
+await p2
+  .locator('.karte')
+  .first()
+  .screenshot({ path: `${out}23-tausendertrennzeichen-live-360.png` });
+await wert.evaluate((el) => el.setSelectionRange(2, 2)); // «1’|250’000»
+await p2.keyboard.type('9');
+const nachEinfuegen = await wert.evaluate((el) => [el.value, el.selectionStart]);
+await p2.keyboard.press('Backspace');
+const nachLoeschen = await wert.evaluate((el) => [el.value, el.selectionStart]);
+console.log('Live-Format:', JSON.stringify({ nachTippen, nachEinfuegen, nachLoeschen }));
+await wert.fill('');
+await wert.pressSequentially('900000');
+await wert.blur();
+await fuelle2('Lebenshaltungskosten pro Jahr (heute)', 50000);
+await schritt2(/Ergebnis/);
+await p2.waitForTimeout(600);
+const renten2 = p2.locator('.karte', { hasText: 'Renten und Kapital' });
+await renten2.scrollIntoViewIfNeeded();
+await renten2.screenshot({ path: `${out}21-ergebnis-wegzug-360.png` });
+
+// Speichern ausschalten → Hinweis, nichts mehr gespeichert
+await p2.getByLabel('Eingaben im Browser speichern').uncheck();
+const reste = await p2.evaluate(() => Object.keys(localStorage));
+console.log('localStorage nach Ausschalten:', reste);
+await p2.locator('.speicherleiste').screenshot({ path: `${out}22-speicherleiste-aus-360.png` });
+await ctx2.close();
+
 await browser.close();
 if (fehler.length) {
   console.error('Fehler im Browser:\n', fehler.join('\n'));
