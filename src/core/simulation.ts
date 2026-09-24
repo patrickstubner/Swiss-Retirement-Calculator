@@ -17,7 +17,12 @@
  * - AHV-Renten folgen der Teuerung + `ahvAnpassungReal`.
  * - PK-Renten und der AHV-Rentenzuschlag sind nominal fix (verlieren real an Wert).
  * - Rendite auf den Anfangsbeständen; Kapitalbezüge und Jahressaldo am Jahresende.
- * - TODO(wegzug): Barauszahlung von PK/FZ bei endgültiger Ausreise (Art. 5 FZG, Art. 25f FZG).
+ * - AHV-Beiträge: Nichterwerbstätige mit Wohnsitz CH (MB 2.03) bis zum Referenzalter; bei
+ *   Wohnsitz im Ausland nur mit freiwilliger AHV (VFV, MB 10.02), sonst entstehen Beitragslücken.
+ *   Bemessung: Vermögen am 31.12. (inkl. im Jahr bezogener Vorsorgekapitalien, ohne noch
+ *   gesperrte PK/FZ/3a) + 20 × Renteneinkommen (alle Renten inkl. AHV, ohne IV), Ehepaare je hälftig.
+ * - TODO(wegzug): Barauszahlung von PK/FZ bei endgültiger Ausreise (Art. 5 FZG, Art. 25f FZG),
+ *   Steuern im Wohnsitzstaat.
  */
 
 import { kantonsModellFuer } from '../data/kantone';
@@ -38,11 +43,20 @@ import {
 } from './ahv';
 import { auslandRenteNetto, auslandRenteRealJahr } from './auslandRenten';
 import { bvgAltersgutschrift, pkLeistung } from './bvg';
+import {
+  fwBefreitDurchEhegatte,
+  fwBeitragErwerbstaetig,
+  fwBeitragNichterwerbstaetig,
+  pruefeFreiwilligeAhv,
+} from './freiwilligeAhv';
 import { realerBetrag } from './indexierung';
 import { neBefreitDurchEhegatte, neBeitrag } from './neBeitrag';
 import { deterministisch, type RenditeModell } from './renditen';
 import { dbgEinkommen, dbgKapital } from './steuern';
 import type { Haushalt, JahresZeile, Monat, Person, PersonInfo, SimulationsErgebnis, Toepfe } from './typen';
+import { geburtIndex, stoppAlterMonate, wegzugIndex } from './zeitpunkt';
+
+export { geburtIndex } from './zeitpunkt';
 
 export interface SimOptionen {
   /** Erster simulierter Monat (z.B. aktueller Monat) */
@@ -66,6 +80,10 @@ interface PersonPlan {
   fzStartIdx: number;
   s3aMax: number;
   auslandStartIdx: number[];
+  /** Erster Monat mit Wohnsitz im Ausland (Infinity = kein Wegzug) */
+  wegIdx: number;
+  /** Freiwillige AHV wird gerechnet */
+  fwAktiv: boolean;
   info: PersonInfo;
   // laufender Zustand
   t: Toepfe;
@@ -130,8 +148,6 @@ const summeToepfe = (xs: Toepfe[]): Toepfe =>
     { bargeld: 0, wertschriften: 0, sonstiges: 0, wohneigentum: 0, pk: 0, freizuegigkeit: 0, saeule3a: 0 },
   );
 
-export const geburtIndex = (p: Person): number => p.geburtsjahr * 12 + (p.geburtsmonat - 1);
-
 /** Zulässiges Bezugsalter (Monate) für 3a bzw. Freizügigkeit: RA−5 … RA (+5 bei Erwerb). */
 export function vorsorgeBezugMonate(
   stoppMonate: number,
@@ -154,10 +170,57 @@ export function pkBezugMonate(p: Person, stoppMonate: number, regeln: Regeln): n
   return Math.min(Math.max(wunsch, frueh), b.aufschubBis * 12);
 }
 
-function planePerson(p: Person, regeln: Regeln, stoppMonate: number): PersonPlan {
+/**
+ * Beitragsjahre, die wegen Wohnsitz im Ausland ohne freiwillige AHV fehlen: Monate ab dem
+ * Wegzug (frühestens ab heute und ab 1.1. nach dem 20. Geburtstag) bis Ende der Beitragsdauer
+ * (31.12. vor dem Jahr, in dem das Referenzalter erreicht wird), auf ganze Jahre gerundet.
+ */
+export function ahvLueckenJahreAusland(p: Person, raMonate: number, wegIdx: number, startIdx: number): number {
+  const raJahr = Math.floor((geburtIndex(p) + raMonate) / 12);
+  const beginn = Math.max(wegIdx, startIdx, (p.geburtsjahr + 21) * 12);
+  return Math.max(0, Math.round((raJahr * 12 - beginn) / 12));
+}
+
+function planePerson(p: Person, regeln: Regeln, stoppMonate: number, startIdx: number): PersonPlan {
   const hinweise: string[] = [];
   const geburtIdx = geburtIndex(p);
   const raMonate = inMonaten(ahvReferenzalter(p.geburtsjahr, p.geschlecht, regeln.ahv));
+
+  // Wohnsitz im Ausland und freiwillige AHV
+  const weg = wegzugIndex(p);
+  const wegIdx = weg ?? Number.POSITIVE_INFINITY;
+  const fwPruefung = pruefeFreiwilligeAhv(p, regeln);
+  const fwAktiv = weg !== null && p.wohnsitzAusland.freiwilligeAhv && fwPruefung.berechtigt;
+  const bjVoll = regeln.ahv.vollrenteBeitragsjahre;
+  const bj = Math.min(Math.max(p.ahv.beitragsjahre, 0), bjVoll);
+  const lueckenAusland =
+    weg !== null && !fwAktiv ? Math.min(bj, ahvLueckenJahreAusland(p, raMonate, weg, startIdx)) : 0;
+  const bjEffektiv = bj - lueckenAusland;
+  const lueckenFaktor = bj > 0 ? bjEffektiv / bj : 1;
+  if (weg !== null) {
+    if (p.wohnsitzAusland.freiwilligeAhv && !fwPruefung.berechtigt)
+      hinweise.push(`Freiwillige AHV nicht möglich: ${fwPruefung.gruende.join(' ')}`);
+    if (lueckenAusland > 0)
+      hinweise.push(
+        `Wohnsitz im Ausland ohne freiwillige AHV: ca. ${lueckenAusland} Beitragsjahre fehlen bis zum Referenzalter. Die AHV-Rente wird vereinfacht um ${lueckenAusland}/${bj} gekürzt (−${Math.round((1 - lueckenFaktor) * 1000) / 10}%).`,
+      );
+    if (fwPruefung.landEuEfta)
+      hinweise.push(
+        'Wohnsitz in der EU/EFTA: Allfällige Versicherungszeiten dort begründen eigene Rentenansprüche im Wohnsitzstaat – bitte separat unter «Ausländische Renten» erfassen.',
+      );
+    if (p.wohnsitzAusland.nationalitaet === 'andere')
+      hinweise.push(
+        'Staatsangehörige von Nichtvertragsstaaten erhalten die AHV-Rente bei Wohnsitz im Ausland unter Umständen nicht (stattdessen Rückvergütung der Beiträge). Bitte bei der Zentralen Ausgleichsstelle (zas.admin.ch) prüfen.',
+      );
+    if (stoppMonate > wegIdx - geburtIdx)
+      hinweise.push(
+        'Erwerbstätigkeit nach dem Wegzug: keine Schweizer Lohnabzüge mehr; ausländische Sozialabgaben sind nicht abgebildet.',
+      );
+    hinweise.push(
+      'Steuern bei Wohnsitz im Ausland sind noch nicht abgebildet – es wird weiterhin mit Schweizer Steuern gerechnet.',
+    );
+  }
+
   let verschiebung = p.ahv.bezugVerschiebungMonate;
   const fehler = pruefeAhvVerschiebung(verschiebung, p.geburtsjahr, p.geschlecht, regeln.ahv);
   if (fehler) {
@@ -166,14 +229,12 @@ function planePerson(p: Person, regeln: Regeln, stoppMonate: number): PersonPlan
   }
   const mdje = p.ahv.modus === 'skala44' || p.ahv.mdje > 0 ? p.ahv.mdje : ahvMdjeAusRente(p.ahv.renteMonat, regeln.ahv);
   const ahvBasisMonat =
-    p.ahv.modus === 'eingabe'
+    (p.ahv.modus === 'eingabe'
       ? Math.max(0, p.ahv.renteMonat)
-      : ahvTeilrente(ahvRenteSkala44(mdje, regeln.ahv), p.ahv.beitragsjahre, regeln.ahv);
+      : ahvTeilrente(ahvRenteSkala44(mdje, regeln.ahv), p.ahv.beitragsjahre, regeln.ahv)) * lueckenFaktor;
   const ahvFaktor = ahvBezugFaktor(verschiebung, p.geburtsjahr, p.geschlecht, mdje, regeln.ahv);
   const zuschlagNominal =
-    ahvBasisMonat > 0
-      ? ahvRentenzuschlag(p.geburtsjahr, p.geschlecht, mdje, verschiebung, p.ahv.beitragsjahre, regeln.ahv)
-      : 0;
+    ahvBasisMonat > 0 ? ahvRentenzuschlag(p.geburtsjahr, p.geschlecht, mdje, verschiebung, bjEffektiv, regeln.ahv) : 0;
   const ahvStartIdx = geburtIdx + raMonate + 1 + verschiebung;
 
   const pkStartMonate = pkBezugMonate(p, stoppMonate, regeln);
@@ -218,6 +279,8 @@ function planePerson(p: Person, regeln: Regeln, stoppMonate: number): PersonPlan
     fzStartIdx: geburtIdx + fzStartMonate,
     s3aMax,
     auslandStartIdx: p.auslandRenten.map((r) => geburtIdx + Math.round(r.startAlter * 12)),
+    wegIdx,
+    fwAktiv,
     info: {
       referenzalterMonate: raMonate,
       ahvStart: ausMonatIndex(ahvStartIdx),
@@ -230,6 +293,12 @@ function planePerson(p: Person, regeln: Regeln, stoppMonate: number): PersonPlan
       saeule3aKapital: 0,
       freizuegigkeitStart: ausMonatIndex(geburtIdx + fzStartMonate),
       freizuegigkeitKapital: 0,
+      wegzug: weg === null ? null : ausMonatIndex(weg),
+      freiwilligeAhvAktiv: fwAktiv,
+      ahvLueckenAusland: lueckenAusland,
+      ahvLueckenFaktor: lueckenFaktor,
+      freiwilligeAhvJahre: [],
+      neBeitraegeJahre: [],
       hinweise,
     },
     t: startToepfe(p),
@@ -270,13 +339,13 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
   const a = h.annahmen;
   const modell = opt.renditeModell ?? deterministisch(a.renditeNominal, a.inflation);
   const kanton = kantonsModellFuer(h.steuern);
+  const startIdx = monatIndex(opt.start);
   const plaene = h.personen.map((p, i) =>
-    planePerson(p, regeln, opt.stoppAlterMonate?.[i] ?? Math.round(p.stoppAlter * 12)),
+    planePerson(p, regeln, opt.stoppAlterMonate?.[i] ?? stoppAlterMonate(p), startIdx),
   );
   const refIdx = referenzPerson(h.personen);
   const ref = h.personen[refIdx] as Person;
   const endJahr = ref.geburtsjahr + Math.max(0, Math.floor(h.planungsalter));
-  const startIdx = monatIndex(opt.start);
   // Bezugsdaten in der Vergangenheit: Bezug frühestens im Startmonat
   for (const pl of plaene) {
     const ab = (idx: number) => ausMonatIndex(Math.max(idx, startIdx));
@@ -286,6 +355,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
   }
   const beitr = regeln.beitraege;
   const ne = beitr.nichterwerbstaetige;
+  const fw = beitr.freiwilligeAhv;
   const posten = h.posten ?? [];
   const ereignisse = h.ereignisse ?? [];
   const ereignisIdx = ereignisse.map((e) => {
@@ -314,7 +384,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
     const nMonate = 13 - ersterMonat;
     const wachstum = (r: number) => (1 + r) ** (nMonate / 12);
 
-    // Anfangsbestände (für Vermögenssteuer, NE-Beiträge, Vermögensertrag)
+    // Anfangsbestände (für Vermögenssteuer und Vermögensertrag)
     const verfuegbarStart = sum(plaene.map((pl) => verfuegbar(pl.t))) - fehlbetrag;
     const finanzStart = sum(plaene.map((pl) => pl.t.bargeld + pl.t.wertschriften + pl.t.sonstiges));
 
@@ -324,7 +394,12 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
     const pkRente = neu();
     const ausland = neu();
     const auslandSteuerbar = neu();
-    const neMonate = neu();
+    const lohnCh = neu(); // Lohn bei Wohnsitz CH (obligatorische Lohnbeiträge)
+    const neMonate = neu(); // obligatorische NE-Beitragspflicht (Wohnsitz CH)
+    const fwNeMonate = neu(); // freiwillige AHV als Nichterwerbstätige
+    const fwErwMonate = neu(); // freiwillige AHV als Erwerbstätige
+    const fwLohn = neu(); // Erwerbseinkommen während der freiwilligen Versicherung
+    const renteInPflicht = neu(); // massgebendes Renteneinkommen während der NE-Beitragspflicht
     const pkBeitragAN = neu();
     const s3aBeitrag = neu();
     const kapital = neu();
@@ -342,12 +417,24 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
         const [r1, r2] = ahvPlafonierung(basen[0] ?? 0, basen[1] ?? 0, regeln.ahv);
         basen = [r1, r2, ...basen.slice(2)];
       }
+      const renteMonat = neu(); // Renteneinkommen dieses Monats (alle Renten ausser IV)
+      const lohnMonat = neu();
+      const pflicht = neu(); // 1 = NE obligatorisch, 2 = NE freiwillig
       plaene.forEach((pl, i) => {
         const p = pl.p;
         const alterM = idx - pl.geburtIdx;
         const erwerb = alterM >= 0 && alterM < pl.stoppMonate;
+        const imAusland = idx >= pl.wegIdx;
         const lohnJahr = Math.max(0, p.lohn) * (1 + p.lohnwachstumReal) ** t;
-        if (erwerb) lohn[i] = (lohn[i] ?? 0) + lohnJahr / 12;
+        if (erwerb) {
+          lohn[i] = (lohn[i] ?? 0) + lohnJahr / 12;
+          lohnMonat[i] = lohnJahr / 12;
+          if (!imAusland) lohnCh[i] = (lohnCh[i] ?? 0) + lohnJahr / 12;
+          else if (pl.fwAktiv && alterM <= pl.raMonate) {
+            fwLohn[i] = (fwLohn[i] ?? 0) + lohnJahr / 12;
+            fwErwMonate[i] = (fwErwMonate[i] ?? 0) + 1;
+          }
+        }
 
         // Pensionskasse: gesperrt bis zum Bezugsalter; dann Rente/Kapital/Mix
         if (!pl.pkBezogen && idx >= pl.pkStartIdx) {
@@ -370,7 +457,10 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
             pkBeitragAN[i] = (pkBeitragAN[i] ?? 0) + beitrag * p.pk.anteilArbeitnehmer;
           }
         }
-        if (pl.pkBezogen) pkRente[i] = (pkRente[i] ?? 0) + pl.pkRenteNominal / deflator / 12;
+        if (pl.pkBezogen) {
+          pkRente[i] = (pkRente[i] ?? 0) + pl.pkRenteNominal / deflator / 12;
+          renteMonat[i] = (renteMonat[i] ?? 0) + pl.pkRenteNominal / deflator / 12;
+        }
 
         // Freizügigkeit: gesperrt bis RA−5 (bzw. Erwerbsaufgabe), Bezug als Kapital
         if (!pl.fzBezogen && idx >= pl.fzStartIdx) {
@@ -400,8 +490,12 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
         // AHV
         const basis = basen[i] ?? 0;
         if (basis > 0) {
-          ahv[i] = (ahv[i] ?? 0) + basis * pl.ahvFaktor * ahvIndex;
+          const ahvMonat = basis * pl.ahvFaktor * ahvIndex;
+          ahv[i] = (ahv[i] ?? 0) + ahvMonat;
           zuschlag[i] = (zuschlag[i] ?? 0) + pl.zuschlagNominal / deflator;
+          // AHV-Rente (inkl. anteilige 13. Rente und Rentenzuschlag) zählt zum Renteneinkommen (MB 2.03 Ziff. 6)
+          renteMonat[i] =
+            (renteMonat[i] ?? 0) + ahvMonat + ahv13(ahvMonat, jahr, regeln.ahv) + pl.zuschlagNominal / deflator;
         }
 
         // Ausländische Renten
@@ -409,12 +503,36 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
           if (idx >= (pl.auslandStartIdx[k] ?? Number.POSITIVE_INFINITY)) {
             const v = auslandRenteRealJahr(r, t, deflator) / 12;
             ausland[i] = (ausland[i] ?? 0) + auslandRenteNetto(v, r);
+            renteMonat[i] = (renteMonat[i] ?? 0) + v;
             if (r.steuerbarInCh) auslandSteuerbar[i] = (auslandSteuerbar[i] ?? 0) + v;
           }
         });
 
-        // NE-Beitragspflicht: nach Erwerbsaufgabe bis Ende des Monats, in dem das RA erreicht wird
-        if (!erwerb && alterM >= 240 && alterM <= pl.raMonate) neMonate[i] = (neMonate[i] ?? 0) + 1;
+        // NE-Beitragspflicht: nach Erwerbsaufgabe bis Ende des Monats, in dem das RA erreicht wird.
+        // Wohnsitz CH: obligatorisch; im Ausland nur mit freiwilliger AHV (sonst Beitragslücke).
+        if (!erwerb && alterM >= 240 && alterM <= pl.raMonate) {
+          if (!imAusland) {
+            neMonate[i] = (neMonate[i] ?? 0) + 1;
+            pflicht[i] = 1;
+          } else if (pl.fwAktiv) {
+            fwNeMonate[i] = (fwNeMonate[i] ?? 0) + 1;
+            pflicht[i] = 2;
+          }
+        }
+      });
+      // Massgebendes Renteneinkommen der beitragspflichtigen Monate (Ehepaare: beide Ehegatten;
+      // freiwillige AHV: zusätzlich Erwerbseinkommen des nicht versicherten Ehegatten, WFV Rz 4026)
+      plaene.forEach((_pl, i) => {
+        if (!pflicht[i]) return;
+        let r = renteMonat[i] ?? 0;
+        if (verheiratet) {
+          r = sum(renteMonat);
+          if (pflicht[i] === 2)
+            plaene.forEach((pj, j) => {
+              if (j !== i && idx >= pj.wegIdx && !pj.fwAktiv) r += lohnMonat[j] ?? 0;
+            });
+        }
+        renteInPflicht[i] = (renteInPflicht[i] ?? 0) + r;
       });
 
       // Weitere wiederkehrende Posten
@@ -435,7 +553,8 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
       });
     }
 
-    const sozial = lohn.map(
+    // Lohnbeiträge nur bei Wohnsitz/Erwerb in der Schweiz
+    const sozial = lohnCh.map(
       (l) => l * beitr.ahvIvEoSatzArbeitnehmer + Math.min(l, beitr.alvHoechstlohn) * beitr.alvSatzArbeitnehmer,
     );
     const ahv13Betrag = ahv.map((x) => ahv13(x, jahr, regeln.ahv));
@@ -481,23 +600,6 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
       (kanton.vermoegenssteuer(Math.max(0, verfuegbarStart), verheiratet ? 'verheiratet' : 'alleinstehend') * nMonate) /
       12;
 
-    // NE-Beiträge (Vermögen ohne 2. Säule/3a)
-    let neBeitraege = 0;
-    plaene.forEach((_pl, i) => {
-      const monate = neMonate[i] ?? 0;
-      if (monate === 0) return;
-      if (verheiratet) {
-        const andere = plaene.findIndex((_, j) => j !== i);
-        if (andere >= 0 && neBefreitDurchEhegatte(lohn[andere] ?? 0, beitr.ahvIvEoSatzTotal, ne)) return;
-      }
-      const renteneinkommen = verheiratet ? sum(pkRente) + sum(ausland) : (pkRente[i] ?? 0) + (ausland[i] ?? 0);
-      const rentenJahr = (renteneinkommen * 12) / nMonate;
-      const vermoegenNe = verheiratet
-        ? verfuegbarStart
-        : verfuegbar(plaene[i]?.t ?? startToepfe(h.personen[i] as Person)) - fehlbetrag;
-      neBeitraege += (neBeitrag(vermoegenNe, rentenJahr, verheiratet, a.neVerwaltungskosten, ne) * monate) / 12;
-    });
-
     // Ausgaben nach Alter der Referenzperson
     const refAlter = jahr - ref.geburtsjahr;
     const faktor = refAlter >= 85 ? h.ausgaben.faktorAb85 : refAlter >= 75 ? h.ausgaben.faktorAb75 : 1;
@@ -510,8 +612,8 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
     const vorsorgeBeitraege = sum(pkBeitragAN) + sum(s3aBeitrag);
     const einnahmen =
       lohnTotal - sozialTotal - vorsorgeBeitraege + ahvTotal + sum(pkRente) + sum(ausland) + weitereEinnahmen;
-    const abfluesse = steuernEinkommen + steuernKapital + steuernVermoegen + neBeitraege + ausgaben;
-    const saldo = einnahmen - abfluesse + einmalig;
+    const saldoOhneAhvBeitraege =
+      einnahmen - (steuernEinkommen + steuernKapital + steuernVermoegen + ausgaben) + einmalig;
 
     // Rendite auf den Anfangsbeständen der verfügbaren Töpfe
     for (const pl of plaene) {
@@ -524,6 +626,46 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
     plaene.forEach((pl, i) => {
       pl.t.wertschriften += kapital[i] ?? 0;
     });
+
+    // AHV-Beiträge als Nichterwerbstätige (obligatorisch bzw. freiwillig) und freiwillige
+    // Beiträge Erwerbstätiger. Vermögen: Schätzung für den 31.12. – verfügbare Töpfe nach
+    // Rendite und Kapitalbezügen des Jahres zuzüglich Jahressaldo (ohne diese Beiträge);
+    // noch gesperrte PK/FZ/3a zählen nicht (MB 2.03 Ziff. 5). Ehepaare: eheliches Vermögen.
+    const vermoegenStichtag = Math.max(
+      0,
+      sum(plaene.map((pl) => verfuegbar(pl.t))) + saldoOhneAhvBeitraege - fehlbetrag,
+    );
+    let neBeitraege = 0;
+    let fwBeitraege = 0;
+    plaene.forEach((pl, i) => {
+      const mNe = neMonate[i] ?? 0;
+      const mFw = fwNeMonate[i] ?? 0;
+      let neI = 0;
+      let fwI = 0;
+      if (mNe + mFw > 0) {
+        let befreitNe = false;
+        let befreitFw = false;
+        if (verheiratet) {
+          const j = plaene.findIndex((_, k) => k !== i);
+          const obligatorischEhegatte = (lohnCh[j] ?? 0) * beitr.ahvIvEoSatzTotal;
+          befreitNe = neBefreitDurchEhegatte(lohnCh[j] ?? 0, beitr.ahvIvEoSatzTotal, ne);
+          befreitFw = fwBefreitDurchEhegatte((fwLohn[j] ?? 0) * fw.satzErwerbstaetige, obligatorischEhegatte, fw);
+        }
+        // Renteneinkommen der beitragspflichtigen Monate; bei Pflicht unter einem Jahr aufs Jahr umgerechnet (Art. 29 AHVV)
+        const rentenJahr = ((renteInPflicht[i] ?? 0) * 12) / (mNe + mFw);
+        if (mNe > 0 && !befreitNe)
+          neI = (neBeitrag(vermoegenStichtag, rentenJahr, verheiratet, a.neVerwaltungskosten, ne) * mNe) / 12;
+        if (mFw > 0 && !befreitFw)
+          fwI = (fwBeitragNichterwerbstaetig(vermoegenStichtag, rentenJahr, verheiratet, fw) * mFw) / 12;
+      }
+      const mErw = fwErwMonate[i] ?? 0;
+      if (mErw > 0) fwI += (fwBeitragErwerbstaetig(((fwLohn[i] ?? 0) * 12) / mErw, fw) * mErw) / 12;
+      if (neI > 0) pl.info.neBeitraegeJahre.push({ jahr, betrag: neI });
+      if (fwI > 0) pl.info.freiwilligeAhvJahre.push({ jahr, betrag: fwI });
+      neBeitraege += neI;
+      fwBeitraege += fwI;
+    });
+    const saldo = saldoOhneAhvBeitraege - neBeitraege - fwBeitraege;
 
     // Saldo: Überschuss tilgt zuerst einen Fehlbetrag und wird dann angelegt; Defizit aus verfügbaren Töpfen
     let angetastet = false;
@@ -566,6 +708,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
       kapitalBezuege: kapitalTotal,
       sozialabgaben: sozialTotal,
       neBeitraege,
+      freiwilligeAhv: fwBeitraege,
       steuernEinkommen,
       steuernKapital,
       steuernVermoegen,

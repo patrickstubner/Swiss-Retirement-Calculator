@@ -2,9 +2,9 @@ import { startvermoegen, wohneigentumNetto } from '../../core/simulation';
 import type { Haushalt, Posten, PostenKategorie } from '../../core/typen';
 import { neuerPosten, neuesEreignis } from '../../data/defaults';
 import { gemeindenVon, KANTON_STATUS_TEXT, KANTONE, kantonNach, kantonsModellFuer } from '../../data/kantone';
-import { AuswahlFeld, Schalter, TextFeld, ZahlFeld } from '../components/Felder';
+import { AuswahlFeld, BetragFeld, Schalter, TextFeld, ZahlFeld } from '../components/Felder';
 import { Karte } from '../components/Karte';
-import { fmtChf } from '../format';
+import { fmtChf, fmtZahl } from '../format';
 import { type SchrittProps, type Setzer, setzePerson } from '../kontext';
 import { VEREINFACHUNG_BOERSE, VEREINFACHUNG_WOHNEIGENTUM } from '../texte';
 
@@ -19,23 +19,19 @@ export function VermoegenAusgaben({ h, setH, regeln }: SchrittProps) {
             Wohneigentum (zuletzt). Pensionskasse, Freizügigkeit und 3a erfassen Sie im Schritt «Vorsorge».
           </p>
           <div className="raster">
-            <ZahlFeld
+            <BetragFeld
               label="Bargeld / Konten"
-              einheit="CHF"
               value={p.bargeld}
               min={0}
               max={1_000_000_000}
-              nachkomma={0}
               onChange={(v) => setzePerson(setH, i, (x) => ({ ...x, bargeld: v }))}
               hinweis="Rendite gemäss «Zins Bargeld» (Annahmen)."
             />
-            <ZahlFeld
+            <BetragFeld
               label="Wertschriften (Börse)"
-              einheit="CHF"
               value={p.wertschriften}
               min={0}
               max={1_000_000_000}
-              nachkomma={0}
               onChange={(v) => setzePerson(setH, i, (x) => ({ ...x, wertschriften: v }))}
               hinweis="Aktien, Fonds, ETF. Rendite gemäss «Rendite Börse»."
             />
@@ -46,13 +42,11 @@ export function VermoegenAusgaben({ h, setH, regeln }: SchrittProps) {
               value={p.sonstiges.bezeichnung}
               onChange={(v) => setzePerson(setH, i, (x) => ({ ...x, sonstiges: { ...x.sonstiges, bezeichnung: v } }))}
             />
-            <ZahlFeld
+            <BetragFeld
               label="Wert"
-              einheit="CHF"
               value={p.sonstiges.wert}
               min={0}
               max={1_000_000_000}
-              nachkomma={0}
               onChange={(v) => setzePerson(setH, i, (x) => ({ ...x, sonstiges: { ...x.sonstiges, wert: v } }))}
             />
             <ZahlFeld
@@ -73,24 +67,20 @@ export function VermoegenAusgaben({ h, setH, regeln }: SchrittProps) {
           {p.wohneigentum.vorhanden ? (
             <>
               <div className="raster">
-                <ZahlFeld
+                <BetragFeld
                   label="Verkehrswert"
-                  einheit="CHF"
                   value={p.wohneigentum.verkehrswert}
                   min={0}
                   max={1_000_000_000}
-                  nachkomma={0}
                   onChange={(v) =>
                     setzePerson(setH, i, (x) => ({ ...x, wohneigentum: { ...x.wohneigentum, verkehrswert: v } }))
                   }
                 />
-                <ZahlFeld
+                <BetragFeld
                   label="Hypothek (optional)"
-                  einheit="CHF"
                   value={p.wohneigentum.hypothek}
                   min={0}
                   max={1_000_000_000}
-                  nachkomma={0}
                   onChange={(v) =>
                     setzePerson(setH, i, (x) => ({ ...x, wohneigentum: { ...x.wohneigentum, hypothek: v } }))
                   }
@@ -108,13 +98,11 @@ export function VermoegenAusgaben({ h, setH, regeln }: SchrittProps) {
         {VEREINFACHUNG_BOERSE}
       </p>
       <Karte titel="Ausgaben">
-        <ZahlFeld
+        <BetragFeld
           label="Lebenshaltungskosten pro Jahr (heute)"
-          einheit="CHF"
           value={h.ausgaben.lebenshaltung}
           min={0}
           max={100_000_000}
-          nachkomma={0}
           onChange={(v) => setH((x) => ({ ...x, ausgaben: { ...x.ausgaben, lebenshaltung: v } }))}
           hinweis={`Ohne Steuern und AHV-Beiträge (werden berechnet). Zum Vergleich: EL-Lebensbedarf ${fmtChf(
             ehepaar ? regeln.ahv.elLebensbedarf.ehepaar : regeln.ahv.elLebensbedarf.alleinstehend,
@@ -192,13 +180,11 @@ function PostenKarte({ h, setH }: { h: Haushalt; setH: Setzer }) {
             />
           </div>
           <div className="raster">
-            <ZahlFeld
+            <BetragFeld
               label="Betrag pro Jahr (heute)"
-              einheit="CHF"
               value={po.betragJahr}
               min={0}
               max={100_000_000}
-              nachkomma={0}
               onChange={(v) => setP(po.id, (x) => ({ ...x, betragJahr: v }))}
             />
             {h.personen.length > 1 ? (
@@ -312,13 +298,11 @@ function EreignisKarte({ h, setH }: { h: Haushalt; setH: Setzer }) {
             onChange={(v) => setE(ev.id, (x) => ({ ...x, bezeichnung: v }))}
           />
           <div className="raster">
-            <ZahlFeld
+            <BetragFeld
               label="Betrag (heute, + Zufluss / − Abfluss)"
-              einheit="CHF"
               value={ev.betrag}
               min={-1_000_000_000}
               max={1_000_000_000}
-              nachkomma={0}
               onChange={(v) => setE(ev.id, (x) => ({ ...x, betrag: v }))}
             />
             <ZahlFeld
@@ -423,7 +407,7 @@ function SteuerKarte({ h, setH }: { h: Haushalt; setH: Setzer }) {
       {beispiel ? (
         <p className="info">
           {beispiel.beschreibung}. Beispiel {zs === 'verheiratet' ? 'Ehepaar' : 'Einzelperson'}: steuerbares Einkommen
-          100'000 → {fmtChf(beispiel.einkommenssteuer(100000, zs))}; Kapitalbezug 500'000 →{' '}
+          {fmtZahl(100000)} → {fmtChf(beispiel.einkommenssteuer(100000, zs))}; Kapitalbezug {fmtZahl(500000)} →{' '}
           {fmtChf(beispiel.kapitalleistungssteuer(500000, zs))} (Kanton + Gemeinde
           {st.kirche !== 'keine' && kanton?.status === 'exakt' ? ' + Kirche' : ''}, ohne Bund).
         </p>

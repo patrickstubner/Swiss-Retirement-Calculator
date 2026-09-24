@@ -251,7 +251,7 @@ Die Zahlen im Beispiel sind nur Platzhalter. Dazu kommt `scenarios.json` mit den
   - AHV-Rentenanpassung 2027.
   - Neue Vorbezugs- und Aufschubsätze ab frühestens 2027.
   - BVG-Mindestzins 2027 (Empfehlung 1,75%).
-  - Maximum freiwillige AHV 2026 (vermutlich 25'250).
+  - Ob noch nicht bezogene PK-/FZ-/3a-Guthaben für die freiwillige AHV zum Vermögen zählen (Maximum 2026 inzwischen verifiziert: 25'250 bzw. 26'512.50 inkl. 5% VK).
   - Quellensteuersätze aller Kantone ausser SZ.
   - Offizielle LU-Quelle für den Vorsorgetarif.
   - Maschinenlesbare kantonale Tarife bzw. Nutzungsbedingungen des ESTV-Rechners.

@@ -1,20 +1,21 @@
-import { useState } from 'react';
-import { Schalter, ZahlFeld } from '../components/Felder';
+import { useId, useState } from 'react';
+import { ZahlFeld } from '../components/Felder';
 import { Karte } from '../components/Karte';
 import { fmtProzent } from '../format';
 import type { SchrittProps } from '../kontext';
+import { teilenLink } from '../state';
 import { VEREINFACHUNG_BOERSE, VEREINFACHUNG_WOHNEIGENTUM } from '../texte';
 
 interface Props extends SchrittProps {
-  speichern: boolean;
-  onSpeichern: (v: boolean) => void;
   onZuruecksetzen: () => void;
 }
 
-export function Annahmen({ h, setH, regeln, speichern, onSpeichern, onZuruecksetzen }: Props) {
+export function Annahmen({ h, setH, regeln, onZuruecksetzen }: Props) {
   const a = h.annahmen;
   const setA = (patch: Partial<typeof a>) => setH((x) => ({ ...x, annahmen: { ...x.annahmen, ...patch } }));
   const [kopiert, setKopiert] = useState(false);
+  const [link, setLink] = useState('');
+  const linkId = useId();
   const real = (1 + a.renditeNominal - a.kosten) / (1 + a.inflation) - 1;
 
   return (
@@ -88,26 +89,33 @@ export function Annahmen({ h, setH, regeln, speichern, onSpeichern, onZurueckset
           hinweis="Je nach Ausgleichskasse, höchstens 5%."
         />
       </Karte>
-      <Karte titel="Speichern und Teilen">
+      <Karte titel="Teilen und Zurücksetzen">
         <p className="klein">
-          Ihre Eingaben stehen im Link dieser Seite (nach dem #). Dieser Teil wird nicht an einen Server gesendet. Wer
-          den Link erhält, sieht alle Ihre Zahlen.
+          «Link erstellen» packt alle Eingaben in einen Link (nach dem #). Dieser Teil wird nicht an einen Server
+          gesendet. Wer den Link erhält, sieht alle Ihre Zahlen. Ein geöffneter Link hat Vorrang vor den im Browser
+          gespeicherten Eingaben.
         </p>
         <button
           type="button"
           className="knopf knopf--sekundaer"
           onClick={() => {
-            void navigator.clipboard?.writeText(window.location.href).then(() => setKopiert(true));
+            const l = teilenLink(h, window.location.href);
+            setLink(l);
+            setKopiert(false);
+            void navigator.clipboard
+              ?.writeText(l)
+              .then(() => setKopiert(true))
+              .catch(() => setKopiert(false));
           }}
         >
-          {kopiert ? 'Link kopiert' : 'Link kopieren'}
+          {kopiert ? 'Link kopiert' : 'Link erstellen und kopieren'}
         </button>
-        <Schalter
-          label="Eingaben auf diesem Gerät speichern"
-          hinweis="Optional (localStorage). Beim Ausschalten werden die gespeicherten Daten gelöscht."
-          checked={speichern}
-          onChange={onSpeichern}
-        />
+        {link ? (
+          <div className="feld">
+            <label htmlFor={linkId}>Link zum Teilen</label>
+            <input id={linkId} type="text" readOnly value={link} onFocus={(e) => e.currentTarget.select()} />
+          </div>
+        ) : null}
         <button type="button" className="knopf knopf--gefahr" onClick={onZuruecksetzen}>
           Alle Eingaben zurücksetzen
         </button>

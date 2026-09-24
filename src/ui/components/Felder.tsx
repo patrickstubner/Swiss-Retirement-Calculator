@@ -1,4 +1,5 @@
-import { type ReactNode, useEffect, useId, useState } from 'react';
+import { type ReactNode, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { bearbeiteEingabe, formatBetrag, parseBetrag } from '../betrag';
 import { fmtZahl, parseZahl } from '../format';
 
 interface Basis {
@@ -23,6 +24,167 @@ function Rahmen({ id, label, hinweis, warnung, children }: Basis & { id: string;
         </small>
       ) : null}
     </div>
+  );
+}
+
+interface BetragInputProps {
+  id?: string;
+  value: number;
+  onChange: (v: number) => void;
+  /** Nachkommastellen erlaubt (z.B. Fremdwährungsbeträge); Standard: ganze Beträge */
+  dezimal?: boolean;
+  min?: number;
+  max?: number;
+  describedBy?: string;
+  /** Rückmeldung bei ungültiger Eingabe (null = gültig) */
+  onFehler?: (fehler: string | null) => void;
+}
+
+const betragText = (v: number, dezimal: boolean): string => (v === 0 ? '' : formatBetrag(v, dezimal ? 2 : 0));
+
+/**
+ * Kontrolliertes Betragsfeld mit Schweizer Tausendertrennzeichen live während der Eingabe
+ * (1’250’000). Parst Einfügungen wie «1 250 000» oder «1,250,000», hält den Cursor hinter
+ * derselben Ziffer und erlaubt negative Werte nur, wenn `min` < 0.
+ */
+export function BetragInput({
+  id,
+  value,
+  onChange,
+  dezimal = false,
+  min = 0,
+  max = Number.POSITIVE_INFINITY,
+  describedBy,
+  onFehler,
+}: BetragInputProps) {
+  const ref = useRef<HTMLInputElement>(null);
+  const [text, setText] = useState(() => betragText(value, dezimal));
+  const [fokus, setFokus] = useState(false);
+  const caret = useRef<number | null>(null);
+  const opt = { dezimal, negativ: min < 0 };
+
+  useEffect(() => {
+    if (!fokus) setText(betragText(value, dezimal));
+  }, [value, fokus, dezimal]);
+
+  // Cursor nach dem Neuformatieren an die berechnete Stelle setzen
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (el && caret.current !== null && document.activeElement === el) {
+      el.setSelectionRange(caret.current, caret.current);
+      caret.current = null;
+    }
+  });
+
+  const uebernehme = (t: string) => {
+    const n = t.trim() === '' || t === '-' ? 0 : parseBetrag(t, opt);
+    if (n === null) {
+      onFehler?.('Bitte einen Betrag eingeben.');
+      return;
+    }
+    if (n < min || n > max) {
+      onFehler?.(`Erlaubter Bereich: ${formatBetrag(min)} bis ${formatBetrag(max)}`);
+      return;
+    }
+    onFehler?.(null);
+    onChange(n);
+  };
+
+  return (
+    <input
+      ref={ref}
+      id={id}
+      type="text"
+      inputMode={dezimal ? 'decimal' : 'numeric'}
+      autoComplete="off"
+      value={text}
+      placeholder="0"
+      aria-describedby={describedBy}
+      onFocus={() => setFokus(true)}
+      onPaste={(e) => {
+        const eingefuegt = e.clipboardData.getData('text');
+        const n = parseBetrag(eingefuegt, opt);
+        if (n === null) return; // Browser-Standard, danach normale Bereinigung
+        e.preventDefault();
+        const el = e.currentTarget;
+        const start = el.selectionStart ?? text.length;
+        const ende = el.selectionEnd ?? text.length;
+        // ganze Auswahl ersetzt → Betrag direkt übernehmen, sonst in den Text einfügen
+        const ersatz = start === 0 && ende === text.length ? formatBetrag(n, dezimal ? 2 : 0) : String(n);
+        const roh = text.slice(0, start) + ersatz + text.slice(ende);
+        const r = bearbeiteEingabe(text, roh, start + ersatz.length, opt, 'insertFromPaste');
+        caret.current = r.caret;
+        setText(r.text);
+        uebernehme(r.text);
+      }}
+      onChange={(e) => {
+        const el = e.target;
+        const inputType = (e.nativeEvent as InputEvent).inputType ?? '';
+        const r = bearbeiteEingabe(text, el.value, el.selectionStart ?? el.value.length, opt, inputType);
+        caret.current = r.caret;
+        setText(r.text);
+        uebernehme(r.text);
+      }}
+      onBlur={() => {
+        setFokus(false);
+        const n = text.trim() === '' || text === '-' ? 0 : parseBetrag(text, opt);
+        if (n !== null) onChange(Math.min(max, Math.max(min, n)));
+        onFehler?.(null);
+      }}
+    />
+  );
+}
+
+interface BetragFeldProps extends Basis {
+  value: number;
+  onChange: (v: number) => void;
+  min?: number;
+  max?: number;
+  /** Währung als Einheit (Standard CHF) */
+  einheit?: string;
+  dezimal?: boolean;
+}
+
+/** Betragsfeld (CHF oder Fremdwährung) mit Label, Einheit und Live-Tausendertrennzeichen. */
+export function BetragFeld({
+  label,
+  hinweis,
+  warnung,
+  value,
+  onChange,
+  min = 0,
+  max,
+  einheit = 'CHF',
+  dezimal = false,
+}: BetragFeldProps) {
+  const id = useId();
+  const [fehler, setFehler] = useState<string | null>(null);
+  return (
+    <Rahmen id={id} label={label} hinweis={hinweis} warnung={fehler ?? warnung}>
+      <div className="eingabe">
+        <BetragInput
+          id={id}
+          value={value}
+          onChange={onChange}
+          min={min}
+          max={max}
+          dezimal={dezimal}
+          describedBy={hinweis ? `${id}-h` : undefined}
+          onFehler={setFehler}
+        />
+        {min < 0 ? (
+          <button
+            type="button"
+            className="eingabe__vorzeichen"
+            aria-label="Vorzeichen wechseln (+/−)"
+            onClick={() => onChange(-value)}
+          >
+            ±
+          </button>
+        ) : null}
+        <span className="eingabe__einheit">{einheit}</span>
+      </div>
+    </Rahmen>
   );
 }
 
@@ -58,7 +220,7 @@ export function ZahlFeld({
   prozent = false,
   einheit,
   nachkomma = 2,
-  gruppieren = true,
+  gruppieren = false,
 }: ZahlFeldProps) {
   const id = useId();
   const [text, setText] = useState(() => anzeige(value, prozent, nachkomma, gruppieren));

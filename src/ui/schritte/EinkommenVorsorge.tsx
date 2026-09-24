@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   ahvAufschubZuschlag,
+  ahvFruehestesBezugsalter,
   ahvMaxVorbezugMonate,
   ahvMdjeAusRente,
   ahvVorbezugKuerzung,
@@ -10,7 +11,7 @@ import {
 import type { AuslandRente, Person } from '../../core/typen';
 import { neueAuslandRente, WAEHRUNGEN } from '../../data/defaults';
 import { AhvSchaetzhilfe } from '../components/AhvSchaetzhilfe';
-import { AuswahlFeld, Schalter, Segmente, TextFeld, ZahlFeld } from '../components/Felder';
+import { AuswahlFeld, BetragFeld, Schalter, Segmente, TextFeld, ZahlFeld } from '../components/Felder';
 import { Karte } from '../components/Karte';
 import { fmtChf, fmtProzent } from '../format';
 import { type SchrittProps, setzePerson } from '../kontext';
@@ -54,17 +55,17 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
     if (verschiebung > 0) bezugInfo = `Zuschlag ${fmtProzent(ahvAufschubZuschlag(verschiebung, r))} lebenslang`;
   }
   const uebergang = istUebergangsFrau(p.geburtsjahr, p.geschlecht, r);
+  const ahvFrueh = ahvFruehestesBezugsalter(p.geburtsjahr, p.geschlecht, r);
+  const bezugsalter = regeln.bvg.bezugsalter;
 
   return (
     <>
       <Karte titel="Erwerbseinkommen">
-        <ZahlFeld
+        <BetragFeld
           label="Bruttolohn pro Jahr (heute)"
-          einheit="CHF"
           value={p.lohn}
           min={0}
           max={10_000_000}
-          nachkomma={0}
           onChange={(v) => set((x) => ({ ...x, lohn: v }))}
           hinweis="Bis zur Erwerbsaufgabe. Davon gehen AHV/IV/EO 5,3% und ALV 1,1% ab."
         />
@@ -80,13 +81,11 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
       </Karte>
 
       <Karte titel="AHV (1. Säule)">
-        <ZahlFeld
+        <BetragFeld
           label="Erwartete AHV-Rente pro Monat"
-          einheit="CHF"
           value={p.ahv.renteMonat}
           min={0}
           max={10000}
-          nachkomma={0}
           onChange={(v) => set((x) => ({ ...x, ahv: { ...x.ahv, modus: 'eingabe', renteMonat: v } }))}
           hinweis={`Gemäss Rentenvorausberechnung der Ausgleichskasse oder AHV-Schätzhilfe, in heutigen Franken, ungekürzt im Referenzalter (Einzelrente max. ${fmtChf(r.maximalrenteMonat)}). 13. Rente und Plafonierung rechnet die Simulation.`}
         />
@@ -97,9 +96,17 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
           regeln={regeln}
           set={set}
         />
+        <div className="feld feld--nurlesen">
+          <span className="feld__titel">AHV: frühester Bezug (Vorbezug)</span>
+          <output className="feld__wert">ab {ahvFrueh} Jahren</output>
+          <small className="feld__hinweis">
+            Keine Eingabe: gesetzlich festgelegt und aus Jahrgang und Geschlecht abgeleitet (ab 63; Frauen der Jahrgänge
+            1961–1969 ab 62). Höchstens {maxVorbezug} Monate Vorbezug.
+          </small>
+        </div>
         <div className="raster">
           <AuswahlFeld
-            label="Bezug"
+            label="AHV-Bezug"
             value={bezugArt}
             optionen={[
               { value: 'ordentlich', label: 'Im Referenzalter' },
@@ -145,22 +152,18 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
       </Karte>
 
       <Karte titel="Pensionskasse (2. Säule)" untertitel="Werte aus dem Vorsorgeausweis">
-        <ZahlFeld
+        <BetragFeld
           label="Altersguthaben heute"
-          einheit="CHF"
           value={p.pk.guthaben}
           min={0}
           max={100_000_000}
-          nachkomma={0}
           onChange={(v) => set((x) => ({ ...x, pk: { ...x.pk, guthaben: v } }))}
         />
-        <ZahlFeld
+        <BetragFeld
           label="Sparbeitrag pro Jahr (Arbeitnehmer + Arbeitgeber)"
-          einheit="CHF"
           value={p.pk.sparbeitragJahr}
           min={0}
           max={1_000_000}
-          nachkomma={0}
           onChange={(v) => set((x) => ({ ...x, pk: { ...x.pk, beitragModus: 'eingabe', sparbeitragJahr: v } }))}
           hinweis="Gemäss Vorsorgeausweis (Altersgutschriften pro Jahr)."
         />
@@ -204,15 +207,20 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
           />
         </div>
         <ZahlFeld
-          label="Frühestes Bezugsalter gemäss Reglement"
+          label={`Pensionskasse: frühester Bezug laut Reglement (${bezugsalter.reglementFruehestens}–${bezugsalter.aufschubBis})`}
           einheit="Jahre"
           value={p.pk.fruehestesAlter}
-          min={regeln.bvg.bezugsalter.reglementFruehestens}
-          max={regeln.bvg.bezugsalter.aufschubBis}
+          min={bezugsalter.reglementFruehestens}
+          max={bezugsalter.aufschubBis}
           nachkomma={0}
           gruppieren={false}
           onChange={(v) => set((x) => ({ ...x, pk: { ...x.pk, fruehestesAlter: Math.round(v) } }))}
-          hinweis="Gemäss Reglement Ihrer Pensionskasse (Standard 63; gesetzlich frühestens 58, spätestens 70). Bis dahin bleibt das Guthaben gesperrt und verzinst sich weiter – auch wenn Sie früher aufhören zu arbeiten."
+          hinweis={`Nur Pensionskasse, nicht AHV: Wert aus dem Reglement Ihrer Kasse (ohne Angabe im Reglement gesetzlich ab ${bezugsalter.gesetzlichAb}; Reglemente dürfen ab ${bezugsalter.reglementFruehestens} erlauben). Die AHV-Übergangsregel für Frauen der Jahrgänge 1961–1969 (AHV-Vorbezug ab 62) gilt für die Pensionskasse nicht. Bis zu diesem Alter bleibt das Guthaben gesperrt und verzinst sich weiter – auch wenn Sie früher aufhören zu arbeiten.`}
+          warnung={
+            uebergang && p.pk.fruehestesAlter === r.vorbezug.fruehestesAlterUebergangFrauen
+              ? `Prüfen: ${r.vorbezug.fruehestesAlterUebergangFrauen} ist das früheste AHV-Bezugsalter für Frauen Jg. 1961–1969. Für die Pensionskasse gilt nur, was im Reglement steht (ohne Regelung ${bezugsalter.gesetzlichAb}).`
+              : null
+          }
         />
         <p className="klein">
           Der Wohnkanton beeinflusst nur die Besteuerung des Kapitalbezugs, nicht das früheste Bezugsalter. Eine
@@ -223,13 +231,11 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
 
       <Karte titel="Freizügigkeitsguthaben" untertitel="Freizügigkeitskonto oder -depot, z.B. nach Stellenwechsel">
         <div className="raster">
-          <ZahlFeld
+          <BetragFeld
             label="Guthaben heute"
-            einheit="CHF"
             value={p.freizuegigkeit.guthaben}
             min={0}
             max={100_000_000}
-            nachkomma={0}
             onChange={(v) => set((x) => ({ ...x, freizuegigkeit: { ...x.freizuegigkeit, guthaben: v } }))}
           />
           <ZahlFeld
@@ -248,23 +254,19 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
       </Karte>
 
       <Karte titel="Säule 3a">
-        <ZahlFeld
+        <BetragFeld
           label="Guthaben heute"
-          einheit="CHF"
           value={p.saeule3a.guthaben}
           min={0}
           max={10_000_000}
-          nachkomma={0}
           onChange={(v) => set((x) => ({ ...x, saeule3a: { ...x.saeule3a, guthaben: v } }))}
         />
         <div className="raster">
-          <ZahlFeld
+          <BetragFeld
             label="Einzahlung pro Jahr"
-            einheit="CHF"
             value={p.saeule3a.beitragJahr}
             min={0}
             max={regeln.saeule3a.maxOhnePk}
-            nachkomma={0}
             onChange={(v) => set((x) => ({ ...x, saeule3a: { ...x.saeule3a, beitragJahr: v } }))}
             hinweis={`Maximum 2026 mit PK: ${fmtChf(regeln.saeule3a.maxMitPk)}`}
           />
@@ -318,9 +320,10 @@ function AuslandRentenKarte({ p, set }: { p: Person; set: (fn: (p: Person) => Pe
             />
           </div>
           <div className="raster">
-            <ZahlFeld
+            <BetragFeld
               label="Betrag pro Zahlung"
               einheit={r.waehrung}
+              dezimal
               value={r.betrag}
               min={0}
               max={100_000_000}

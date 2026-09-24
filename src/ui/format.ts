@@ -1,14 +1,17 @@
 import type { Monat } from '../core/typen';
+import { formatBetrag } from './betrag';
 
-const ganz = new Intl.NumberFormat('de-CH', { maximumFractionDigits: 0 });
-
-export const fmtZahl = (x: number): string => ganz.format(Math.round(x));
-export const fmtChf = (x: number): string => `CHF ${ganz.format(Math.round(x))}`;
-/** Kurzform für Achsen: 1,2 Mio. / 350 Tsd. / 900 */
+/**
+ * Ganze Zahl mit Schweizer Tausendertrennzeichen (’, app-weit einheitlich; eigene Umsetzung,
+ * weil Intl je nach Browser/ICU ' oder ’ liefert).
+ */
+export const fmtZahl = (x: number): string => formatBetrag(Math.round(x));
+export const fmtChf = (x: number): string => `CHF ${fmtZahl(x)}`;
+/** Kurzform für Achsen: 1.2 Mio. / 350 Tsd. / 900 */
 export function fmtKompakt(x: number): string {
   const a = Math.abs(x);
-  if (a >= 1e6) return `${(x / 1e6).toLocaleString('de-CH', { maximumFractionDigits: 1 })} Mio.`;
-  if (a >= 1e3) return `${Math.round(x / 1e3).toLocaleString('de-CH')} Tsd.`;
+  if (a >= 1e6) return `${formatBetrag(x / 1e6, 1)} Mio.`;
+  if (a >= 1e3) return `${fmtZahl(x / 1e3)} Tsd.`;
   return String(Math.round(x));
 }
 export const fmtProzent = (x: number, stellen = 1): string =>

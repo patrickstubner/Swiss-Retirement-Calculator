@@ -119,6 +119,7 @@ Fussnoten 2-217: ³ Rückerstattung nur bei Nachweis der Besteuerung im Wohnsitz
 4. **AHV:** nie CH-Steuer; Wohnsitzstaatsteuer gemäss Regime (IT 5%, TH bei Überweisung, PT progressiv usw.).
 5. **Art. 25f FZG** nur als Hinweis für Freizügigkeitsguthaben vor dem Alter (RA − 5) bei EU/EFTA-Zuzug.
 6. Status je Wert anzeigen (verifiziert / Näherung / OFFEN).
+7. **AHV-Versicherung nach dem Wegzug** (umgesetzt, siehe `docs/quellen.md` Abschnitt 1): In EU/EFTA-Staaten (CY, MT, PT, ES, IT) ist keine freiwillige AHV möglich (dort gilt die Sozialversicherung des Wohnsitz- bzw. Beschäftigungsstaates). In PA, PY, PH, TH und VAE können Schweizer und EU/EFTA-Staatsangehörige nach mind. 5 Jahren Versicherung unmittelbar vor dem Wegzug innert 1 Jahr der freiwilligen AHV/IV beitreten. Ohne Beitritt entstehen bis zum Referenzalter Beitragslücken; die obligatorischen NE-Beiträge enden mit dem Wegzug. Das EU/EFTA-Kennzeichen kommt aus `eu` in `laender-2026.json` und wird im Test gegen `beitraege.freiwilligeAhv.euEftaStaaten` geprüft.
 
 ## 5. OFFEN
 - Wohnsitzstaatsteuer auf PK-/3a-Kapital: TH, MT, PT, ES (IT 3a)
