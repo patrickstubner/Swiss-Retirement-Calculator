@@ -1,0 +1,228 @@
+{
+  "meta": {
+    "schemaVersion": 1,
+    "jahr": 2026,
+    "stand": "2026-09-24",
+    "quellenDokument": "docs/quellen.md",
+    "hinweis": "Beträge in CHF, Sätze als Dezimalzahl (0.053 = 5,3%). status 'offen' = nicht aus offizieller, aktueller Quelle verifiziert; darf nur als Default einer Nutzereingabe mit Warnung verwendet werden."
+  },
+  "ahv": {
+    "minimalrenteMonat": { "value": 1260, "einheit": "CHF/Monat", "source": "https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf", "stand": "BSV «Beträge gültig ab 1.1.2026», 06.11.2025", "status": "verifiziert" },
+    "maximalrenteMonat": { "value": 2520, "einheit": "CHF/Monat", "source": "https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf", "stand": "1.1.2026 (unverändert seit 1.1.2025)", "status": "verifiziert" },
+    "plafondEhepaarFaktor": { "value": 1.5, "einheit": "Faktor der Maximalrente (3'780/Monat)", "source": "https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf ; https://www.ahv-iv.ch/p/3.01.d", "stand": "1.1.2026", "status": "verifiziert" },
+    "dreizehnteRente": { "value": { "abJahr": 2026, "divisor": 12 }, "source": "https://www.bsv.admin.ch/de/umsetzung-13-ahv-rente", "stand": "2026", "status": "verifiziert", "hinweis": "Jährlich im Dezember, 1/12 der im Jahr ausbezahlten Altersrenten; nur Altersrenten." },
+    "rentenformel": {
+      "value": { "knickFaktorMinimalrente": 36, "untenFaktorMin": 0.74, "untenSatzZaehler": 13, "obenFaktorMin": 1.04, "obenSatzZaehler": 8, "satzNenner": 600, "mdjeMinimum": 15120, "mdjeMaximum": 90720 },
+      "source": "https://www.fedlex.admin.ch/eli/cc/63/837_843_843/de", "stand": "Art. 34 AHVG, geltendes Recht 2026", "status": "verifiziert"
+    },
+    "rententabelleStufe": { "value": 1512, "einheit": "CHF mdJE", "source": "https://sozialversicherungen.admin.ch/de/d/6850/download", "stand": "Rententabellen 2025, gültig auch 2026", "status": "verifiziert" },
+    "mdjeRundung": { "value": "aufrunden", "source": "Rententabellen (Annahme: mdJE wird auf die nächsthöhere Tabellenstufe aufgerundet)", "stand": "2026", "status": "offen", "hinweis": "Rundungsrichtung nicht in quellen.md verifiziert; Einfluss max. eine Tabellenstufe." },
+    "rententabelleReferenz": { "value": [[15120, 1260], [30240, 1588], [45360, 1915], [60480, 2117], [75600, 2318], [90720, 2520]], "einheit": "[mdJE, CHF/Monat] Skala 44", "source": "https://sozialversicherungen.admin.ch/de/d/6850/download", "stand": "Rententabellen 2025, gültig auch 2026", "status": "verifiziert" },
+    "vollrenteBeitragsjahre": { "value": 44, "source": "https://www.ahv-iv.ch/p/3.01.d ; AHVV Art. 52", "stand": "1.1.2026", "status": "verifiziert", "hinweis": "Teilrente vereinfacht linear (Jahre/44)." },
+    "erziehungsgutschriftFaktorMinimalrente": { "value": 3, "einheit": "× jährliche Minimalrente (45'360)", "source": "https://www.ahv-iv.ch/p/3.01.d", "stand": "1.1.2026", "status": "verifiziert" },
+    "verwitwetenzuschlag": { "value": 0.2, "source": "https://www.ahv-iv.ch/p/3.01.d", "stand": "1.1.2026", "status": "verifiziert", "hinweis": "20% der eigenen Rente, zusammen höchstens die Maximalrente." },
+    "referenzalter": {
+      "value": {
+        "maenner": { "jahre": 65, "monate": 0 },
+        "frauen": [
+          { "bisJahrgang": 1960, "jahre": 64, "monate": 0 },
+          { "bisJahrgang": 1961, "jahre": 64, "monate": 3 },
+          { "bisJahrgang": 1962, "jahre": 64, "monate": 6 },
+          { "bisJahrgang": 1963, "jahre": 64, "monate": 9 },
+          { "bisJahrgang": 9999, "jahre": 65, "monate": 0 }
+        ]
+      },
+      "source": "https://www.ahv-iv.ch/p/3.04.d ; https://www.bsv.admin.ch/de/ahv-21", "stand": "1.1.2026", "status": "verifiziert"
+    },
+    "rentenbeginn": { "value": "1. des Monats nach Erreichen des Referenzalters (bzw. nach dem Vorbezugsmonat)", "source": "https://www.ahv-iv.ch/p/3.01.d ; https://www.ahv-iv.ch/p/3.04.d", "stand": "1.1.2026", "status": "verifiziert" },
+    "vorbezug": {
+      "value": { "fruehestesAlter": 63, "fruehestesAlterUebergangFrauen": 62, "maxMonateOrdentlich": 24, "uebergangJahrgangVon": 1961, "uebergangJahrgangBis": 1969 },
+      "source": "https://www.ahv-iv.ch/p/3.04.d", "stand": "1.1.2026", "status": "verifiziert", "hinweis": "Teilvorbezug 20–80% möglich (noch nicht abgebildet). Beitragspflicht bleibt bis RA."
+    },
+    "vorbezugKuerzung": {
+      "value": [0.006, 0.011, 0.017, 0.023, 0.028, 0.034, 0.040, 0.045, 0.051, 0.057, 0.062, 0.068, 0.074, 0.079, 0.085, 0.091, 0.096, 0.102, 0.108, 0.113, 0.119, 0.125, 0.130, 0.136],
+      "einheit": "Kürzung für 1..24 Monate Vorbezug (Index = Monate − 1), lebenslang", "source": "https://www.ahv-iv.ch/p/3.04.d", "stand": "1.1.2026", "status": "verifiziert"
+    },
+    "aufschub": { "value": { "minMonate": 12, "maxMonate": 60 }, "source": "https://www.ahv-iv.ch/p/3.04.d", "stand": "1.1.2026", "status": "verifiziert" },
+    "aufschubZuschlag": {
+      "value": [[0.052, 0.066, 0.080, 0.094], [0.108, 0.123, 0.139, 0.155], [0.171, 0.188, 0.205, 0.222], [0.240, 0.258, 0.277, 0.296], [0.315]],
+      "einheit": "[Jahre−1][0–2 / 3–5 / 6–8 / 9–11 Monate]", "source": "https://www.ahv-iv.ch/p/3.04.d", "stand": "1.1.2026", "status": "verifiziert"
+    },
+    "uebergangKuerzung": {
+      "value": [
+        { "mdjeBis": 60480, "saetzeProJahr": [0, 0.02, 0.03] },
+        { "mdjeBis": 75600, "saetzeProJahr": [0.025, 0.045, 0.065] },
+        { "mdjeBis": null, "saetzeProJahr": [0.035, 0.065, 0.105] }
+      ],
+      "einheit": "reduzierte Kürzung Frauen Jg. 1961–1969 für 1/2/3 Jahre Vorbezug", "source": "https://sozialversicherungen.admin.ch/de/d/20135/download ; Art. 40c AHVG", "stand": "gültig ab 1.1.2024, Stand 1.1.2026", "status": "verifiziert",
+      "hinweis": "Jahreswerte verifiziert. Monatswerte werden linear interpoliert (Näherung); offizielle Monatstabelle im KS-R AHV 21."
+    },
+    "rentenzuschlagUebergang": {
+      "value": {
+        "stufen": [ { "mdjeBis": 60480, "betragMonat": 160 }, { "mdjeBis": 75600, "betragMonat": 100 }, { "mdjeBis": null, "betragMonat": 50 } ],
+        "jahrgangsanteil": [ [1961, 0.25], [1962, 0.5], [1963, 0.75], [1964, 1], [1965, 1], [1966, 0.81], [1967, 0.63], [1968, 0.44], [1969, 0.25] ]
+      },
+      "source": "https://sozialversicherungen.admin.ch/de/d/20135/download ; Art. 34bis AHVG ; https://www.ahv-iv.ch/p/3.04.d", "stand": "Stand 1.1.2026", "status": "verifiziert",
+      "hinweis": "Nur ohne Vorbezug; lebenslang, nicht plafoniert, nicht indexiert, nicht Teil der 13. Rente; bei Teilrente anteilig."
+    },
+    "rentenanpassung2027": { "value": null, "source": "https://www.bsv.admin.ch (Medienmitteilungen)", "stand": "24.09.2026", "status": "offen", "hinweis": "Bis 24.09.2026 kein Bundesratsentscheid gefunden." },
+    "neueVorbezugsAufschubsaetze": { "value": null, "source": "https://www.bsv.admin.ch/de/ahv-21", "stand": "09/2026", "status": "offen", "hinweis": "«frühestens 2027», Sätze noch nicht bekannt." },
+    "rentenzahlungAusland": { "value": "CH-, EU/EFTA-Staatsangehörige und Angehörige von Abkommensstaaten: weltweit; Nichtvertragsstaaten: keine Auszahlung, Rückvergütung der Beiträge; keine EL im Ausland", "source": "https://www.zas.admin.ch/de/anspruch-auf-ahv-rentenzahlungen-ausserhalb-der-schweiz", "stand": "abgerufen 09/2026", "status": "verifiziert" },
+    "elLebensbedarf": { "value": { "alleinstehend": 20670, "ehepaar": 31005 }, "einheit": "CHF/Jahr (nur Info)", "source": "https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf", "stand": "1.1.2026", "status": "verifiziert" },
+    "reformAhv2030": { "value": "Vernehmlassung 20.05.–11.09.2026, nicht in Kraft", "source": "https://www.bsv.admin.ch/de/ahv-2030", "stand": "09/2026", "status": "verifiziert", "hinweis": "Nur Hinweis, nicht gerechnet." }
+  },
+  "beitraege": {
+    "ahvIvEoSatzArbeitnehmer": { "value": 0.053, "source": "https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf", "stand": "1.1.2026", "status": "verifiziert" },
+    "ahvIvEoSatzTotal": { "value": 0.106, "source": "https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf", "stand": "1.1.2026", "status": "verifiziert" },
+    "alvSatzArbeitnehmer": { "value": 0.011, "source": "https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf", "stand": "1.1.2026", "status": "verifiziert" },
+    "alvHoechstlohn": { "value": 148200, "source": "https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf", "stand": "1.1.2026", "status": "verifiziert" },
+    "mindestbeitrag": { "value": 530, "source": "https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf", "stand": "1.1.2026", "status": "verifiziert", "hinweis": "AHV 435, IV 70, EO 25" },
+    "nichterwerbstaetige": {
+      "beitragspflicht": { "value": "ab 1.1. nach dem 20. Geburtstag bis Ende des Monats, in dem das RA erreicht wird", "source": "https://www.ahv-iv.ch/p/2.03.d", "stand": "1.1.2026", "status": "verifiziert" },
+      "bemessung": { "value": { "rentenFaktor": 20, "verheirateteHaelftig": true }, "source": "https://www.ahv-iv.ch/p/2.03.d", "stand": "1.1.2026", "status": "verifiziert", "hinweis": "Vermögen (ohne 2. Säule/3a) + 20 × jährliches Renteneinkommen (PK-, Überbrückungs-, ausländische Renten usw.); Stichtag 31.12." },
+      "tabelle": {
+        "value": { "minimalbeitrag": 530, "untergrenze": 350000, "beitragAbUntergrenze": 636, "schritt": 50000, "zuschlagStufe1": 106, "grenzeStufe2": 1750000, "zuschlagStufe2": 159, "maximalbeitrag": 26500 },
+        "source": "https://www.ahv-iv.ch/p/2.03.d ; https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf", "stand": "1.1.2026", "status": "verifiziert"
+      },
+      "verwaltungskostenMax": { "value": 0.05, "source": "https://www.ahv-iv.ch/p/2.03.d", "stand": "1.1.2026", "status": "verifiziert", "hinweis": "bis 5%, je nach Ausgleichskasse" },
+      "befreiungEhegatteMindestbeitrag": { "value": 1060, "source": "https://www.ahv-iv.ch/p/2.03.d", "stand": "1.1.2026", "status": "verifiziert", "hinweis": "doppelter Mindestbeitrag, bezahlt vom erwerbstätigen Ehegatten" }
+    },
+    "freiwilligeAhv": {
+      "satzErwerbstaetige": { "value": 0.101, "source": "https://www.ahv-iv.ch/p/10.02.d", "stand": "MB Stand 1.1.2025", "status": "verifiziert" },
+      "minimumNichterwerbstaetige": { "value": 1010, "source": "https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf", "stand": "1.1.2026", "status": "verifiziert" },
+      "maximumNichterwerbstaetige": { "value": 25250, "source": "https://www.ahv-iv.ch/p/10.02.d", "stand": "MB Stand 1.1.2025", "status": "offen", "hinweis": "Maximum 2026 nicht separat bestätigt (vermutlich unverändert)." },
+      "voraussetzungen": { "value": "nur CH-/EU-/EFTA-Staatsangehörige, vorher mind. 5 Jahre ununterbrochen obligatorisch versichert, Beitritt innert 1 Jahr", "source": "https://www.ahv-iv.ch/p/10.02.d", "stand": "MB Stand 1.1.2025", "status": "verifiziert" }
+    }
+  },
+  "bvg": {
+    "eintrittsschwelle": { "value": 22680, "source": "https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf ; https://sozialversicherungen.admin.ch/de/d/21427/download", "stand": "1.1.2026", "status": "verifiziert" },
+    "koordinationsabzug": { "value": 26460, "source": "https://sozialversicherungen.admin.ch/de/d/21427/download", "stand": "1.1.2026", "status": "verifiziert" },
+    "obereGrenzeJahreslohn": { "value": 90720, "source": "https://sozialversicherungen.admin.ch/de/d/21427/download", "stand": "1.1.2026", "status": "verifiziert" },
+    "koordinierterLohnMax": { "value": 64260, "source": "https://sozialversicherungen.admin.ch/de/d/21427/download", "stand": "1.1.2026", "status": "verifiziert" },
+    "koordinierterLohnMin": { "value": 3780, "source": "https://sozialversicherungen.admin.ch/de/d/21427/download", "stand": "1.1.2026", "status": "verifiziert" },
+    "maxVersicherbarerLohn": { "value": 907200, "source": "https://sozialversicherungen.admin.ch/de/d/21427/download", "stand": "1.1.2026", "status": "verifiziert" },
+    "mindestzins2026": { "value": 0.0125, "source": "https://www.bsv.admin.ch/de/newnsb/8QdyDi9kz0trzgbwDud08", "stand": "Bundesratsentscheid 05.11.2025", "status": "verifiziert" },
+    "mindestzins2027": { "value": 0.0175, "source": "BSV Medienmitteilung (Empfehlung BVG-Kommission 31.08.2026)", "stand": "09/2026", "status": "offen", "hinweis": "Nur Empfehlung; Entscheid des Bundesrates offen." },
+    "mindestumwandlungssatz": { "value": 0.068, "source": "https://www.fedlex.admin.ch/eli/cc/1983/797_797_797/de", "stand": "Art. 14 BVG, 2026", "status": "verifiziert", "hinweis": "Gilt nur für das Obligatorium; umhüllende Kassen oft deutlich tiefer → Nutzereingabe." },
+    "altersgutschriften": {
+      "value": [ { "abAlter": 25, "satz": 0.07 }, { "abAlter": 35, "satz": 0.10 }, { "abAlter": 45, "satz": 0.15 }, { "abAlter": 55, "satz": 0.18 } ],
+      "einheit": "% des koordinierten Lohns, BVG-Alter = Kalenderjahr − Geburtsjahr", "source": "https://www.fedlex.admin.ch/eli/cc/1983/797_797_797/de", "stand": "Art. 16 BVG, 2026", "status": "verifiziert"
+    },
+    "bezugsalter": {
+      "value": { "gesetzlichAb": 63, "reglementFruehestens": 58, "aufschubBis": 70 },
+      "source": "Art. 13, 13b BVG ; Art. 1i BVV 2 https://www.fedlex.admin.ch/eli/cc/1984/543_543_543/de", "stand": "2026", "status": "verifiziert", "hinweis": "Aufschub nur bei Weiterarbeit."
+    },
+    "teilbezugMaxSchritte": { "value": 3, "source": "Art. 13a, 13b BVG", "stand": "seit 1.1.2024", "status": "verifiziert" },
+    "kapitalbezugMinAnteilObligatorium": { "value": 0.25, "source": "Art. 37 Abs. 2 BVG https://www.fedlex.admin.ch/eli/cc/1983/797_797_797/de", "stand": "2026", "status": "verifiziert", "hinweis": "Mehr (bis 100%) nur gemäss Reglement." },
+    "einkaufSperrfristJahre": { "value": 3, "source": "Art. 79b Abs. 3 BVG", "stand": "2026", "status": "verifiziert" },
+    "freizuegigkeitBezug": { "value": { "fruehestensJahreVorRA": 5, "aufschubJahreNachRA": 5 }, "source": "Art. 16 FZV https://www.fedlex.admin.ch/eli/cc/1994/2399_2399_2399/de", "stand": "2026", "status": "verifiziert" },
+    "barauszahlungAusreise": { "value": "Art. 5 Abs. 1 lit. a FZG; EU/EFTA-Einschränkung Art. 25f FZG für das Obligatorium", "source": "https://www.fedlex.admin.ch/eli/cc/1994/2386_2386_2386/de ; https://sfbvg.ch/aufgaben/barauszahlung-nach-ausreise", "stand": "2026", "status": "verifiziert", "hinweis": "Bei ordentlicher Pensionierung gilt das Reglement – Einzelfall prüfen." }
+  },
+  "saeule3a": {
+    "maxMitPk": { "value": 7258, "source": "https://www.bsv.admin.ch/de/die-dritte-saeule", "stand": "1.1.2026", "status": "verifiziert" },
+    "maxOhnePkSatz": { "value": 0.2, "source": "https://www.bsv.admin.ch/de/die-dritte-saeule", "stand": "1.1.2026", "status": "verifiziert" },
+    "maxOhnePk": { "value": 36288, "source": "https://www.bsv.admin.ch/de/die-dritte-saeule", "stand": "1.1.2026", "status": "verifiziert" },
+    "bezug": { "value": { "fruehestensJahreVorRA": 5, "aufschubJahreNachRA": 5 }, "source": "Art. 3 BVV 3 https://www.fedlex.admin.ch/eli/cc/1985/1778_1778_1778/de", "stand": "2026", "status": "verifiziert", "hinweis": "Aufschub nur bei nachgewiesener Erwerbstätigkeit." },
+    "nachzahlung": { "value": "Lücken ab 2025, bis 10 Jahre zurück, erstmals 2026; pro Jahr bis 7'258", "source": "https://www.fedlex.admin.ch/eli/oc/2024/622/de", "stand": "in Kraft 1.1.2025", "status": "verifiziert" }
+  },
+  "steuern": {
+    "rentenSteuerbarAnteil": { "value": 1, "source": "Art. 22 DBG https://www.fedlex.admin.ch/eli/cc/1991/1184_1184_1184/de", "stand": "2026", "status": "verifiziert" },
+    "dbgKapitalleistungDivisor": { "value": 5, "source": "Art. 38 DBG https://www.fedlex.admin.ch/eli/cc/1991/1184_1184_1184/de", "stand": "2026", "status": "verifiziert", "hinweis": "Alle Kapitalleistungen eines Kalenderjahres (auch beider Ehegatten) zusammengerechnet; keine Sozialabzüge." },
+    "dbgTarifAlleinstehend": {
+      "value": {
+        "steuerfreiBis": 15200,
+        "stufen": [
+          { "ab": 15200, "basis": 0, "satz": 0.0077 },
+          { "ab": 33200, "basis": 138.6, "satz": 0.0088 },
+          { "ab": 43500, "basis": 229.2, "satz": 0.0264 },
+          { "ab": 58000, "basis": 612, "satz": 0.0297 },
+          { "ab": 76200, "basis": 1152.5, "satz": 0.0594 },
+          { "ab": 82100, "basis": 1502.95, "satz": 0.066 },
+          { "ab": 108900, "basis": 3271.75, "satz": 0.088 },
+          { "ab": 141500, "basis": 6140.55, "satz": 0.11 },
+          { "ab": 185100, "basis": 10936.55, "satz": 0.132 }
+        ],
+        "proportionalAb": 794000,
+        "proportionalSatz": 0.115
+      },
+      "source": "VKP AS 2025 579 https://www.fedlex.admin.ch/eli/cc/2025/579/de ; https://www.estv.admin.ch/de/steuertarife-zur-direkten-bundessteuer", "stand": "in Kraft 1.1.2026", "status": "verifiziert"
+    },
+    "dbgTarifVerheiratet": {
+      "value": {
+        "steuerfreiBis": 29700,
+        "stufen": [
+          { "ab": 29700, "basis": 0, "satz": 0.01 },
+          { "ab": 53400, "basis": 237, "satz": 0.02 },
+          { "ab": 61300, "basis": 395, "satz": 0.03 },
+          { "ab": 79100, "basis": 929, "satz": 0.04 },
+          { "ab": 94900, "basis": 1561, "satz": 0.05 },
+          { "ab": 108700, "basis": 2251, "satz": 0.06 },
+          { "ab": 120600, "basis": 2965, "satz": 0.07 },
+          { "ab": 130500, "basis": 3658, "satz": 0.08 },
+          { "ab": 138400, "basis": 4290, "satz": 0.09 },
+          { "ab": 144300, "basis": 4821, "satz": 0.1 },
+          { "ab": 148300, "basis": 5221, "satz": 0.11 },
+          { "ab": 150400, "basis": 5452, "satz": 0.12 },
+          { "ab": 152400, "basis": 5692, "satz": 0.13 }
+        ],
+        "proportionalAb": 941400,
+        "proportionalSatz": 0.115
+      },
+      "source": "VKP AS 2025 579 https://www.fedlex.admin.ch/eli/cc/2025/579/de ; https://www.estv.admin.ch/de/steuertarife-zur-direkten-bundessteuer", "stand": "in Kraft 1.1.2026", "status": "verifiziert"
+    },
+    "dbgAbzugProKind": { "value": 263, "einheit": "CHF vom Steuerbetrag", "source": "VKP AS 2025 579", "stand": "in Kraft 1.1.2026", "status": "verifiziert" },
+    "dbgTarifAuchFuerKapital": { "value": true, "source": "ESTV Formular 58c (Tarifblatt 2026)", "stand": "2026", "status": "verifiziert" },
+    "rundungEinkommen": { "value": 100, "einheit": "abrunden auf CHF", "source": "ESTV RS 2-216 https://www.estv.admin.ch/dam/de/sd-web/mljRXo4VcR0p/2-216-D-2025-d.pdf", "stand": "2026", "status": "verifiziert" },
+    "ep27Kapitalbezugssteuer": { "value": "vom Parlament abgelehnt (März 2026)", "source": "https://www.parlament.ch/de/services/news/Seiten/2026/20260304182645577194158159026_bsd185.aspx", "stand": "03/2026", "status": "verifiziert" },
+    "vermoegenssteuerBund": { "value": false, "source": "https://www.estv2.admin.ch/stp/ds/d-vermoegenssteuer-np-de.pdf", "stand": "Dossier 2023/2025", "status": "verifiziert", "hinweis": "Nur Kantone und Gemeinden erheben Vermögenssteuer." },
+    "eigenmietwertAbschaffungAbJahr": { "value": 2029, "source": "https://www.estv.admin.ch/de/newnsb/yGTqBPowRqyVh0zPokW-q", "stand": "Bundesratsentscheid 01.04.2026", "status": "verifiziert" },
+    "kantonaleKapitalleistungssteuer": { "value": null, "source": "https://www.estv2.admin.ch/stp/sm/2024/kapitalleistungen-saeulen-de-fr.pdf ; https://swisstaxcalculator.estv.admin.ch/", "stand": "Mäppchen 2024", "status": "offen", "hinweis": "Kantonal sehr unterschiedlich; im MVP Nutzereingabe (effektiver Satz)." },
+    "luVorsorgetarif": { "value": { "satzBis40000": 0.005, "satzDarueber": 0.014, "satzAb2028": 0.01 }, "source": "https://www.kgl.ch/gut-zu-wissen/steuergesetzrevision-2025-im-kanton-luzern-was-soll-sich-im-detail-aendern/ (sekundär)", "stand": "ab 1.1.2025", "status": "offen", "hinweis": "Offizielle kantonale Quelle offen." },
+    "maschinenlesbareKantonstarife": { "value": null, "source": "https://swisstaxcalculator.estv.admin.ch/", "stand": "09/2026", "status": "offen" },
+    "quellensteuer": {
+      "kapitalBundAlleinstehend": {
+        "value": [ { "bis": 25000, "satz": 0 }, { "bis": 50000, "satz": 0.0035 }, { "bis": 75000, "satz": 0.0055 }, { "bis": 100000, "satz": 0.0125 }, { "bis": 125000, "satz": 0.016 }, { "bis": 150000, "satz": 0.0195 }, { "bis": 750000, "satz": 0.026 }, { "bis": null, "satz": 0.023 } ],
+        "einheit": "Satz auf dem ganzen Betrag", "source": "QStV Anhang Ziff. 3 (SR 642.118.2); ESTV Beilage 6 «Ausgabe 2025/2026»", "stand": "seit 1.1.2025", "status": "verifiziert"
+      },
+      "kapitalBundVerheiratet": {
+        "value": [ { "bis": 25000, "satz": 0 }, { "bis": 50000, "satz": 0.0015 }, { "bis": 75000, "satz": 0.005 }, { "bis": 100000, "satz": 0.008 }, { "bis": 125000, "satz": 0.0115 }, { "bis": 150000, "satz": 0.0175 }, { "bis": 900000, "satz": 0.026 }, { "bis": null, "satz": 0.023 } ],
+        "einheit": "Satz auf dem ganzen Betrag", "source": "QStV Anhang Ziff. 3 (SR 642.118.2); ESTV Beilage 6 «Ausgabe 2025/2026»", "stand": "seit 1.1.2025", "status": "verifiziert"
+      },
+      "rentenBund": { "value": 0.01, "source": "Art. 95/96 Abs. 2 DBG", "stand": "2026", "status": "verifiziert" },
+      "kantonSZ": {
+        "value": { "kapitalKanton": 0.025, "rentenKanton": 0.05, "freigrenze": 2000, "rueckforderungFristJahre": 3 },
+        "source": "https://www.sz.ch/public/upload/assets/91262/Merkblatt_Quellenbesteuerung_privatrechtlicher_Vorsorgeleistungen_an_Personen_ohne_Wohnsitz_oder_Aufenthalt_in_der_Schweiz_Stand_1_Januar_2026.pdf?fp=1", "stand": "1.1.2026", "status": "verifiziert"
+      },
+      "uebrigeKantone": { "value": null, "source": "kantonale Steuerämter", "stand": "–", "status": "offen", "hinweis": "Massgebend ist der Sitzkanton der Vorsorgeeinrichtung; nur SZ verifiziert." },
+      "ahvRentenAusland": { "value": "keine CH-Quellensteuer (abgeleitet)", "source": "DBG Art. 95/96", "stand": "–", "status": "offen" },
+      "chLiegenschaftNachWegzug": { "value": "beschränkte Steuerpflicht (wirtschaftliche Zugehörigkeit)", "source": "https://www.estv2.admin.ch/stp/ds/d-vermoegenssteuer-np-de.pdf", "stand": "–", "status": "offen" }
+    },
+    "dbaRueckforderung": {
+      "value": {
+        "spalten": ["2. Säule Rente QSt", "2. Säule Kapital rückforderbar", "3a Rente QSt", "3a Kapital rückforderbar"],
+        "laender": {
+          "DE": ["nein", "ja", "nein", "ja"], "FR": ["nein", "ja*", "nein", "ja*"], "IT": ["nein", "ja*", "nein", "ja*"],
+          "AT": ["nein", "ja", "nein", "ja"], "ES": ["nein", "ja", "nein", "ja"], "PT": ["nein", "ja", "nein", "ja"], "US": ["nein", "ja", "nein", "ja"],
+          "PL": ["nein", "ja", "nein", "ja"], "CZ": ["nein", "ja", "nein", "ja"], "HR": ["nein", "ja", "nein", "ja"], "GR": ["nein", "ja", "nein", "ja"],
+          "TH": ["nein", "ja", "ja", "nein"], "SG": ["nein", "ja", "ja", "nein"], "CA": ["ja (max. 15%)", "nein", "ja (max. 15%)", "nein"],
+          "AU": ["ja*", "nein", "ja*", "nein"], "HU": ["ja", "nein", "ja", "nein"], "AE": ["ja", "nein", "ja", "nein"], "CY": ["ja*", "ja*", "nein", "ja"]
+        },
+        "nichtAufgefuehrt": "Rente mit Quellensteuer, Kapital nicht rückforderbar",
+        "stern": "nur mit Besteuerungsnachweis bzw. Bedingungen"
+      },
+      "source": "ESTV RS 2-217 https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf", "stand": "1.1.2026", "status": "verifiziert"
+    }
+  },
+  "daten": {
+    "jstMacrohistory": { "value": { "laender": 18, "von": 1870, "bis": 2020, "lizenz": "CC BY-NC-SA 4.0" }, "source": "https://www.macrohistory.net/database/", "stand": "R6", "status": "verifiziert", "hinweis": "Nicht kommerziell; Fortschreibung 2021–2025 offen." },
+    "bfsLik": { "value": "LIK seit Juni 1914", "source": "https://www.bfs.admin.ch/asset/de/36366716", "stand": "BFS-OGD", "status": "verifiziert" },
+    "shiller": { "value": null, "source": "https://shillerdata.com/", "stand": "–", "status": "offen", "hinweis": "Keine explizite Lizenz." },
+    "snb": { "value": null, "source": "https://data.snb.ch", "stand": "–", "status": "offen", "hinweis": "Nutzungsbedingungen nicht verifiziert." },
+    "pictet": { "value": null, "source": "Pictet (privat)", "stand": "–", "status": "offen", "hinweis": "Nicht verwenden, solange Lizenz ungeklärt." }
+  },
+  "langlebigkeit": {
+    "bfsKohortensterbetafeln": { "value": { "jahrgaengeVon": 1876, "jahrgaengeBis": 2030, "alterBis": 120 }, "source": "https://www.pxweb.bfs.admin.ch/pxweb/de/px-x-0102020300_101/", "stand": "publiziert 05.12.2023", "status": "verifiziert" },
+    "lebenserwartungMit65": { "value": { "maenner": 20.4, "frauen": 23.0, "jahr": 2024 }, "source": "https://www.bfs.admin.ch/bfs/de/home/statistiken/bevoelkerung/geburten-todesfaelle/lebenserwartung.html", "stand": "2025 publiziert", "status": "verifiziert" },
+    "anteilHundertjaehrigeJg1967": { "value": { "maenner": 0.04, "frauen": 0.11 }, "source": "https://www.bfs.admin.ch/bfs/de/home/statistiken/bevoelkerung/geburten-todesfaelle/lebenserwartung.html", "stand": "2023/2024", "status": "verifiziert" }
+  }
+}

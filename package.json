@@ -1,0 +1,45 @@
+{
+  "name": "swiss-retirement-calculator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Ruhestands- und Vermögensrechner Schweiz (statische Web-App)",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "rsbuild dev",
+    "build": "rsbuild build",
+    "preview": "rsbuild preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "screenshots": "node scripts/screenshots.mjs"
+  },
+  "dependencies": {
+    "lz-string": "^1.5.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "uplot": "^1.6.32"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.14",
+    "@rsbuild/core": "^2.2.9",
+    "@rsbuild/plugin-react": "^2.1.0",
+    "@types/node": "^26.6.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "playwright": "^1.63.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/patrickstubner/Swiss-Retirement-Calculator.git"
+  },
+  "homepage": "https://patrickstubner.github.io/Swiss-Retirement-Calculator/",
+  "author": "Patrick Stubner"
+}
