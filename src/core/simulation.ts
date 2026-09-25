@@ -21,11 +21,19 @@
  *   Wohnsitz im Ausland nur mit freiwilliger AHV (VFV, MB 10.02), sonst entstehen Beitragslücken.
  *   Bemessung: Vermögen am 31.12. (inkl. im Jahr bezogener Vorsorgekapitalien, ohne noch
  *   gesperrte PK/FZ/3a) + 20 × Renteneinkommen (alle Renten inkl. AHV, ohne IV), Ehepaare je hälftig.
- * - TODO(wegzug): Barauszahlung von PK/FZ bei endgültiger Ausreise (Art. 5 FZG, Art. 25f FZG),
- *   Steuern im Wohnsitzstaat.
+ * - Wegzug mit Barauszahlung (Art. 5 Abs. 1 lit. a FZG, Art. 14 FZV, Art. 3 Abs. 2 lit. d BVV 3):
+ *   PK, Freizügigkeit und 3a werden ab dem Wegzugsmonat als Kapital frei, sofern der Wegzug vor
+ *   dem jeweiligen Bezugsalter liegt (PK: vor dem Bezugsalter laut Reglement, sonst Altersleistung,
+ *   Art. 2 Abs. 1bis FZG). EU/EFTA (Art. 25f FZG): der obligatorische Teil (Näherung, siehe
+ *   schaetzwerte.ts) bleibt als Freizügigkeitsguthaben gesperrt (Bezug ab RA−5), ausser die Person
+ *   ist im neuen Land nicht obligatorisch versichert; Freizügigkeitsguthaben bleibt dann ganz
+ *   gesperrt (Anteil unbekannt). Kapitalleistungen nach dem Wegzug: Schweizer Quellensteuer
+ *   (Bund + Sitzkanton der Vorsorgeeinrichtung, core/quellensteuer.ts) statt der ordentlichen
+ *   Kapitalleistungssteuer. Einkommens-/Vermögenssteuern im Wohnsitzstaat sind nicht abgebildet.
  */
 
 import { kantonsModellFuer } from '../data/kantone';
+import { type WegzugsLand, wegzugsLand } from '../data/laender';
 import type { Regeln } from '../rules';
 import {
   ahv13,
@@ -51,7 +59,9 @@ import {
 } from './freiwilligeAhv';
 import { realerBetrag } from './indexierung';
 import { neBefreitDurchEhegatte, neBeitrag } from './neBeitrag';
+import { quellensteuerKapital } from './quellensteuer';
 import { deterministisch, type RenditeModell } from './renditen';
+import { obligatoriumsAnteilBei } from './schaetzwerte';
 import { dbgEinkommen, dbgKapital } from './steuern';
 import type { Haushalt, JahresZeile, Monat, Person, PersonInfo, SimulationsErgebnis, Toepfe } from './typen';
 import { geburtIndex, stoppAlterMonate, wegzugIndex } from './zeitpunkt';
@@ -84,6 +94,13 @@ interface PersonPlan {
   wegIdx: number;
   /** Freiwillige AHV wird gerechnet */
   fwAktiv: boolean;
+  /** Barauszahlung beim Wegzug: Monatsindex je Topf (Infinity = keine) */
+  barPkIdx: number;
+  barFzIdx: number;
+  barS3aIdx: number;
+  /** Ganzes PK-Guthaben frei (nicht EU/EFTA bzw. dort nicht obligatorisch versichert) */
+  barVoll: boolean;
+  land: WegzugsLand | undefined;
   info: PersonInfo;
   // laufender Zustand
   t: Toepfe;
@@ -217,7 +234,7 @@ function planePerson(p: Person, regeln: Regeln, stoppMonate: number, startIdx: n
         'Erwerbstätigkeit nach dem Wegzug: keine Schweizer Lohnabzüge mehr; ausländische Sozialabgaben sind nicht abgebildet.',
       );
     hinweise.push(
-      'Steuern bei Wohnsitz im Ausland sind noch nicht abgebildet – es wird weiterhin mit Schweizer Steuern gerechnet.',
+      'Einkommens- und Vermögenssteuern bei Wohnsitz im Ausland sind noch nicht abgebildet – es wird weiterhin mit Schweizer Steuern gerechnet. Kapitalleistungen aus Vorsorge nach dem Wegzug: Schweizer Quellensteuer (Näherung, siehe Ergebnis).',
     );
   }
 
@@ -238,10 +255,6 @@ function planePerson(p: Person, regeln: Regeln, stoppMonate: number, startIdx: n
   const ahvStartIdx = geburtIdx + raMonate + 1 + verschiebung;
 
   const pkStartMonate = pkBezugMonate(p, stoppMonate, regeln);
-  if (stoppMonate < pkStartMonate && p.pk.guthaben > 0)
-    hinweise.push(
-      'Erwerbsaufgabe vor dem frühesten PK-Bezugsalter: Das Guthaben bleibt bis dahin gesperrt und wird weiter verzinst.',
-    );
 
   const b3a = regeln.saeule3a.bezug;
   const s3aStartMonate = vorsorgeBezugMonate(
@@ -265,6 +278,34 @@ function planePerson(p: Person, regeln: Regeln, stoppMonate: number, startIdx: n
       : Math.min(regeln.saeule3a.maxOhnePk, p.lohn * regeln.saeule3a.maxOhnePkSatz);
   if (p.saeule3a.beitragJahr > s3aMax) hinweise.push(`3a-Beitrag auf das Maximum von ${s3aMax} begrenzt.`);
 
+  // Barauszahlung beim Wegzug
+  const land = weg !== null ? wegzugsLand(p.wohnsitzAusland.land) : undefined;
+  let barPkIdx = Number.POSITIVE_INFINITY;
+  let barFzIdx = Number.POSITIVE_INFINITY;
+  let barS3aIdx = Number.POSITIVE_INFINITY;
+  const barVoll = land !== undefined && (!land.euEfta || p.wohnsitzAusland.nichtObligatorischVersichert);
+  const hatPk = p.pk.guthaben > 0 || p.pk.sparbeitragJahr > 0 || p.pk.beitragModus === 'bvgMinimum';
+  if (weg !== null && p.wohnsitzAusland.barauszahlung) {
+    const bIdx = Math.max(weg, startIdx);
+    if (!land)
+      hinweise.push(
+        'Barauszahlung beim Wegzug: bitte das Land wählen (EU/EFTA oder nicht) – bis dahin nicht gerechnet.',
+      );
+    else {
+      if (bIdx < geburtIdx + pkStartMonate) barPkIdx = bIdx;
+      else if (hatPk)
+        hinweise.push(
+          'Wegzug erst ab dem PK-Bezugsalter: keine Barauszahlung der Austrittsleistung, sondern Altersleistung gemäss Reglement (Art. 2 Abs. 1bis FZG).',
+        );
+      if (bIdx < geburtIdx + fzStartMonate && barVoll) barFzIdx = bIdx;
+      if (bIdx < geburtIdx + s3aStartMonate) barS3aIdx = bIdx;
+    }
+  }
+  if (stoppMonate < pkStartMonate && p.pk.guthaben > 0 && barPkIdx === Number.POSITIVE_INFINITY)
+    hinweise.push(
+      'Erwerbsaufgabe vor dem frühesten PK-Bezugsalter: Das Guthaben bleibt bis dahin gesperrt und wird weiter verzinst.',
+    );
+
   return {
     p,
     geburtIdx,
@@ -281,6 +322,11 @@ function planePerson(p: Person, regeln: Regeln, stoppMonate: number, startIdx: n
     auslandStartIdx: p.auslandRenten.map((r) => geburtIdx + Math.round(r.startAlter * 12)),
     wegIdx,
     fwAktiv,
+    barPkIdx,
+    barFzIdx,
+    barS3aIdx,
+    barVoll,
+    land,
     info: {
       referenzalterMonate: raMonate,
       ahvStart: ausMonatIndex(ahvStartIdx),
@@ -299,6 +345,8 @@ function planePerson(p: Person, regeln: Regeln, stoppMonate: number, startIdx: n
       ahvLueckenFaktor: lueckenFaktor,
       freiwilligeAhvJahre: [],
       neBeitraegeJahre: [],
+      barauszahlung: null,
+      quellensteuerKapital: 0,
       hinweise,
     },
     t: startToepfe(p),
@@ -339,6 +387,14 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
   const a = h.annahmen;
   const modell = opt.renditeModell ?? deterministisch(a.renditeNominal, a.inflation);
   const kanton = kantonsModellFuer(h.steuern);
+  /** Sitzkanton der Vorsorgeeinrichtung je Person (Quellensteuer) und dessen ordentliches Modell (Näherung) */
+  const sitz = h.personen.map((p) => p.wohnsitzAusland.sitzkantonVorsorge || h.steuern.kanton);
+  const sitzModell = sitz.map((k) =>
+    k === h.steuern.kanton
+      ? kanton
+      : kantonsModellFuer({ ...h.steuern, kanton: k, gemeinde: '', kirche: 'keine', eigeneSaetze: false }),
+  );
+  const qstNaeherungGemeldet = h.personen.map(() => false);
   const startIdx = monatIndex(opt.start);
   const plaene = h.personen.map((p, i) =>
     planePerson(p, regeln, opt.stoppAlterMonate?.[i] ?? stoppAlterMonate(p), startIdx),
@@ -349,9 +405,9 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
   // Bezugsdaten in der Vergangenheit: Bezug frühestens im Startmonat
   for (const pl of plaene) {
     const ab = (idx: number) => ausMonatIndex(Math.max(idx, startIdx));
-    pl.info.pkStart = ab(pl.pkStartIdx);
-    pl.info.saeule3aStart = ab(pl.s3aStartIdx);
-    pl.info.freizuegigkeitStart = ab(pl.fzStartIdx);
+    pl.info.pkStart = ab(Math.min(pl.pkStartIdx, pl.barPkIdx));
+    pl.info.saeule3aStart = ab(Math.min(pl.s3aStartIdx, pl.barS3aIdx));
+    pl.info.freizuegigkeitStart = ab(Math.min(pl.fzStartIdx, pl.barFzIdx));
   }
   const beitr = regeln.beitraege;
   const ne = beitr.nichterwerbstaetige;
@@ -403,6 +459,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
     const pkBeitragAN = neu();
     const s3aBeitrag = neu();
     const kapital = neu();
+    const kapitalAusland = neu(); // Kapitalleistungen nach dem Wegzug (Quellensteuer)
     let weitereEinnahmen = 0;
     let weitereEinnahmenSteuerbar = 0;
     let weitereAusgaben = 0;
@@ -436,10 +493,64 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
           }
         }
 
+        const bezug = (betrag: number) => {
+          kapital[i] = (kapital[i] ?? 0) + betrag;
+          if (imAusland) kapitalAusland[i] = (kapitalAusland[i] ?? 0) + betrag;
+        };
+
+        // Barauszahlung beim Wegzug (Austrittsleistung, 3a) – vor dem ordentlichen Bezug
+        if (idx >= pl.barPkIdx || idx >= pl.barFzIdx || idx >= pl.barS3aIdx) {
+          const bar = pl.info.barauszahlung ?? {
+            monat: ausMonatIndex(idx),
+            pk: 0,
+            pkGesperrt: 0,
+            anteilObligatorium: 0,
+            freizuegigkeit: 0,
+            saeule3a: 0,
+            euEfta: pl.land?.euEfta ?? false,
+            voll: pl.barVoll,
+          };
+          let geaendert = false;
+          if (!pl.pkBezogen && idx >= pl.barPkIdx) {
+            const anteil = pl.barVoll ? 0 : obligatoriumsAnteilBei(p, regeln, opt.start, jahr, a.inflation);
+            const gesperrt = pl.t.pk * anteil;
+            const frei = pl.t.pk - gesperrt;
+            bezug(frei);
+            if (gesperrt > 0) {
+              if (pl.fzBezogen) bezug(gesperrt);
+              else pl.t.freizuegigkeit += gesperrt;
+            }
+            bar.pk = frei;
+            bar.pkGesperrt = gesperrt;
+            bar.anteilObligatorium = anteil;
+            pl.info.pkKapital = frei;
+            pl.t.pk = 0;
+            pl.pkBezogen = true;
+            geaendert = true;
+          }
+          if (!pl.fzBezogen && idx >= pl.barFzIdx) {
+            bar.freizuegigkeit = pl.t.freizuegigkeit;
+            pl.info.freizuegigkeitKapital = pl.t.freizuegigkeit;
+            bezug(pl.t.freizuegigkeit);
+            pl.t.freizuegigkeit = 0;
+            pl.fzBezogen = true;
+            geaendert = true;
+          }
+          if (!pl.s3aBezogen && idx >= pl.barS3aIdx) {
+            bar.saeule3a = pl.t.saeule3a;
+            pl.info.saeule3aKapital = pl.t.saeule3a;
+            bezug(pl.t.saeule3a);
+            pl.t.saeule3a = 0;
+            pl.s3aBezogen = true;
+            geaendert = true;
+          }
+          if (geaendert) pl.info.barauszahlung = bar;
+        }
+
         // Pensionskasse: gesperrt bis zum Bezugsalter; dann Rente/Kapital/Mix
         if (!pl.pkBezogen && idx >= pl.pkStartIdx) {
           const l = pkLeistung(pl.t.pk, p.pk.umwandlungssatz, p.pk.kapitalanteil);
-          kapital[i] = (kapital[i] ?? 0) + l.kapital;
+          bezug(l.kapital);
           pl.pkRenteNominal = l.renteJahr * deflator;
           pl.info.pkRenteJahr = l.renteJahr;
           pl.info.pkKapital = l.kapital;
@@ -464,7 +575,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
 
         // Freizügigkeit: gesperrt bis RA−5 (bzw. Erwerbsaufgabe), Bezug als Kapital
         if (!pl.fzBezogen && idx >= pl.fzStartIdx) {
-          kapital[i] = (kapital[i] ?? 0) + pl.t.freizuegigkeit;
+          bezug(pl.t.freizuegigkeit);
           pl.info.freizuegigkeitKapital = pl.t.freizuegigkeit;
           pl.t.freizuegigkeit = 0;
           pl.fzBezogen = true;
@@ -473,7 +584,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
 
         // Säule 3a: gesperrt bis RA−5 (bzw. Erwerbsaufgabe), spätestens RA (+5 bei Erwerb)
         if (!pl.s3aBezogen && idx >= pl.s3aStartIdx) {
-          kapital[i] = (kapital[i] ?? 0) + pl.t.saeule3a;
+          bezug(pl.t.saeule3a);
           pl.info.saeule3aKapital = pl.t.saeule3a;
           pl.t.saeule3a = 0;
           pl.s3aBezogen = true;
@@ -575,24 +686,42 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
     let steuernEinkommen = 0;
     let steuernKapital = 0;
     const kapitalTotal = sum(kapital);
+    // Kapitalleistungen vor dem Wegzug: ordentliche Kapitalleistungssteuer (Wohnkanton)
+    const kapitalCh = kapital.map((k, i) => Math.max(0, k - (kapitalAusland[i] ?? 0)));
+    const zs = verheiratet ? 'verheiratet' : 'alleinstehend';
     if (verheiratet) {
       const s = Math.max(0, sum(steuerbar));
       steuernEinkommen = dbgEinkommen(s, 'verheiratet', regeln.steuern) + kanton.einkommenssteuer(s, 'verheiratet');
-      if (kapitalTotal > 0)
+      const kCh = sum(kapitalCh);
+      if (kCh > 0)
         steuernKapital =
-          dbgKapital(kapitalTotal, 'verheiratet', regeln.steuern) +
-          kanton.kapitalleistungssteuer(kapitalTotal, 'verheiratet');
+          dbgKapital(kCh, 'verheiratet', regeln.steuern) + kanton.kapitalleistungssteuer(kCh, 'verheiratet');
     } else {
       steuerbar.forEach((s0, i) => {
         const s = Math.max(0, s0);
         steuernEinkommen +=
           dbgEinkommen(s, 'alleinstehend', regeln.steuern) + kanton.einkommenssteuer(s, 'alleinstehend');
-        const k = kapital[i] ?? 0;
+        const k = kapitalCh[i] ?? 0;
         if (k > 0)
           steuernKapital +=
             dbgKapital(k, 'alleinstehend', regeln.steuern) + kanton.kapitalleistungssteuer(k, 'alleinstehend');
       });
     }
+    // Kapitalleistungen nach dem Wegzug: Schweizer Quellensteuer je Empfänger (Sitzkanton der Einrichtung)
+    plaene.forEach((pl, i) => {
+      const k = kapitalAusland[i] ?? 0;
+      if (!(k > 0)) return;
+      const q = quellensteuerKapital(k, zs, sitz[i] ?? '', regeln, sitzModell[i]);
+      steuernKapital += q.total;
+      pl.info.quellensteuerKapital += q.total;
+      if (!qstNaeherungGemeldet[i]) {
+        qstNaeherungGemeldet[i] = true;
+        const kName = q.kantonCode || 'unbekannt';
+        pl.info.hinweise.push(
+          `Kapitalleistungen nach dem Wegzug: Schweizer Quellensteuer (Bund nach Art. 95/96 DBG und QStV-Tarif + Sitzkanton ${kName} der Vorsorgeeinrichtung${q.naeherung ? ', Kantonsteil als Näherung' : ''}) statt der Kapitalleistungssteuer des Wohnkantons.${pl.land?.pkKapitalCh ? ` ${pl.land.name}: ${pl.land.pkKapitalCh} (ESTV 2-217, Stand 1.1.2026).` : ''} Eine Rückforderung gemäss DBA und Steuern im Wohnsitzstaat sind nicht abgebildet.`,
+        );
+      }
+    });
     // Vermögenssteuer auf dem verfügbaren Vermögen inkl. Nettowert Wohneigentum (Verkehrswert).
     // TODO(kantone): kantonaler Steuerwert der Liegenschaft (meist unter Verkehrswert) und
     // Schuldenabzug gemäss Kantonsmodell, sobald tarifbasierte Kantonsdaten vorliegen.

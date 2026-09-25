@@ -1,8 +1,11 @@
 /**
- * Wegzug ins Ausland – Architektur (noch nicht gerechnet).
- * Vorgesehen: Quellensteuer auf PK-/3a-Leistungen (Bund + Sitzkanton der Vorsorge-
- * einrichtung), DBA-Rückforderbarkeit (ESTV RS 2-217), Art. 25f FZG, Wegfall der
- * CH-Einkommens-/Vermögenssteuer, Länderdaten aus data/laender-<jahr>.json.
+ * Wegzug ins Ausland – Architektur.
+ * Bereits gerechnet (core/simulation.ts, core/quellensteuer.ts): Barauszahlung von PK/FZ/3a
+ * beim Wegzug (Art. 5 FZG, Art. 25f FZG, Art. 3 Abs. 2 lit. d BVV 3) und Schweizer Quellensteuer
+ * auf Kapitalleistungen nach dem Wegzug (Bund + Sitzkanton der Vorsorgeeinrichtung).
+ * Noch offen: DBA-Rückforderung (ESTV RS 2-217, nur als Hinweis aus data/laender-<jahr>.json),
+ * Quellensteuer auf Vorsorgerenten, Wegfall der CH-Einkommens-/Vermögenssteuer, Steuern im
+ * Wohnsitzstaat.
  */
 import type { Wohnsitz, Zivilstand } from './typen';
 

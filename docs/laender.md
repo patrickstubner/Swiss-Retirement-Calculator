@@ -114,10 +114,10 @@ Fussnoten 2-217: ³ Rückerstattung nur bei Nachweis der Besteuerung im Wohnsitz
 
 ## 4. Eingaben/Logik für die App (Wegzug)
 1. **Land wählen** → DBA ja/nein, 2-217-Werte, lokales Regime aus `laender-2026.json`.
-2. **CH-Quellensteuer** auf PK-/3a-Kapital nach dem Sitzkanton der Einrichtung. Rückforderung nur, wenn 2-217 „ja“ sagt **und** allfällige Fussnotenbedingungen erfüllt sind (CY, IT: Besteuerungsnachweis; PH: Bescheinigung).
+2. **CH-Quellensteuer** auf PK-/3a-Kapital nach dem Sitzkanton der Einrichtung. Rückforderung nur, wenn 2-217 „ja“ sagt **und** allfällige Fussnotenbedingungen erfüllt sind (CY, IT: Besteuerungsnachweis; PH: Bescheinigung). **Umgesetzt** für Kapitalleistungen ab dem Wegzug (Bund QStV-Tarif + Kantonssatz laut ESTV-Übersicht 2026, `docs/quellen.md` Abschnitt 4 und 11); die Rückforderung wird nicht gerechnet, der Text aus `pkKapital.ch` erscheint als Hinweis.
 3. **Wohnsitzstaatsteuer** auf Kapital/Rente gemäss Regime; wo **OFFEN** den Satz als Nutzereingabe mit Warnhinweis führen.
 4. **AHV:** nie CH-Steuer; Wohnsitzstaatsteuer gemäss Regime (IT 5%, TH bei Überweisung, PT progressiv usw.).
-5. **Art. 25f FZG** nur als Hinweis für Freizügigkeitsguthaben vor dem Alter (RA − 5) bei EU/EFTA-Zuzug.
+5. **Art. 25f FZG** (umgesetzt): Barauszahlung bei Wegzug in die EU/EFTA nur für das Überobligatorium; das geschätzte Obligatorium bleibt als Freizügigkeitsguthaben gesperrt, ausser die Person ist im neuen Land nicht obligatorisch versichert (Schalter). Ausserhalb EU/EFTA ganzes Guthaben (Art. 5 Abs. 1 lit. a FZG).
 6. Status je Wert anzeigen (verifiziert / Näherung / OFFEN).
 7. **AHV-Versicherung nach dem Wegzug** (umgesetzt, siehe `docs/quellen.md` Abschnitt 1): In EU/EFTA-Staaten (CY, MT, PT, ES, IT) ist keine freiwillige AHV möglich (dort gilt die Sozialversicherung des Wohnsitz- bzw. Beschäftigungsstaates). In PA, PY, PH, TH und VAE können Schweizer und EU/EFTA-Staatsangehörige nach mind. 5 Jahren Versicherung unmittelbar vor dem Wegzug innert 1 Jahr der freiwilligen AHV/IV beitreten. Ohne Beitritt entstehen bis zum Referenzalter Beitragslücken; die obligatorischen NE-Beiträge enden mit dem Wegzug. Das EU/EFTA-Kennzeichen kommt aus `eu` in `laender-2026.json` und wird im Test gegen `beitraege.freiwilligeAhv.euEftaStaaten` geprüft.
 

@@ -88,6 +88,7 @@ Progressive Offenlegung: **Schnellstart** mit ca. 8 Feldern, danach **Details** 
 | AHV | Variante A: Rente gemäss Rentenvorausberechnung (CHF/Mt, empfohlen). Variante B: Schätzung aus mdJE (Default: aktueller Lohn, gedeckelt), Beitragsjahre bzw. Lücken, Erziehungsgutschriften ja/nein. Bezugsalter (Vorbezug/Aufschub in Monaten). Frauen 1961–1969: Hinweis auf Zuschlag bzw. reduzierte Kürzung |
 | Pensionskasse | Altersguthaben heute, davon Obligatorium (optional; aus dem PK-Ausweis), jährlicher Sparbeitrag AN+AG, Projektionszins, Umwandlungssatz im Bezugsalter (gemäss Ausweis), frühestes Bezugsalter laut Reglement, Kapitalanteil %, geplante Einkäufe (Jahr, Betrag), Ehegattenrente % |
 | Freizügigkeit | Guthaben, Bezugsalter (RA−5 bis RA) |
+| Wegzug | endgültiger Wegzug ab Alter oder Datum, Zielland (EU/EFTA oder nicht), «Barauszahlung bei Wegzug» (Standard an), EU/EFTA: «im neuen Land nicht obligatorisch versichert», Sitzkanton der Vorsorgeeinrichtung (Standard Wohnkanton). Im Detailmodus als eigene Karte **vor** der Pensionskasse im Schritt «Einkommen & Vorsorge» (derselbe Zustand wie im Schritt «Personen», dort zusätzlich die AHV-Angaben); im Modus «Schnell» schlank bei jeder Person (ohne Sitzkanton) |
 | Säule 3a | Guthaben, Anzahl Konten, jährlicher Beitrag, Nachzahlungen, Bezugsjahre |
 | Freies Vermögen | Wertschriften, Konto (bei Paaren gemeinsam erfassbar) |
 | Steuern (MVP) | effektiver Grenz- oder Durchschnittssatz Kanton/Gemeinde, Kapitalbezugssatz Kanton (%), Vermögenssteuer ‰ |
@@ -160,9 +161,23 @@ Validierung: harte Grenzen aus `rules/2026.json` (z.B. 3a-Maximum, AHV-Vorbezug 
 - Beim Stopp der Erwerbsarbeit entfallen: AHV/IV/EO 5,3%, ALV 1,1% (bis 148'200), BVG-Sparbeiträge, 3a-Einzahlungen (ohne Erwerbseinkommen nicht erlaubt) und die Einkommenssteuer auf dem Lohn.
 - Neu dazu kommen NE-Beiträge bis zum RA (530 bis 26'500 pro Jahr + Verwaltungskosten) und Steuern auf Kapitalbezügen und Renten (100%).
 - Nach einem Wegzug ins Ausland (V2) entfallen die Schweizer Einkommens- und Vermögenssteuer auf Weltvermögen (Ausnahmen: wirtschaftliche Zugehörigkeit, z.B. CH-Liegenschaft, Details OFFEN).
-  - PK-/3a-Leistungen unterliegen der Quellensteuer (Sitzkanton der Vorsorgeeinrichtung + Bund), die je nach DBA rückforderbar ist (ESTV 2-217).
+  - PK-/3a-Leistungen unterliegen der Quellensteuer (Sitzkanton der Vorsorgeeinrichtung + Bund), die je nach DBA rückforderbar ist (ESTV 2-217). **Umgesetzt** für Kapitalleistungen ab dem Wegzug (siehe c.7c); die Rückforderung nur als Hinweis.
   - Die AHV ist ins Ausland zahlbar (CH/EU/EFTA/Abkommensstaaten). Keine Schweizer Quellensteuer auf AHV-Renten ist abgeleitet, aber OFFEN.
   - Im Wohnsitzstaat wird in der Regel neu besteuert (nicht Teil der App, Hinweis).
+
+### c.7c Barauszahlung bei endgültigem Wegzug
+- Voraussetzung: Wegzug aktiv, Zielland gewählt, Option «Barauszahlung bei Wegzug» an. Freigabemonat = Wegzugsmonat
+  (liegt er in der Vergangenheit: heute). Das PK-Bezugsalter laut Reglement verhindert die Freigabe nicht (Hinweis beim
+  Feld); liegt der Wegzug aber am/nach diesem Alter, ist es eine Altersleistung (Art. 2 Abs. 1bis FZG) → ordentlicher Bezug.
+- PK: ausserhalb EU/EFTA (oder EU/EFTA mit «nicht obligatorisch versichert») das ganze Guthaben als Kapital; sonst nur
+  das Überobligatorium, der obligatorische Teil (Anteil aus `obligatoriumsAnteilBei()`: Feld «Davon BVG-Altersguthaben»
+  bzw. Schätzung, bis zum Wegzugsjahr hochgerechnet) wandert in den Freizügigkeitstopf (Bezug ab RA−5). Keine PK-Rente,
+  keine weiteren PK-Beiträge.
+- Freizügigkeit: bar nur beim Vollbezug; 3a: immer bar (Art. 3 Abs. 2 lit. d BVV 3; EU/EFTA-Auslegung OFFEN).
+- Steuern: Kapitalleistungen ab dem Wegzugsmonat mit `quellensteuerKapital()` (Bund QStV-Tarif + Sitzkanton, je Person
+  mit Zivilstandstarif), davor wie bisher mit der ordentlichen Kapitalleistungssteuer (Ehepaare zusammengerechnet).
+- Ausgabe: `PersonInfo.barauszahlung` (Monat, Beträge, gesperrter Teil, Anteil) und `quellensteuerKapital`; Anzeige in
+  der Wegzug-Karte, beim PK-Feld und im Ergebnis. Quellen und OFFEN-Punkte: `docs/quellen.md` Abschnitt 11.
 
 ### c.7b Modus «Schnell» / «Detailliert» und Schätzwerte
 - «Schnell» (Standard beim ersten Start ohne gespeicherten Zustand; gespeicherte Wahl und Links mit Detailwerten

@@ -207,7 +207,14 @@ describe('Neue Felder: Rücktrittsmodus und Wohnsitz im Ausland', () => {
           {
             stoppModus: 'x',
             stoppDatum: { jahr: 2027.4, monat: 13 },
-            wohnsitzAusland: { aktiv: true, modus: 'datum', land: 'ZZ', nationalitaet: 'foo' },
+            wohnsitzAusland: {
+              aktiv: true,
+              modus: 'datum',
+              land: 'ZZ',
+              nationalitaet: 'foo',
+              sitzkantonVorsorge: 'XY',
+              barauszahlung: 'ja',
+            },
           },
         ],
       },
@@ -218,6 +225,9 @@ describe('Neue Felder: Rücktrittsmodus und Wohnsitz im Ausland', () => {
     expect(p?.wohnsitzAusland.modus).toBe('datum');
     expect(p?.wohnsitzAusland.land).toBe('');
     expect(p?.wohnsitzAusland.nationalitaet).toBe('CH');
+    expect(p?.wohnsitzAusland.sitzkantonVorsorge).toBe('');
+    expect(p?.wohnsitzAusland.barauszahlung).toBe(true);
+    expect(p?.wohnsitzAusland.nichtObligatorischVersichert).toBe(false);
   });
 
   it('Datum-Modus und Wegzug überstehen Kodieren/Dekodieren', () => {

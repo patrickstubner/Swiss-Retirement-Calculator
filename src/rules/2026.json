@@ -147,14 +147,55 @@
     "kapitalbezugMinAnteilObligatorium": { "value": 0.25, "source": "Art. 37 Abs. 2 BVG https://www.fedlex.admin.ch/eli/cc/1983/797_797_797/de", "stand": "2026", "status": "verifiziert", "hinweis": "Mehr (bis 100%) nur gemäss Reglement." },
     "einkaufSperrfristJahre": { "value": 3, "source": "Art. 79b Abs. 3 BVG", "stand": "2026", "status": "verifiziert" },
     "freizuegigkeitBezug": { "value": { "fruehestensJahreVorRA": 5, "aufschubJahreNachRA": 5 }, "source": "Art. 16 FZV https://www.fedlex.admin.ch/eli/cc/1994/2399_2399_2399/de", "stand": "2026", "status": "verifiziert" },
-    "barauszahlungAusreise": { "value": "Art. 5 Abs. 1 lit. a FZG; EU/EFTA-Einschränkung Art. 25f FZG für das Obligatorium", "source": "https://www.fedlex.admin.ch/eli/cc/1994/2386_2386_2386/de ; https://sfbvg.ch/aufgaben/barauszahlung-nach-ausreise", "stand": "2026", "status": "verifiziert", "hinweis": "Bei ordentlicher Pensionierung gilt das Reglement – Einzelfall prüfen." }
+    "barauszahlungAusreise": {
+      "value": {
+        "endgueltigesVerlassen": true,
+        "inJedemAlter": true,
+        "zustimmungEhegatte": true
+      },
+      "source": "Art. 5 Abs. 1 lit. a und Abs. 2 FZG https://www.fedlex.admin.ch/eli/cc/1994/2386_2386_2386/de ; Freizügigkeitseinrichtungen sinngemäss: Art. 14 FZV https://www.fedlex.admin.ch/eli/cc/1994/2399_2399_2399/de",
+      "stand": "FZG Stand 1.1.2024, FZV Stand 1.8.2026 (fedlex abgerufen 25.09.2026)",
+      "status": "verifiziert",
+      "hinweis": "Barauszahlung der Austrittsleistung auf Verlangen, wenn die versicherte Person die Schweiz endgültig verlässt – ohne Mindestalter; vorbehalten Art. 25f FZG. Verheiratete/eingetragene Partner: schriftliche Zustimmung nötig. Gilt sinngemäss für Freizügigkeitskonten und -policen (Art. 14 FZV)."
+    },
+    "barauszahlungEuEfta": {
+      "value": {
+        "gesperrt": "BVG-Altersguthaben (Art. 15 BVG) bis zum Austritt",
+        "bedingung": "im EU-Staat bzw. in Island/Norwegen weiterhin obligatorisch für Alter, Tod und Invalidität versichert; Liechtenstein: bei Wohnsitz dort immer",
+        "ueberobligatoriumFrei": true
+      },
+      "source": "Art. 25f FZG https://www.fedlex.admin.ch/eli/cc/1994/2386_2386_2386/de ; Sicherheitsfonds BVG https://sfbvg.ch/aufgaben/barauszahlung-nach-ausreise",
+      "stand": "FZG Stand 1.1.2024 (fedlex abgerufen 25.09.2026)",
+      "status": "verifiziert",
+      "hinweis": "Der überobligatorische Teil kann immer bar bezogen werden. Der gesperrte obligatorische Teil bleibt als Freizügigkeitsguthaben in der Schweiz (Altersleistung frühestens 5 Jahre vor dem Referenzalter, Art. 16 FZV). Ob man im neuen Land obligatorisch versichert ist, klärt der Sicherheitsfonds BVG (Verbindungsstelle) – im Rechner als Schalter."
+    },
+    "austrittOderAltersleistung": {
+      "value": {
+        "austrittsleistungVorFruehestemRentenalter": true,
+        "abFruehestemRentenalterNurMitErwerbOderArbeitslos": true
+      },
+      "source": "Art. 2 Abs. 1 und 1bis FZG https://www.fedlex.admin.ch/eli/cc/1994/2386_2386_2386/de ; Art. 1i BVV 2",
+      "stand": "FZG Stand 1.1.2024 (Abs. 1bis in der Fassung AHV 21, in Kraft seit 1.1.2024)",
+      "status": "verifiziert",
+      "hinweis": "Wer die Vorsorgeeinrichtung vor dem frühestmöglichen reglementarischen Rentenalter verlässt, erhält eine Austrittsleistung (Barauszahlung bei Wegzug möglich). Ab diesem Alter gibt es nur noch eine Austrittsleistung, wenn die Erwerbstätigkeit weitergeführt wird oder Arbeitslosigkeit besteht; sonst ist es ein Altersrücktritt → Altersleistung gemäss Reglement (Rente/Kapital), keine Barauszahlung nach Art. 5 FZG. Im Rechner: Barauszahlung nur, wenn der Wegzug vor dem PK-Bezugsalter liegt."
+    }
   },
   "saeule3a": {
     "maxMitPk": { "value": 7258, "source": "https://www.bsv.admin.ch/de/die-dritte-saeule", "stand": "1.1.2026", "status": "verifiziert" },
     "maxOhnePkSatz": { "value": 0.2, "source": "https://www.bsv.admin.ch/de/die-dritte-saeule", "stand": "1.1.2026", "status": "verifiziert" },
     "maxOhnePk": { "value": 36288, "source": "https://www.bsv.admin.ch/de/die-dritte-saeule", "stand": "1.1.2026", "status": "verifiziert" },
     "bezug": { "value": { "fruehestensJahreVorRA": 5, "aufschubJahreNachRA": 5 }, "source": "Art. 3 BVV 3 https://www.fedlex.admin.ch/eli/cc/1985/1778_1778_1778/de", "stand": "2026", "status": "verifiziert", "hinweis": "Aufschub nur bei nachgewiesener Erwerbstätigkeit." },
-    "nachzahlung": { "value": "Lücken ab 2025, bis 10 Jahre zurück, erstmals 2026; pro Jahr bis 7'258", "source": "https://www.fedlex.admin.ch/eli/oc/2024/622/de", "stand": "in Kraft 1.1.2025", "status": "verifiziert" }
+    "nachzahlung": { "value": "Lücken ab 2025, bis 10 Jahre zurück, erstmals 2026; pro Jahr bis 7'258", "source": "https://www.fedlex.admin.ch/eli/oc/2024/622/de", "stand": "in Kraft 1.1.2025", "status": "verifiziert" },
+    "barauszahlungAusreise": {
+      "value": {
+        "vorzeitigBeiBarauszahlungNachArt5Fzg": true,
+        "art25fGiltNurFuerBvgGuthaben": true
+      },
+      "source": "Art. 3 Abs. 2 lit. d und Abs. 6 BVV 3 https://www.fedlex.admin.ch/eli/cc/1985/1778_1778_1778/de",
+      "stand": "BVV 3 Stand 1.1.2025 (fedlex abgerufen 25.09.2026)",
+      "status": "offen",
+      "hinweis": "Vorzeitige Ausrichtung zulässig bei Auflösung des Vorsorgeverhältnisses, wenn die Einrichtung «nach Artikel 5 FZG zur Barauszahlung verpflichtet ist», also u.a. bei endgültigem Verlassen der Schweiz; Verheiratete mit Zustimmung. Art. 25f FZG sperrt nur BVG-Altersguthaben (Art. 15 BVG); 3a-Guthaben sind keine solchen – der Rechner gibt 3a darum auch bei Wegzug in die EU/EFTA ganz frei. Diese Auslegung ist nicht amtlich bestätigt (OFFEN, Praxis des Anbieters prüfen)."
+    }
   },
   "steuern": {
     "rentenSteuerbarAnteil": { "value": 1, "source": "Art. 22 DBG https://www.fedlex.admin.ch/eli/cc/1991/1184_1184_1184/de", "stand": "2026", "status": "verifiziert" },
@@ -213,18 +254,18 @@
     "quellensteuer": {
       "kapitalBundAlleinstehend": {
         "value": [ { "bis": 25000, "satz": 0 }, { "bis": 50000, "satz": 0.0035 }, { "bis": 75000, "satz": 0.0055 }, { "bis": 100000, "satz": 0.0125 }, { "bis": 125000, "satz": 0.016 }, { "bis": 150000, "satz": 0.0195 }, { "bis": 750000, "satz": 0.026 }, { "bis": null, "satz": 0.023 } ],
-        "einheit": "Satz auf dem ganzen Betrag", "source": "QStV Anhang Ziff. 3 (SR 642.118.2); ESTV Beilage 6 «Ausgabe 2025/2026»", "stand": "seit 1.1.2025", "status": "verifiziert"
+        "einheit": "Grenzsatz je Teilbetrag auf dem Bruttobetrag (bis = obere Grenze, null = alle weiteren)", "source": "Art. 95 Abs. 2 / Art. 96 Abs. 2 DBG https://www.fedlex.admin.ch/eli/cc/1991/1184_1184_1184/de ; Art. 19 und Anhang Ziff. 3 QStV (SR 642.118.2), Fassung AS 2024 478 https://www.fedlex.admin.ch/eli/oc/2024/478/de ; ESTV-Übersicht https://www.estv.admin.ch/dam/de/sd-web/wOVGrjPStMQ4/qst-tarife-renten-kapitalleistungen-2026.pdf ; Anwendung als Teilbetragstarif: Tarif TG 2026 https://steuerverwaltung.tg.ch/public/upload/assets/183546/2026%20Quellensteuer%20Kapitalleistungen%20Tarif%20Alleinstehend.pdf?fp=1", "stand": "QStV-Anhang in Kraft seit 1.1.2025 (fedlex abgerufen 25.09.2026); ESTV-Übersicht und TG-Tarif gültig ab 1.1.2026", "status": "verifiziert", "hinweis": "Bundesteil der Quellensteuer auf Kapitalleistungen aus Vorsorge an Personen im Ausland (immer erhoben, ungeachtet DBA; Rückerstattung auf Antrag innert 3 Jahren gemäss DBA, Art. 19 Abs. 2 QStV). Beispiel 150 000 alleinstehend = 1 425. Kommt zu den kantonalen Sätzen hinzu (ausser SH)."
       },
       "kapitalBundVerheiratet": {
         "value": [ { "bis": 25000, "satz": 0 }, { "bis": 50000, "satz": 0.0015 }, { "bis": 75000, "satz": 0.005 }, { "bis": 100000, "satz": 0.008 }, { "bis": 125000, "satz": 0.0115 }, { "bis": 150000, "satz": 0.0175 }, { "bis": 900000, "satz": 0.026 }, { "bis": null, "satz": 0.023 } ],
-        "einheit": "Satz auf dem ganzen Betrag", "source": "QStV Anhang Ziff. 3 (SR 642.118.2); ESTV Beilage 6 «Ausgabe 2025/2026»", "stand": "seit 1.1.2025", "status": "verifiziert"
+        "einheit": "Grenzsatz je Teilbetrag auf dem Bruttobetrag (bis = obere Grenze, null = alle weiteren)", "source": "Art. 95 Abs. 2 / Art. 96 Abs. 2 DBG https://www.fedlex.admin.ch/eli/cc/1991/1184_1184_1184/de ; Art. 19 und Anhang Ziff. 3 QStV (SR 642.118.2), Fassung AS 2024 478 https://www.fedlex.admin.ch/eli/oc/2024/478/de ; ESTV-Übersicht https://www.estv.admin.ch/dam/de/sd-web/wOVGrjPStMQ4/qst-tarife-renten-kapitalleistungen-2026.pdf ; Anwendung als Teilbetragstarif: Tarif TG 2026 https://steuerverwaltung.tg.ch/public/upload/assets/183546/2026%20Quellensteuer%20Kapitalleistungen%20Tarif%20Alleinstehend.pdf?fp=1", "stand": "QStV-Anhang in Kraft seit 1.1.2025 (fedlex abgerufen 25.09.2026); ESTV-Übersicht und TG-Tarif gültig ab 1.1.2026", "status": "verifiziert", "hinweis": "Bundesteil der Quellensteuer auf Kapitalleistungen aus Vorsorge an Personen im Ausland (immer erhoben, ungeachtet DBA; Rückerstattung auf Antrag innert 3 Jahren gemäss DBA, Art. 19 Abs. 2 QStV). Beispiel 150 000 alleinstehend = 1 425. Kommt zu den kantonalen Sätzen hinzu (ausser SH)."
       },
       "rentenBund": { "value": 0.01, "source": "Art. 95/96 Abs. 2 DBG", "stand": "2026", "status": "verifiziert" },
       "kantonSZ": {
         "value": { "kapitalKanton": 0.025, "rentenKanton": 0.05, "freigrenze": 2000, "rueckforderungFristJahre": 3 },
         "source": "https://www.sz.ch/public/upload/assets/91262/Merkblatt_Quellenbesteuerung_privatrechtlicher_Vorsorgeleistungen_an_Personen_ohne_Wohnsitz_oder_Aufenthalt_in_der_Schweiz_Stand_1_Januar_2026.pdf?fp=1", "stand": "1.1.2026", "status": "verifiziert"
       },
-      "uebrigeKantone": { "value": null, "source": "kantonale Steuerämter", "stand": "–", "status": "offen", "hinweis": "Massgebend ist der Sitzkanton der Vorsorgeeinrichtung; nur SZ verifiziert." },
+      "uebrigeKantone": { "value": "alle 26 Kantone: siehe steuern.quellensteuerVorsorgeKapitalKantone", "source": "https://www.estv.admin.ch/dam/de/sd-web/wOVGrjPStMQ4/qst-tarife-renten-kapitalleistungen-2026.pdf", "stand": "gültig ab 1.1.2026", "status": "verifiziert", "hinweis": "Massgebend ist der Sitzkanton der Vorsorge- bzw. Freizügigkeitseinrichtung." },
       "ahvRentenAusland": { "value": "keine CH-Quellensteuer (abgeleitet)", "source": "DBG Art. 95/96", "stand": "–", "status": "offen" },
       "chLiegenschaftNachWegzug": { "value": "beschränkte Steuerpflicht (wirtschaftliche Zugehörigkeit)", "source": "https://www.estv2.admin.ch/stp/ds/d-vermoegenssteuer-np-de.pdf", "stand": "–", "status": "offen" }
     },
@@ -242,6 +283,41 @@
         "stern": "nur mit Besteuerungsnachweis bzw. Bedingungen"
       },
       "source": "ESTV RS 2-217 https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf", "stand": "1.1.2026", "status": "verifiziert"
+    },
+    "quellensteuerVorsorgeKapitalKantone": {
+      "value": {
+        "AG": {"art": "progressiv", "min": 0.01, "max": null},
+        "AR": {"art": "flach", "satz": 0.06},
+        "AI": {"art": "flach", "satz": 0.06},
+        "BL": {"art": "progressiv", "min": 0.032, "max": 0.095},
+        "BS": {"art": "stufen", "stufen": [[25000, 0.03], [50000, 0.04], [100000, 0.06], [null, 0.08]]},
+        "BE": {"art": "flach", "satz": 0.07},
+        "FR": {"art": "stufen", "stufen": [[50000, 0.02], [100000, 0.04], [150000, 0.06], [200000, 0.08], [null, 0.1]], "abzugVerheiratet": 10000},
+        "GE": {"art": "progressiv", "min": 0, "max": 0.0627, "maxVerheiratet": 0.0626},
+        "GL": {"art": "flach", "satz": 0.1},
+        "GR": {"art": "flach", "satz": 0.12},
+        "JU": {"art": "progressiv", "min": 0.05, "max": 0.075},
+        "LU": {"art": "stufen", "stufen": [[40000, 0.005], [null, 0.014]]},
+        "NE": {"art": "progressiv", "min": 0.025, "max": null},
+        "NW": {"art": "flach", "satz": 0.03},
+        "OW": {"art": "flach", "satz": 0.0072},
+        "SG": {"art": "flach", "satz": 0.06},
+        "SH": {"art": "flach", "satz": 0.07, "inklBund": true},
+        "SZ": {"art": "flach", "satz": 0.025},
+        "SO": {"art": "progressiv", "min": 0.015, "minVerheiratet": 0, "max": 0.086},
+        "TG": {"art": "flach", "satz": 0.07},
+        "TI": {"art": "progressiv", "min": 0.02, "max": 0.03},
+        "UR": {"art": "flach", "satz": 0.038},
+        "VS": {"art": "progressiv", "min": 0.043, "minVerheiratet": 0.0421, "max": 0.08},
+        "VD": {"art": "progressiv", "min": 0.0072, "minVerheiratet": 0.0063, "max": 0.0661, "maxVerheiratet": 0.0619},
+        "ZG": {"art": "flach", "satz": 0.05},
+        "ZH": {"art": "flach", "satz": 0.06}
+      },
+      "einheit": "Anteil des Kapitals bzw. Satz pro Teilbetrag",
+      "source": "https://www.estv.admin.ch/dam/de/sd-web/wOVGrjPStMQ4/qst-tarife-renten-kapitalleistungen-2026.pdf",
+      "stand": "ESTV, Übersicht über die Quellensteuertarife für Vorsorgeleistungen – gültig ab 1.1.2026 (abgerufen 25.09.2026)",
+      "status": "verifiziert",
+      "hinweis": "Kantonale (inkl. Gemeinde-) Quellensteuer auf Kapitalleistungen, ohne direkte Bundessteuer, nach dem Sitzkanton der Vorsorge- bzw. Freizügigkeitseinrichtung. flach = fester Satz; stufen = Teilbeträge [bis, Satz] (null = alle weiteren); progressiv = nur Bandbreite publiziert → Rechner verwendet den Durchschnittssatz der ordentlichen Kapitalleistungssteuer des Kantons (Hauptort), begrenzt auf die Bandbreite (Näherung). SH: 7% inkl. Bundessteueranteil. TG: 7% «nur Kantonsanteil» = Staats- und Gemeindesteuer ohne DBSt (bestätigt durch den TG-Tarif 2026: 7% + Bundesteil). FR Verheiratete: Abzug 10'000. Rückforderung/Anrechnung je nach DBA (ESTV 2-217, data/laender-2026.json)."
     }
   },
   "daten": {

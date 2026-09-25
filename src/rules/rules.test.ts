@@ -30,7 +30,8 @@ describe('rules/2026.json', () => {
     expect(offen).toContain('bvg.mindestzins2027');
     expect(offen).toContain('beitraege.freiwilligeAhv.vorsorgeguthabenImVermoegen');
     expect(offen).not.toContain('beitraege.freiwilligeAhv.tabelleNichterwerbstaetige');
-    expect(offen).toContain('steuern.quellensteuer.uebrigeKantone');
+    expect(offen).not.toContain('steuern.quellensteuer.uebrigeKantone');
+    expect(offen).toContain('saeule3a.barauszahlungAusreise');
   });
 
   it('spätere Jahre fallen auf die jüngste verfügbare Datei zurück', () => {
