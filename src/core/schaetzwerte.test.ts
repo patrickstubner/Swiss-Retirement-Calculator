@@ -10,7 +10,8 @@ import {
   schaetzeAhv,
   schaetzePkGuthaben,
   schaetzePkSparbeitrag,
-  umwandlungssatzZuOptimistisch,
+  schaetzeUmwandlungssatz,
+  umwandlungssatzGeschaetztMitGuthaben,
 } from './schaetzwerte';
 import type { Haushalt, Person } from './typen';
 
@@ -91,11 +92,82 @@ describe('Schätzwerte: Pensionskasse (BVG-Minimum)', () => {
     expect(mit).toBeLessThan(ohne);
     expect(schaetzePkGuthaben(person({ lohn: 20000 }), regeln, heute)).toBe(0);
   });
+});
 
-  it('Umwandlungssatz-Schätzung = BVG-Mindestumwandlungssatz (6,8%)', () => {
+describe('Schätzwerte: Umwandlungssatz aufgeteilt (Obligatorium 6,8% / Rest umhüllender Durchschnitt)', () => {
+  const OBL = regeln.bvg.mindestumwandlungssatz;
+  const UEB = regeln.bvg.umwandlungssatzUmhuellendDurchschnitt;
+  const mitGuthaben = (o: Partial<Person>, guthaben: number, bvgGuthaben = 0): Person => {
+    const p = person({ ...o, manuell: { pkGuthaben: true } });
+    p.pk = { ...p.pk, guthaben, bvgGuthaben };
+    return p;
+  };
+
+  it('Regelwerte: 6,8% (Art. 14 BVG) und 5,17% (OAK BV 2025), mit Quelle', () => {
+    expect(OBL).toBe(0.068);
+    expect(UEB).toBe(0.0517);
+    expect(UEB).toBeLessThan(OBL);
+  });
+
+  it('ohne eigenes PK-Guthaben (Schätzung aus BVG-Gutschriften) → ganz obligatorisch → 6,8%', () => {
     const e = effektiverHaushalt(haushalt([person()]), regeln, heute);
-    expect(e.haushalt.personen[0]?.pk.umwandlungssatz).toBe(0.068);
-    expect(e.haushalt.personen[0]?.pk.umwandlungssatz).toBe(regeln.bvg.mindestumwandlungssatz);
+    const u = e.umwandlungssatz[0];
+    expect(u?.anteilObligatorium).toBeCloseTo(1, 9);
+    expect(e.haushalt.personen[0]?.pk.umwandlungssatz).toBeCloseTo(OBL, 9);
+    expect(e.werte[0]?.pkUmwandlungssatz).toBeCloseTo(OBL, 9);
+  });
+
+  it('Handrechnung: BVG-Altersguthaben laut Vorsorgeausweis, ohne weitere Beiträge (Lohn 0)', () => {
+    // 100'000 von 400'000 obligatorisch, beide gleich verzinst → Anteil bleibt 25%
+    const u = schaetzeUmwandlungssatz(mitGuthaben({ lohn: 0 }, 400000, 100000), regeln, heute, 400000, null, 0.01);
+    expect(u.anteilObligatorium).toBeCloseTo(0.25, 9);
+    expect(u.satz).toBeCloseTo(0.25 * OBL + 0.75 * UEB, 9);
+    expect(u.bvgGuthabenEingegeben).toBe(true);
+    expect(u.bvgGuthabenHeute).toBe(100000);
+  });
+
+  it('kein obligatorischer Teil (Lohn 0, keine Angabe) → nur der umhüllende Durchschnitt', () => {
+    const u = schaetzeUmwandlungssatz(mitGuthaben({ lohn: 0 }, 300000), regeln, heute, 300000, null, 0.01);
+    expect(u.anteilObligatorium).toBe(0);
+    expect(u.satz).toBeCloseTo(UEB, 9);
+  });
+
+  it('BVG-Guthaben grösser als das Guthaben → auf das Guthaben begrenzt (6,8%)', () => {
+    const u = schaetzeUmwandlungssatz(mitGuthaben({ lohn: 0 }, 50000, 80000), regeln, heute, 50000, null, 0.01);
+    expect(u.bvgGuthabenHeute).toBe(50000);
+    expect(u.satz).toBeCloseTo(OBL, 9);
+  });
+
+  it('BVG-Anteil aus Lohn/Alter geschätzt, bis zum Referenzalter hochgerechnet; mehr Guthaben → tieferer Satz', () => {
+    // Jg. 1970, Lohn 120'000: BVG-Guthaben heute geschätzt aus Mindestgutschriften
+    const bvgHeute = schaetzePkGuthaben(person(), regeln, heute);
+    const klein = effektiverHaushalt(haushalt([mitGuthaben({}, bvgHeute * 1.2)]), regeln, heute).umwandlungssatz[0];
+    const gross = effektiverHaushalt(haushalt([mitGuthaben({}, bvgHeute * 4)]), regeln, heute).umwandlungssatz[0];
+    expect(klein?.bvgGuthabenHeute).toBe(bvgHeute);
+    expect(klein?.bvgGuthabenEingegeben).toBe(false);
+    // künftige BVG-Mindestbeiträge sind ganz obligatorisch → Anteil im Referenzalter grösser als heute
+    expect(klein?.anteilObligatorium).toBeGreaterThan(1 / 1.2);
+    expect(klein?.anteilObligatorium).toBeLessThan(1);
+    expect(gross?.satz).toBeLessThan(klein?.satz ?? 0);
+    for (const u of [klein, gross]) {
+      expect(u?.satz).toBeGreaterThan(UEB);
+      expect(u?.satz).toBeLessThan(OBL);
+      expect(u?.satz).toBeCloseTo(OBL * (u?.anteilObligatorium ?? 0) + UEB * (1 - (u?.anteilObligatorium ?? 0)), 12);
+    }
+  });
+
+  it('eingegebener Sparbeitrag über dem BVG-Minimum senkt den obligatorischen Anteil', () => {
+    const p = mitGuthaben({}, 500000);
+    const bvgMin = schaetzeUmwandlungssatz(p, regeln, heute, 500000, null, 0.01);
+    const hoch = schaetzeUmwandlungssatz(p, regeln, heute, 500000, 40000, 0.01);
+    expect(hoch.anteilObligatorium).toBeLessThan(bvgMin.anteilObligatorium);
+  });
+
+  it('Satz laut Vorsorgeausweis hat immer Vorrang (auch mit BVG-Guthaben-Angabe)', () => {
+    const p = mitUmwandlungssatz(mitGuthaben({}, 800000, 200000), 0.049);
+    const e = effektiverHaushalt(haushalt([p]), regeln, heute);
+    expect(e.haushalt.personen[0]?.pk.umwandlungssatz).toBe(0.049);
+    expect(e.schaetzungen.some((s) => s.feld === 'pkUmwandlungssatz')).toBe(false);
   });
 });
 
@@ -154,7 +226,7 @@ describe('Detailwerte (Hinweis im Modus «Schnell»)', () => {
 });
 
 describe('Umwandlungssatz laut Vorsorgeausweis (Schnell und Detailliert, gleicher Zustand)', () => {
-  it('Eingabe setzt die eigene Eingabe; leer/0 → zurück zur Schätzung 6,8%', () => {
+  it('Eingabe setzt die eigene Eingabe; leer/0 → zurück zur aufgeteilten Schätzung', () => {
     const p = mitUmwandlungssatz(person(), 0.054);
     expect(p.manuell.pkUmwandlungssatz).toBe(true);
     expect(p.pk.umwandlungssatz).toBe(0.054);
@@ -162,21 +234,31 @@ describe('Umwandlungssatz laut Vorsorgeausweis (Schnell und Detailliert, gleiche
     const leer = mitUmwandlungssatz(p, 0);
     expect(leer.manuell.pkUmwandlungssatz).toBeUndefined();
     const e = effektiverHaushalt(haushalt([leer]), regeln, heute);
-    expect(e.haushalt.personen[0]?.pk.umwandlungssatz).toBe(regeln.bvg.mindestumwandlungssatz);
+    expect(e.haushalt.personen[0]?.pk.umwandlungssatz).toBe(e.umwandlungssatz[0]?.satz);
     expect(e.schaetzungen.some((s) => s.feld === 'pkUmwandlungssatz')).toBe(true);
     // andere Markierungen bleiben erhalten
     const q = mitUmwandlungssatz(person({ manuell: { pkGuthaben: true } }), 0.05);
     expect(mitUmwandlungssatz(q, Number.NaN).manuell).toEqual({ pkGuthaben: true });
   });
 
-  it('Hinweis «zu optimistisch» nur bei geschätztem Satz und vorhandenem PK-Guthaben', () => {
+  it('Hinweis «Satz vom Vorsorgeausweis eintragen» nur bei geschätztem Satz und vorhandenem PK-Guthaben', () => {
     const p = person();
     const eff = effektiverHaushalt(haushalt([p]), regeln, heute).haushalt.personen[0];
-    expect(umwandlungssatzZuOptimistisch(p, eff)).toBe(true);
+    expect(umwandlungssatzGeschaetztMitGuthaben(p, eff)).toBe(true);
     const mit = mitUmwandlungssatz(p, 0.055);
-    expect(umwandlungssatzZuOptimistisch(mit, eff)).toBe(false);
+    expect(umwandlungssatzGeschaetztMitGuthaben(mit, eff)).toBe(false);
     const ohnePk = person({ lohn: 0 });
     const effOhne = effektiverHaushalt(haushalt([ohnePk]), regeln, heute).haushalt.personen[0];
-    expect(umwandlungssatzZuOptimistisch(ohnePk, effOhne)).toBe(false);
+    expect(umwandlungssatzGeschaetztMitGuthaben(ohnePk, effOhne)).toBe(false);
+  });
+
+  it('BVG-Altersguthaben (Detailfeld) zählt als Detailwert, solange der Satz geschätzt wird', () => {
+    const std = standardHaushalt(regeln);
+    const p = person();
+    p.pk = { ...p.pk, bvgGuthaben: 150000 };
+    expect(detailwerte(haushalt([p]), std)).toContain('BVG-Altersguthaben (Obligatorium)');
+    expect(detailwerte(haushalt([mitUmwandlungssatz(p, 0.05)]), std)).not.toContain(
+      'BVG-Altersguthaben (Obligatorium)',
+    );
   });
 });

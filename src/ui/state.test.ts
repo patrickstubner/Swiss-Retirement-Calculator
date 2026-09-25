@@ -12,6 +12,7 @@ import {
   modusFuerLink,
   normalisiere,
   SPEICHER_VERSION,
+  STANDARD_UI,
   STORAGE_KEY,
   setzeSpeichern,
   speichereLokal,
@@ -245,8 +246,37 @@ describe('Eingabemodus «Schnell» / «Detailliert»', () => {
     return h;
   };
 
-  it('frischer Zustand startet im Modus «Schnell»', () => {
+  it('frischer Zustand startet im Modus «Schnell» (auch ohne Speicher oder mit Speichern aus)', () => {
     expect(ladeStartzustand(regeln, '', new TestSpeicher()).ui.modus).toBe('schnell');
+    expect(ladeStartzustand(regeln, '', null).ui.modus).toBe('schnell');
+    const aus = new TestSpeicher();
+    aus.setItem(AUS_KEY, '1');
+    expect(ladeStartzustand(regeln, '', aus).ui.modus).toBe('schnell');
+    expect(STANDARD_UI.modus).toBe('schnell');
+  });
+
+  it('Erststart: Umwandlungssatz geschätzt (aufgeteilt), nicht als eigene Eingabe markiert', () => {
+    const start = ladeStartzustand(regeln, '', new TestSpeicher());
+    const p = start.haushalt.personen[0];
+    expect(p?.manuell.pkUmwandlungssatz).toBeUndefined();
+    const e = effektiverHaushalt(start.haushalt, regeln, { jahr: 2026, monat: 9 });
+    expect(e.schaetzungen.some((x) => x.feld === 'pkUmwandlungssatz')).toBe(true);
+    expect(e.haushalt.personen[0]?.pk.umwandlungssatz).toBe(e.umwandlungssatz[0]?.satz);
+  });
+
+  it('Link ohne Detailwerte → «Schnell», auch wenn lokal «Detailliert» gespeichert ist', () => {
+    const s = new TestSpeicher();
+    speichereLokal(s, { haushalt: detailHaushalt(), ui: { schritt: 1, suchModus: 'gemeinsam', modus: 'detailliert' } });
+    const einfach = standardHaushalt(regeln);
+    const hash = teilenLink(einfach, 'https://x/').slice('https://x/'.length);
+    const z = ladeStartzustand(regeln, hash, s);
+    expect(z.quelle).toBe('link');
+    expect(z.ui.modus).toBe('schnell');
+    // BVG-Altersguthaben (nur im Modus «Detailliert» sichtbar) → Link öffnet «Detailliert»
+    const p0 = einfach.personen[0] as (typeof einfach.personen)[number];
+    p0.pk = { ...p0.pk, bvgGuthaben: 120000 };
+    expect(modusFuerLink(einfach, regeln)).toBe('detailliert');
+    expect(dekodiere(kodiere(einfach), regeln)?.personen[0]?.pk.bvgGuthaben).toBe(120000);
   });
 
   it('der gespeicherte Modus bleibt erhalten; frühere Zustände ohne Modus → «Detailliert»', () => {

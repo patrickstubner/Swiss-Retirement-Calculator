@@ -60,6 +60,11 @@ export interface AhvEingabe {
 export interface PkEingabe {
   /** Altersguthaben heute */
   guthaben: number;
+  /**
+   * Davon BVG-Altersguthaben (Obligatorium) heute laut Vorsorgeausweis; 0 = unbekannt → Schätzung.
+   * Wird nur für die Schätzung des Umwandlungssatzes verwendet (ohne eigenen Satz).
+   */
+  bvgGuthaben: number;
   /** 'eingabe': jährlicher Sparbeitrag AN+AG; 'bvgMinimum': Altersgutschrift auf koordiniertem Lohn */
   beitragModus: 'eingabe' | 'bvgMinimum';
   sparbeitragJahr: number;

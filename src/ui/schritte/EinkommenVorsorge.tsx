@@ -8,7 +8,7 @@ import {
   istUebergangsFrau,
   pruefeAhvVerschiebung,
 } from '../../core/ahv';
-import { istManuell, mitUmwandlungssatz, umwandlungssatzZuOptimistisch } from '../../core/schaetzwerte';
+import { istManuell, mitUmwandlungssatz, umwandlungssatzGeschaetztMitGuthaben } from '../../core/schaetzwerte';
 import type { AuslandRente, Person, SchaetzFeld } from '../../core/typen';
 import { neueAuslandRente, WAEHRUNGEN } from '../../data/defaults';
 import { AhvSchaetzhilfe } from '../components/AhvSchaetzhilfe';
@@ -16,7 +16,7 @@ import { AuswahlFeld, BetragFeld, Schalter, Segmente, TextFeld, ZahlFeld } from 
 import { Karte } from '../components/Karte';
 import { fmtChf, fmtProzent } from '../format';
 import { type SchrittProps, setzeManuell, setzePerson } from '../kontext';
-import { UWS_HILFE, UWS_ZU_OPTIMISTISCH } from '../texte';
+import { UWS_GESCHAETZT, UWS_HILFE, UWS_QUELLE, uwsSchaetzungText } from '../texte';
 
 export function EinkommenVorsorge(props: SchrittProps) {
   const { h } = props;
@@ -46,6 +46,8 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
   const set = (fn: (p: Person) => Person) => setzePerson(setH, i, fn);
   const w = eff.werte[i];
   const effP = eff.haushalt.personen[i] ?? p;
+  const uws = eff.umwandlungssatz[i];
+  const bvgSchaetzung = Math.min(w?.pkGuthaben ?? 0, effP.pk.guthaben);
   /** Anzeige für geschätzte Felder: Schätzwert mit Badge oder eigene Eingabe mit Rücksetzen */
   const schaetz = (feld: SchaetzFeld, text: string) => ({
     geschaetzt: !istManuell(p, feld),
@@ -227,11 +229,15 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
             max={0.1}
             onChange={(v) => set((x) => mitUmwandlungssatz(x, v))}
             schaetzung={schaetz('pkUmwandlungssatz', fmtProzent(w?.pkUmwandlungssatz ?? 0))}
-            hinweis={UWS_HILFE(fmtProzent(regeln.bvg.mindestumwandlungssatz))}
-            warnung={
-              umwandlungssatzZuOptimistisch(p, effP)
-                ? UWS_ZU_OPTIMISTISCH(fmtProzent(regeln.bvg.mindestumwandlungssatz))
-                : undefined
+            hinweis={
+              !istManuell(p, 'pkUmwandlungssatz') && uws ? (
+                <>
+                  <strong className="uws-schaetzung">{uwsSchaetzungText(uws)}</strong> {UWS_QUELLE(uws)}{' '}
+                  {umwandlungssatzGeschaetztMitGuthaben(p, effP) ? UWS_GESCHAETZT : null}
+                </>
+              ) : (
+                UWS_HILFE(fmtProzent(regeln.bvg.mindestumwandlungssatz))
+              )
             }
           />
           <ZahlFeld
@@ -244,6 +250,21 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
             hinweis="Anteil als Kapital, Rest als Rente. Gesetzlich mind. ¼ des Obligatoriums möglich, mehr gemäss Reglement."
           />
         </div>
+        {!istManuell(p, 'pkUmwandlungssatz') ? (
+          <BetragFeld
+            label="Davon BVG-Altersguthaben (Obligatorium, optional)"
+            value={p.pk.bvgGuthaben > 0 ? p.pk.bvgGuthaben : bvgSchaetzung}
+            min={0}
+            max={100_000_000}
+            onChange={(v) => set((x) => ({ ...x, pk: { ...x.pk, bvgGuthaben: Math.max(0, v) } }))}
+            schaetzung={{
+              geschaetzt: !(p.pk.bvgGuthaben > 0),
+              wertText: fmtChf(bvgSchaetzung),
+              onZuruecksetzen: () => set((x) => ({ ...x, pk: { ...x.pk, bvgGuthaben: 0 } })),
+            }}
+            hinweis="Steht auf dem Vorsorgeausweis («BVG-Altersguthaben» bzw. «davon obligatorisch»). Wird nur für die Schätzung des Umwandlungssatzes verwendet: 6,8% auf diesen Teil, der Durchschnittssatz auf den Rest. Ohne Angabe: Schätzung aus BVG-Mindestgutschriften."
+          />
+        ) : null}
         <ZahlFeld
           label={`Pensionskasse: frühester Bezug laut Reglement (${bezugsalter.reglementFruehestens}–${bezugsalter.aufschubBis})`}
           einheit="Jahre"

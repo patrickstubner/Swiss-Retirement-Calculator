@@ -31,7 +31,7 @@ Version 0.1 · Stand 24.09.2026 · Arbeitstitel «Ruhestandsrechner»
   - Übergangsgeneration Frauen Jg. 1961–1969: gestaffeltes Referenzalter, reduzierte Kürzungssätze, Rentenzuschlag (nur ohne Vorbezug).
 - **Pensionskasse pro Person:**
   - Altersguthaben heute, künftige Sparbeiträge (Eingabe oder BVG-Minimum aus koordiniertem Lohn × Altersgutschrift), Verzinsung (Default BVG-Mindestzins 1,25%, änderbar).
-  - Umwandlungssatz als Eingabe (Default 6,8% nur als Hinweis auf das Obligatorium; Hinweis «umhüllende Kassen oft deutlich tiefer»).
+  - Umwandlungssatz als Eingabe (Vorsorgeausweis, hat immer Vorrang). Ohne Eingabe aufgeteilte Schätzung: 6,8% (Art. 14 BVG) auf den obligatorischen Teil, auf den Rest der durchschnittliche (umhüllende) Umwandlungssatz der Pensionskassen laut OAK BV (2025: 5,17%); obligatorischer Anteil aus BVG-Mindestgutschriften geschätzt oder als «Davon BVG-Altersguthaben» eingegeben.
   - Bezugsalter 58–70 (Validierung gegen Reglement: Eingabe «frühestes Alter gemäss Reglement»).
   - Bezugsform Rente / Kapital / Mix (Kapitalanteil %; gesetzlich mind. ¼ des Obligatoriums möglich, mehr gemäss Reglement).
   - Geplante Einkäufe mit Warnung bei Kapitalbezug innert 3 Jahren.
@@ -165,7 +165,8 @@ Validierung: harte Grenzen aus `rules/2026.json` (z.B. 3a-Maximum, AHV-Vorbezug 
   - Im Wohnsitzstaat wird in der Regel neu besteuert (nicht Teil der App, Hinweis).
 
 ### c.7b Modus «Schnell» / «Detailliert» und Schätzwerte
-- «Schnell» (Standard für neue Nutzer) zeigt nur die wichtigsten Eingaben; «Detailliert» alle Schritte.
+- «Schnell» (Standard beim ersten Start ohne gespeicherten Zustand; gespeicherte Wahl und Links mit Detailwerten
+  haben Vorrang) zeigt nur die wichtigsten Eingaben; «Detailliert» alle Schritte.
 - Felder, die sonst geschätzt werden (AHV-Rente, PK-Guthaben, PK-Sparbeitrag, Umwandlungssatz), tragen pro
   Person eine Markierung `manuell`. Ohne eigene Eingabe setzt `effektiverHaushalt()` den Schätzwert ein;
   der gespeicherte Zustand bleibt unverändert, der Moduswechsel verliert daher nichts.

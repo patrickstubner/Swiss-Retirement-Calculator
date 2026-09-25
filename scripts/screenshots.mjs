@@ -327,6 +327,55 @@ console.log('Nach Moduswechsel PK-Guthaben:', behalten, 'Umwandlungssatz (im Det
 await pkBereich('32-schnell-pk-umwandlungssatz-eingegeben-360.png');
 await ctx3.close();
 
+// 7) Erststart (ohne gespeicherten Zustand): Modus «Schnell» aktiv, Umwandlungssatz leer →
+//    aufgeteilte Schätzung (6,8% auf den obligatorischen Teil, Durchschnitt OAK BV auf den Rest)
+const ctx4 = await browser.newContext({
+  viewport: { width: 360, height: 780 },
+  deviceScaleFactor: 2,
+  isMobile: true,
+  hasTouch: true,
+  locale: 'de-CH',
+});
+const p4 = await ctx4.newPage();
+p4.on('pageerror', (e) => fehler.push(String(e)));
+p4.on('console', (m) => m.type() === 'error' && fehler.push(m.text()));
+await p4.goto(url, { waitUntil: 'networkidle' });
+const schnellAktiv = await p4.locator('.moduswahl .segment--aktiv').allInnerTexts();
+if (schnellAktiv.join('').trim() !== 'Schnell') fehler.push(`Erststart nicht im Modus «Schnell»: ${schnellAktiv}`);
+console.log('Erststart, aktiver Modus:', schnellAktiv.join(' ') || '(nicht erkannt)');
+const fuelle4 = async (label, wert, nr = 0) => {
+  const feld = p4
+    .getByLabel(label, { exact: true })
+    .or(p4.getByLabel(`${label} geschätzt`, { exact: true }))
+    .nth(nr);
+  await feld.fill(String(wert));
+  await feld.blur();
+};
+await fuelle4('Geburtsjahr', 1972);
+await fuelle4('Bruttoeinkommen pro Jahr (heute)', 150000);
+await fuelle4('PK-Altersguthaben heute (optional)', 650000);
+await p4.evaluate(() => window.scrollTo(0, 0));
+await p4.screenshot({ path: `${out}33-erststart-schnell-360.png` });
+{
+  const karte = p4.locator('.karte', { hasText: 'Person 1' }).first();
+  const von = karte.locator('.feld', { hasText: 'PK-Altersguthaben heute (optional)' }).first();
+  const bis = karte.locator('.feld', { hasText: 'Säule 3a heute (optional)' }).first();
+  await von.evaluate((el) => {
+    el.scrollIntoView({ block: 'start' });
+    window.scrollBy(0, -12);
+  });
+  const a = await von.boundingBox();
+  const b = await bis.boundingBox();
+  if (!a || !b) throw new Error('PK-Bereich nicht gefunden');
+  await p4.screenshot({
+    path: `${out}34-erststart-uws-aufgeteilt-360.png`,
+    clip: { x: 0, y: a.y - 10, width: 360, height: b.y - a.y + 2 },
+  });
+  const text = await karte.locator('.uws-schaetzung').first().innerText();
+  console.log('Erststart, Schätzung Umwandlungssatz:', text);
+}
+await ctx4.close();
+
 await browser.close();
 if (fehler.length) {
   console.error('Fehler im Browser:\n', fehler.join('\n'));

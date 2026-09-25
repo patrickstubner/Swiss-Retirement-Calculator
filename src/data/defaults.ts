@@ -69,6 +69,7 @@ export function neuePerson(regeln: Regeln, overrides: Partial<Person> = {}): Per
     ahvSchaetzhilfe: neueAhvSchaetzhilfe(),
     pk: {
       guthaben: 0,
+      bvgGuthaben: 0,
       beitragModus: 'eingabe',
       sparbeitragJahr: 0,
       anteilArbeitnehmer: 0.5,

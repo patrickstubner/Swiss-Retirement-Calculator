@@ -216,7 +216,7 @@ describe('Schnell vs. Detailliert (Musterhaushalte)', () => {
     expect(Math.abs(u.dAlter ?? 99)).toBeLessThanOrEqual(12);
   });
 
-  it('umhüllende Kasse: Schnell zu optimistisch (6,8%) bzw. ohne Guthaben zu pessimistisch', () => {
+  it('umhüllende Kasse: ohne UWS leicht optimistisch (aufgeteilte Schätzung), ohne Guthaben zu pessimistisch', () => {
     const mit = vergleiche(
       'Umhüllend',
       umhuellend,
@@ -269,9 +269,10 @@ describe('Schnell vs. Detailliert (Musterhaushalte)', () => {
     expect(ohne.dV85Prozent).toBeGreaterThan(mit.dV85Prozent);
   });
 
-  it('Frühpensionierung: Abweichung vor allem durch den Umwandlungssatz', () => {
+  it('Frühpensionierung: aufgeteilte UWS-Schätzung statt 6,8% (früher −22 Monate)', () => {
     const a = vergleiche('Frühpension', frueh, 'Schnell mit PK-Guthaben, ohne UWS', nurSchnellHaushalt(frueh, true));
     expect(a.dAlter).not.toBeNull();
+    expect(Math.abs(a.dAlter ?? 99)).toBeLessThanOrEqual(12);
     vergleiche('Frühpension', frueh, 'Schnell ohne PK-Guthaben/UWS', nurSchnellHaushalt(frueh, false));
     const u = vergleiche(
       'Frühpension',
@@ -279,7 +280,7 @@ describe('Schnell vs. Detailliert (Musterhaushalte)', () => {
       'Schnell mit PK-Guthaben + UWS',
       nurSchnellHaushalt(frueh, true, true, true),
     );
-    expect(Math.abs(u.dAlter ?? 99)).toBeLessThan(Math.abs(a.dAlter ?? 0));
+    expect(Math.abs(u.dAlter ?? 99)).toBeLessThanOrEqual(12);
   });
 
   it('Tabelle ausgeben', () => {
@@ -294,5 +295,25 @@ describe('Schnell vs. Detailliert (Musterhaushalte)', () => {
       `| Haushalt | Variante | Frühestes Alter (Detail) | Δ Alter | Δ Vermögen mit 85 (CHF) | in % Vermögen 85 (Detail) | in % Gesamtvermögen heute |\n|---|---|---|---|---|---|---|\n${t}`,
     );
     expect(zeilen.length).toBe(13);
+    // Geschätzter Umwandlungssatz («Schnell» mit PK-Guthaben, ohne UWS) vs. Satz laut Vorsorgeausweis
+    const uws = (
+      [
+        ['BVG-nah', bvgNah],
+        ['Umhüllend', umhuellend],
+        ['Paar BR', paarBrasilien],
+        ['Frühpension', frueh],
+      ] as const
+    ).flatMap(([name, h]) => {
+      const e = effektiverHaushalt(nurSchnellHaushalt(h, true), regeln, heute);
+      return h.personen.map((p, i) => {
+        const u = e.umwandlungssatz[i];
+        const pct = (x: number) => `${(x * 100).toFixed(2)}%`;
+        return `| ${name} (${p.name}) | ${Math.round((u?.anteilObligatorium ?? 0) * 100)}% | ${pct(u?.satz ?? 0)} | ${pct(p.pk.umwandlungssatz)} |`;
+      });
+    });
+    console.log(
+      `| Person | Anteil Obligatorium (geschätzt, im RA) | UWS geschätzt | UWS laut Vorsorgeausweis (Detail) |\n|---|---|---|---|\n${uws.join('\n')}`,
+    );
+    expect(uws.length).toBe(5);
   });
 });

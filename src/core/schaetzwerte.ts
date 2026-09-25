@@ -39,8 +39,19 @@ export const SCHAETZ_LABEL: Record<SchaetzFeld, string> = {
  *   umhüllenden Kassen (höhere Beiträge, Lohn über 90'720) meist deutlich zu tief; frühere
  *   Stellen/Freizügigkeitsguthaben sind nicht enthalten.
  * - Sparbeitrag: BVG-Minimum (Altersgutschrift auf dem koordinierten Lohn, altersabhängig).
- * - Umwandlungssatz: BVG-Mindestumwandlungssatz 6,8% (gilt nur fürs Obligatorium; umhüllende
- *   Kassen tiefer).
+ * - Umwandlungssatz (falls nicht laut Vorsorgeausweis eingegeben), aufgeteilt (siehe
+ *   schaetzeUmwandlungssatz):
+ *   · obligatorischer Teil: BVG-Mindestumwandlungssatz 6,8% (Art. 14 BVG – rules: bvg.mindestumwandlungssatz),
+ *   · überobligatorischer Rest: durchschnittlicher umhüllender Umwandlungssatz der Vorsorgeeinrichtungen
+ *     5,17% (OAK BV, Bericht zur finanziellen Lage 2025, Stand 31.12.2025 – rules:
+ *     bvg.umwandlungssatzUmhuellendDurchschnitt). Einen amtlichen Durchschnitt nur fürs Überobligatorium
+ *     gibt es nicht; der umhüllende Satz gilt in den Kassen für das ganze Guthaben → bei stark
+ *     umhüllenden Kassen eher etwas zu hoch, bei BVG-nahen Kassen realistisch.
+ *   · Aufteilung (Näherung): BVG-Altersguthaben heute laut Vorsorgeausweis (Detailfeld) bzw.
+ *     geschätzt wie das PK-Guthaben (BVG-Mindestgutschriften), höchstens das ganze Guthaben; beide
+ *     Teile bis zum Referenzalter hochgerechnet: BVG-Teil mit BVG-Mindestgutschriften, Gesamtguthaben
+ *     mit dem (eingegebenen bzw. geschätzten) Sparbeitrag, beide mit demselben PK-Zins (real).
+ *     Resultat: effektiver Satz = 6,8% × Anteil Obligatorium + 5,17% × Rest.
  * - Bezug: als Rente (Kapitalanteil 0), frühestens gemäss Standard-Reglement (bvg.bezugsalter).
  *
  * Säule 3a: nur das eingegebene Guthaben, keine weiteren Einzahlungen (Standard 0).
@@ -75,7 +86,7 @@ export const istManuell = (p: Person, f: SchaetzFeld): boolean => p.manuell[f] =
 /**
  * Umwandlungssatz laut Vorsorgeausweis setzen – derselbe Zustand für die Modi «Schnell» und
  * «Detailliert». Leer bzw. 0 (ein Umwandlungssatz von 0% ist nicht sinnvoll) = keine eigene
- * Eingabe → wieder die Schätzung (BVG-Mindestumwandlungssatz).
+ * Eingabe → wieder die aufgeteilte Schätzung (6,8% Obligatorium / umhüllender Durchschnitt).
  */
 export function mitUmwandlungssatz(p: Person, satz: number): Person {
   const manuell = { ...p.manuell };
@@ -87,9 +98,71 @@ export function mitUmwandlungssatz(p: Person, satz: number): Person {
   return { ...p, manuell, pk: { ...p.pk, umwandlungssatz: satz } };
 }
 
-/** Umwandlungssatz geschätzt, obwohl ein PK-Guthaben vorhanden ist → Ergebnis vermutlich zu optimistisch. */
-export function umwandlungssatzZuOptimistisch(p: Person, effektiv: Person | undefined): boolean {
+/**
+ * Umwandlungssatz nur geschätzt, obwohl ein PK-Guthaben vorhanden ist → Hinweis «Satz vom
+ * Vorsorgeausweis eintragen» (die Schätzung ist nicht mehr systematisch zu optimistisch, kann aber
+ * je nach Kasse deutlich abweichen).
+ */
+export function umwandlungssatzGeschaetztMitGuthaben(p: Person, effektiv: Person | undefined): boolean {
   return !istManuell(p, 'pkUmwandlungssatz') && (effektiv?.pk.guthaben ?? p.pk.guthaben) > 0;
+}
+
+/** Aufgeteilte Schätzung des Umwandlungssatzes (Obligatorium / Überobligatorium). */
+export interface UmwandlungssatzSchaetzung {
+  /** Effektiver Satz auf dem ganzen Guthaben (gewichtet) */
+  satz: number;
+  /** Satz auf dem obligatorischen Teil (BVG-Mindestumwandlungssatz) */
+  satzObligatorium: number;
+  /** Satz auf dem überobligatorischen Rest (umhüllender Durchschnitt OAK BV) */
+  satzUeberobligatorium: number;
+  /** Anteil des obligatorischen Teils am Guthaben im Referenzalter (0–1, Näherung) */
+  anteilObligatorium: number;
+  /** BVG-Altersguthaben heute (eingegeben oder geschätzt, höchstens das ganze Guthaben) */
+  bvgGuthabenHeute: number;
+  /** true: BVG-Altersguthaben laut Vorsorgeausweis eingegeben (Detailfeld) */
+  bvgGuthabenEingegeben: boolean;
+}
+
+/**
+ * Schätzt den Umwandlungssatz aufgeteilt in Obligatorium (6,8%) und Überobligatorium
+ * (umhüllender Durchschnitt), siehe Annahmen oben.
+ * @param guthabenHeute verwendetes PK-Guthaben heute (eingegeben oder geschätzt)
+ * @param sparbeitragEingabe jährlicher Sparbeitrag laut Vorsorgeausweis oder null (= BVG-Minimum)
+ */
+export function schaetzeUmwandlungssatz(
+  p: Person,
+  regeln: Regeln,
+  heute: Monat,
+  guthabenHeute: number,
+  sparbeitragEingabe: number | null,
+  inflation: number,
+): UmwandlungssatzSchaetzung {
+  const bvg = regeln.bvg;
+  const satzObligatorium = bvg.mindestumwandlungssatz;
+  const satzUeberobligatorium = bvg.umwandlungssatzUmhuellendDurchschnitt;
+  const g0 = Math.max(0, guthabenHeute);
+  const eingegeben = p.pk.bvgGuthaben > 0;
+  const b0 = Math.min(g0, eingegeben ? p.pk.bvgGuthaben : schaetzePkGuthaben(p, regeln, heute));
+  const raJahre = Math.floor(inMonaten(ahvReferenzalter(p.geburtsjahr, p.geschlecht, regeln.ahv)) / 12);
+  const zins = (1 + p.pk.zins) / (1 + inflation) - 1;
+  let b = b0;
+  let g = g0;
+  for (let jahr = heute.jahr, t = 0; jahr - p.geburtsjahr <= raJahre; jahr++, t++) {
+    const bvgGutschrift = bvgAltersgutschrift(p.lohn, jahr - p.geburtsjahr, raJahre, bvg);
+    const beitrag =
+      sparbeitragEingabe !== null ? Math.max(0, sparbeitragEingabe) * (1 + p.lohnwachstumReal) ** t : bvgGutschrift;
+    b = b * (1 + zins) + bvgGutschrift;
+    g = g * (1 + zins) + beitrag;
+  }
+  const anteil = g > 0 ? Math.min(1, Math.max(0, b / g)) : 1;
+  return {
+    satz: satzObligatorium * anteil + satzUeberobligatorium * (1 - anteil),
+    satzObligatorium,
+    satzUeberobligatorium,
+    anteilObligatorium: anteil,
+    bvgGuthabenHeute: Math.round(b0),
+    bvgGuthabenEingegeben: eingegeben,
+  };
 }
 
 /** Erstes Beitragsjahr der AHV (1.1. nach dem 20. Geburtstag). */
@@ -174,6 +247,8 @@ export interface EffektiverHaushalt {
   schaetzungen: Schaetzung[];
   /** Geschätzte Werte pro Person und Feld (auch für manuell überschriebene Felder, zur Anzeige) */
   werte: Record<SchaetzFeld, number>[];
+  /** Aufteilung der Umwandlungssatz-Schätzung pro Person (zur Anzeige) */
+  umwandlungssatz: UmwandlungssatzSchaetzung[];
 }
 
 /** Wendet alle Schätzungen auf Felder ohne eigene Eingabe an. Der gespeicherte Zustand bleibt unverändert. */
@@ -181,14 +256,25 @@ export function effektiverHaushalt(h: Haushalt, regeln: Regeln, heute: Monat): E
   const verheiratet = h.zivilstand === 'verheiratet';
   const schaetzungen: Schaetzung[] = [];
   const werte: Record<SchaetzFeld, number>[] = [];
+  const uws: UmwandlungssatzSchaetzung[] = [];
   const personen = h.personen.map((p, i) => {
     const partner = h.personen.find((_, j) => j !== i) ?? null;
     const ahv = schaetzeAhv(p, partner, verheiratet, regeln);
+    const pkGuthaben = schaetzePkGuthaben(p, regeln, heute);
+    const u = schaetzeUmwandlungssatz(
+      p,
+      regeln,
+      heute,
+      istManuell(p, 'pkGuthaben') ? p.pk.guthaben : pkGuthaben,
+      istManuell(p, 'pkSparbeitrag') ? p.pk.sparbeitragJahr : null,
+      h.annahmen.inflation,
+    );
+    uws.push(u);
     const w: Record<SchaetzFeld, number> = {
       ahvRente: ahv.renteMonat,
-      pkGuthaben: schaetzePkGuthaben(p, regeln, heute),
+      pkGuthaben,
       pkSparbeitrag: schaetzePkSparbeitrag(p, regeln, heute),
-      pkUmwandlungssatz: regeln.bvg.mindestumwandlungssatz,
+      pkUmwandlungssatz: u.satz,
     };
     werte.push(w);
     let q: Person = p;
@@ -212,7 +298,7 @@ export function effektiverHaushalt(h: Haushalt, regeln: Regeln, heute: Monat): E
     }
     return q;
   });
-  return { haushalt: { ...h, personen }, schaetzungen, werte };
+  return { haushalt: { ...h, personen }, schaetzungen, werte, umwandlungssatz: uws };
 }
 
 /**
@@ -227,6 +313,7 @@ export function detailwerte(h: Haushalt, standard: Haushalt): string[] {
     // PK-Guthaben und Umwandlungssatz sind auch im Modus «Schnell» sichtbar → keine Detailwerte
     for (const f of SCHAETZ_FELDER)
       if (f !== 'pkGuthaben' && f !== 'pkUmwandlungssatz' && istManuell(p, f)) out.push(SCHAETZ_LABEL[f] + n);
+    if (p.pk.bvgGuthaben > 0 && !istManuell(p, 'pkUmwandlungssatz')) out.push(`BVG-Altersguthaben (Obligatorium)${n}`);
     if (p.bargeld > 0) out.push(`Bargeld/Konten${n}`);
     if (p.sonstiges.wert > 0) out.push(`Sonstiges Vermögen${n}`);
     if (p.wohneigentum.vorhanden && p.wohneigentum.hypothek > 0) out.push(`Hypothek${n}`);

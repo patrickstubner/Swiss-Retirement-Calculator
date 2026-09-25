@@ -2,7 +2,12 @@
  * Modus «Schnell»: nur die wichtigsten Angaben. Alles andere kommt aus den dokumentierten
  * Schätzwerten (core/schaetzwerte.ts) bzw. aus bereits erfassten Detailwerten.
  */
-import { detailwerte, istManuell, mitUmwandlungssatz, umwandlungssatzZuOptimistisch } from '../../core/schaetzwerte';
+import {
+  detailwerte,
+  istManuell,
+  mitUmwandlungssatz,
+  umwandlungssatzGeschaetztMitGuthaben,
+} from '../../core/schaetzwerte';
 import { wohneigentumNetto } from '../../core/simulation';
 import type { Person } from '../../core/typen';
 import { MAX_PLANUNGSALTER, neuePerson, standardHaushalt } from '../../data/defaults';
@@ -12,7 +17,7 @@ import { Karte } from '../components/Karte';
 import { ErwerbsaufgabeFelder, GeburtFelder, InChSeitFeld } from '../components/PersonBasis';
 import { fmtAlter, fmtChf, fmtProzent } from '../format';
 import { alterMonate, type SchrittProps, setzeManuell, setzePerson } from '../kontext';
-import { UWS_HILFE, UWS_ZU_OPTIMISTISCH } from '../texte';
+import { UWS_GESCHAETZT, UWS_HILFE, UWS_QUELLE, uwsSchaetzungText } from '../texte';
 
 export function SchnellEingaben(props: SchrittProps) {
   const { h, setH, regeln } = props;
@@ -38,7 +43,8 @@ export function SchnellEingaben(props: SchrittProps) {
     <>
       <p className="info">
         Schnellstart: wenige Angaben genügen. AHV-Rente, Pensionskasse (falls unbekannt) und Annahmen werden aus den
-        gesetzlichen Werten 2026 geschätzt und im Ergebnis ausgewiesen. Genauer wird es im Modus «Detailliert».
+        gesetzlichen Werten 2026 geschätzt, der Umwandlungssatz ohne Angabe zusätzlich aus dem Durchschnitt der
+        Pensionskassen (OAK BV), und im Ergebnis ausgewiesen. Genauer wird es im Modus «Detailliert».
       </p>
       {detail.length > 0 ? (
         <p className="info" role="status">
@@ -118,6 +124,7 @@ function SchnellPerson({ p, i, props }: { p: Person; i: number; props: SchrittPr
   const pkManuell = istManuell(p, 'pkGuthaben');
   const uwsManuell = istManuell(p, 'pkUmwandlungssatz');
   const effP = eff.haushalt.personen[i];
+  const uws = eff.umwandlungssatz[i];
   const freiDetail = p.bargeld + p.sonstiges.wert;
   return (
     <Karte titel={p.name || `Person ${i + 1}`} untertitel={`heute ${fmtAlter(Math.max(0, alterMonate(p, heute)))}`}>
@@ -161,11 +168,19 @@ function SchnellPerson({ p, i, props }: { p: Person; i: number; props: SchrittPr
           wertText: fmtProzent(w?.pkUmwandlungssatz ?? 0),
           onZuruecksetzen: () => set((x) => mitUmwandlungssatz(x, 0)),
         }}
-        hinweis={UWS_HILFE(fmtProzent(regeln.bvg.mindestumwandlungssatz))}
+        hinweis={
+          !uwsManuell && uws ? (
+            <>
+              <strong className="uws-schaetzung">{uwsSchaetzungText(uws)}</strong> {UWS_QUELLE(uws)}
+            </>
+          ) : (
+            UWS_HILFE(fmtProzent(regeln.bvg.mindestumwandlungssatz))
+          )
+        }
       />
-      {umwandlungssatzZuOptimistisch(p, effP) ? (
-        <p className="warnung" role="status">
-          {UWS_ZU_OPTIMISTISCH(fmtProzent(regeln.bvg.mindestumwandlungssatz))}
+      {umwandlungssatzGeschaetztMitGuthaben(p, effP) ? (
+        <p className="info" role="status">
+          {UWS_GESCHAETZT}
         </p>
       ) : null}
       <BetragFeld
