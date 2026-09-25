@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { standardHaushalt } from '../data/defaults';
 import { kantonsModellFuer } from '../data/kantone';
 import { ladeRegeln } from '../rules';
-import { qstKantonTarif, quellensteuerBundKapital, quellensteuerKapital, stufenSteuer } from './quellensteuer';
+import {
+  qstKantonTarif,
+  quellensteuerBundKapital,
+  quellensteuerKapital,
+  quellensteuerRenteSatz,
+  stufenSteuer,
+  tabellenSatz,
+} from './quellensteuer';
 
 const regeln = ladeRegeln(2026);
 const modell = (kanton: string) =>
@@ -62,15 +69,53 @@ describe('Quellensteuer auf Vorsorgekapital (Wohnsitz im Ausland)', () => {
     expect(q.kanton).toBeCloseTo(7000, 6);
   });
 
-  it('progressiver Tarif: Näherung, auf die publizierte Bandbreite begrenzt', () => {
-    const t = qstKantonTarif(regeln, 'BL');
-    if (t?.art !== 'progressiv') throw new Error('BL sollte progressiv sein');
-    for (const betrag of [10_000, 300_000, 5_000_000]) {
-      const q = quellensteuerKapital(betrag, 'alleinstehend', 'BL', regeln, modell('BL'));
-      expect(q.naeherung).toBe(true);
-      expect(q.kanton / betrag).toBeGreaterThanOrEqual(t.min - 1e-12);
-      expect(q.kanton / betrag).toBeLessThanOrEqual((t.max ?? 1) + 1e-12);
+  it('AG exakt nach Anhang 3 QStV-AG 2026 (Satz auf dem ganzen Betrag, Bundesteil eingerechnet)', () => {
+    const t = qstKantonTarif(regeln, 'AG');
+    expect(t?.art).toBe('tabelle');
+    // Tarif A: 149 001–154 000 → 5,9 %; Tarif B: 97 001–101 000 → 3,3 %
+    const a = quellensteuerKapital(150_000, 'alleinstehend', 'AG', regeln, undefined);
+    expect(a.total).toBeCloseTo(150_000 * 0.059, 6);
+    expect(a.bund).toBeCloseTo(1425, 6);
+    expect(a.naeherung).toBe(false);
+    expect(quellensteuerKapital(100_000, 'verheiratet', 'AG', regeln, undefined).total).toBeCloseTo(3300, 6);
+    // Grenzen: bis 18 000 1,0 %, ab 18 001 1,1 %; über 1 Mio. 8,8 % (A) bzw. 8,4 % (B)
+    expect(quellensteuerKapital(18_000, 'alleinstehend', 'AG', regeln, undefined).total).toBeCloseTo(180, 6);
+    expect(quellensteuerKapital(18_001, 'alleinstehend', 'AG', regeln, undefined).total).toBeCloseTo(18_001 * 0.011, 6);
+    expect(quellensteuerKapital(2_000_000, 'alleinstehend', 'AG', regeln, undefined).total).toBeCloseTo(176_000, 6);
+    expect(quellensteuerKapital(2_000_000, 'verheiratet', 'AG', regeln, undefined).total).toBeCloseTo(168_000, 6);
+    // unter 1 000 im Kalenderjahr keine Quellensteuer
+    expect(quellensteuerKapital(999, 'alleinstehend', 'AG', regeln, undefined).total).toBe(0);
+  });
+
+  it('übrige progressive Kantone aus den ESTV-Tarifdateien 2026 (keine Näherung mehr)', () => {
+    expect(tabellenSatz('BL', 10_000, 'alleinstehend')).toBeCloseTo(0.032, 9);
+    expect(tabellenSatz('VD', 3000, 'alleinstehend')).toBe(0);
+    expect(tabellenSatz('VD', 3001, 'alleinstehend')).toBeCloseTo(0.0072, 9);
+    expect(tabellenSatz('SO', 10_000, 'verheiratet')).toBe(0);
+    expect(tabellenSatz('ZH', 10_000, 'alleinstehend')).toBeUndefined();
+    for (const k of ['AG', 'BL', 'GE', 'JU', 'NE', 'SO', 'VS', 'VD']) {
+      expect(qstKantonTarif(regeln, k)?.art).toBe('tabelle');
+      let vorher = 0;
+      for (const betrag of [5000, 50_000, 150_000, 500_000, 2_000_000]) {
+        const q = quellensteuerKapital(betrag, 'alleinstehend', k, regeln, modell(k));
+        expect(q.naeherung).toBe(false);
+        expect(q.total / betrag).toBeLessThan(0.11);
+        expect(q.total).toBeGreaterThanOrEqual(vorher);
+        vorher = q.total;
+      }
     }
+    // TI: 3,58 % + Bundestarif (ESTV-Datei)
+    const ti = quellensteuerKapital(150_000, 'alleinstehend', 'TI', regeln, undefined);
+    expect(ti.total).toBeCloseTo(150_000 * 0.0358 + 1425, 6);
+  });
+
+  it('Quellensteuer auf Vorsorgerenten: Satz des Sitzkantons inkl. 1 % DBSt, VS nach Rentenhöhe', () => {
+    expect(quellensteuerRenteSatz(regeln, 'ZH', 30_000)).toBeCloseTo(0.07, 9);
+    expect(quellensteuerRenteSatz(regeln, 'AG', 30_000)).toBeCloseTo(0.08, 9);
+    expect(quellensteuerRenteSatz(regeln, 'VS', 30_000)).toBeCloseTo(0.09, 9);
+    expect(quellensteuerRenteSatz(regeln, 'VS', 60_000)).toBeCloseTo(0.15, 9);
+    expect(quellensteuerRenteSatz(regeln, 'VS', 90_000)).toBeCloseTo(0.21, 9);
+    expect(quellensteuerRenteSatz(regeln, '', 30_000)).toBeUndefined();
   });
 
   it('unbekannter Kanton: ordentliche Kapitalleistungssteuer als Näherung; 0 bei Betrag 0', () => {

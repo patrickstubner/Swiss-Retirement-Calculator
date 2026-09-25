@@ -169,6 +169,17 @@ export interface WohnsitzAusland {
   nichtObligatorischVersichert: boolean;
   /** Sitzkanton der Vorsorge-/Freizügigkeitseinrichtung (Quellensteuer); '' = wie Wohnkanton */
   sitzkantonVorsorge: string;
+  /**
+   * Eigener effektiver Steuersatz im Zielland auf alle Einkünfte (Anteil, z.B. 0.15); null = Modell
+   * des Landes aus data/laender-2026.json (core/zielland.ts)
+   */
+  steuerSatzZielland: number | null;
+  /** Länderspezifische Option, z.B. 'it7' (Italien 7 %) oder 'azoren' (Portugal); '' = keine */
+  steuerOption: string;
+  /** Schweizer Quellensteuer auf Vorsorgekapital gemäss DBA zurückfordern (nur wo ESTV 2-217 «ja») */
+  qstKapitalRueckforderung: boolean;
+  /** Eigener Steuersatz im Zielland auf zurückgefordertes Vorsorgekapital; null = Satz des Landes, falls bekannt */
+  steuerSatzKapitalZielland: number | null;
 }
 
 /**
@@ -426,9 +437,30 @@ export interface PersonInfo {
   neBeitraegeJahre: { jahr: number; betrag: number }[];
   /** Barauszahlung beim Wegzug (null = keine) */
   barauszahlung: BarauszahlungInfo | null;
-  /** Quellensteuer auf Kapitalleistungen nach dem Wegzug (heutige CHF, Summe) */
+  /** Quellensteuer auf Kapitalleistungen nach dem Wegzug (heutige CHF, Summe, nach allfälliger Rückforderung) */
   quellensteuerKapital: number;
+  /** Zurückgeforderte Quellensteuer auf Kapital (Summe) und stattdessen im Zielland bezahlte Steuer */
+  quellensteuerKapitalRueckforderung: number;
+  kapitalSteuerZielland: number;
+  /** Schweizer Quellensteuer auf PK-Renten nach dem Wegzug (heutige CHF, Summe) */
+  quellensteuerRente: number;
+  /** Steuern nach dem Wegzug im ersten vollen Kalenderjahr im Ausland (null = kein solches Jahr) */
+  zielland: ZiellandJahrInfo | null;
   hinweise: string[];
+}
+
+/** Steuern im ersten vollen Kalenderjahr mit Wohnsitz im Ausland (heutige CHF). */
+export interface ZiellandJahrInfo {
+  jahr: number;
+  /** Steuer im Wohnsitzstaat (Anteil dieser Person) */
+  steuer: number;
+  /** Schweizer Quellensteuer auf die PK-Rente */
+  quellensteuerRente: number;
+  /** Einkünfte, auf die sich die Steuer bezieht (Renten, Lohn, übrige, Vermögensertrag) */
+  einkommen: number;
+  /** Ohne Steuermodell und ohne eigenen Satz: weiter Schweizer Steuern (Näherung) */
+  chSteuernWeiter: boolean;
+  eigenerSatz: boolean;
 }
 
 /** Barauszahlung von Vorsorgeguthaben beim Wegzug (Beträge in heutigen CHF). */

@@ -785,3 +785,18 @@ tr.negativ td {
 .ausgaben-vorschau tr.hervor td {
   font-weight: 600;
 }
+
+/* Steuern nach dem Wegzug (Zielland) */
+.zielland-steuern {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--farbe-rand);
+}
+.zielland-steuern h4 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+.zielland-steuern .quellen a,
+.zielland-steuern li {
+  overflow-wrap: anywhere;
+}

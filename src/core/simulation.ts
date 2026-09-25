@@ -26,10 +26,16 @@
  *   dem jeweiligen Bezugsalter liegt (PK: vor dem Bezugsalter laut Reglement, sonst Altersleistung,
  *   Art. 2 Abs. 1bis FZG). EU/EFTA (Art. 25f FZG): der obligatorische Teil (Näherung, siehe
  *   schaetzwerte.ts) bleibt als Freizügigkeitsguthaben gesperrt (Bezug ab RA−5), ausser die Person
- *   ist im neuen Land nicht obligatorisch versichert; Freizügigkeitsguthaben bleibt dann ganz
- *   gesperrt (Anteil unbekannt). Kapitalleistungen nach dem Wegzug: Schweizer Quellensteuer
- *   (Bund + Sitzkanton der Vorsorgeeinrichtung, core/quellensteuer.ts) statt der ordentlichen
- *   Kapitalleistungssteuer. Einkommens-/Vermögenssteuern im Wohnsitzstaat sind nicht abgebildet.
+ *   ist im neuen Land nicht obligatorisch versichert (Liechtenstein: immer gesperrt, Art. 25f Abs. 1
+ *   lit. c FZG); Freizügigkeitsguthaben bleibt dann ganz gesperrt (Anteil unbekannt).
+ *   Kapitalleistungen nach dem Wegzug: Schweizer Quellensteuer (Bund + Sitzkanton der
+ *   Vorsorgeeinrichtung, core/quellensteuer.ts) statt der ordentlichen Kapitalleistungssteuer;
+ *   optional Rückforderung gemäss DBA mit Steuer im Zielland.
+ * - Steuern nach dem Wegzug: Schweizer Einkommens- und Vermögenssteuer nur für die Monate mit
+ *   Wohnsitz CH (Paare: solange eine Person in der Schweiz wohnt); danach Steuern des Ziellands
+ *   (core/zielland.ts, data/laender-2026.json) bzw. ein eigener effektiver Satz, plus Schweizer
+ *   Quellensteuer auf PK-Renten, wo ESTV 2-217 sie vorsieht. Ohne Steuermodell und ohne eigenen
+ *   Satz wird weiter mit Schweizer Steuern gerechnet (Näherung). Im Wegzugsjahr anteilig nach Monaten.
  */
 
 import { kantonsModellFuer } from '../data/kantone';
@@ -60,12 +66,13 @@ import {
 } from './freiwilligeAhv';
 import { realerBetrag } from './indexierung';
 import { neBefreitDurchEhegatte, neBeitrag } from './neBeitrag';
-import { quellensteuerKapital } from './quellensteuer';
+import { quellensteuerKapital, quellensteuerRenteSatz } from './quellensteuer';
 import { deterministisch, type RenditeModell } from './renditen';
 import { obligatoriumsAnteilBei } from './schaetzwerte';
 import { dbgEinkommen, dbgKapital } from './steuern';
 import type { Haushalt, JahresZeile, Monat, Person, PersonInfo, SimulationsErgebnis, Toepfe } from './typen';
 import { geburtIndex, stoppAlterMonate, wegzugIndex } from './zeitpunkt';
+import { type ZiellandEinkommen, ziellandKurz, ziellandSteuer } from './zielland';
 
 export { geburtIndex } from './zeitpunkt';
 
@@ -234,9 +241,20 @@ function planePerson(p: Person, regeln: Regeln, stoppMonate: number, startIdx: n
       hinweise.push(
         'Erwerbstätigkeit nach dem Wegzug: keine Schweizer Lohnabzüge mehr; ausländische Sozialabgaben sind nicht abgebildet.',
       );
-    hinweise.push(
-      'Einkommens- und Vermögenssteuern bei Wohnsitz im Ausland sind noch nicht abgebildet – es wird weiterhin mit Schweizer Steuern gerechnet. Kapitalleistungen aus Vorsorge nach dem Wegzug: Schweizer Quellensteuer (Näherung, siehe Ergebnis).',
-    );
+    const lw = wegzugsLand(p.wohnsitzAusland.land);
+    const eigener = p.wohnsitzAusland.steuerSatzZielland;
+    if (eigener !== null)
+      hinweise.push(
+        `Steuern nach dem Wegzug: eigener effektiver Satz von ${Math.round(eigener * 1000) / 10}% auf alle Einkünfte im Zielland (ersetzt das Ländermodell); keine Schweizer Einkommens- und Vermögenssteuer mehr.`,
+      );
+    else if (lw?.steuern)
+      hinweise.push(
+        `Steuern nach dem Wegzug: keine Schweizer Einkommens- und Vermögenssteuer mehr; ${lw.name}: ${ziellandKurz(lw.steuern)}${lw.steuern.status === 'verifiziert' ? '' : ' (Näherung, Details und Quellen unter «Wegzug»)'}.`,
+      );
+    else
+      hinweise.push(
+        'Steuern nach dem Wegzug: Für dieses Land ist kein Steuermodell hinterlegt – es wird weiterhin mit Schweizer Steuern gerechnet (Näherung). Besser: einen eigenen effektiven Steuersatz im Zielland erfassen.',
+      );
   }
 
   let verschiebung = p.ahv.bezugVerschiebungMonate;
@@ -284,7 +302,10 @@ function planePerson(p: Person, regeln: Regeln, stoppMonate: number, startIdx: n
   let barPkIdx = Number.POSITIVE_INFINITY;
   let barFzIdx = Number.POSITIVE_INFINITY;
   let barS3aIdx = Number.POSITIVE_INFINITY;
-  const barVoll = land !== undefined && (!land.euEfta || p.wohnsitzAusland.nichtObligatorischVersichert);
+  const barVoll =
+    land !== undefined &&
+    !land.obligatoriumImmerGesperrt &&
+    (!land.euEfta || p.wohnsitzAusland.nichtObligatorischVersichert);
   const hatPk = p.pk.guthaben > 0 || p.pk.sparbeitragJahr > 0 || p.pk.beitragModus === 'bvgMinimum';
   if (weg !== null && p.wohnsitzAusland.barauszahlung) {
     const bIdx = Math.max(weg, startIdx);
@@ -348,6 +369,10 @@ function planePerson(p: Person, regeln: Regeln, stoppMonate: number, startIdx: n
       neBeitraegeJahre: [],
       barauszahlung: null,
       quellensteuerKapital: 0,
+      quellensteuerKapitalRueckforderung: 0,
+      kapitalSteuerZielland: 0,
+      quellensteuerRente: 0,
+      zielland: null,
       hinweise,
     },
     t: startToepfe(p),
@@ -461,6 +486,9 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
     const s3aBeitrag = neu();
     const kapital = neu();
     const kapitalAusland = neu(); // Kapitalleistungen nach dem Wegzug (Quellensteuer)
+    const auslandMonate = neu(); // Monate mit Wohnsitz im Ausland
+    const pkRenteAusland = neu(); // PK-Rente in diesen Monaten (Quellensteuer auf Renten)
+    const auslandBrutto = neu(); // ausländische Renten brutto (Steuern im Zielland)
     let weitereEinnahmen = 0;
     let weitereEinnahmenSteuerbar = 0;
     let weitereAusgaben = 0;
@@ -483,6 +511,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
         const alterM = idx - pl.geburtIdx;
         const erwerb = alterM >= 0 && alterM < pl.stoppMonate;
         const imAusland = idx >= pl.wegIdx;
+        if (imAusland) auslandMonate[i] = (auslandMonate[i] ?? 0) + 1;
         const lohnJahr = Math.max(0, p.lohn) * (1 + p.lohnwachstumReal) ** t;
         if (erwerb) {
           lohn[i] = (lohn[i] ?? 0) + lohnJahr / 12;
@@ -571,6 +600,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
         }
         if (pl.pkBezogen) {
           pkRente[i] = (pkRente[i] ?? 0) + pl.pkRenteNominal / deflator / 12;
+          if (imAusland) pkRenteAusland[i] = (pkRenteAusland[i] ?? 0) + pl.pkRenteNominal / deflator / 12;
           renteMonat[i] = (renteMonat[i] ?? 0) + pl.pkRenteNominal / deflator / 12;
         }
 
@@ -616,6 +646,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
             const v = auslandRenteRealJahr(r, t, deflator) / 12;
             ausland[i] = (ausland[i] ?? 0) + auslandRenteNetto(v, r);
             renteMonat[i] = (renteMonat[i] ?? 0) + v;
+            auslandBrutto[i] = (auslandBrutto[i] ?? 0) + v;
             if (r.steuerbarInCh) auslandSteuerbar[i] = (auslandSteuerbar[i] ?? 0) + v;
           }
         });
@@ -708,27 +739,154 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
             dbgKapital(k, 'alleinstehend', regeln.steuern) + kanton.kapitalleistungssteuer(k, 'alleinstehend');
       });
     }
-    // Kapitalleistungen nach dem Wegzug: Schweizer Quellensteuer je Empfänger (Sitzkanton der Einrichtung)
+    // Kapitalleistungen nach dem Wegzug: Schweizer Quellensteuer je Empfänger (Sitzkanton der Einrichtung),
+    // optional Rückforderung gemäss DBA (ESTV 2-217) gegen die Steuer im Zielland
     plaene.forEach((pl, i) => {
       const k = kapitalAusland[i] ?? 0;
       if (!(k > 0)) return;
       const q = quellensteuerKapital(k, zs, sitz[i] ?? '', regeln, sitzModell[i]);
-      steuernKapital += q.total;
-      pl.info.quellensteuerKapital += q.total;
+      const w = pl.p.wohnsitzAusland;
+      const m = pl.land?.steuern;
+      const satzZiel = w.steuerSatzKapitalZielland ?? m?.kapitalVorsorgeSatz;
+      const rueckMoeglich = w.qstKapitalRueckforderung && m?.kapitalRueckforderbar === true;
+      if (rueckMoeglich && satzZiel !== undefined) {
+        const ziel = k * Math.max(0, satzZiel);
+        steuernKapital += ziel;
+        pl.info.quellensteuerKapitalRueckforderung += q.total;
+        pl.info.kapitalSteuerZielland += ziel;
+      } else {
+        steuernKapital += q.total;
+        pl.info.quellensteuerKapital += q.total;
+      }
       if (!qstNaeherungGemeldet[i]) {
         qstNaeherungGemeldet[i] = true;
         const kName = q.kantonCode || 'unbekannt';
+        const rueckText =
+          rueckMoeglich && satzZiel !== undefined
+            ? ` Rückforderung gemäss DBA angenommen (Antrag innert 3 Jahren mit Bestätigung der Steuerbehörde des Wohnsitzstaats); stattdessen ${Math.round(satzZiel * 1000) / 10}% Steuer im Zielland${w.steuerSatzKapitalZielland !== null ? ' (eigener Satz)' : ''}.`
+            : rueckMoeglich
+              ? ' Rückforderung nicht gerechnet: Die Steuer auf Vorsorgekapital im Zielland ist nicht bekannt (OFFEN) – dafür einen eigenen Satz erfassen.'
+              : w.qstKapitalRueckforderung
+                ? ' Eine Rückforderung ist laut ESTV 2-217 für dieses Land nicht möglich (oder Land unbekannt).'
+                : ' Eine allfällige Rückforderung gemäss DBA ist nicht gerechnet.';
         pl.info.hinweise.push(
-          `Kapitalleistungen nach dem Wegzug: Schweizer Quellensteuer (Bund nach Art. 95/96 DBG und QStV-Tarif + Sitzkanton ${kName} der Vorsorgeeinrichtung${q.naeherung ? ', Kantonsteil als Näherung' : ''}) statt der Kapitalleistungssteuer des Wohnkantons.${pl.land?.pkKapitalCh ? ` ${pl.land.name}: ${pl.land.pkKapitalCh} (ESTV 2-217, Stand 1.1.2026).` : ''} Eine Rückforderung gemäss DBA und Steuern im Wohnsitzstaat sind nicht abgebildet.`,
+          `Kapitalleistungen nach dem Wegzug: Schweizer Quellensteuer (Bund nach Art. 95/96 DBG und QStV-Tarif + Sitzkanton ${kName} der Vorsorgeeinrichtung${q.naeherung ? ', Kantonsteil als Näherung' : ''}) statt der Kapitalleistungssteuer des Wohnkantons.${pl.land?.pkKapitalCh ? ` ${pl.land.name}: ${pl.land.pkKapitalCh} (ESTV 2-217, Stand 1.1.2026).` : ''}${rueckText}`,
         );
       }
     });
     // Vermögenssteuer auf dem verfügbaren Vermögen inkl. Nettowert Wohneigentum (Verkehrswert).
     // TODO(kantone): kantonaler Steuerwert der Liegenschaft (meist unter Verkehrswert) und
     // Schuldenabzug gemäss Kantonsmodell, sobald tarifbasierte Kantonsdaten vorliegen.
-    const steuernVermoegen =
+    let steuernVermoegen =
       (kanton.vermoegenssteuer(Math.max(0, verfuegbarStart), verheiratet ? 'verheiratet' : 'alleinstehend') * nMonate) /
       12;
+
+    // Wohnsitz im Ausland: Schweizer Einkommens-/Vermögenssteuer nur, solange (mind.) eine Person in der
+    // Schweiz wohnt; danach Steuern des Ziellands (core/zielland.ts) bzw. eigener Satz. Ohne Modell und
+    // ohne eigenen Satz bleibt es bei Schweizer Steuern (Näherung, Hinweis in planePerson).
+    const fAusland = plaene.map((pl, i) => {
+      const aktiv = pl.p.wohnsitzAusland.steuerSatzZielland !== null || pl.land?.steuern !== undefined;
+      return aktiv ? Math.min(1, (auslandMonate[i] ?? 0) / nMonate) : 0;
+    });
+    // Paare mit unterschiedlichem Wegzug: bis beide im Ausland wohnen, Schweizer Steuern auf allem (Näherung)
+    const fCh = 1 - Math.min(...fAusland);
+    const fZiel = 1 - fCh;
+    if (fCh < 1) {
+      steuernEinkommen *= fCh;
+      steuernVermoegen *= fCh;
+    }
+    const einkommenZiel = (i: number): ZiellandEinkommen => ({
+      ahv: (ahv[i] ?? 0) + (ahv13Betrag[i] ?? 0) + (zuschlag[i] ?? 0),
+      pkRente: pkRente[i] ?? 0,
+      auslandRenten: auslandBrutto[i] ?? 0,
+      lohn: lohn[i] ?? 0,
+      uebrige: weitereEinnahmenSteuerbar / n,
+      kapitalertrag: ertrag / n,
+      vermoegen: Math.max(0, verfuegbarStart) / n,
+      personen: 1,
+    });
+    const zielAnteil = neu();
+    const [p0, p1] = plaene;
+    const gemeinsam =
+      verheiratet &&
+      p0 !== undefined &&
+      p1 !== undefined &&
+      (fAusland[0] ?? 0) > 0 &&
+      (fAusland[1] ?? 0) > 0 &&
+      p0.land?.code === p1.land?.code &&
+      p0.land?.steuern?.tarifVerheiratet !== undefined &&
+      p0.p.wohnsitzAusland.steuerSatzZielland === null &&
+      p1.p.wohnsitzAusland.steuerSatzZielland === null;
+    if (gemeinsam && p0) {
+      const e0 = einkommenZiel(0);
+      const e1 = einkommenZiel(1);
+      const summe: ZiellandEinkommen = {
+        ahv: e0.ahv + e1.ahv,
+        pkRente: e0.pkRente + e1.pkRente,
+        auslandRenten: e0.auslandRenten + e1.auslandRenten,
+        lohn: e0.lohn + e1.lohn,
+        uebrige: e0.uebrige + e1.uebrige,
+        kapitalertrag: e0.kapitalertrag + e1.kapitalertrag,
+        vermoegen: e0.vermoegen + e1.vermoegen,
+        personen: 2,
+      };
+      const s = ziellandSteuer(p0.land?.steuern, summe, {
+        gemeinsam: true,
+        option: p0.p.wohnsitzAusland.steuerOption,
+        eigenerSatz: null,
+      });
+      const f = fZiel;
+      zielAnteil[0] = ((s.einkommen + s.kapitalertrag) * f) / 2;
+      zielAnteil[1] = ((s.einkommen + s.kapitalertrag) * f) / 2;
+      steuernVermoegen += s.vermoegen * f;
+    } else
+      plaene.forEach((pl, i) => {
+        const f = fZiel;
+        if (!(f > 0)) return;
+        const w = pl.p.wohnsitzAusland;
+        const s = ziellandSteuer(pl.land?.steuern, einkommenZiel(i), {
+          gemeinsam: false,
+          option: w.steuerOption,
+          eigenerSatz: w.steuerSatzZielland,
+        });
+        zielAnteil[i] = (s.einkommen + s.kapitalertrag) * f;
+        steuernVermoegen += s.vermoegen * f;
+      });
+    // Schweizer Quellensteuer auf PK-Renten an Personen im Ausland (Art. 96 DBG), wo ESTV 2-217 sie vorsieht
+    const qstRente = neu();
+    plaene.forEach((pl, i) => {
+      const r = pkRenteAusland[i] ?? 0;
+      const art = pl.land?.steuern?.chQstPkRente;
+      if (!(r > 0) || !art || art === 'nein') return;
+      if (art === 'rueckforderbar') {
+        if (!pl.info.hinweise.some((x) => x.startsWith('PK-Rente nach dem Wegzug')))
+          pl.info.hinweise.push(
+            `PK-Rente nach dem Wegzug: Die Schweizer Quellensteuer wird abgezogen, ist aber gemäss DBA rückforderbar (ESTV 2-217${pl.land?.code === 'CY' ? ', nur mit Nachweis der Besteuerung in Zypern' : ', mit Ansässigkeitsbescheinigung'}). Der Rechner nimmt die Rückerstattung an.`,
+          );
+        return;
+      }
+      const monate = Math.max(1, auslandMonate[i] ?? 0);
+      const satz = quellensteuerRenteSatz(regeln, sitz[i] ?? '', (r * 12) / monate) ?? 0;
+      qstRente[i] = r * satz;
+      pl.info.quellensteuerRente += r * satz;
+      if (!pl.info.hinweise.some((x) => x.startsWith('PK-Rente nach dem Wegzug')))
+        pl.info.hinweise.push(
+          `PK-Rente nach dem Wegzug: Schweizer Quellensteuer von ${Math.round(satz * 1000) / 10}% (Sitzkanton ${sitz[i] || 'unbekannt'}, inkl. 1% direkte Bundessteuer; ESTV-Übersicht 2026), definitiv laut ESTV 2-217${pl.land ? ` für ${pl.land.name}` : ''}.`,
+        );
+    });
+    steuernEinkommen += sum(zielAnteil) + sum(qstRente);
+    plaene.forEach((pl, i) => {
+      if (pl.info.zielland !== null || nMonate !== 12 || (auslandMonate[i] ?? 0) < 12) return;
+      const e = einkommenZiel(i);
+      pl.info.zielland = {
+        jahr,
+        steuer: zielAnteil[i] ?? 0,
+        quellensteuerRente: qstRente[i] ?? 0,
+        einkommen: e.ahv + e.pkRente + e.auslandRenten + e.lohn + e.uebrige + e.kapitalertrag,
+        chSteuernWeiter: fZiel === 0,
+        eigenerSatz: pl.p.wohnsitzAusland.steuerSatzZielland !== null,
+      };
+    });
 
     // Ausgaben nach Alter der Referenzperson
     const refAlter = jahr - ref.geburtsjahr;

@@ -39,8 +39,11 @@ import type { Regeln } from '../rules';
  * Version des Haushalt-Schemas (URL-Fragment und localStorage).
  * 2: Ausgabenphasen und Einzeljahr-Abweichungen (`ausgaben.phasen`, `ausgaben.einzeljahre`,
  *    `ausgaben.phasenBezug`, `ausgaben.phasenPerson`); Version 1 wird ohne Phasen übernommen.
+ * 3: Steuern im Zielland je Person (`wohnsitzAusland.steuerSatzZielland`, `steuerOption`,
+ *    `qstKapitalRueckforderung`, `steuerSatzKapitalZielland`); ältere Versionen erhalten die
+ *    Standardwerte (Ländermodell, keine Option, keine Rückforderung).
  */
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 const HASH_PREFIX = '#s=';
 /** Einziger Schlüssel mit Daten (ganzer Zustand als JSON). */
 export const STORAGE_KEY = 'ruhestandsrechner:v1';
@@ -109,6 +112,11 @@ function manuellAus(roh: unknown, p: Person, regeln: Regeln): Partial<Record<Sch
   return out;
 }
 
+/** Steuersatz 0–60 % oder null (= Ländermodell). */
+function satzOderNull(x: number | null): number | null {
+  return x === null || !Number.isFinite(x) ? null : Math.min(0.6, Math.max(0, x));
+}
+
 function person(roh: unknown, regeln: Regeln, i: number): Person {
   const p = mische(neuePerson(regeln, { name: `Person ${i + 1}` }), roh);
   const renten = istObj(roh) && Array.isArray(roh.auslandRenten) ? roh.auslandRenten : [];
@@ -126,6 +134,11 @@ function person(roh: unknown, regeln: Regeln, i: number): Person {
       land: wegzugsLand(w.land) ? w.land : '',
       nationalitaet: w.nationalitaet === 'EU' || w.nationalitaet === 'andere' ? w.nationalitaet : 'CH',
       sitzkantonVorsorge: kantonNach(w.sitzkantonVorsorge) ? w.sitzkantonVorsorge : '',
+      steuerSatzZielland: satzOderNull(w.steuerSatzZielland),
+      steuerSatzKapitalZielland: satzOderNull(w.steuerSatzKapitalZielland),
+      steuerOption: wegzugsLand(w.land)?.steuern?.optionen?.some((o) => o.code === w.steuerOption)
+        ? w.steuerOption
+        : '',
     },
     // Frühere Modi (Skala-44-Schätzung, BVG-Minimum) werden in direkte Eingaben überführt.
     ahv: {

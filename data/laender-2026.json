@@ -19,7 +19,15 @@
    "quelle": "https://sfbvg.ch/aufgaben/barauszahlung-nach-ausreise",
    "status": "verifiziert"
   },
-  "hinweisQuellensteuer": "Satz der Schweizer Quellensteuer auf Vorsorgeleistungen richtet sich nach dem Sitzkanton der Vorsorge- bzw. Freizügigkeitseinrichtung (Übersicht: https://www.estv.admin.ch/dam/de/sd-web/wOVGrjPStMQ4/qst-tarife-renten-kapitalleistungen-2026.pdf)"
+  "hinweisQuellensteuer": "Satz der Schweizer Quellensteuer auf Vorsorgeleistungen richtet sich nach dem Sitzkanton der Vorsorge- bzw. Freizügigkeitseinrichtung (Übersicht: https://www.estv.admin.ch/dam/de/sd-web/wOVGrjPStMQ4/qst-tarife-renten-kapitalleistungen-2026.pdf)",
+  "steuernWohnsitzstaat": {
+   "text": "Block «steuern» je Land: vereinfachtes Steuermodell des Wohnsitzstaats für die Simulation nach dem Wegzug (Tarife in Landeswährung, Umrechnung mit kursProChf). status naeherung = in der App als Näherung gekennzeichnet; fehlende Teile OFFEN.",
+   "kurse": {
+    "text": "EZB-Referenzkurse (EUR/CHF 0.9409, EUR/THB 38.057)",
+    "url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+    "stand": "24.9.2026"
+   }
+  }
  },
  "laender": [
   {
@@ -66,7 +74,29 @@
     "stand": "4.8.2026"
    },
    "art25fFZG": false,
-   "status": "naeherung"
+   "status": "naeherung",
+   "steuern": {
+    "status": "naeherung",
+    "art": "territorial",
+    "chQstPkRente": "ja",
+    "kapitalRueckforderbar": false,
+    "quellen": [
+     {
+      "text": "PwC Worldwide Tax Summaries Panama (sekundär)",
+      "url": "https://taxsummaries.pwc.com/panama/individual/taxes-on-personal-income",
+      "stand": "4.8.2026"
+     },
+     {
+      "text": "ESTV Liste 2-217 (Quellensteuer Vorsorgeleistungen und DBA)",
+      "url": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+      "stand": "1.1.2026"
+     }
+    ],
+    "hinweise": [
+     "Territorialprinzip: Einkommen aus ausländischer Quelle (Schweizer Renten, Auslandsvermögen) wird nicht besteuert (Sekundärquelle, Näherung).",
+     "Kein DBA: Schweizer Quellensteuer auf PK-Renten und -Kapital ist definitiv."
+    ]
+   }
   },
   {
    "code": "PY",
@@ -112,7 +142,29 @@
     "stand": "7.2.2026"
    },
    "art25fFZG": false,
-   "status": "naeherung"
+   "status": "naeherung",
+   "steuern": {
+    "status": "naeherung",
+    "art": "territorial",
+    "chQstPkRente": "ja",
+    "kapitalRueckforderbar": false,
+    "quellen": [
+     {
+      "text": "PwC Worldwide Tax Summaries Paraguay (sekundär)",
+      "url": "https://taxsummaries.pwc.com/paraguay/individual/taxes-on-personal-income",
+      "stand": "7.2.2026"
+     },
+     {
+      "text": "ESTV Liste 2-217 (Quellensteuer Vorsorgeleistungen und DBA)",
+      "url": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+      "stand": "1.1.2026"
+     }
+    ],
+    "hinweise": [
+     "IRP nur auf Einkommen aus paraguayischer Quelle – Schweizer Renten und Auslandsvermögen voraussichtlich nicht steuerbar (abgeleitet, Näherung).",
+     "Kein DBA: Schweizer Quellensteuer auf PK-Renten und -Kapital ist definitiv."
+    ]
+   }
   },
   {
    "code": "PH",
@@ -165,7 +217,29 @@
    },
    "sozialversicherungsabkommen": "ja (CH–PH)",
    "art25fFZG": false,
-   "status": "naeherung"
+   "status": "naeherung",
+   "steuern": {
+    "status": "naeherung",
+    "art": "territorial",
+    "chQstPkRente": "rueckforderbar",
+    "kapitalRueckforderbar": true,
+    "quellen": [
+     {
+      "text": "PwC Worldwide Tax Summaries Philippines (sekundär)",
+      "url": "https://taxsummaries.pwc.com/philippines/individual/taxes-on-personal-income",
+      "stand": "2.7.2026"
+     },
+     {
+      "text": "ESTV Liste 2-217 (Quellensteuer Vorsorgeleistungen und DBA)",
+      "url": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+      "stand": "1.1.2026"
+     }
+    ],
+    "hinweise": [
+     "Gilt für Personen ohne philippinische Staatsangehörigkeit: nur Einkommen aus philippinischer Quelle steuerbar. Philippinische Staatsangehörige werden weltweit besteuert – dann eigenen Satz erfassen.",
+     "Schweizer Quellensteuer auf PK-Renten wird erhoben und mit Ansässigkeitsbescheinigung zurückerstattet (ESTV 2-217, Fn. 7) – der Rechner nimmt die Rückerstattung an."
+    ]
+   }
   },
   {
    "code": "TH",
@@ -218,7 +292,82 @@
     "stand": "2024"
    },
    "art25fFZG": false,
-   "status": "naeherung"
+   "status": "naeherung",
+   "steuern": {
+    "status": "naeherung",
+    "art": "tarif",
+    "waehrung": "THB",
+    "kursProChf": 40.447,
+    "tarif": [
+     [
+      150000,
+      0
+     ],
+     [
+      300000,
+      0.05
+     ],
+     [
+      500000,
+      0.1
+     ],
+     [
+      750000,
+      0.15
+     ],
+     [
+      1000000,
+      0.2
+     ],
+     [
+      2000000,
+      0.25
+     ],
+     [
+      5000000,
+      0.3
+     ],
+     [
+      null,
+      0.35
+     ]
+    ],
+    "freibetrag": 60000,
+    "abzugRenteAnteil": 0.5,
+    "abzugRenteMax": 100000,
+    "kapitalertrag": {
+     "art": "tarif"
+    },
+    "chQstPkRente": "nein",
+    "kapitalRueckforderbar": true,
+    "quellen": [
+     {
+      "text": "Revenue Department Thailand, Personal Income Tax (amtlich; Seite zeigt teilweise ältere Stufen/Abzüge)",
+      "url": "https://www.rd.go.th/english/6045.html",
+      "stand": "21.3.2024"
+     },
+     {
+      "text": "Revenue Department, Departementsanweisungen Por. 161/2566 und 162/2566 (Überweisungsprinzip seit 1.1.2024)",
+      "url": "https://www.rd.go.th",
+      "stand": "2024"
+     },
+     {
+      "text": "EZB-Referenzkurse (EUR/CHF 0.9409, EUR/THB 38.057)",
+      "url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+      "stand": "24.9.2026"
+     },
+     {
+      "text": "ESTV Liste 2-217 (Quellensteuer Vorsorgeleistungen und DBA)",
+      "url": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+      "stand": "1.1.2026"
+     }
+    ],
+    "hinweise": [
+     "Ansässige (über 180 Tage) versteuern Auslandseinkommen, wenn es nach Thailand überwiesen wird. Näherung: alle Renten und Kapitalerträge gelten als überwiesen.",
+     "Stufen 0–35 % mit Stufe 30 % bis 5 Mio. THB, persönlicher Abzug 60'000 THB und Rentenabzug 50 % (max. 100'000 THB) nach geltender Praxis (die amtliche englische Seite ist teils veraltet) – Näherung.",
+     "Behandlung von Vorsorgekapital in Thailand ist OFFEN."
+    ]
+   }
   },
   {
    "code": "AE",
@@ -271,7 +420,29 @@
     "stand": "9.9.2026"
    },
    "art25fFZG": false,
-   "status": "naeherung"
+   "status": "naeherung",
+   "steuern": {
+    "status": "naeherung",
+    "art": "keine",
+    "chQstPkRente": "ja",
+    "kapitalRueckforderbar": false,
+    "quellen": [
+     {
+      "text": "PwC Worldwide Tax Summaries UAE (sekundär)",
+      "url": "https://taxsummaries.pwc.com/united-arab-emirates/individual/taxes-on-personal-income",
+      "stand": "9.9.2026"
+     },
+     {
+      "text": "ESTV Liste 2-217 (Quellensteuer Vorsorgeleistungen und DBA)",
+      "url": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+      "stand": "1.1.2026"
+     }
+    ],
+    "hinweise": [
+     "Keine Einkommens- und Vermögenssteuer für Privatpersonen.",
+     "Schweizer Quellensteuer auf PK-Renten und -Kapital ist definitiv (ESTV 2-217)."
+    ]
+   }
   },
   {
    "code": "CY",
@@ -325,7 +496,73 @@
     "stand": "2026"
    },
    "art25fFZG": true,
-   "status": "naeherung"
+   "status": "naeherung",
+   "steuern": {
+    "status": "naeherung",
+    "art": "tarif",
+    "waehrung": "EUR",
+    "kursProChf": 1.0628,
+    "tarif": [
+     [
+      22000,
+      0
+     ],
+     [
+      32000,
+      0.2
+     ],
+     [
+      42000,
+      0.25
+     ],
+     [
+      72000,
+      0.3
+     ],
+     [
+      null,
+      0.35
+     ]
+    ],
+    "auslandsrenteOption": {
+     "freibetrag": 5000,
+     "satz": 0.05
+    },
+    "kapitalertrag": {
+     "art": "satz",
+     "satz": 0
+    },
+    "chQstPkRente": "rueckforderbar",
+    "kapitalRueckforderbar": true,
+    "quellen": [
+     {
+      "text": "Cyprus Tax Department, Formular Foreign Pension (amtlich, Option 5 %)",
+      "url": "https://www.mof.gov.cy/mof/tax/taxdep.nsf/all/DD21C0CB47E54513C2258710003A1367/$file/Foreign%20Pension.pdf",
+      "stand": "2026"
+     },
+     {
+      "text": "PwC Cyprus, Steuerreform 2026: Stufen ab 1.1.2026 und Freibetrag 5'000 EUR (sekundär)",
+      "url": "https://www.pwc.com.cy/en/publications/direct-tax-updates-2026/dtu-n1-2026.pdf",
+      "stand": "2026"
+     },
+     {
+      "text": "EZB-Referenzkurse (EUR/CHF 0.9409, EUR/THB 38.057)",
+      "url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+      "stand": "24.9.2026"
+     },
+     {
+      "text": "ESTV Liste 2-217 (Quellensteuer Vorsorgeleistungen und DBA)",
+      "url": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+      "stand": "1.1.2026"
+     }
+    ],
+    "hinweise": [
+     "Ausländische Renten: jährlich wählbar zwischen ordentlichem Tarif und 5 % auf dem Betrag über 5'000 EUR – der Rechner nimmt jeweils die günstigere Variante.",
+     "Kapitalerträge: Annahme Non-Dom-Status (keine Sonderabgabe SDC auf Zinsen und Dividenden, Kursgewinne auf Wertschriften steuerfrei) – Näherung.",
+     "Stufen 2026 aus Sekundärquellen (Steuerreform, amtliche Publikation nicht geprüft) – Näherung.",
+     "CH-Quellensteuer auf PK-Renten nur bei Nachweis der Besteuerung in Zypern rückforderbar (ESTV 2-217, Fn. 3)."
+    ]
+   }
   },
   {
    "code": "MT",
@@ -378,7 +615,81 @@
     "stand": "2026"
    },
    "art25fFZG": true,
-   "status": "naeherung"
+   "status": "naeherung",
+   "steuern": {
+    "status": "naeherung",
+    "art": "tarif",
+    "waehrung": "EUR",
+    "kursProChf": 1.0628,
+    "tarif": [
+     [
+      12000,
+      0
+     ],
+     [
+      16000,
+      0.15
+     ],
+     [
+      60000,
+      0.25
+     ],
+     [
+      null,
+      0.35
+     ]
+    ],
+    "tarifVerheiratet": [
+     [
+      15000,
+      0
+     ],
+     [
+      23000,
+      0.15
+     ],
+     [
+      60000,
+      0.25
+     ],
+     [
+      null,
+      0.35
+     ]
+    ],
+    "kapitalertrag": {
+     "art": "tarif"
+    },
+    "chQstPkRente": "nein",
+    "kapitalRueckforderbar": true,
+    "quellen": [
+     {
+      "text": "Commissioner for Revenue Malta, Tax Rates (amtlich, nicht im Detail für 2026 geprüft)",
+      "url": "https://cfr.gov.mt/en/individuals/Pages/Tax-Rates.aspx",
+      "stand": "2026"
+     },
+     {
+      "text": "Malta Retirement Programme Rules, S.L. 123.132 (15 % Pauschal; im Modell nicht gerechnet, OFFEN)",
+      "url": "https://legislation.mt/eli/sl/123.132/eng",
+      "stand": "2026"
+     },
+     {
+      "text": "EZB-Referenzkurse (EUR/CHF 0.9409, EUR/THB 38.057)",
+      "url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+      "stand": "24.9.2026"
+     },
+     {
+      "text": "ESTV Liste 2-217 (Quellensteuer Vorsorgeleistungen und DBA)",
+      "url": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+      "stand": "1.1.2026"
+     }
+    ],
+    "hinweise": [
+     "Ordentlicher Tarif für Ansässige; Non-Doms zahlen nur auf nach Malta überwiesenes Auslandseinkommen – Näherung: Renten und Kapitalerträge gelten als überwiesen.",
+     "Retirement Programme (15 %, mind. 7'500 EUR) nicht abgebildet – bei Bedarf eigenen Satz erfassen.",
+     "Behandlung von Vorsorgekapital in Malta ist OFFEN."
+    ]
+   }
   },
   {
    "code": "PT",
@@ -447,7 +758,108 @@
     }
    ],
    "art25fFZG": true,
-   "status": "naeherung"
+   "status": "naeherung",
+   "steuern": {
+    "status": "naeherung",
+    "art": "tarif",
+    "waehrung": "EUR",
+    "kursProChf": 1.0628,
+    "tarif": [
+     [
+      8342,
+      0.125
+     ],
+     [
+      12587,
+      0.157
+     ],
+     [
+      17838,
+      0.212
+     ],
+     [
+      23089,
+      0.241
+     ],
+     [
+      29397,
+      0.311
+     ],
+     [
+      43090,
+      0.349
+     ],
+     [
+      46566,
+      0.431
+     ],
+     [
+      86634,
+      0.446
+     ],
+     [
+      null,
+      0.48
+     ]
+    ],
+    "abzugRente": 4587.09,
+    "kapitalertrag": {
+     "art": "satz",
+     "satz": 0.28
+    },
+    "chQstPkRente": "nein",
+    "kapitalRueckforderbar": true,
+    "optionen": [
+     {
+      "code": "azoren",
+      "label": "Wohnsitz auf den Azoren (IRS-Sätze −30 %)",
+      "faktor": 0.7
+     }
+    ],
+    "quellen": [
+     {
+      "text": "Código do IRS Art. 68 (Stufen 2026, Lei 73-A/2025)",
+      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs68.aspx",
+      "stand": "30.12.2025"
+     },
+     {
+      "text": "Código do IRS Art. 53 und 25 (Rentenabzug 8,54 × IAS)",
+      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs53.aspx",
+      "stand": "2026"
+     },
+     {
+      "text": "Portaria 480-A/2025/1 (IAS 2026 = 537,13 EUR)",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/480-a-2025-993056222",
+      "stand": "30.12.2025"
+     },
+     {
+      "text": "Código do IRS Art. 72 (Kapitalerträge 28 %)",
+      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs72.aspx",
+      "stand": "2026"
+     },
+     {
+      "text": "DLR 15-A/2021/A Art. 47 (Azoren −30 %)",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-legislativo-regional/15-a-2021-164454929",
+      "stand": "1.1.2022"
+     },
+     {
+      "text": "EZB-Referenzkurse (EUR/CHF 0.9409, EUR/THB 38.057)",
+      "url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+      "stand": "24.9.2026"
+     },
+     {
+      "text": "ESTV Liste 2-217 (Quellensteuer Vorsorgeleistungen und DBA)",
+      "url": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+      "stand": "1.1.2026"
+     }
+    ],
+    "hinweise": [
+     "Renten (AHV, PK, ausländische Renten) als Kategorie H nach dem progressiven IRS-Tarif, Abzug 4'587 EUR pro Person; Besteuerung pro Person (Ehepaare: getrennte Veranlagung).",
+     "Kapitalerträge 28 % (Sondersatz). Keine allgemeine Vermögenssteuer.",
+     "Solidaritätszuschlag (ab 80'000 EUR) und die im September 2026 beschlossene Senkung der Sätze sind nicht abgebildet (OFFEN).",
+     "Behandlung ausländischer Vorsorgekapitalien im IRS ist OFFEN."
+    ]
+   }
   },
   {
    "code": "ES",
@@ -500,7 +912,91 @@
     "stand": "2026"
    },
    "art25fFZG": true,
-   "status": "naeherung"
+   "status": "naeherung",
+   "steuern": {
+    "status": "naeherung",
+    "art": "tarif",
+    "waehrung": "EUR",
+    "kursProChf": 1.0628,
+    "tarif": [
+     [
+      12450,
+      0.095
+     ],
+     [
+      20200,
+      0.12
+     ],
+     [
+      35200,
+      0.15
+     ],
+     [
+      60000,
+      0.185
+     ],
+     [
+      300000,
+      0.225
+     ],
+     [
+      null,
+      0.245
+     ]
+    ],
+    "faktor": 2,
+    "persoenlichesMinimum": 6700,
+    "kapitalertrag": {
+     "art": "tarif",
+     "tarif": [
+      [
+       6000,
+       0.19
+      ],
+      [
+       50000,
+       0.21
+      ],
+      [
+       200000,
+       0.23
+      ],
+      [
+       300000,
+       0.27
+      ],
+      [
+       null,
+       0.3
+      ]
+     ]
+    },
+    "chQstPkRente": "nein",
+    "kapitalRueckforderbar": true,
+    "quellen": [
+     {
+      "text": "Ley 35/2006 IRPF Art. 63 (Staatstarif), Art. 57/58 (persönliches Minimum 5'550 EUR + 1'150 EUR ab 65), Art. 66/76 (Sparbemessungsgrundlage)",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2006-20764",
+      "stand": "konsolidiert 2026"
+     },
+     {
+      "text": "EZB-Referenzkurse (EUR/CHF 0.9409, EUR/THB 38.057)",
+      "url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+      "stand": "24.9.2026"
+     },
+     {
+      "text": "ESTV Liste 2-217 (Quellensteuer Vorsorgeleistungen und DBA)",
+      "url": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+      "stand": "1.1.2026"
+     }
+    ],
+    "hinweise": [
+     "Näherung: Der regionale Anteil wird wie der Staatstarif angenommen (Faktor 2); die tatsächlichen Sätze hängen von der Autonomen Gemeinschaft ab.",
+     "Kapitalerträge nach dem Spartarif 19–30 %.",
+     "Vermögenssteuer (regional, teils 100 % Bonus) und Solidaritätssteuer auf grosse Vermögen sind nicht abgebildet (OFFEN).",
+     "Behandlung ausländischer Vorsorgekapitalien ist OFFEN."
+    ]
+   }
   },
   {
    "code": "IT",
@@ -553,7 +1049,243 @@
     "stand": "2026"
    },
    "art25fFZG": true,
-   "status": "naeherung"
+   "status": "naeherung",
+   "steuern": {
+    "status": "naeherung",
+    "art": "tarif",
+    "waehrung": "EUR",
+    "kursProChf": 1.0628,
+    "tarif": [
+     [
+      28000,
+      0.23
+     ],
+     [
+      50000,
+      0.33
+     ],
+     [
+      null,
+      0.43
+     ]
+    ],
+    "chRentenSatz": 0.05,
+    "kapitalVorsorgeSatz": 0.05,
+    "kapitalertrag": {
+     "art": "satz",
+     "satz": 0.26
+    },
+    "vermoegenSatz": 0.002,
+    "chQstPkRente": "nein",
+    "kapitalRueckforderbar": true,
+    "optionen": [
+     {
+      "code": "it7",
+      "label": "Regime 7 % für ausländische Rentner (Art. 24-ter TUIR, 10 Jahre)",
+      "pauschalSatz": 0.07,
+      "vermoegenSatz": 0
+     }
+    ],
+    "quellen": [
+     {
+      "text": "Agenzia delle Entrate, Risposta n. 125/2024: 5 % Ersatzsteuer auf AHV- und LPP-Leistungen (Renten und Kapital), Art. 76 L. 413/1991",
+      "url": "https://www.agenziaentrate.gov.it/portale/documents/20143/6193302/Risposta+n.+125_2024.pdf/fbc80d8c-c56a-42b7-0ae4-e306283d5010",
+      "stand": "3.6.2024"
+     },
+     {
+      "text": "Agenzia delle Entrate, IRPEF-Stufen 2026 (23/33/43 %, L. 199/2025)",
+      "url": "https://www.agenziaentrate.gov.it/portale/web/english/personal-income-tax-rates-and-calculation",
+      "stand": "1.1.2026"
+     },
+     {
+      "text": "Agenzia delle Entrate, Regime 7 % für ausländische Rentner (Art. 24-ter TUIR)",
+      "url": "https://www.agenziaentrate.gov.it/portale/schede/agevolazioni/np-regime-opzionale-per-i-pensionati-esteri",
+      "stand": "2026"
+     },
+     {
+      "text": "EZB-Referenzkurse (EUR/CHF 0.9409, EUR/THB 38.057)",
+      "url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+      "stand": "24.9.2026"
+     },
+     {
+      "text": "ESTV Liste 2-217 (Quellensteuer Vorsorgeleistungen und DBA)",
+      "url": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+      "stand": "1.1.2026"
+     }
+    ],
+    "hinweise": [
+     "AHV- und PK-Renten sowie PK-/Freizügigkeitskapital: 5 % Ersatzsteuer (Art. 76 L. 413/1991, Risposta 125/2024).",
+     "Übrige Einkünfte (z.B. andere ausländische Renten) nach IRPEF 23/33/43 % ohne Abzüge und ohne regionale/kommunale Zuschläge – Näherung.",
+     "Kapitalerträge 26 %; IVAFE 0,2 % auf dem Finanzvermögen im Ausland (Näherung: ganzes Finanzvermögen).",
+     "Säule 3a: Behandlung in Italien OFFEN (die 5 % gelten gemäss Risposta 125/2024 für AHV und LPP)."
+    ]
+   }
+  },
+  {
+   "code": "LI",
+   "name": "Liechtenstein",
+   "eu": true,
+   "dba": {
+    "besteht": true,
+    "abkommen": "10.7.2015",
+    "sr": "0.672.951.43",
+    "quelle": "https://www.sif.admin.ch/dam/de/sd-web/Rq53YeWNalWg/DBA-Liste%20DE-per%2001.01.2026.pdf",
+    "stand": "1.1.2026"
+   },
+   "rs217": {
+    "pkRenteQuellensteuer": "nein",
+    "pkKapitalRueckforderbar": "ja",
+    "s3aRenteQuellensteuer": "nein",
+    "s3aKapitalRueckforderbar": "ja",
+    "fussnote": null,
+    "quelle": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+    "stand": "1.1.2026",
+    "art": "Art. 96 DBG (privatrechtliche Vorsorge)"
+   },
+   "ahv": {
+    "chQuellensteuer": "nein",
+    "text": "Keine Schweizer Steuer auf AHV-Renten an Personen im Ausland (keine gesetzliche Grundlage in DBG/StHG), unabhängig vom DBA",
+    "quelle": "https://www.estv2.admin.ch/stp/ds/e-besteuerung-an-der-quelle-de.pdf",
+    "status": "verifiziert"
+   },
+   "pkKapital": {
+    "ch": "Quellensteuer rückforderbar (ESTV 2-217)",
+    "wohnsitzstaat": "Kapitalleistungen getrennt zum Rentensatz besteuert (Art. 16 Abs. 6 SteG) – im Rechner OFFEN",
+    "status": "naeherung",
+    "quelle": "https://www.gesetze.li/konso/pdf/2010340000?version=38"
+   },
+   "pkRente": {
+    "ch": "keine Quellensteuer",
+    "wohnsitzstaat": "steuerbar (Art. 14 Abs. 2 lit. e SteG), Landessteuer + Gemeindezuschlag",
+    "status": "naeherung"
+   },
+   "s3aKapital": {
+    "ch": "Quellensteuer rückforderbar",
+    "wohnsitzstaat": "OFFEN",
+    "status": "verifiziert_ch"
+   },
+   "lokalesRegime": {
+    "text": "Erwerbssteuer mit Sollertrag 4 % des Vermögens; Landessteuer 0–8 % plus Gemeindezuschlag 150–250 %",
+    "quelle": "https://www.gesetze.li/konso/pdf/2010340000?version=38",
+    "quelleTyp": "amtlich",
+    "stand": "Fassung 1.7.2026"
+   },
+   "art25fFZG": true,
+   "art25fImmerGesperrt": true,
+   "art25fQuelle": "Art. 25f Abs. 1 lit. c FZG (https://sfbvg.ch/hintergrund/rechtliche-grundlagen/art-25-f-einschraenkung-von-barauszahlungen)",
+   "status": "naeherung",
+   "steuern": {
+    "status": "naeherung",
+    "art": "tarif",
+    "waehrung": "CHF",
+    "kursProChf": 1,
+    "tarif": [
+     [
+      15855,
+      0
+     ],
+     [
+      21140,
+      0.01
+     ],
+     [
+      42280,
+      0.03
+     ],
+     [
+      73990,
+      0.04
+     ],
+     [
+      105700,
+      0.05
+     ],
+     [
+      137410,
+      0.06
+     ],
+     [
+      169120,
+      0.065
+     ],
+     [
+      211400,
+      0.07
+     ],
+     [
+      null,
+      0.08
+     ]
+    ],
+    "tarifVerheiratet": [
+     [
+      31710,
+      0
+     ],
+     [
+      42280,
+      0.01
+     ],
+     [
+      84560,
+      0.03
+     ],
+     [
+      147980,
+      0.04
+     ],
+     [
+      211400,
+      0.05
+     ],
+     [
+      274820,
+      0.06
+     ],
+     [
+      338240,
+      0.065
+     ],
+     [
+      422800,
+      0.07
+     ],
+     [
+      null,
+      0.08
+     ]
+    ],
+    "faktor": 2.5,
+    "sollertrag": 0.04,
+    "kapitalertrag": {
+     "art": "keine"
+    },
+    "chQstPkRente": "nein",
+    "kapitalRueckforderbar": true,
+    "quellen": [
+     {
+      "text": "Steuergesetz Liechtenstein (SteG, LR 640.0) Art. 14, 19 (Tarif), 56 (Sollertrag 4 %), 75 (Gemeindezuschlag 150–250 %)",
+      "url": "https://www.gesetze.li/konso/pdf/2010340000?version=38",
+      "stand": "Fassung 1.7.2026"
+     },
+     {
+      "text": "Finanzgesetz 2026 (LGBl. 2025 Nr. 556)",
+      "url": "https://www.gesetze.li/konso/pdf/2025556000?version=1",
+      "stand": "2026"
+     },
+     {
+      "text": "ESTV Liste 2-217 (Quellensteuer Vorsorgeleistungen und DBA)",
+      "url": "https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf",
+      "stand": "1.1.2026"
+     }
+    ],
+    "hinweise": [
+     "Landessteuer nach Art. 19 SteG plus Gemeindezuschlag 150 % (gesetzliches Minimum, je nach Gemeinde bis 250 %) → Faktor 2,5 – Näherung.",
+     "Vermögen: Sollertrag 4 % des Vermögens zählt zum steuerpflichtigen Erwerb (Art. 14 Abs. 2 lit. l, Art. 56 SteG); tatsächliche Vermögenserträge sind dafür steuerfrei. Abzüge und Freibeträge auf dem Vermögen sind nicht abgebildet.",
+     "AHV- und PK-Renten sind in Liechtenstein steuerbar (Art. 14 Abs. 2 lit. e SteG); keine Schweizer Quellensteuer auf PK-Renten (ESTV 2-217).",
+     "Art. 25f Abs. 1 lit. c FZG: Bei Wohnsitz in Liechtenstein bleibt das BVG-Altersguthaben immer gesperrt, unabhängig von einer Versicherungspflicht."
+    ]
+   }
   },
   {
    "code": "BR",

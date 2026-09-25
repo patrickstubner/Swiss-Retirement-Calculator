@@ -173,3 +173,92 @@ describe('Besteuerung der Barauszahlung: Quellensteuer statt Kapitalleistungsste
     expect(e.personen[0]?.quellensteuerKapital).toBe(0);
   });
 });
+
+describe('Steuern nach dem Wegzug (Zielland statt Schweizer Einkommens-/Vermögenssteuer)', () => {
+  const ohneBar = { barauszahlung: false };
+  it('VAE: ab dem Wegzug keine Einkommens- und Vermögenssteuer mehr', () => {
+    const e = simuliere(haushalt(person({ ...ohneBar, land: 'AE' })), regeln, { start });
+    expect(zeile(e, 2027).steuernVermoegen).toBeGreaterThan(0);
+    expect(zeile(e, 2029).steuernEinkommen).toBe(0);
+    expect(zeile(e, 2029).steuernVermoegen).toBe(0);
+    expect(e.personen[0]?.zielland?.jahr).toBe(2028);
+  });
+
+  it('Land ohne Modell (anderes Land): weiter Schweizer Steuern, mit eigenem Satz das Zielland', () => {
+    const ch = simuliere(haushalt(person({ ...ohneBar, land: 'XX' })), regeln, { start });
+    expect(zeile(ch, 2029).steuernVermoegen).toBeGreaterThan(0);
+    expect(ch.personen[0]?.hinweise.some((x) => x.includes('kein Steuermodell'))).toBe(true);
+    const eigen = simuliere(haushalt(person({ ...ohneBar, land: 'XX', steuerSatzZielland: 0.1 })), regeln, { start });
+    expect(zeile(eigen, 2029).steuernVermoegen).toBe(0);
+    expect(zeile(eigen, 2029).steuernEinkommen).toBeGreaterThan(0);
+  });
+
+  it('Wegzugsjahr anteilig: Wegzug per 1. Juli halbiert die Schweizer Vermögenssteuer', () => {
+    const ganz = simuliere(haushalt(person(null)), regeln, { start });
+    const halb = simuliere(haushalt(person({ ...ohneBar, land: 'AE', datum: { jahr: 2028, monat: 7 } })), regeln, {
+      start,
+    });
+    expect(zeile(halb, 2028).steuernVermoegen).toBeCloseTo(zeile(ganz, 2028).steuernVermoegen / 2, 0);
+  });
+
+  it('PK-Rente nach Wegzug in die VAE: Schweizer Quellensteuer des Sitzkantons (ZH 7 %)', () => {
+    const p = person({ ...ohneBar, land: 'AE', datum: { jahr: 2026, monat: 1 } });
+    const e = simuliere(haushalt(p), regeln, { start });
+    const info = e.personen[0];
+    expect(info?.pkRenteJahr).toBeGreaterThan(0);
+    // ab Reglementsalter 60 (2040): Rente × 7 %
+    expect(zeile(e, 2045).steuernEinkommen).toBeCloseTo(zeile(e, 2045).pkRente * 0.07, 6);
+    expect(info?.quellensteuerRente).toBeGreaterThan(0);
+  });
+
+  it('Portugal: keine Quellensteuer auf der PK-Rente, dafür IRS', () => {
+    const p = person({ ...ohneBar, land: 'PT', datum: { jahr: 2026, monat: 1 } });
+    const e = simuliere(haushalt(p), regeln, { start });
+    expect(e.personen[0]?.quellensteuerRente).toBe(0);
+    expect(zeile(e, 2050).steuernEinkommen).toBeGreaterThan(0);
+  });
+
+  it('Rückforderung der Kapital-Quellensteuer: Italien 5 % statt Quellensteuer; ohne bekannten Satz keine Rückforderung', () => {
+    const it5 = simuliere(
+      haushalt(person({ land: 'IT', qstKapitalRueckforderung: true, nichtObligatorischVersichert: true })),
+      regeln,
+      { start },
+    );
+    const i = it5.personen[0];
+    const kapital =
+      (i?.barauszahlung?.pk ?? 0) + (i?.barauszahlung?.freizuegigkeit ?? 0) + (i?.barauszahlung?.saeule3a ?? 0);
+    expect(i?.quellensteuerKapitalRueckforderung).toBeGreaterThan(0);
+    expect(i?.quellensteuerKapital).toBe(0);
+    expect(i?.kapitalSteuerZielland).toBeCloseTo(kapital * 0.05, 0);
+    const pt = simuliere(haushalt(person({ land: 'PT', qstKapitalRueckforderung: true })), regeln, { start });
+    expect(pt.personen[0]?.quellensteuerKapital).toBeGreaterThan(0);
+    expect(pt.personen[0]?.hinweise.some((x) => x.includes('Rückforderung nicht gerechnet'))).toBe(true);
+    const ptEigen = simuliere(
+      haushalt(
+        person({
+          land: 'PT',
+          qstKapitalRueckforderung: true,
+          steuerSatzKapitalZielland: 0.02,
+          nichtObligatorischVersichert: true,
+        }),
+      ),
+      regeln,
+      { start },
+    );
+    expect(ptEigen.personen[0]?.kapitalSteuerZielland).toBeCloseTo(kapital * 0.02, 0);
+    // VAE: laut ESTV 2-217 nicht rückforderbar
+    const ae = simuliere(haushalt(person({ land: 'AE', qstKapitalRueckforderung: true })), regeln, { start });
+    expect(ae.personen[0]?.quellensteuerKapitalRueckforderung).toBe(0);
+  });
+});
+
+describe('Liechtenstein (Art. 25f Abs. 1 lit. c FZG)', () => {
+  it('Obligatorium bleibt immer gesperrt, auch mit «nicht obligatorisch versichert»', () => {
+    const e = simuliere(haushalt(person({ land: 'LI', nichtObligatorischVersichert: true })), regeln, { start });
+    const bar = e.personen[0]?.barauszahlung;
+    expect(bar?.voll).toBe(false);
+    expect(bar?.pkGesperrt).toBeGreaterThan(0);
+    // 3a trotzdem ganz frei (BSV-Mitteilungen Nr. 96 Rz 567)
+    expect(bar?.saeule3a).toBeGreaterThan(49_000);
+  });
+});

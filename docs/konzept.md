@@ -175,11 +175,23 @@ Validierung: harte Grenzen aus `rules/2026.json` (z.B. 3a-Maximum, AHV-Vorbezug 
   das Überobligatorium, der obligatorische Teil (Anteil aus `obligatoriumsAnteilBei()`: Feld «Davon BVG-Altersguthaben»
   bzw. Schätzung, bis zum Wegzugsjahr hochgerechnet) wandert in den Freizügigkeitstopf (Bezug ab RA−5). Keine PK-Rente,
   keine weiteren PK-Beiträge.
-- Freizügigkeit: bar nur beim Vollbezug; 3a: immer bar (Art. 3 Abs. 2 lit. d BVV 3; EU/EFTA-Auslegung OFFEN).
+- Freizügigkeit: bar nur beim Vollbezug; 3a: immer bar (Art. 3 Abs. 2 lit. d BVV 3; EU/EFTA bestätigt durch
+  BSV-Mitteilungen Nr. 96 Rz 567). Liechtenstein (`obligatoriumImmerGesperrt`): Obligatorium immer gesperrt.
 - Steuern: Kapitalleistungen ab dem Wegzugsmonat mit `quellensteuerKapital()` (Bund QStV-Tarif + Sitzkanton, je Person
   mit Zivilstandstarif), davor wie bisher mit der ordentlichen Kapitalleistungssteuer (Ehepaare zusammengerechnet).
 - Ausgabe: `PersonInfo.barauszahlung` (Monat, Beträge, gesperrter Teil, Anteil) und `quellensteuerKapital`; Anzeige in
   der Wegzug-Karte, beim PK-Feld und im Ergebnis. Quellen und OFFEN-Punkte: `docs/quellen.md` Abschnitt 11.
+
+### c.7d Steuern nach dem Wegzug
+- CH-Einkommens- und Vermögenssteuer werden mit dem Anteil der Monate mit Wohnsitz Schweiz gewichtet (Paare: CH-Steuer,
+  solange eine Person in der Schweiz wohnt). Danach `ziellandSteuer()` (`src/core/zielland.ts`) mit dem Modell aus
+  `laender-2026.json` → `steuern` (territorial / keine / tarif), Option (z.B. `it7`, `cy5`, `azoren`) oder eigenem Satz
+  (`WohnsitzAusland.steuerSatzZielland`). LI/MT-Ehepaare im selben Land: gemeinsamer Tarif.
+- CH-Quellensteuer auf PK-Renten bei `chQstPkRente = 'ja'` (Satz des Sitzkantons, `quellensteuerVorsorgeRentenKantone`);
+  `rueckforderbar` → als zurückerstattet angenommen.
+- Kapital-QSt: Rückforderung optional (`qstKapitalRueckforderung`), nur mit Zielland-Satz (`kapitalVorsorgeSatz` oder
+  `steuerSatzKapitalZielland`). Ausgabe: `PersonInfo.zielland`, `quellensteuerRente`, `quellensteuerKapitalRueckforderung`,
+  `kapitalSteuerZielland`. Schema 3 (Migration setzt Standardwerte). Die Zielland-Angaben zählen als Detailwert.
 
 ### c.7b Modus «Schnell» / «Detailliert» und Schätzwerte
 - «Schnell» (Standard beim ersten Start ohne gespeicherten Zustand; gespeicherte Wahl und Links mit Detailwerten

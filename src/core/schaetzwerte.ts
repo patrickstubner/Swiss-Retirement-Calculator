@@ -379,6 +379,8 @@ export function detailwerte(h: Haushalt, standard: Haushalt): string[] {
     if (w.aktiv && (w.freiwilligeAhv || w.nationalitaet !== 'CH' || !w.vorherVersichert5Jahre))
       out.push(`Wohnsitz im Ausland (AHV-Details)${n}`);
     if (w.aktiv && w.sitzkantonVorsorge !== '') out.push(`Sitzkanton der Vorsorgeeinrichtung${n}`);
+    if (w.aktiv && (w.steuerSatzZielland !== null || w.steuerOption !== '' || w.qstKapitalRueckforderung))
+      out.push(`Steuern im Zielland${n}`);
     if (std) {
       if (p.pk.kapitalanteil !== std.pk.kapitalanteil) out.push(`PK-Kapitalbezug${n}`);
       if (p.pk.fruehestesAlter !== std.pk.fruehestesAlter) out.push(`PK-Bezugsalter laut Reglement${n}`);

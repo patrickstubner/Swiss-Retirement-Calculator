@@ -30,6 +30,7 @@ Legende 2-217 (privatrechtliche Vorsorge, Art. 96 DBG): PK-Rente mit QSt? / PK-K
 | Portugal | ja, 26.9.1974 (0.672.965.41), Prot. 2012 | nein / ja / nein / ja | keine CH-Steuer | progressiv; NHR beendet; Azoren −30% | ja |
 | Spanien | ja, 26.4.1966 (0.672.933.21), Prot. 2006/2011 | nein / ja / nein / ja | keine CH-Steuer | Welteinkommen progressiv *(sekundär)* | ja |
 | Italien | ja, 9.3.1976 (0.672.945.41), Prot. anwendbar ab 2024 | nein / ja³ / nein / ja³ | keine CH-Steuer; IT: 5% | 7%-Regime Süden; 5% auf AHV/LPP | ja |
+| Liechtenstein | ja, 10.7.2015 (SR 0.672.951.43, SR-Nr. nicht aus der SIF-Liste verifiziert) | nein / ja / nein / ja | keine CH-Steuer | Erwerbssteuer progressiv (Art. 19 SteG) + Gemeindezuschlag, Vermögen über Sollertrag 4 % | ja, **Obligatorium immer gesperrt** (Art. 25f Abs. 1 lit. c FZG) |
 
 Fussnoten 2-217: ³ Rückerstattung nur bei Nachweis der Besteuerung im Wohnsitzstaat; ⁷ Rückerstattung nur mit Ansässigkeitsbescheinigung der philippinischen Behörden.
 
@@ -114,16 +115,46 @@ Fussnoten 2-217: ³ Rückerstattung nur bei Nachweis der Besteuerung im Wohnsitz
 
 ## 4. Eingaben/Logik für die App (Wegzug)
 1. **Land wählen** → DBA ja/nein, 2-217-Werte, lokales Regime aus `laender-2026.json`.
-2. **CH-Quellensteuer** auf PK-/3a-Kapital nach dem Sitzkanton der Einrichtung. Rückforderung nur, wenn 2-217 „ja“ sagt **und** allfällige Fussnotenbedingungen erfüllt sind (CY, IT: Besteuerungsnachweis; PH: Bescheinigung). **Umgesetzt** für Kapitalleistungen ab dem Wegzug (Bund QStV-Tarif + Kantonssatz laut ESTV-Übersicht 2026, `docs/quellen.md` Abschnitt 4 und 11); die Rückforderung wird nicht gerechnet, der Text aus `pkKapital.ch` erscheint als Hinweis.
-3. **Wohnsitzstaatsteuer** auf Kapital/Rente gemäss Regime; wo **OFFEN** den Satz als Nutzereingabe mit Warnhinweis führen.
+2. **CH-Quellensteuer** auf PK-/3a-Kapital nach dem Sitzkanton der Einrichtung. Rückforderung nur, wenn 2-217 „ja“ sagt **und** allfällige Fussnotenbedingungen erfüllt sind (CY, IT: Besteuerungsnachweis; PH: Bescheinigung). **Umgesetzt** für Kapitalleistungen ab dem Wegzug (Bund QStV-Tarif + Kantonssatz bzw. exakte Kantonstabelle, `docs/quellen.md` Abschnitt 4 und 11). Rückforderung optional per Schalter, nur mit bekanntem Zielland-Satz (`steuern.kapitalRueckforderbar`, `kapitalVorsorgeSatz` oder eigener Satz).
+3. **Wohnsitzstaatsteuer** auf Renten, Kapitalerträge und Vermögen gemäss Steuermodell (Abschnitt 6, umgesetzt); wo **OFFEN** eigener effektiver Satz als Nutzereingabe.
 4. **AHV:** nie CH-Steuer; Wohnsitzstaatsteuer gemäss Regime (IT 5%, TH bei Überweisung, PT progressiv usw.).
 5. **Art. 25f FZG** (umgesetzt): Barauszahlung bei Wegzug in die EU/EFTA nur für das Überobligatorium; das geschätzte Obligatorium bleibt als Freizügigkeitsguthaben gesperrt, ausser die Person ist im neuen Land nicht obligatorisch versichert (Schalter). Ausserhalb EU/EFTA ganzes Guthaben (Art. 5 Abs. 1 lit. a FZG).
 6. Status je Wert anzeigen (verifiziert / Näherung / OFFEN).
 7. **AHV-Versicherung nach dem Wegzug** (umgesetzt, siehe `docs/quellen.md` Abschnitt 1): In EU/EFTA-Staaten (CY, MT, PT, ES, IT) ist keine freiwillige AHV möglich (dort gilt die Sozialversicherung des Wohnsitz- bzw. Beschäftigungsstaates). In PA, PY, PH, TH und VAE können Schweizer und EU/EFTA-Staatsangehörige nach mind. 5 Jahren Versicherung unmittelbar vor dem Wegzug innert 1 Jahr der freiwilligen AHV/IV beitreten. Ohne Beitritt entstehen bis zum Referenzalter Beitragslücken; die obligatorischen NE-Beiträge enden mit dem Wegzug. Das EU/EFTA-Kennzeichen kommt aus `eu` in `laender-2026.json` und wird im Test gegen `beitraege.freiwilligeAhv.euEftaStaaten` geprüft.
 
 ## 5. OFFEN
+- Zypern: Stufen 2026 und Non-Dom-Annahme (Kapitalerträge 0) nur sekundär belegt
+- Thailand: Überweisungsprinzip (Modell: alle Einkünfte gelten als überwiesen), Stufen/Abzüge amtlich nur auf älterer Seite
+- Malta: Retirement Programme (15 %) nicht gerechnet
+- Spanien: Regionaltarife (Modell: Staatstarif × 2) und Vermögenssteuer (Patrimonio/ITSGF) OFFEN
+- Portugal: Solidaritätszuschlag, Satzsenkung ab Sep. 2026, Behandlung von Vorsorgekapital
+- Italien: IRPEF-Abzüge und regionale/kommunale Zuschläge; 3a-Behandlung
+- Liechtenstein: Gemeindezuschlag je Gemeinde (Modell: Minimum 150 %), Vermögensabzüge, Kapitalleistungen
 - Wohnsitzstaatsteuer auf PK-/3a-Kapital: TH, MT, PT, ES (IT 3a)
 - Thailand: LTR-Visum-Befreiung; Behandlung von Kapitalüberweisungen
 - Portugal: Senkung der IRS-Sätze 2026/2027 (Beschluss 17.9.2026)
 - Zypern: Steuerfreiheit von Vorsorgepauschalen amtlich bestätigen (bisher sekundär)
 - DBA-Artikeltexte (Renten-/Ruhegehaltsartikel) je Land nicht einzeln geprüft; Wirkung auf Schweizer Seite gemäss ESTV 2-217 verifiziert
+
+## 6. Steuermodelle im Wohnsitzstaat (Rechner, Block `steuern` in `data/laender-2026.json`)
+
+Umsetzung in `src/core/zielland.ts` (`ziellandSteuer()`), Aufruf in `src/core/simulation.ts` ab dem Wegzugsmonat.
+Tarife in Landeswährung, Umrechnung mit EZB-Referenzkursen vom 24.9.2026 (1 CHF = 1.0628 EUR = 40.447 THB;
+https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml); Stufen gelten wie die Schweizer Tarife als an die
+Teuerung angepasst. Alle Modelle sind in der App als **Näherung** gekennzeichnet. Eigener effektiver Satz (Einkommen
+inkl. Renten, Kapitalerträge) und eigener Satz auf Vorsorgekapital ersetzen das Modell.
+
+| Land | Modell | Wichtigste Quelle (Stand) | Beleg |
+|---|---|---|---|
+| Panama, Paraguay, Philippinen | territorial: ausländische Renten und Kapitalerträge steuerfrei | PwC Worldwide Tax Summaries (2026) | sekundär |
+| VAE | keine Einkommens-/Vermögenssteuer | PwC (9.9.2026) | sekundär |
+| Thailand | Tarif 0–35 %, Freibetrag 60'000 THB, Rentenabzug 50 % max. 100'000 THB; alle Einkünfte als überwiesen angenommen | Revenue Department https://www.rd.go.th/english/6045.html (Seite 21.3.2024), Por. 161/162/2566 | amtlich, teils veraltet |
+| Zypern | 0/20/25/30/35 % bis 22k/32k/42k/72k EUR; Option 5 % auf Auslandsrenten über 5'000 EUR (günstigere Variante automatisch); Kapitalerträge 0 (Non-Dom) | Tax Department, Formular Foreign Pension (2026); PwC DTU 1/2026 | Option amtlich, Stufen sekundär |
+| Malta | Tarif ledig/verheiratet 2026 | Commissioner for Revenue https://cfr.gov.mt/en/individuals/Pages/Tax-Rates.aspx | Näherung |
+| Portugal | Art. 68 CIRS (Lei 73-A/2025), Rentenabzug 4'587.09 EUR (8,54 × IAS 537,13), Kapitalerträge 28 % (Art. 72); Option Azoren −30 % (DLR 15-A/2021/A Art. 47) | Portal das Finanças (30.12.2025) | amtlich |
+| Spanien | Staatstarif Art. 63 LIRPF × 2 (Näherung für Regionalanteil), persönliches Minimum 6'700 EUR ab 65, Spartarif 19–30 % | BOE Ley 35/2006 (konsolidiert 2026) | Näherung |
+| Italien | 5 % Ersatzsteuer auf AHV/PK-Renten und PK/FZ-Kapital (Art. 76 L. 413/1991, Risposta 125/2024), übrige Einkünfte IRPEF 23/33/43 %, Kapitalerträge 26 %, IVAFE 0,2 %; Option 7 % pauschal (Art. 24-ter TUIR, keine IVAFE) | Agenzia delle Entrate (3.6.2024 / 1.1.2026) | amtlich |
+| Liechtenstein | Art. 19 SteG (Fassung 1.7.2026) × 2,5 (Gemeindezuschlag Minimum 150 %, Art. 75), Vermögen als Sollertrag 4 % (Art. 56), Ehepaar-Tarif | gesetze.li LR 640.0 (1.7.2026), Finanzgesetz 2026 | Näherung |
+| Brasilien, andere | kein Modell → weiter CH-Steuern (Hinweis) oder eigener Satz | – | OFFEN |
+
+Je Land zusätzlich aus ESTV RS 2-217 (1.1.2026): `chQstPkRente` (ja / nein / rückforderbar) und `kapitalRueckforderbar`.

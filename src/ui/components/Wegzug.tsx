@@ -10,6 +10,7 @@ import { KANTONE, kantonNach } from '../../data/kantone';
 import { WEGZUGS_LAENDER, wegzugsLand } from '../../data/laender';
 import { fmtAlter, fmtChf, fmtMonat, MONATSNAMEN } from '../format';
 import { AuswahlFeld, Schalter, Segmente, ZahlFeld } from './Felder';
+import { ZiellandSteuerFelder } from './ZiellandSteuern';
 
 const MONATE = MONATSNAMEN.map((n, i) => ({ value: i + 1, label: n }));
 const MONATE_ZUSATZ = Array.from({ length: 12 }, (_, i) => ({ value: i, label: `${i} Mt.` }));
@@ -146,7 +147,13 @@ export function WegzugVorsorgeFelder({
         checked={w.barauszahlung}
         onChange={(v) => setW({ barauszahlung: v })}
       />
-      {w.barauszahlung && land?.euEfta ? (
+      {w.barauszahlung && land?.obligatoriumImmerGesperrt ? (
+        <p className="info">
+          {land.name}: Der obligatorische Teil (BVG-Altersguthaben) bleibt bei Wohnsitz dort immer gesperrt, unabhängig
+          von einer Versicherungspflicht (Art. 25f Abs. 1 lit. c FZG). Überobligatorium und 3a sind frei.
+        </p>
+      ) : null}
+      {w.barauszahlung && land?.euEfta && !land.obligatoriumImmerGesperrt ? (
         <Schalter
           label="Im neuen Land nicht obligatorisch versichert (Alter, Tod, Invalidität)"
           hinweis="EU/EFTA: Wer dort obligatorisch versichert ist, erhält den obligatorischen Teil (BVG-Altersguthaben) nicht bar; er bleibt auf einem Freizügigkeitskonto gesperrt (Art. 25f FZG). Das Überobligatorium ist immer frei. Nachweis bei der Vorsorgeeinrichtung (z.B. Selbstständige, Nichterwerbstätige – je nach Land prüfen)."
@@ -154,7 +161,7 @@ export function WegzugVorsorgeFelder({
           onChange={(v) => setW({ nichtObligatorischVersichert: v })}
         />
       ) : null}
-      {w.barauszahlung && mitSitzkanton ? (
+      {mitSitzkanton && (w.barauszahlung || land?.steuern?.chQstPkRente === 'ja') ? (
         <AuswahlFeld
           label="Sitzkanton der Pensionskasse / Freizügigkeitseinrichtung"
           value={w.sitzkantonVorsorge}
@@ -163,7 +170,7 @@ export function WegzugVorsorgeFelder({
             ...KANTONE.map((k) => ({ value: k.code, label: `${k.name} (${k.code})` })),
           ]}
           onChange={(v) => setW({ sitzkantonVorsorge: v })}
-          hinweis="Nach dem Wegzug wird das Kapital an der Quelle besteuert, nach dem Tarif des Kantons, in dem die Einrichtung ihren Sitz hat (nicht des Wohnkantons). Der Sitz steht auf dem Vorsorgeausweis."
+          hinweis="Nach dem Wegzug werden Kapital (und je nach Land die PK-Rente) an der Quelle besteuert, nach dem Tarif des Kantons, in dem die Einrichtung ihren Sitz hat (nicht des Wohnkantons). Der Sitz steht auf dem Vorsorgeausweis."
         />
       ) : null}
       {w.barauszahlung ? (
@@ -192,7 +199,9 @@ export function WegzugVorsorgeFelder({
               {bar.saeule3a > 0 ? (
                 <li>
                   Säule 3a: <strong>{fmtChf(bar.saeule3a)}</strong>
-                  {land.euEfta ? ' (auch in die EU/EFTA ganz frei – Auslegung, OFFEN)' : ''}
+                  {land.euEfta
+                    ? ' (auch in die EU/EFTA ganz frei – BSV, Mitteilungen über die berufliche Vorsorge Nr. 96 Rz 567)'
+                    : ''}
                 </li>
               ) : null}
               {bar.euEfta && !bar.voll && p.freizuegigkeit.guthaben > 0 ? (
@@ -203,8 +212,10 @@ export function WegzugVorsorgeFelder({
               Besteuerung: Schweizer Quellensteuer (Bund + Sitzkanton{sitzName ? ` ${sitzName}` : ''}) statt der
               Kapitalleistungssteuer des Wohnkantons
               {info && info.quellensteuerKapital > 0 ? `, total ca. ${fmtChf(info.quellensteuerKapital)}` : ''}.
-              {land.pkKapitalCh ? ` ${land.name}: ${land.pkKapitalCh} (ESTV, Stand 1.1.2026).` : ''} Rückforderung
-              gemäss DBA und Steuern im Wohnsitzstaat sind nicht gerechnet (Näherung).
+              {land.pkKapitalCh ? ` ${land.name}: ${land.pkKapitalCh} (ESTV, Stand 1.1.2026).` : ''}
+              {info && info.quellensteuerKapitalRueckforderung > 0
+                ? ` Rückforderung gemäss DBA gerechnet: ${fmtChf(info.quellensteuerKapitalRueckforderung)} Quellensteuer zurück, dafür ca. ${fmtChf(info.kapitalSteuerZielland)} Steuer im Zielland.`
+                : ' Eine Rückforderung gemäss DBA ist nicht gerechnet (Einstellung unter «Steuern nach dem Wegzug»).'}
             </p>
           </div>
         ) : (
@@ -214,6 +225,7 @@ export function WegzugVorsorgeFelder({
           </p>
         )
       ) : null}
+      <ZiellandSteuerFelder p={p} set={set} info={info} details={mitSitzkanton} />
     </div>
   );
 }

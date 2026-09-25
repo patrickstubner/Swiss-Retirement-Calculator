@@ -5,9 +5,16 @@
  * kantonale Quellensteuer des Sitzkantons der Vorsorgeeinrichtung (ESTV-Übersicht, gültig ab
  * 1.1.2026 – rules: steuern.quellensteuerVorsorgeKapitalKantone).
  *
- * Kantone mit nur publizierter Bandbreite («progressiv»): Näherung über den Durchschnittssatz der
- * ordentlichen Kapitalleistungssteuer des Kantons (Hauptort), begrenzt auf die Bandbreite.
+ * Progressive Kantonstarife (AG, BL, GE, JU, NE, SO, VS, VD) exakt aus den ESTV-Tarifdateien 2026
+ * («tabelle», data/qst-kapital-kantone-2026.json): Satz der Stufe auf dem ganzen Bruttobetrag,
+ * inklusive Bundesteil. Die Näherung «progressiv» (Durchschnittssatz des ordentlichen Kantonsmodells,
+ * begrenzt auf die Bandbreite) bleibt nur als Rückfall für künftige Kantone ohne Tarifdatei.
+ *
+ * Renten aus Vorsorge an Personen im Ausland: Satz des Sitzkantons inkl. 1 % DBSt
+ * (rules: steuern.quellensteuerVorsorgeRentenKantone), nur wo kein DBA das Besteuerungsrecht dem
+ * Wohnsitzstaat zuweist.
  */
+import tarifDatei from '../../data/qst-kapital-kantone-2026.json';
 import type { Regeln } from '../rules';
 import type { KantonsSteuerModell } from './kantone';
 import type { Zivilstand } from './typen';
@@ -15,6 +22,7 @@ import type { Zivilstand } from './typen';
 export type QstKantonTarif =
   | { art: 'flach'; satz: number; inklBund?: boolean }
   | { art: 'stufen'; stufen: [number | null, number][]; abzugVerheiratet?: number }
+  | { art: 'tabelle'; inklBund: boolean; freigrenze?: number }
   | {
       art: 'progressiv';
       min: number;
@@ -36,6 +44,22 @@ export interface QuellensteuerKapital {
 export function qstKantonTarif(regeln: Regeln, kanton: string): QstKantonTarif | undefined {
   const tarife = regeln.steuern.quellensteuerVorsorgeKapitalKantone as unknown as Record<string, QstKantonTarif>;
   return tarife[kanton];
+}
+
+type Tabelle = readonly (readonly [number, number])[];
+const TABELLEN = tarifDatei.kantone as unknown as Record<string, { alleinstehend: Tabelle; verheiratet: Tabelle }>;
+
+/** Satz aus einer ESTV-Tariftabelle ([ab Fr., Basispunkte]); undefined = Kanton ohne Tabelle. */
+export function tabellenSatz(kanton: string, betrag: number, zivilstand: Zivilstand): number | undefined {
+  const t = TABELLEN[kanton];
+  if (!t) return undefined;
+  const zeilen = zivilstand === 'verheiratet' ? t.verheiratet : t.alleinstehend;
+  let bp = 0;
+  for (const [ab, satz] of zeilen) {
+    if (betrag >= ab) bp = satz;
+    else break;
+  }
+  return bp / 10_000;
 }
 
 /** Teilbetragstarif (Grenzsätze je Stufe). */
@@ -86,6 +110,19 @@ export function quellensteuerKapital(
   } else if (t.art === 'flach') {
     kSteuer = betrag * t.satz;
     if (t.inklBund) bund = 0;
+  } else if (t.art === 'tabelle') {
+    const satz = betrag < (t.freigrenze ?? 0) ? 0 : tabellenSatz(kanton, betrag, zivilstand);
+    if (satz === undefined) {
+      kSteuer = ordentlich ? ordentlich.kapitalleistungssteuer(betrag, zivilstand) : 0;
+      naeherung = true;
+    } else {
+      // Gesamtsatz inkl. Bundesteil: Kantonsteil = Gesamt − Bundestarif (nie negativ)
+      const gesamt = betrag * satz;
+      if (t.inklBund) {
+        bund = Math.min(bundOrdentlich, gesamt);
+        kSteuer = gesamt - bund;
+      } else kSteuer = gesamt;
+    }
   } else if (t.art === 'stufen') {
     kSteuer = stufenSteuer(Math.max(0, betrag - (verh ? (t.abzugVerheiratet ?? 0) : 0)), t.stufen);
   } else {
@@ -97,4 +134,17 @@ export function quellensteuerKapital(
     naeherung = true;
   }
   return { bund, kanton: kSteuer, total: bund + kSteuer, naeherung, kantonCode: kanton };
+}
+
+/** Quellensteuersatz auf Vorsorgerenten (inkl. 1 % DBSt) des Sitzkantons; undefined = unbekannt. */
+export function quellensteuerRenteSatz(regeln: Regeln, kanton: string, renteJahr: number): number | undefined {
+  const map = regeln.steuern.quellensteuerVorsorgeRentenKantone as unknown as Record<
+    string,
+    number | [number | null, number][]
+  >;
+  const s = map[kanton];
+  if (s === undefined) return undefined;
+  if (typeof s === 'number') return s;
+  for (const [bis, satz] of s) if (bis === null || renteJahr <= bis) return satz;
+  return 0;
 }

@@ -564,6 +564,78 @@ await p7.goto(url, { waitUntil: 'networkidle' });
 }
 await ctx7.close();
 
+// 11) Steuern nach dem Wegzug (Zielland), Liechtenstein
+const ctx8 = await browser.newContext({
+  viewport: { width: 360, height: 780 },
+  deviceScaleFactor: 2,
+  isMobile: true,
+  hasTouch: true,
+  locale: 'de-CH',
+});
+const p8 = await ctx8.newPage();
+p8.on('pageerror', (e) => fehler.push(String(e)));
+p8.on('console', (m) => m.type() === 'error' && fehler.push(m.text()));
+await p8.goto(url, { waitUntil: 'networkidle' });
+{
+  const fuelle8 = async (label, wert, nr = 0) => {
+    const feld = p8
+      .getByLabel(label, { exact: true })
+      .or(p8.getByLabel(`${label} geschätzt`, { exact: true }))
+      .nth(nr);
+    await feld.fill(String(wert));
+    await feld.blur();
+  };
+  // Erfundene Beispielperson: Jg. 1966, Wegzug mit 65 nach Italien
+  await fuelle8('Geburtsjahr', 1966);
+  await fuelle8('Bruttoeinkommen pro Jahr (heute)', 110000);
+  await fuelle8('PK-Altersguthaben heute (optional)', 520000);
+  await fuelle8('Säule 3a heute (optional)', 90000);
+  await fuelle8('Übriges Vermögen: Konten und Wertschriften', 300000);
+  await fuelle8('Ausgaben pro Jahr (heute)', 55000);
+  await p8.getByLabel('Wohnkanton').selectOption('AG');
+  const person = p8.locator('.karte', { hasText: 'Person 1' }).first();
+  await person.getByRole('checkbox', { name: /^Endgültiger Wegzug aus der Schweiz geplant/ }).check();
+  await fuelle8('Wegzug mit', 65);
+  await p8.getByLabel('Zielland', { exact: true }).selectOption('IT');
+  await p8.waitForTimeout(500);
+  const zs = person.locator('.zielland-steuern');
+  await zs.scrollIntoViewIfNeeded();
+  await zs.screenshot({ path: `${out}45-schnell-steuern-zielland-it-360.png` });
+  const zsText = await zs.innerText();
+  if (!/Steuern nach dem Wegzug/.test(zsText)) fehler.push(`Zielland-Steuern fehlen: ${zsText}`);
+
+  await p8.addStyleTag({ content: '.leiste{display:none!important}' });
+  await p8.getByText('Detailliert', { exact: true }).click();
+  await p8
+    .getByRole('button', { name: /Vorsorge/ })
+    .first()
+    .click();
+  await p8.waitForTimeout(400);
+  const wegKarte = p8.locator('.karte', { hasText: 'Wegzug ins Ausland' }).first();
+  const zd = wegKarte.locator('.zielland-steuern');
+  await zd.getByLabel('Besonderes Steuerregime').selectOption({ index: 1 });
+  await zd.locator('details summary').click();
+  await p8.waitForTimeout(300);
+  await zd.scrollIntoViewIfNeeded();
+  await zd.screenshot({ path: `${out}46-detail-steuern-zielland-it-regime-360.png` });
+
+  await p8.getByLabel('Zielland', { exact: true }).selectOption('PT');
+  await p8.waitForTimeout(300);
+  await zd.getByRole('checkbox', { name: /^Quellensteuer auf Vorsorgekapital zurückfordern/ }).check();
+  await p8.waitForTimeout(300);
+  await zd.scrollIntoViewIfNeeded();
+  await zd.screenshot({ path: `${out}47-detail-steuern-zielland-pt-rueckforderung-360.png` });
+
+  await fuelle8('Davon BVG-Altersguthaben (Obligatorium, optional)', 200000);
+  await p8.getByLabel('Zielland', { exact: true }).selectOption('LI');
+  await p8.waitForTimeout(400);
+  await wegKarte.scrollIntoViewIfNeeded();
+  await wegKarte.screenshot({ path: `${out}48-wegzug-liechtenstein-obligatorium-gesperrt-360.png` });
+  const liText = await wegKarte.innerText();
+  if (!/Art\. 25f Abs\. 1 lit\. c/.test(liText)) fehler.push(`LI-Hinweis fehlt: ${liText}`);
+}
+await ctx8.close();
+
 await browser.close();
 if (fehler.length) {
   console.error('Fehler im Browser:\n', fehler.join('\n'));

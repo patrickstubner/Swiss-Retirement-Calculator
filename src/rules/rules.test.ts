@@ -31,7 +31,8 @@ describe('rules/2026.json', () => {
     expect(offen).toContain('beitraege.freiwilligeAhv.vorsorgeguthabenImVermoegen');
     expect(offen).not.toContain('beitraege.freiwilligeAhv.tabelleNichterwerbstaetige');
     expect(offen).not.toContain('steuern.quellensteuer.uebrigeKantone');
-    expect(offen).toContain('saeule3a.barauszahlungAusreise');
+    // BSV-Mitteilungen Nr. 96 Rz 567: 3a bei Ausreise auch in die EU/EFTA bar beziehbar
+    expect(offen).not.toContain('saeule3a.barauszahlungAusreise');
   });
 
   it('spätere Jahre fallen auf die jüngste verfügbare Datei zurück', () => {
