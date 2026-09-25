@@ -758,3 +758,9 @@ tr.negativ td {
   font-size: 0.88rem;
   color: var(--farbe-text-leise);
 }
+
+/* Aufgeteilte Umwandlungssatz-Schätzung im Feldhinweis */
+.uws-schaetzung {
+  display: block;
+  font-weight: 600;
+}

@@ -35,14 +35,22 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
   Schweizer Format mit Apostroph (1’250’000, Zeichen ’ app-weit einheitlich, auch in den Ergebnissen). Einfügen von
   «1 250 000» oder «1,250,000» funktioniert, der Cursor bleibt an seiner Stelle. Jahre, Alter, Prozente und Anzahlen
   werden nicht gruppiert.
-- **Modus «Schnell» / «Detailliert»** (Umschalter oben; neu standardmässig «Schnell», ein gespeicherter Modus bleibt):
+- **Modus «Schnell» / «Detailliert»** (Umschalter oben; beim ersten Start ohne gespeicherten Zustand standardmässig
+  «Schnell»; ein gespeicherter Modus bleibt, ein geteilter Link mit Detailwerten öffnet «Detailliert»):
   «Schnell» fragt pro Person nur Jahrgang/Monat, Geschlecht, Bruttoeinkommen, Erwerbsaufgabe, optional
-  PK-Guthaben und «Umwandlungssatz laut Vorsorgeausweis» (derselbe Wert wie im Detail-Feld; ohne Angabe 6,8%
-  mit Hinweis «wahrscheinlich zu optimistisch»), 3a-Guthaben, übriges Vermögen, Wohneigentum (Verkehrswert) und optional «in der Schweiz seit»
+  PK-Guthaben und «Umwandlungssatz laut Vorsorgeausweis» (derselbe Wert wie im Detail-Feld; ohne Angabe die
+  aufgeteilte Schätzung, siehe unten, mit Empfehlung, den Satz vom Vorsorgeausweis einzutragen), 3a-Guthaben, übriges Vermögen, Wohneigentum (Verkehrswert) und optional «in der Schweiz seit»
   sowie für den Haushalt Ausgaben, Kanton/Gemeinde, Zivilstand und Planungsalter ab. Alles andere kommt aus
   dokumentierten Schätzwerten (`src/core/schaetzwerte.ts`): AHV nach Skala 44 (Einkommen = heutiger Lohn, keine
   Lücken ausser Zuzug, Splitting/Plafonierung bei Ehepaaren), PK-Guthaben aus BVG-Altersgutschriften und
-  Mindestzins, Sparbeitrag BVG-Minimum, Umwandlungssatz 6,8% (falls leer), Bezug als Rente. In «Detailliert» zeigen diese
+  Mindestzins, Sparbeitrag BVG-Minimum, Bezug als Rente. **Umwandlungssatz (falls leer)**: 6,8% (BVG-Minimum,
+  Art. 14 BVG) auf den obligatorischen Teil, **5,17%** auf den Rest – durchschnittlicher Umwandlungssatz der
+  Pensionskassen mit 65 laut OAK BV (Bericht zur finanziellen Lage 2025, Stand 31.12.2025; ein umhüllender Satz,
+  hier nur fürs Überobligatorium verwendet). Der obligatorische Anteil wird aus BVG-Mindestgutschriften geschätzt
+  (Näherung; im Modus «Detailliert» optional «Davon BVG-Altersguthaben» laut Vorsorgeausweis) und bis zum
+  Referenzalter hochgerechnet; die Oberfläche zeigt z.B. «6,8% auf den obligatorischen Teil (ca. 42%), 5,17% auf den
+  Rest, ergibt ca. 5,9%». Werte und Quellen: `src/rules/2026.json` (`bvg.umwandlungssatzUmhuellendDurchschnitt`),
+  `docs/quellen.md`. In «Detailliert» zeigen diese
   Felder den Schätzwert mit Badge «geschätzt»; eine eigene Eingabe überschreibt ihn («Zurücksetzen auf
   Schätzung»). Der Moduswechsel verliert keine Daten; «Schnell» rechnet mit gesetzten Detailwerten und zeigt deren
   Anzahl. Das Ergebnis nennt die geschätzten Werte, weist auf AHV-Lücken durch späten Zuzug hin und zeigt «Wo sich

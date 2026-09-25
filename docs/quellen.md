@@ -66,6 +66,8 @@ Abkürzungen: MB = Merkblatt der Informationsstelle AHV/IV (ahv-iv.ch), mdJE = m
 | BVG-Mindestzins 2026 | 1,25% | https://www.bsv.admin.ch/de/newnsb/8QdyDi9kz0trzgbwDud08 | Bundesratsentscheid 05.11.2025 |
 | BVG-Mindestzins 2027 | Empfehlung der BVG-Kommission 1,75% (31.08.2026); Entscheid des Bundesrates **OFFEN** | BSV Medienmitteilung | 09/2026 |
 | Mindestumwandlungssatz (Obligatorium) | 6,8% im Referenzalter (Art. 14 BVG); überobligatorische bzw. umhüllende Kassen tiefer → Nutzereingabe | https://www.fedlex.admin.ch/eli/cc/1983/797_797_797/de | 2026 |
+| Durchschnittlicher Umwandlungssatz der Pensionskassen (amtliche Statistik, kein Rechtswert) | **5,17%**: geplanter Satz für Pensionierungen in 5 Jahren, Alter 65, Beitragsprimat, Vorsorgeeinrichtungen ohne Staatsgarantie und ohne Vollversicherungslösung, mit dem Vorsorgekapital gewichtet (Vorjahr 5,18%; 2025 tatsächlich verwendet 5,22%). Umhüllender Satz auf dem ganzen Guthaben – einen Durchschnitt nur fürs Überobligatorium publiziert die OAK BV nicht. Im Rechner nur als Schätzwert für den überobligatorischen Teil (ohne eigenen Satz). Weitere Kennzahl: Anteil BVG-Altersguthaben am Vorsorgekapital Aktive 37,3% | OAK BV, Bericht zur finanziellen Lage der Vorsorgeeinrichtungen 2025, Abb. 3 und Kap. 5.2 (S. 26): https://www.oak-bv.admin.ch/dam/de/sd-web/FZZtqZInywwJ/Bericht%20zur%20finanziellen%20Lage%20der%20Vorsorgeeinrichtungen%202025.pdf ; Übersicht https://www.oak-bv.admin.ch/de/bericht-finanzielle-lage-vorsorgeeinrichtungen | Stichtag 31.12.2025, publiziert 02.06.2026, abgerufen 25.09.2026 |
+| Plausibilisierung (nicht amtlich) | Umhüllende Kassen 2026, Männer im Rücktrittsalter 65: Mittelwert 5,26%, Median 5,20%, Spannweite 4,00–7,00% (472 Vorsorgeeinrichtungen; Frauen 5,29%) – nicht als Rechenwert verwendet | Swisscanto (Zürcher Kantonalbank), Schweizer Pensionskassenstudie 2026, Tabelle F-1 (S. 96): https://www.swisscanto.com/media/swc/dokumente/pensionskassenstudien/pk-studie-2026/Pensionskassenstudie_2026_DE.pdf | Umfrage März/April 2026, publiziert 02.06.2026 |
 | BVG-Reform mit 6,0% | am 22.09.2024 abgelehnt (67,1% Nein) | https://www.bsv.admin.ch/de/bvg-reform-2024 | 2024 |
 | Altersgutschriften (Art. 16 BVG) | 7 / 10 / 15 / 18% des koordinierten Lohns (Alter 25–34 / 35–44 / 45–54 / 55–RA) | Art. 16 BVG (fedlex, s. oben) | 2026 |
 | Referenzalter BV | = AHV-Referenzalter (Art. 13 Abs. 1 BVG) | Art. 13 BVG | seit 1.1.2024 |
@@ -200,13 +202,14 @@ Abkürzungen: MB = Merkblatt der Informationsstelle AHV/IV (ahv-iv.ch), mdJE = m
 
 ## 10. Schätzwerte im Modus «Schnell» – Details in src/core/schaetzwerte.ts
 
-Keine eigenen Regelwerte: alle Schätzungen werden aus den oben verifizierten Werten abgeleitet.
+Keine erfundenen Werte: alle Schätzungen werden aus den oben verifizierten Werten abgeleitet (Regelwerte bzw. die
+amtliche Statistik der OAK BV).
 
 | Schätzung | Ableitung | Regelwerte (rules/2026.json) |
 |---|---|---|
 | AHV-Rente | Skala 44, massgebendes Einkommen = heutiger Lohn (gedeckelt beim mdJE-Maximum), Beitragsjahre ab 1.1. nach dem 20. Geburtstag bzw. ab Zuzugsjahr bis vor dem Referenzalter, Ehepaare: Splitting aller Jahre, Plafonierung in der Simulation | ahv.rententabelleSkala44, ahv.schaetzhilfe, ahv.plafondEhepaarFaktor (MB 3.01 https://www.ahv-iv.ch/p/3.01.d) |
 | PK-Altersguthaben heute | Summe der BVG-Altersgutschriften auf dem heutigen koordinierten Lohn ab BVG-Alter 25 bzw. Zuzug, verzinst mit dem Mindestzins 2026 | bvg.altersgutschriften, bvg.koordinationsabzug, bvg.mindestzins2026 (Art. 15/16 BVG) |
 | PK-Sparbeitrag | BVG-Mindest-Altersgutschrift (altersabhängig) | bvg.altersgutschriften |
-| Umwandlungssatz (falls nicht laut Vorsorgeausweis eingegeben) | BVG-Mindestumwandlungssatz 6,8% (nur Obligatorium) → Ergebnis dann wahrscheinlich zu optimistisch | bvg.mindestumwandlungssatz (Art. 14 BVG) |
+| Umwandlungssatz (falls nicht laut Vorsorgeausweis eingegeben) | Aufgeteilt: 6,8% auf den obligatorischen Teil, 5,17% (Durchschnitt OAK BV, umhüllend) auf den überobligatorischen Rest; effektiv = 6,8% × Anteil + 5,17% × (1 − Anteil). Anteil (Näherung): BVG-Altersguthaben heute laut Vorsorgeausweis (Detailfeld «Davon BVG-Altersguthaben») bzw. geschätzt wie das PK-Guthaben aus BVG-Mindestgutschriften, höchstens das ganze Guthaben; bis zum Referenzalter hochgerechnet (BVG-Teil mit BVG-Mindestgutschriften, Gesamtguthaben mit dem eingegebenen bzw. geschätzten Sparbeitrag, beide mit demselben PK-Zins real). Ohne eigenes PK-Guthaben ist das geschätzte Guthaben ganz obligatorisch → 6,8%. Einschränkung: der OAK-Durchschnitt gilt in den Kassen fürs ganze Guthaben; nur auf den Rest angewendet ist die Schätzung bei stark umhüllenden Kassen eher etwas zu hoch (illustrative Musterhaushalte «Umhüllend» und «Frühpension»: +0,7 bzw. +0,8 Pp), bei BVG-nahen Kassen realistisch | bvg.mindestumwandlungssatz (Art. 14 BVG), bvg.umwandlungssatzUmhuellendDurchschnitt (OAK BV 2025), bvg.altersgutschriften |
 | PK-Bezug | Rente (Kapitalanteil 0), frühestens mit 63 | bvg.bezugsalter |
 | Sensitivitätsbandbreiten | −5 AHV-Jahre, −20% PK-Guthaben, −1 Pp Umwandlungssatz, −1 Pp Rendite, +10% Ausgaben | Modellannahmen (keine Regelwerte) |

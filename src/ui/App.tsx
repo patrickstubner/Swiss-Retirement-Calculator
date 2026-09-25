@@ -230,7 +230,7 @@ export function App() {
           />
           <p className="klein">
             {schnell
-              ? 'Wenige Angaben, der Rest wird aus den gesetzlichen Werten geschätzt. Detailwerte gehen nicht verloren.'
+              ? 'Standard beim ersten Start: wenige Angaben, der Rest wird geschätzt (gesetzliche Werte 2026, Umwandlungssatz ohne Angabe aus dem Durchschnitt der Pensionskassen). Detailwerte gehen nicht verloren.'
               : 'Alle Felder. Leere Felder mit «geschätzt» verwenden die Schätzung des Modus «Schnell».'}
           </p>
         </div>
