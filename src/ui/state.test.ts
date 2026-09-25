@@ -308,6 +308,11 @@ describe('Eingabemodus «Schnell» / «Detailliert»', () => {
     const einfach = standardHaushalt(regeln);
     (einfach.personen[0] as (typeof einfach.personen)[number]).lohn = 90000;
     expect(modusFuerLink(einfach, regeln)).toBe('schnell');
+    // PK-Guthaben und Umwandlungssatz sind Schnell-Felder
+    const p0 = einfach.personen[0] as (typeof einfach.personen)[number];
+    p0.manuell = { pkGuthaben: true, pkUmwandlungssatz: true };
+    p0.pk = { ...p0.pk, guthaben: 300000, umwandlungssatz: 0.055 };
+    expect(modusFuerLink(einfach, regeln)).toBe('schnell');
     expect(modusFuerLink(detailHaushalt(), regeln)).toBe('detailliert');
     const s = new TestSpeicher();
     expect(

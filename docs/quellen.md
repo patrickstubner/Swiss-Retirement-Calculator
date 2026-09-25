@@ -207,6 +207,6 @@ Keine eigenen Regelwerte: alle Schätzungen werden aus den oben verifizierten We
 | AHV-Rente | Skala 44, massgebendes Einkommen = heutiger Lohn (gedeckelt beim mdJE-Maximum), Beitragsjahre ab 1.1. nach dem 20. Geburtstag bzw. ab Zuzugsjahr bis vor dem Referenzalter, Ehepaare: Splitting aller Jahre, Plafonierung in der Simulation | ahv.rententabelleSkala44, ahv.schaetzhilfe, ahv.plafondEhepaarFaktor (MB 3.01 https://www.ahv-iv.ch/p/3.01.d) |
 | PK-Altersguthaben heute | Summe der BVG-Altersgutschriften auf dem heutigen koordinierten Lohn ab BVG-Alter 25 bzw. Zuzug, verzinst mit dem Mindestzins 2026 | bvg.altersgutschriften, bvg.koordinationsabzug, bvg.mindestzins2026 (Art. 15/16 BVG) |
 | PK-Sparbeitrag | BVG-Mindest-Altersgutschrift (altersabhängig) | bvg.altersgutschriften |
-| Umwandlungssatz | BVG-Mindestumwandlungssatz 6,8% (nur Obligatorium) | bvg.mindestumwandlungssatz (Art. 14 BVG) |
+| Umwandlungssatz (falls nicht laut Vorsorgeausweis eingegeben) | BVG-Mindestumwandlungssatz 6,8% (nur Obligatorium) → Ergebnis dann wahrscheinlich zu optimistisch | bvg.mindestumwandlungssatz (Art. 14 BVG) |
 | PK-Bezug | Rente (Kapitalanteil 0), frühestens mit 63 | bvg.bezugsalter |
 | Sensitivitätsbandbreiten | −5 AHV-Jahre, −20% PK-Guthaben, −1 Pp Umwandlungssatz, −1 Pp Rendite, +10% Ausgaben | Modellannahmen (keine Regelwerte) |

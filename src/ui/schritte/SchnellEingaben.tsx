@@ -2,7 +2,7 @@
  * Modus «Schnell»: nur die wichtigsten Angaben. Alles andere kommt aus den dokumentierten
  * Schätzwerten (core/schaetzwerte.ts) bzw. aus bereits erfassten Detailwerten.
  */
-import { detailwerte, istManuell } from '../../core/schaetzwerte';
+import { detailwerte, istManuell, mitUmwandlungssatz, umwandlungssatzZuOptimistisch } from '../../core/schaetzwerte';
 import { wohneigentumNetto } from '../../core/simulation';
 import type { Person } from '../../core/typen';
 import { MAX_PLANUNGSALTER, neuePerson, standardHaushalt } from '../../data/defaults';
@@ -12,6 +12,7 @@ import { Karte } from '../components/Karte';
 import { ErwerbsaufgabeFelder, GeburtFelder, InChSeitFeld } from '../components/PersonBasis';
 import { fmtAlter, fmtChf, fmtProzent } from '../format';
 import { alterMonate, type SchrittProps, setzeManuell, setzePerson } from '../kontext';
+import { UWS_HILFE, UWS_ZU_OPTIMISTISCH } from '../texte';
 
 export function SchnellEingaben(props: SchrittProps) {
   const { h, setH, regeln } = props;
@@ -115,6 +116,7 @@ function SchnellPerson({ p, i, props }: { p: Person; i: number; props: SchrittPr
   const set = (fn: (p: Person) => Person) => setzePerson(setH, i, fn);
   const w = eff.werte[i];
   const pkManuell = istManuell(p, 'pkGuthaben');
+  const uwsManuell = istManuell(p, 'pkUmwandlungssatz');
   const effP = eff.haushalt.personen[i];
   const freiDetail = p.bargeld + p.sonstiges.wert;
   return (
@@ -147,6 +149,25 @@ function SchnellPerson({ p, i, props }: { p: Person; i: number; props: SchrittPr
             : 'Grobe Schätzung aus BVG-Mindestgutschriften und Mindestzins – bei umhüllenden Kassen meist zu tief. Wert aus dem Vorsorgeausweis eintragen, falls bekannt.'
         }
       />
+      <ZahlFeld
+        label="Umwandlungssatz laut Vorsorgeausweis (optional)"
+        prozent
+        value={uwsManuell ? p.pk.umwandlungssatz : (w?.pkUmwandlungssatz ?? 0)}
+        min={0}
+        max={0.1}
+        onChange={(v) => set((x) => mitUmwandlungssatz(x, v))}
+        schaetzung={{
+          geschaetzt: !uwsManuell,
+          wertText: fmtProzent(w?.pkUmwandlungssatz ?? 0),
+          onZuruecksetzen: () => set((x) => mitUmwandlungssatz(x, 0)),
+        }}
+        hinweis={UWS_HILFE(fmtProzent(regeln.bvg.mindestumwandlungssatz))}
+      />
+      {umwandlungssatzZuOptimistisch(p, effP) ? (
+        <p className="warnung" role="status">
+          {UWS_ZU_OPTIMISTISCH(fmtProzent(regeln.bvg.mindestumwandlungssatz))}
+        </p>
+      ) : null}
       <BetragFeld
         label="Säule 3a heute (optional)"
         value={p.saeule3a.guthaben}
@@ -188,9 +209,7 @@ function SchnellPerson({ p, i, props }: { p: Person; i: number; props: SchrittPr
       {effP ? (
         <p className="klein">
           Geschätzt bzw. übernommen: AHV-Rente {fmtChf(effP.ahv.renteMonat)}/Monat
-          {istManuell(p, 'ahvRente') ? ' (eigene Eingabe)' : ' (geschätzt)'}, PK-Umwandlungssatz{' '}
-          {fmtProzent(effP.pk.umwandlungssatz)}
-          {istManuell(p, 'pkUmwandlungssatz') ? ' (eigene Eingabe)' : ' (geschätzt)'}, PK-Bezug als{' '}
+          {istManuell(p, 'ahvRente') ? ' (eigene Eingabe)' : ' (geschätzt)'}, PK-Bezug als{' '}
           {effP.pk.kapitalanteil > 0 ? `${Math.round(effP.pk.kapitalanteil * 100)}% Kapital` : 'Rente'}.
         </p>
       ) : null}

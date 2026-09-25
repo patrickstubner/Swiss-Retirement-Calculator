@@ -37,16 +37,18 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
   werden nicht gruppiert.
 - **Modus «Schnell» / «Detailliert»** (Umschalter oben; neu standardmässig «Schnell», ein gespeicherter Modus bleibt):
   «Schnell» fragt pro Person nur Jahrgang/Monat, Geschlecht, Bruttoeinkommen, Erwerbsaufgabe, optional
-  PK-Guthaben, 3a-Guthaben, übriges Vermögen, Wohneigentum (Verkehrswert) und optional «in der Schweiz seit»
+  PK-Guthaben und «Umwandlungssatz laut Vorsorgeausweis» (derselbe Wert wie im Detail-Feld; ohne Angabe 6,8%
+  mit Hinweis «wahrscheinlich zu optimistisch»), 3a-Guthaben, übriges Vermögen, Wohneigentum (Verkehrswert) und optional «in der Schweiz seit»
   sowie für den Haushalt Ausgaben, Kanton/Gemeinde, Zivilstand und Planungsalter ab. Alles andere kommt aus
   dokumentierten Schätzwerten (`src/core/schaetzwerte.ts`): AHV nach Skala 44 (Einkommen = heutiger Lohn, keine
   Lücken ausser Zuzug, Splitting/Plafonierung bei Ehepaaren), PK-Guthaben aus BVG-Altersgutschriften und
-  Mindestzins, Sparbeitrag BVG-Minimum, Umwandlungssatz 6,8%, Bezug als Rente. In «Detailliert» zeigen diese
+  Mindestzins, Sparbeitrag BVG-Minimum, Umwandlungssatz 6,8% (falls leer), Bezug als Rente. In «Detailliert» zeigen diese
   Felder den Schätzwert mit Badge «geschätzt»; eine eigene Eingabe überschreibt ihn («Zurücksetzen auf
   Schätzung»). Der Moduswechsel verliert keine Daten; «Schnell» rechnet mit gesetzten Detailwerten und zeigt deren
   Anzahl. Das Ergebnis nennt die geschätzten Werte, weist auf AHV-Lücken durch späten Zuzug hin und zeigt «Wo sich
   Genauigkeit lohnt» (Wirkung von −5 AHV-Beitragsjahren, −20% PK-Guthaben, −1 Pp Umwandlungssatz, −1 Pp Rendite,
-  +10% Ausgaben auf das früheste Alter und das Vermögen mit 85).
+  +10% Ausgaben auf das früheste Alter und das Vermögen mit 85). Gemessene Abweichung Schnell vs. Detailliert für
+  Musterhaushalte: [docs/schnell-vergleich.md](docs/schnell-vergleich.md).
 - Haushalt: Einzelperson oder Ehepaar; Planungshorizont (Lebensende) Standard **120**, frei wählbar bis 999.
 - Jede Person mit vollständig eigenen Angaben: Geburtsjahr/-monat, Geschlecht, Lohn, Erwerbsaufgabe, AHV, PK,
   Freizügigkeit, 3a, ausländische Renten und eigene **Vermögenstöpfe**.

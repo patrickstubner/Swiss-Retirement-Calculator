@@ -269,6 +269,21 @@ await p3.getByLabel('Wohnkanton').selectOption('ZH');
 await p3.getByLabel('Gemeinde', { exact: true }).selectOption('Winterthur');
 await karteP2.scrollIntoViewIfNeeded();
 await karteP2.screenshot({ path: `${out}25-schnell-person-zuzug-360.png` });
+/** PK-Bereich von Person 1 im Modus «Schnell» (PK-Guthaben bis vor Säule 3a). */
+async function pkBereich(name) {
+  const karte = p3.locator('.karte', { hasText: 'Person 1' }).first();
+  const von = karte.locator('.feld', { hasText: 'PK-Altersguthaben heute (optional)' }).first();
+  const bis = karte.locator('.feld', { hasText: 'Säule 3a heute (optional)' }).first();
+  await von.evaluate((el) => {
+    el.scrollIntoView({ block: 'start' });
+    window.scrollBy(0, -12);
+  });
+  const a = await von.boundingBox();
+  const b = await bis.boundingBox();
+  if (!a || !b) throw new Error('PK-Bereich nicht gefunden');
+  await p3.screenshot({ path: `${out}${name}`, clip: { x: 0, y: a.y - 10, width: 360, height: b.y - a.y + 2 } });
+}
+await pkBereich('31-schnell-pk-umwandlungssatz-geschaetzt-360.png');
 const stil3 = await p3.addStyleTag({ content: '.leiste{position:static!important}' });
 await p3.screenshot({ path: `${out}26-schnell-eingaben-ganz-360.png`, fullPage: true });
 await stil3.evaluate((el) => el.remove());
@@ -290,6 +305,7 @@ const pk3 = p3.locator('.karte', { hasText: 'Pensionskasse (2. Säule)' }).first
 await pk3.scrollIntoViewIfNeeded();
 await pk3.screenshot({ path: `${out}28-detail-geschaetzt-badge-360.png` });
 await fuelle3('Umwandlungssatz', 5.4);
+await fuelle3('Sparbeitrag pro Jahr (Arbeitnehmer + Arbeitgeber)', 18000);
 await pk3.screenshot({ path: `${out}29-detail-zuruecksetzen-360.png` });
 // zurück zu «Schnell»: Hinweis auf gesetzte Detailwerte, Eingaben unverändert
 await p3.getByText('Schnell', { exact: true }).click();
@@ -303,7 +319,12 @@ await p3
   .evaluate((el) => el.scrollIntoView({ block: 'center' }));
 await p3.screenshot({ path: `${out}30-schnell-detailwerte-hinweis-360.png` });
 const behalten = await p3.getByLabel('PK-Altersguthaben heute (optional)', { exact: true }).first().inputValue();
-console.log('Nach Moduswechsel PK-Guthaben:', behalten);
+const uws = await p3
+  .getByLabel('Umwandlungssatz laut Vorsorgeausweis (optional)', { exact: true })
+  .first()
+  .inputValue();
+console.log('Nach Moduswechsel PK-Guthaben:', behalten, 'Umwandlungssatz (im Detail eingegeben):', uws);
+await pkBereich('32-schnell-pk-umwandlungssatz-eingegeben-360.png');
 await ctx3.close();
 
 await browser.close();

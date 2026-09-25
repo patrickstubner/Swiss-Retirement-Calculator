@@ -17,6 +17,14 @@ export const VEREINFACHUNG_WOHNEIGENTUM =
 export const VEREINFACHUNG_BOERSE =
   'Annahme: Jeder Vermögenstopf hat eine konstante Rendite (Bargeld: Zins Bargeld; Wertschriften und Nettowert Wohneigentum: Börsenrendite; Sonstiges: eigene Rendite). Entnahmen: Bargeld → Wertschriften → Sonstiges → Wohneigentum.';
 
+/** Hilfetext zum Umwandlungssatz (Modus «Schnell» und «Detailliert»). */
+export const UWS_HILFE = (mindest: string) =>
+  `Der gesetzliche Satz von ${mindest} gilt nur für den obligatorischen Teil des Guthabens. Die meisten Pensionskassen wenden auf das ganze Guthaben einen tieferen eigenen Satz an. Er steht auf dem jährlichen Vorsorgeausweis.`;
+
+/** Hinweis, wenn der Umwandlungssatz nur geschätzt ist. */
+export const UWS_ZU_OPTIMISTISCH = (mindest: string) =>
+  `Ohne Umwandlungssatz rechnet der Rechner mit dem gesetzlichen Minimum von ${mindest} – das Ergebnis ist dann wahrscheinlich zu optimistisch.`;
+
 export const VEREINFACHUNGEN: readonly string[] = [
   VEREINFACHUNG_BOERSE,
   VEREINFACHUNG_WOHNEIGENTUM,
@@ -35,6 +43,6 @@ export const VEREINFACHUNGEN: readonly string[] = [
   'AHV-Beitragslücken durch Auslandwohnsitz: Rente vereinfacht linear gekürzt (fehlende Jahre / Beitragsjahre), ohne Einfluss auf das massgebende durchschnittliche Jahreseinkommen.',
   'AHV-Beiträge als Nichterwerbstätige (in der Schweiz und freiwillige AHV): Vermögen am 31.12. (ohne noch gesperrte PK/FZ/3a, bezogene Kapitalien ab dem Bezugsjahr) + 20× Renteneinkommen inkl. AHV und PK; Ehepaare je hälftig. Tabellengrenzen real konstant. Vergleich mit Erwerbsbeiträgen bei Teilzeit nicht abgebildet.',
   'Keine PK-Einkäufe (folgen). Einmalereignisse und wiederkehrende Posten in heutigen Franken.',
-  'Schätzwerte (Modus «Schnell» und leere Detailfelder, Badge «geschätzt»): AHV-Rente nach Skala 44 mit heutigem Lohn als Durchschnittseinkommen, ohne Lücken (ausser Zuzug nach dem 20. Altersjahr) und ohne Erziehungsgutschriften, Ehepaare mit Splitting über die ganze Beitragsdauer; PK-Guthaben aus BVG-Mindestgutschriften und BVG-Mindestzins (bei umhüllenden Kassen meist zu tief), Sparbeitrag BVG-Minimum, Umwandlungssatz 6,8% (gilt nur fürs Obligatorium, umhüllende Kassen tiefer), Bezug als Rente, keine 3a-Einzahlungen.',
+  'Schätzwerte (Modus «Schnell» und leere Detailfelder, Badge «geschätzt»): AHV-Rente nach Skala 44 mit heutigem Lohn als Durchschnittseinkommen, ohne Lücken (ausser Zuzug nach dem 20. Altersjahr) und ohne Erziehungsgutschriften, Ehepaare mit Splitting über die ganze Beitragsdauer; PK-Guthaben aus BVG-Mindestgutschriften und BVG-Mindestzins (bei umhüllenden Kassen meist zu tief), Sparbeitrag BVG-Minimum, Umwandlungssatz ohne Angabe 6,8% (gilt nur fürs Obligatorium, umhüllende Kassen tiefer → Ergebnis dann eher zu optimistisch), Bezug als Rente, keine 3a-Einzahlungen.',
   'Das Planungsalter gilt für die jüngere Person; beide Personen werden als lebend bis zum Planungshorizont angenommen.',
 ];
