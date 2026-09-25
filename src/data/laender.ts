@@ -4,6 +4,7 @@
  * in einem EU/EFTA-Staat liegt (Art. 2 Abs. 1 AHVG).
  */
 import laenderJson from '../../data/laender-2026.json';
+import type { ZiellandSteuerModell } from '../core/zielland';
 
 export interface WegzugsLand {
   code: string;
@@ -12,16 +13,34 @@ export interface WegzugsLand {
   euEfta: boolean;
   /** Schweizer Quellensteuer auf PK-Kapital: Rückforderbarkeit laut data/laender-2026.json (ESTV 2-217) */
   pkKapitalCh?: string;
+  /**
+   * BVG-Altersguthaben bei Wohnsitz dort immer gesperrt, unabhängig von einer Versicherungspflicht
+   * (Liechtenstein: Art. 25f Abs. 1 lit. c FZG)
+   */
+  obligatoriumImmerGesperrt?: boolean;
+  /** Vereinfachtes Steuermodell des Wohnsitzstaats (core/zielland.ts); fehlt = OFFEN */
+  steuern?: ZiellandSteuerModell;
 }
 
 export const LAND_ANDERES_EU = 'XE';
 export const LAND_ANDERES = 'XX';
 
-const ausDaten: WegzugsLand[] = laenderJson.laender.map((l) => ({
+interface LandJson {
+  code: string;
+  name: string;
+  eu: boolean;
+  pkKapital?: { ch?: string };
+  art25fImmerGesperrt?: boolean;
+  steuern?: unknown;
+}
+
+const ausDaten: WegzugsLand[] = (laenderJson.laender as LandJson[]).map((l) => ({
   code: l.code,
   name: l.name.replace(/\s*\(Referenz\)$/, ''),
   euEfta: l.eu === true,
   pkKapitalCh: l.pkKapital?.ch,
+  obligatoriumImmerGesperrt: l.art25fImmerGesperrt === true,
+  steuern: l.steuern ? ({ ...(l.steuern as object), code: l.code } as ZiellandSteuerModell) : undefined,
 }));
 
 /** Auswahlliste: zuerst EU/EFTA, dann übrige Länder (je in Datenreihenfolge). */

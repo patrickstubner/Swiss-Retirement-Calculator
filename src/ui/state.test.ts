@@ -242,6 +242,44 @@ describe('Neue Felder: Rücktrittsmodus und Wohnsitz im Ausland', () => {
     };
     expect(dekodiere(kodiere(h), regeln)).toEqual(h);
   });
+
+  it('Schema 3: Steuern im Zielland – Roundtrip, Migration und Bereinigung', () => {
+    const h = standardHaushalt(regeln);
+    const p = h.personen[0] as (typeof h.personen)[number];
+    h.personen[0] = {
+      ...p,
+      wohnsitzAusland: {
+        ...p.wohnsitzAusland,
+        aktiv: true,
+        land: 'IT',
+        steuerOption: 'it7',
+        qstKapitalRueckforderung: true,
+        steuerSatzZielland: 0.12,
+        steuerSatzKapitalZielland: 0.03,
+      },
+    };
+    expect(dekodiere(kodiere(h), regeln)).toEqual(h);
+    // Schema 2 (ohne die neuen Felder): Standardwerte
+    const alt = JSON.parse(JSON.stringify(h)) as { personen: { wohnsitzAusland: Record<string, unknown> }[] };
+    const w = alt.personen[0]?.wohnsitzAusland ?? {};
+    delete w.steuerOption;
+    delete w.qstKapitalRueckforderung;
+    delete w.steuerSatzZielland;
+    delete w.steuerSatzKapitalZielland;
+    const m = normalisiere(alt, regeln).personen[0]?.wohnsitzAusland;
+    expect(m?.steuerSatzZielland).toBeNull();
+    expect(m?.steuerOption).toBe('');
+    expect(m?.qstKapitalRueckforderung).toBe(false);
+    // unbekannte Option und unplausible Sätze werden bereinigt
+    w.steuerOption = 'azoren';
+    w.steuerSatzZielland = 5;
+    w.steuerSatzKapitalZielland = -1;
+    const b = normalisiere(alt, regeln).personen[0]?.wohnsitzAusland;
+    expect(b?.steuerOption).toBe('');
+    expect(b?.steuerSatzZielland).toBe(0.6);
+    expect(b?.steuerSatzKapitalZielland).toBe(0);
+    expect(modusFuerLink(normalisiere(alt, regeln), regeln)).toBe('detailliert');
+  });
 });
 
 describe('Eingabemodus «Schnell» / «Detailliert»', () => {

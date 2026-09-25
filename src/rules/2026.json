@@ -191,10 +191,10 @@
         "vorzeitigBeiBarauszahlungNachArt5Fzg": true,
         "art25fGiltNurFuerBvgGuthaben": true
       },
-      "source": "Art. 3 Abs. 2 lit. d und Abs. 6 BVV 3 https://www.fedlex.admin.ch/eli/cc/1985/1778_1778_1778/de",
-      "stand": "BVV 3 Stand 1.1.2025 (fedlex abgerufen 25.09.2026)",
-      "status": "offen",
-      "hinweis": "Vorzeitige Ausrichtung zulässig bei Auflösung des Vorsorgeverhältnisses, wenn die Einrichtung «nach Artikel 5 FZG zur Barauszahlung verpflichtet ist», also u.a. bei endgültigem Verlassen der Schweiz; Verheiratete mit Zustimmung. Art. 25f FZG sperrt nur BVG-Altersguthaben (Art. 15 BVG); 3a-Guthaben sind keine solchen – der Rechner gibt 3a darum auch bei Wegzug in die EU/EFTA ganz frei. Diese Auslegung ist nicht amtlich bestätigt (OFFEN, Praxis des Anbieters prüfen)."
+      "source": "Art. 3 Abs. 2 lit. d und Abs. 6 BVV 3 https://www.fedlex.admin.ch/eli/cc/1985/1778_1778_1778/de ; BSV, Mitteilungen über die berufliche Vorsorge Nr. 96 vom 18.12.2006, Rz 567 Ziff. 4 https://sozialversicherungen.admin.ch/de/d/6561/download",
+      "stand": "BVV 3 Stand 1.1.2025 (fedlex abgerufen 25.09.2026); Mitteilungen BV Nr. 96 (18.12.2006, abgerufen 25.09.2026)",
+      "status": "verifiziert",
+      "hinweis": "Vorzeitige Ausrichtung zulässig bei Auflösung des Vorsorgeverhältnisses, wenn die Einrichtung «nach Artikel 5 FZG zur Barauszahlung verpflichtet ist», also u.a. bei endgültigem Verlassen der Schweiz; Verheiratete mit Zustimmung. BSV (Mitteilungen Nr. 96 Rz 567 Ziff. 4): «Nicht in den sachlichen Geltungsbereich der für die Schweiz geltenden europäischen Instrumente fällt die Säule 3a. Eine Barauszahlung der Leistung ist hier möglich, wenn eine versicherte Person die Schweiz verlässt.» Der Rechner gibt 3a darum auch bei Wegzug in die EU/EFTA (inkl. Liechtenstein) ganz frei."
     }
   },
   "steuern": {
@@ -284,32 +284,40 @@
       },
       "source": "ESTV RS 2-217 https://www.estv.admin.ch/dam/de/sd-web/rvrM54pOsUZ5/2-217-D-2026-d.pdf", "stand": "1.1.2026", "status": "verifiziert"
     },
+    "quellensteuerVorsorgeRentenKantone": {
+      "value": {"AG": 0.08, "AR": 0.07, "AI": 0.07, "BL": 0.115, "BS": 0.09, "BE": 0.1, "FR": 0.1, "GE": 0.1, "GL": 0.11, "GR": 0.13, "JU": 0.093, "LU": 0.1, "NE": 0.11, "NW": 0.04, "OW": 0.11, "SG": 0.07, "SH": 0.1, "SZ": 0.06, "SO": 0.06, "TG": 0.08, "TI": 0.1, "UR": 0.16, "VS": [[40000, 0.09], [80000, 0.15], [null, 0.21]], "VD": 0.11, "ZG": 0.08, "ZH": 0.07},
+      "einheit": "Anteil der Bruttorente inkl. 1 % DBSt; VS: [bis Jahresrente, Satz] auf der ganzen Rente",
+      "source": "https://www.estv.admin.ch/dam/de/sd-web/wOVGrjPStMQ4/qst-tarife-renten-kapitalleistungen-2026.pdf",
+      "stand": "ESTV, Übersicht über die Quellensteuertarife für Vorsorgeleistungen – gültig ab 1.1.2026 (abgerufen 25.09.2026)",
+      "status": "verifiziert",
+      "hinweis": "Quellensteuer auf Renten aus privatrechtlicher Vorsorge (Art. 96 DBG) an Personen im Ausland nach dem Sitzkanton der Vorsorgeeinrichtung – nur wenn kein DBA das Besteuerungsrecht dem Wohnsitzstaat zuweist (ESTV 2-217: «Quellensteuerabzug vornehmen: ja»; ohne DBA immer). Anwendung im Rechner: data/laender-2026.json steuern.chQstPkRente."
+    },
     "quellensteuerVorsorgeKapitalKantone": {
       "value": {
-        "AG": {"art": "progressiv", "min": 0.01, "max": null},
+        "AG": {"art": "tabelle", "inklBund": true, "freigrenze": 1000},
         "AR": {"art": "flach", "satz": 0.06},
         "AI": {"art": "flach", "satz": 0.06},
-        "BL": {"art": "progressiv", "min": 0.032, "max": 0.095},
+        "BL": {"art": "tabelle", "inklBund": true},
         "BS": {"art": "stufen", "stufen": [[25000, 0.03], [50000, 0.04], [100000, 0.06], [null, 0.08]]},
         "BE": {"art": "flach", "satz": 0.07},
         "FR": {"art": "stufen", "stufen": [[50000, 0.02], [100000, 0.04], [150000, 0.06], [200000, 0.08], [null, 0.1]], "abzugVerheiratet": 10000},
-        "GE": {"art": "progressiv", "min": 0, "max": 0.0627, "maxVerheiratet": 0.0626},
+        "GE": {"art": "tabelle", "inklBund": true},
         "GL": {"art": "flach", "satz": 0.1},
         "GR": {"art": "flach", "satz": 0.12},
-        "JU": {"art": "progressiv", "min": 0.05, "max": 0.075},
+        "JU": {"art": "tabelle", "inklBund": true},
         "LU": {"art": "stufen", "stufen": [[40000, 0.005], [null, 0.014]]},
-        "NE": {"art": "progressiv", "min": 0.025, "max": null},
+        "NE": {"art": "tabelle", "inklBund": true},
         "NW": {"art": "flach", "satz": 0.03},
         "OW": {"art": "flach", "satz": 0.0072},
         "SG": {"art": "flach", "satz": 0.06},
         "SH": {"art": "flach", "satz": 0.07, "inklBund": true},
         "SZ": {"art": "flach", "satz": 0.025},
-        "SO": {"art": "progressiv", "min": 0.015, "minVerheiratet": 0, "max": 0.086},
+        "SO": {"art": "tabelle", "inklBund": true},
         "TG": {"art": "flach", "satz": 0.07},
-        "TI": {"art": "progressiv", "min": 0.02, "max": 0.03},
+        "TI": {"art": "flach", "satz": 0.0358},
         "UR": {"art": "flach", "satz": 0.038},
-        "VS": {"art": "progressiv", "min": 0.043, "minVerheiratet": 0.0421, "max": 0.08},
-        "VD": {"art": "progressiv", "min": 0.0072, "minVerheiratet": 0.0063, "max": 0.0661, "maxVerheiratet": 0.0619},
+        "VS": {"art": "tabelle", "inklBund": true},
+        "VD": {"art": "tabelle", "inklBund": true},
         "ZG": {"art": "flach", "satz": 0.05},
         "ZH": {"art": "flach", "satz": 0.06}
       },
@@ -317,7 +325,7 @@
       "source": "https://www.estv.admin.ch/dam/de/sd-web/wOVGrjPStMQ4/qst-tarife-renten-kapitalleistungen-2026.pdf",
       "stand": "ESTV, Übersicht über die Quellensteuertarife für Vorsorgeleistungen – gültig ab 1.1.2026 (abgerufen 25.09.2026)",
       "status": "verifiziert",
-      "hinweis": "Kantonale (inkl. Gemeinde-) Quellensteuer auf Kapitalleistungen, ohne direkte Bundessteuer, nach dem Sitzkanton der Vorsorge- bzw. Freizügigkeitseinrichtung. flach = fester Satz; stufen = Teilbeträge [bis, Satz] (null = alle weiteren); progressiv = nur Bandbreite publiziert → Rechner verwendet den Durchschnittssatz der ordentlichen Kapitalleistungssteuer des Kantons (Hauptort), begrenzt auf die Bandbreite (Näherung). SH: 7% inkl. Bundessteueranteil. TG: 7% «nur Kantonsanteil» = Staats- und Gemeindesteuer ohne DBSt (bestätigt durch den TG-Tarif 2026: 7% + Bundesteil). FR Verheiratete: Abzug 10'000. Rückforderung/Anrechnung je nach DBA (ESTV 2-217, data/laender-2026.json)."
+      "hinweis": "Kantonale (inkl. Gemeinde-) Quellensteuer auf Kapitalleistungen, ohne direkte Bundessteuer, nach dem Sitzkanton der Vorsorge- bzw. Freizügigkeitseinrichtung. flach = fester Satz; stufen = Teilbeträge [bis, Satz] (null = alle weiteren); tabelle = progressiver Tarif exakt aus den ESTV-Tarifdateien 2026 (data/qst-kapital-kantone-2026.json, Satz auf dem ganzen Betrag, inkl. Bundesteil; erzeugt mit scripts/qst-kapital-tarife.mjs aus https://www.estv.admin.ch/de/quellensteuertarife-fuer-uebrige-einkuenfte, vsl2026txt.zip, Dateien vom 20.11.–19.12.2025). AG deckungsgleich mit Anhang 3 QStV-AG (https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/quellensteuer/quellensteuer-arbeitgebende/qust-tarife-und-wegleitungen/qust-tarif-kapitelleistungen-2026.pdf; Bundesteil eingerechnet gemäss § 19 Abs. 2 QStV-AG; unter 1'000 keine Quellensteuer). TI: ESTV-Datei = 3.58 % + Bundestarif (bis 150'000 publiziert; die ESTV-Übersicht nennt 2–3 %, Abweichung OFFEN). progressiv (Näherung über das ordentliche Kantonsmodell) wird nicht mehr verwendet. SH: 7% inkl. Bundessteueranteil. TG: 7% «nur Kantonsanteil» = Staats- und Gemeindesteuer ohne DBSt (bestätigt durch den TG-Tarif 2026: 7% + Bundesteil). FR Verheiratete: Abzug 10'000. Rückforderung/Anrechnung je nach DBA (ESTV 2-217, data/laender-2026.json)."
     }
   },
   "daten": {

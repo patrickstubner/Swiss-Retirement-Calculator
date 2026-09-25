@@ -75,11 +75,16 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
   3a ab dem Wegzugsmonat frei – **in jedem Alter**, unabhängig vom PK-Bezugsalter laut Reglement, als Kapital (keine
   PK-Rente). Ausserhalb EU/EFTA ganz; in der EU/EFTA nur das Überobligatorium, der geschätzte obligatorische Teil
   bleibt als Freizügigkeitsguthaben gesperrt (Schalter «im neuen Land nicht obligatorisch versichert» → Vollbezug);
-  3a immer ganz (Auslegung, OFFEN). Liegt der Wegzug nach dem PK-Bezugsalter, gilt der ordentliche Bezug.
+  3a immer ganz (BSV-Mitteilungen Nr. 96 Rz 567); Liechtenstein: Obligatorium immer gesperrt (Art. 25f Abs. 1
+  lit. c FZG). Liegt der Wegzug nach dem PK-Bezugsalter, gilt der ordentliche Bezug.
   Besteuerung ab dem Wegzug mit der **Schweizer Quellensteuer** (Bund nach QStV-Tarif + Sitzkanton der
-  Vorsorgeeinrichtung, ESTV-Übersicht 2026) statt der Kapitalleistungssteuer des Wohnkantons; DBA-Rückforderung nur
-  als Hinweis. Die Wegzug-Angaben stehen im Schritt «Einkommen & Vorsorge» in einer eigenen Karte **vor** der
+  Vorsorgeeinrichtung; AG, BL, GE, JU, NE, SO, VS, VD mit den exakten ESTV-Tariftabellen 2026) statt der
+  Kapitalleistungssteuer des Wohnkantons; DBA-Rückforderung optional (Schalter). Die Wegzug-Angaben stehen im Schritt «Einkommen & Vorsorge» in einer eigenen Karte **vor** der
   Pensionskasse (gleicher Zustand wie im Schritt «Personen») und im Modus «Schnell» direkt bei jeder Person.
+- **Steuern nach dem Wegzug:** Schweizer Einkommens- und Vermögenssteuer nur bis zum Wegzug (anteilig), danach das
+  vereinfachte Steuermodell des Ziellandes aus `data/laender-2026.json` (Renten, Kapitalerträge, Vermögen; Regime wie
+  Italien 7 %, Zypern 5 %, Azoren −30 % wählbar) oder ein eigener effektiver Satz. Schweizer Quellensteuer auf
+  PK-Renten, wo das DBA sie vorsieht (ESTV RS 2-217). Quellen und OFFEN-Punkte: `docs/laender.md` Abschnitt 6.
 - **Vermögenstöpfe pro Person** mit eigener Rendite und Zugriffsregel:
   - verfügbar: Bargeld/Konten (Zins Bargeld), Wertschriften (Börsenrendite), Sonstiges (eigene Rendite),
     Wohneigentum (Nettowert = Verkehrswert − optionale Hypothek, wie Börsenkapital verzinst);
@@ -139,9 +144,9 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
 
 Vereinfachungen: Wohneigentum wird wie Börsenkapital behandelt (ohne Eigenmietwert, Unterhalt, Verkaufskosten);
 Vermögenssteuer auf dem Verkehrswert (effektiver Satz). Barauszahlung wegen Selbstständigkeit ist nicht abgebildet;
-nach dem Wegzug gelten für Einkommen und Vermögen weiterhin Schweizer Steuern (Näherung).
+Steuermodelle der Zielländer sind Näherungen (ohne Modell, z.B. Brasilien, weiter Schweizer Steuern).
 
-Geplant: exakte Tarife weiterer Kantone, Steuern bei Wegzug ins Ausland (DBA-Rückforderung, Renten, Wohnsitzstaat), historische Krisenszenarien, Monte Carlo,
+Geplant: exakte Tarife weiterer Kantone, genauere Zielland-Steuermodelle, historische Krisenszenarien, Monte Carlo,
 Sterbetafeln. Siehe `docs/konzept.md`.
 
 ## Quellen

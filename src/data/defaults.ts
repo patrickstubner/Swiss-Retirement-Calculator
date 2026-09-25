@@ -48,6 +48,10 @@ export function neuerWohnsitzAusland(): WohnsitzAusland {
     barauszahlung: true,
     nichtObligatorischVersichert: false,
     sitzkantonVorsorge: '',
+    steuerSatzZielland: null,
+    steuerOption: '',
+    qstKapitalRueckforderung: false,
+    steuerSatzKapitalZielland: null,
   };
 }
 
