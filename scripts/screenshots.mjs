@@ -113,7 +113,7 @@ await schritt(/Vorsorge/);
 await page.getByText('Person 2', { exact: true }).click();
 await page.getByRole('button', { name: '+ Ausländische Rente hinzufügen' }).click();
 await page.waitForTimeout(200);
-await fuelle('Betrag pro Zahlung', 2500);
+await fuelle('Betrag pro Zahlung (heute)', 2500);
 await fuelle('Wechselkurs CHF je 1 EUR', 0.95);
 const renten = page.locator('.karte', { hasText: 'Ausländische Renten' });
 await renten.scrollIntoViewIfNeeded();
@@ -508,6 +508,61 @@ await p6.goto(url, { waitUntil: 'networkidle' });
   await renten.screenshot({ path: `${out}41-ergebnis-barauszahlung-quellensteuer-360.png` });
 }
 await ctx6.close();
+
+// 10) Ausgaben in Phasen und Einzeljahre (heutige Franken, Hochrechnung mit Teuerung)
+const ctx7 = await browser.newContext({
+  viewport: { width: 360, height: 780 },
+  deviceScaleFactor: 2,
+  isMobile: true,
+  hasTouch: true,
+  locale: 'de-CH',
+});
+const p7 = await ctx7.newPage();
+p7.on('pageerror', (e) => fehler.push(String(e)));
+p7.on('console', (m) => m.type() === 'error' && fehler.push(m.text()));
+await p7.goto(url, { waitUntil: 'networkidle' });
+{
+  const fuelle7 = async (label, wert, nr = 0) => {
+    const feld = p7.getByLabel(label, { exact: true }).nth(nr);
+    await feld.fill(String(wert));
+    await feld.blur();
+  };
+  await p7.getByText('Detailliert', { exact: true }).click();
+  await p7.addStyleTag({ content: '.leiste{display:none!important}' });
+  await fuelle7('Geburtsjahr', 1964);
+  await p7
+    .getByRole('button', { name: /Vermögen/ })
+    .first()
+    .click();
+  await fuelle7('Wertschriften (Börse)', 900000);
+  await fuelle7('Lebenshaltungskosten pro Jahr (heute)', 60000);
+  const karte = p7.locator('.karte', { hasText: 'Phasen (optional)' }).first();
+  await karte.getByRole('button', { name: '+ Phase hinzufügen' }).click();
+  await fuelle7('Betrag (heute)', 85000, 0);
+  await karte.getByRole('button', { name: '+ Phase hinzufügen' }).click();
+  await fuelle7('Betrag (heute)', 4500, 1);
+  await p7.getByLabel('Einheit', { exact: true }).nth(1).selectOption('monat');
+  await fuelle7('Bis Jahr (inkl.)', '', 1);
+  await karte.getByRole('button', { name: '+ Einzeljahr hinzufügen' }).click();
+  await fuelle7('Kalenderjahr', 2034);
+  await fuelle7('Betrag (heute)', 110000, 2);
+  await p7.waitForTimeout(400);
+  await karte.scrollIntoViewIfNeeded();
+  await karte.screenshot({ path: `${out}42-ausgaben-phasen-360.png` });
+  const hinweis = await karte.locator('.heutige-franken').innerText();
+  console.log('Hinweis heutige Franken:', hinweis);
+  if (!/heutigen Franken/.test(hinweis) || !/entsprechen/.test(hinweis)) fehler.push(`Hinweis fehlt: ${hinweis}`);
+  const vorschau = karte.locator('.ausgaben-vorschau');
+  await vorschau.locator('summary').click();
+  await vorschau.scrollIntoViewIfNeeded();
+  await vorschau.screenshot({ path: `${out}43-ausgaben-vorschau-pro-jahr-360.png` });
+  // Schnellmodus: Hinweis, dass Phasen erfasst sind
+  await p7.getByText('Schnell', { exact: true }).click();
+  const schnellKarte = p7.locator('.karte', { hasText: 'Ausgaben und Wohnort' }).first();
+  await schnellKarte.scrollIntoViewIfNeeded();
+  await schnellKarte.screenshot({ path: `${out}44-schnell-ausgaben-phasen-hinweis-360.png` });
+}
+await ctx7.close();
 
 await browser.close();
 if (fehler.length) {

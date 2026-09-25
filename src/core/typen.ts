@@ -249,12 +249,42 @@ export interface Einmalereignis {
   alter: number;
 }
 
+/** Bezug der Ausgabenphasen: Kalenderjahr oder Alter einer Person (Alter, das im Jahr erreicht wird). */
+export type AusgabenBezug = 'jahr' | 'alter';
+export type BetragEinheit = 'jahr' | 'monat';
+
+/**
+ * Ausgabenphase (Detailmodus): Lebenshaltung von … bis … (beide inklusive), in heutigen Franken.
+ * Bei `bezug: 'alter'` sind `von`/`bis` Alter der Person `Ausgaben.phasenPerson`, sonst Kalenderjahre.
+ */
+export interface AusgabenPhase {
+  id: string;
+  von: number;
+  /** null = bis zum Planungshorizont */
+  bis: number | null;
+  betrag: number;
+  einheit: BetragEinheit;
+}
+
+/** Abweichung für ein einzelnes Kalenderjahr: ersetzt die Lebenshaltung dieses Jahres (heutige Franken). */
+export interface AusgabenEinzeljahr {
+  id: string;
+  jahr: number;
+  betrag: number;
+  einheit: BetragEinheit;
+}
+
 export interface Ausgaben {
-  /** Lebenshaltung pro Jahr, heute, ohne Steuern */
+  /** Lebenshaltung pro Jahr, heute, ohne Steuern (Grundbetrag: gilt in Jahren ohne Phase) */
   lebenshaltung: number;
-  /** Faktor ab Alter 75 bzw. 85 (Referenz: jüngere Person) */
+  /** Faktor ab Alter 75 bzw. 85 (Referenz: jüngere Person); nur auf den Grundbetrag */
   faktorAb75: number;
   faktorAb85: number;
+  phasenBezug: AusgabenBezug;
+  /** Person, deren Alter bei `phasenBezug: 'alter'` massgebend ist */
+  phasenPerson: number;
+  phasen: AusgabenPhase[];
+  einzeljahre: AusgabenEinzeljahr[];
 }
 
 export interface Annahmen {

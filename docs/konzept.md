@@ -75,6 +75,8 @@ Progressive Offenlegung: **Schnellstart** mit ca. 8 Feldern, danach **Details** 
 | Ziel-Erfolgsquote Y | 50–100% | 90% |
 | Lebenshaltungskosten heute (Jahr, netto nach Steuern) | CHF | – |
 | Ausgabenphasen (Faktoren ab 75 / ab 85) | % | 100 / 90 / 110 |
+| Ausgabenphasen «von–bis» (Detailmodus, Schema 2) | Liste: von, bis (inkl., leer = Lebensende), Betrag heute pro Jahr oder Monat; Bezug Kalenderjahr oder Alter einer Person | – (ohne Phasen: Einzelbetrag) |
+| Einzeljahr-Abweichungen | Liste: Kalenderjahr, Betrag heute (ersetzt die Lebenshaltung des Jahres) | – |
 | Einmalausgaben / -einnahmen (Jahr, Betrag, z.B. Erbschaft) | Liste | – |
 | Anlagestrategie freies Vermögen | Aktienanteil % / Obligationen / Cash, Kosten (TER) % | 50/40/10, 0,5% |
 | Annahmen deterministisch | Rendite nominal, Inflation | aus historischen Mitteln, gut sichtbar anpassbar |
@@ -105,7 +107,7 @@ Validierung: harte Grenzen aus `rules/2026.json` (z.B. 3a-Maximum, AHV-Vorbezug 
 - Bei Paaren laufen zwei Personen-Zeitachsen in einem Haushaltsbudget. Todesfall-Szenario (V2): Verwitwetenrente, Plafond entfällt, Ehegattenrente PK.
 
 ### c.2 Reihenfolge pro Jahr t
-1. **Indexierung:** Ausgaben mit Inflation; AHV-Renten mit Annahme «Mischindex ≈ Inflation + x» (Default: Inflation, da die Anpassung 2027 OFFEN ist); PK-Renten nominal fix (Default 0% Teuerungsausgleich).
+1. **Indexierung:** Ausgaben mit Inflation (alle Eingaben in heutigen Franken; die Simulation rechnet real, d.h. ein Betrag heute entspricht im Jahr t nominal Betrag × Π(1 + Teuerung); Lebenshaltung pro Jahr aus `core/ausgaben.ts`: Einzeljahr → erste passende Phase → Grundbetrag × Faktor ab 75/85); AHV-Renten mit Annahme «Mischindex ≈ Inflation + x» (Default: Inflation, da die Anpassung 2027 OFFEN ist); PK-Renten nominal fix (Default 0% Teuerungsausgleich).
 2. **Einkommen:** Lohn (bis Stopp-Alter), AHV, PK-Rente, Übergangszuschlag, Kapitalbezüge (PK/FZ/3a) als Zufluss ins freie Vermögen.
 3. **Abgaben:** AHV/IV/EO 5,3% und ALV 1,1% (bis 148'200) auf dem Lohn; BVG-Sparbeitrag AN (wandert ins PK-Guthaben); NE-Beitrag ab Stopp bis RA (Tabelle MB 2.03, Bemessung Vermögen + 20× Renteneinkommen, bei Paaren hälftig; Befreiung, wenn der Ehegatte ≥ 1'060 aus Erwerb zahlt; + Verwaltungskostenzuschlag).
 4. **Steuern:**

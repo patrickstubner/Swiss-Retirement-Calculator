@@ -335,6 +335,11 @@ function JahresTabelle({ e, refIdx }: { e: SimulationsErgebnis; refIdx: number }
     <details className="aufklapp" onToggle={(ev) => setOffen((ev.target as HTMLDetailsElement).open)}>
       <summary>Tabelle pro Jahr</summary>
       {offen ? (
+        <p className="klein">
+          Alle Beträge in heutigen Franken (Kaufkraft heute); nominal sind sie um die erwartete Teuerung höher.
+        </p>
+      ) : null}
+      {offen ? (
         <div className="tabelle-scroll">
           <table>
             <thead>

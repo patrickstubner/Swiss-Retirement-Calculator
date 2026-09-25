@@ -1,6 +1,7 @@
+import LZString from 'lz-string';
 import { describe, expect, it } from 'vitest';
 import { effektiverHaushalt } from '../core/schaetzwerte';
-import { standardHaushalt } from '../data/defaults';
+import { neueAusgabenPhase, neuesAusgabenEinzeljahr, standardHaushalt } from '../data/defaults';
 import { ladeRegeln } from '../rules';
 import {
   ALTE_KEYS,
@@ -358,5 +359,59 @@ describe('Eingabemodus «Schnell» / «Detailliert»', () => {
     expect(
       ladeStartzustand(regeln, teilenLink(detailHaushalt(), 'https://x/').slice('https://x/'.length), s).ui.modus,
     ).toBe('detailliert');
+  });
+});
+
+describe('Schema 2: Ausgabenphasen und Einzeljahre', () => {
+  const mitPhasen = () => {
+    const h = standardHaushalt(regeln);
+    h.ausgaben = {
+      ...h.ausgaben,
+      lebenshaltung: 55_000,
+      phasenBezug: 'alter',
+      phasenPerson: 0,
+      phasen: [neueAusgabenPhase(63, 67, 85_000), { ...neueAusgabenPhase(68, null, 4_000), einheit: 'monat' }],
+      einzeljahre: [neuesAusgabenEinzeljahr(2033, 120_000)],
+    };
+    return h;
+  };
+
+  it('Share-Link: Phasen und Einzeljahre überstehen Kodieren/Dekodieren', () => {
+    const h = mitPhasen();
+    expect(dekodiere(kodiere(h), regeln)).toEqual(h);
+  });
+
+  it('Schema 1 (ohne Phasen) wird mit leeren Listen übernommen', () => {
+    const alt = { ...standardHaushalt(regeln), ausgaben: { lebenshaltung: 48_000, faktorAb75: 0.9, faktorAb85: 1.2 } };
+    const code = LZString.compressToEncodedURIComponent(JSON.stringify({ v: 1, h: alt }));
+    const h = dekodiere(code, regeln);
+    expect(h?.ausgaben).toMatchObject({ lebenshaltung: 48_000, faktorAb75: 0.9, phasen: [], einzeljahre: [] });
+    expect(h?.ausgaben.phasenBezug).toBe('jahr');
+  });
+
+  it('ungültige Phasen/Einzeljahre werden bereinigt', () => {
+    const h = normalisiere(
+      {
+        ausgaben: {
+          phasenBezug: 'foo',
+          phasenPerson: 5,
+          phasen: [{ von: 2030.4, bis: 2020, betrag: -5, einheit: 'woche' }],
+          einzeljahre: [
+            { jahr: 2031, betrag: 1000 },
+            { jahr: 2031, betrag: 2000 },
+          ],
+        },
+      },
+      regeln,
+    );
+    expect(h.ausgaben.phasenBezug).toBe('jahr');
+    expect(h.ausgaben.phasenPerson).toBe(0);
+    expect(h.ausgaben.phasen[0]).toMatchObject({ von: 2030, bis: 2030, betrag: 0, einheit: 'jahr' });
+    expect(h.ausgaben.einzeljahre).toHaveLength(1);
+  });
+
+  it('Phasen zählen als Detailwert (Link öffnet die Detailansicht)', () => {
+    const h = mitPhasen();
+    expect(modusFuerLink(h, regeln)).toBe('detailliert');
   });
 });

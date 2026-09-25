@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { neuePerson, standardHaushalt } from '../data/defaults';
+import { neueAusgaben, neuePerson, standardHaushalt } from '../data/defaults';
 import { ladeRegeln } from '../rules';
 import { fwBeitragNichterwerbstaetig } from './freiwilligeAhv';
 import { neBeitrag } from './neBeitrag';
@@ -46,7 +46,7 @@ function haushalt(personen: Person[], o: Partial<Haushalt> = {}): Haushalt {
     zivilstand: personen.length > 1 ? 'verheiratet' : 'alleinstehend',
     personen,
     planungsalter: 90,
-    ausgaben: { lebenshaltung: 0, faktorAb75: 1, faktorAb85: 1 },
+    ausgaben: { ...neueAusgaben(), lebenshaltung: 0, faktorAb75: 1, faktorAb85: 1 },
     annahmen: {
       ...h.annahmen,
       renditeNominal: 0.01,

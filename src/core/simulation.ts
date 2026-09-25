@@ -49,6 +49,7 @@ import {
   monatIndex,
   pruefeAhvVerschiebung,
 } from './ahv';
+import { lebenshaltungImJahr } from './ausgaben';
 import { auslandRenteNetto, auslandRenteRealJahr } from './auslandRenten';
 import { bvgAltersgutschrift, pkLeistung } from './bvg';
 import {
@@ -731,8 +732,8 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
 
     // Ausgaben nach Alter der Referenzperson
     const refAlter = jahr - ref.geburtsjahr;
-    const faktor = refAlter >= 85 ? h.ausgaben.faktorAb85 : refAlter >= 75 ? h.ausgaben.faktorAb75 : 1;
-    const lebenshaltung = (Math.max(0, h.ausgaben.lebenshaltung) * faktor * nMonate) / 12;
+    // Lebenshaltung in heutigen Franken (real): Grundbetrag, Phase oder Einzeljahr (core/ausgaben.ts)
+    const lebenshaltung = (lebenshaltungImJahr(h.ausgaben, jahr, h.personen, refAlter).betrag * nMonate) / 12;
     const ausgaben = lebenshaltung + weitereAusgaben;
 
     const lohnTotal = sum(lohn);

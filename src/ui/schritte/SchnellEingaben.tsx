@@ -87,7 +87,11 @@ export function SchnellEingaben(props: SchrittProps) {
           min={0}
           max={100_000_000}
           onChange={(v) => setH((x) => ({ ...x, ausgaben: { ...x.ausgaben, lebenshaltung: v } }))}
-          hinweis="Lebenshaltung des ganzen Haushalts ohne Steuern und AHV-Beiträge (die werden berechnet)."
+          hinweis={
+            h.ausgaben.phasen.length + h.ausgaben.einzeljahre.length > 0
+              ? `In heutigen Franken (mit ${fmtProzent(h.annahmen.inflation)} Teuerung pro Jahr hochgerechnet). Im Modus «Detailliert» sind Ausgabenphasen bzw. Einzeljahre erfasst: dieser Betrag gilt nur in den übrigen Jahren.`
+              : `Lebenshaltung des ganzen Haushalts ohne Steuern und AHV-Beiträge (die werden berechnet). In heutigen Franken – die App rechnet mit ${fmtProzent(h.annahmen.inflation)} Teuerung pro Jahr hoch. Phasen (z.B. die ersten Jahre mehr) im Modus «Detailliert».`
+          }
         />
         <AuswahlFeld
           label="Wohnkanton"
