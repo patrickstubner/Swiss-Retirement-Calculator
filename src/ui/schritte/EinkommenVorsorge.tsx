@@ -8,7 +8,7 @@ import {
   istUebergangsFrau,
   pruefeAhvVerschiebung,
 } from '../../core/ahv';
-import { istManuell } from '../../core/schaetzwerte';
+import { istManuell, mitUmwandlungssatz, umwandlungssatzZuOptimistisch } from '../../core/schaetzwerte';
 import type { AuslandRente, Person, SchaetzFeld } from '../../core/typen';
 import { neueAuslandRente, WAEHRUNGEN } from '../../data/defaults';
 import { AhvSchaetzhilfe } from '../components/AhvSchaetzhilfe';
@@ -16,6 +16,7 @@ import { AuswahlFeld, BetragFeld, Schalter, Segmente, TextFeld, ZahlFeld } from 
 import { Karte } from '../components/Karte';
 import { fmtChf, fmtProzent } from '../format';
 import { type SchrittProps, setzeManuell, setzePerson } from '../kontext';
+import { UWS_HILFE, UWS_ZU_OPTIMISTISCH } from '../texte';
 
 export function EinkommenVorsorge(props: SchrittProps) {
   const { h } = props;
@@ -224,11 +225,14 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
             value={istManuell(p, 'pkUmwandlungssatz') ? p.pk.umwandlungssatz : effP.pk.umwandlungssatz}
             min={0}
             max={0.1}
-            onChange={(v) =>
-              set((x) => setzeManuell({ ...x, pk: { ...x.pk, umwandlungssatz: v } }, 'pkUmwandlungssatz', true))
-            }
+            onChange={(v) => set((x) => mitUmwandlungssatz(x, v))}
             schaetzung={schaetz('pkUmwandlungssatz', fmtProzent(w?.pkUmwandlungssatz ?? 0))}
-            hinweis={`Gemäss Ausweis. BVG-Minimum ${fmtProzent(regeln.bvg.mindestumwandlungssatz)} gilt nur fürs Obligatorium; umhüllende Kassen oft deutlich tiefer.`}
+            hinweis={UWS_HILFE(fmtProzent(regeln.bvg.mindestumwandlungssatz))}
+            warnung={
+              umwandlungssatzZuOptimistisch(p, effP)
+                ? UWS_ZU_OPTIMISTISCH(fmtProzent(regeln.bvg.mindestumwandlungssatz))
+                : undefined
+            }
           />
           <ZahlFeld
             label="Kapitalbezug"

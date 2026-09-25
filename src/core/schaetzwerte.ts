@@ -72,6 +72,26 @@ export const SENSITIVITAET = {
 
 export const istManuell = (p: Person, f: SchaetzFeld): boolean => p.manuell[f] === true;
 
+/**
+ * Umwandlungssatz laut Vorsorgeausweis setzen – derselbe Zustand für die Modi «Schnell» und
+ * «Detailliert». Leer bzw. 0 (ein Umwandlungssatz von 0% ist nicht sinnvoll) = keine eigene
+ * Eingabe → wieder die Schätzung (BVG-Mindestumwandlungssatz).
+ */
+export function mitUmwandlungssatz(p: Person, satz: number): Person {
+  const manuell = { ...p.manuell };
+  if (!(satz > 0)) {
+    delete manuell.pkUmwandlungssatz;
+    return { ...p, manuell };
+  }
+  manuell.pkUmwandlungssatz = true;
+  return { ...p, manuell, pk: { ...p.pk, umwandlungssatz: satz } };
+}
+
+/** Umwandlungssatz geschätzt, obwohl ein PK-Guthaben vorhanden ist → Ergebnis vermutlich zu optimistisch. */
+export function umwandlungssatzZuOptimistisch(p: Person, effektiv: Person | undefined): boolean {
+  return !istManuell(p, 'pkUmwandlungssatz') && (effektiv?.pk.guthaben ?? p.pk.guthaben) > 0;
+}
+
 /** Erstes Beitragsjahr der AHV (1.1. nach dem 20. Geburtstag). */
 const ahvBeitragsbeginn = (p: Person, regeln: Regeln): number =>
   p.geburtsjahr + regeln.ahv.schaetzhilfe.beitragsdauerBeginnAlter;
@@ -204,7 +224,9 @@ export function detailwerte(h: Haushalt, standard: Haushalt): string[] {
   const std = standard.personen[0];
   h.personen.forEach((p, i) => {
     const n = h.personen.length > 1 ? ` (${p.name || `Person ${i + 1}`})` : '';
-    for (const f of SCHAETZ_FELDER) if (f !== 'pkGuthaben' && istManuell(p, f)) out.push(SCHAETZ_LABEL[f] + n);
+    // PK-Guthaben und Umwandlungssatz sind auch im Modus «Schnell» sichtbar → keine Detailwerte
+    for (const f of SCHAETZ_FELDER)
+      if (f !== 'pkGuthaben' && f !== 'pkUmwandlungssatz' && istManuell(p, f)) out.push(SCHAETZ_LABEL[f] + n);
     if (p.bargeld > 0) out.push(`Bargeld/Konten${n}`);
     if (p.sonstiges.wert > 0) out.push(`Sonstiges Vermögen${n}`);
     if (p.wohneigentum.vorhanden && p.wohneigentum.hypothek > 0) out.push(`Hypothek${n}`);

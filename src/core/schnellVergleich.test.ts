@@ -3,7 +3,7 @@
  *
  * «Detailliert» = alle Werte wie aus Vorsorgeausweis, IK-Auszug/Rentenvorausberechnung usw.
  * (illustrative Beispielwerte, keine realen Personen). «Schnell» = nur die Schnell-Eingaben,
- * alles andere aus schaetzwerte.ts. Gemessen: Abweichung des frühesten Rücktrittsalters (Monate)
+ * alles andere aus schaetzwerte.ts. UWS = optionales Schnell-Feld «Umwandlungssatz laut Vorsorgeausweis». Gemessen: Abweichung des frühesten Rücktrittsalters (Monate)
  * und des Vermögens mit 85 (real, jüngere Person). Die Zahlen werden ausgegeben (für die
  * PR-Beschreibung); die Assertions sind bewusst locker und dokumentieren die Grössenordnung.
  */
@@ -44,7 +44,7 @@ function nurSchnell(p: Person, mitPk: boolean, mitInChSeit = true, mitUws = fals
     q.manuell = { pkGuthaben: true };
   }
   if (mitUws) {
-    // ein einziger Detailwert: Umwandlungssatz laut Vorsorgeausweis
+    // optionales Schnell-Feld «Umwandlungssatz laut Vorsorgeausweis»
     q.pk = { ...q.pk, umwandlungssatz: p.pk.umwandlungssatz };
     q.manuell = { ...q.manuell, pkUmwandlungssatz: true };
   }
@@ -203,23 +203,38 @@ function vergleiche(name: string, h: Haushalt, variante: string, s: Haushalt): Z
 
 describe('Schnell vs. Detailliert (Musterhaushalte)', () => {
   it('BVG-nahe Kasse ohne Lücken: mit PK-Guthaben nahe am Detailergebnis', () => {
-    const a = vergleiche('BVG-nah', bvgNah, 'Schnell mit PK-Guthaben', nurSchnellHaushalt(bvgNah, true));
+    const a = vergleiche('BVG-nah', bvgNah, 'Schnell mit PK-Guthaben, ohne UWS', nurSchnellHaushalt(bvgNah, true));
     expect(a.dAlter).not.toBeNull();
     expect(Math.abs(a.dAlter ?? 99)).toBeLessThanOrEqual(12);
-    vergleiche('BVG-nah', bvgNah, 'Schnell ohne PK-Guthaben', nurSchnellHaushalt(bvgNah, false));
-    const u = vergleiche('BVG-nah', bvgNah, 'Schnell mit PK + UWS', nurSchnellHaushalt(bvgNah, true, true, true));
+    vergleiche('BVG-nah', bvgNah, 'Schnell ohne PK-Guthaben/UWS', nurSchnellHaushalt(bvgNah, false));
+    const u = vergleiche(
+      'BVG-nah',
+      bvgNah,
+      'Schnell mit PK-Guthaben + UWS',
+      nurSchnellHaushalt(bvgNah, true, true, true),
+    );
     expect(Math.abs(u.dAlter ?? 99)).toBeLessThanOrEqual(12);
   });
 
   it('umhüllende Kasse: Schnell zu optimistisch (6,8%) bzw. ohne Guthaben zu pessimistisch', () => {
-    const mit = vergleiche('Umhüllend', umhuellend, 'Schnell mit PK-Guthaben', nurSchnellHaushalt(umhuellend, true));
-    const ohne = vergleiche('Umhüllend', umhuellend, 'Schnell ohne PK-Guthaben', nurSchnellHaushalt(umhuellend, false));
+    const mit = vergleiche(
+      'Umhüllend',
+      umhuellend,
+      'Schnell mit PK-Guthaben, ohne UWS',
+      nurSchnellHaushalt(umhuellend, true),
+    );
+    const ohne = vergleiche(
+      'Umhüllend',
+      umhuellend,
+      'Schnell ohne PK-Guthaben/UWS',
+      nurSchnellHaushalt(umhuellend, false),
+    );
     expect(mit.dAlter).not.toBeNull();
     expect(ohne.dAlter === null || (ohne.dAlter ?? 0) >= (mit.dAlter ?? 0)).toBe(true);
     const u = vergleiche(
       'Umhüllend',
       umhuellend,
-      'Schnell mit PK + UWS',
+      'Schnell mit PK-Guthaben + UWS',
       nurSchnellHaushalt(umhuellend, true, true, true),
     );
     expect(Math.abs(u.dAlter ?? 99)).toBeLessThan(Math.abs(mit.dAlter ?? 0) + 1);
@@ -229,20 +244,25 @@ describe('Schnell vs. Detailliert (Musterhaushalte)', () => {
     const mit = vergleiche(
       'Paar BR',
       paarBrasilien,
-      'Schnell mit PK + CH seit',
+      'Schnell mit PK-Guthaben, ohne UWS, mit CH seit',
       nurSchnellHaushalt(paarBrasilien, true),
     );
     const ohne = vergleiche(
       'Paar BR',
       paarBrasilien,
-      'Schnell mit PK, ohne CH seit',
+      'Schnell mit PK-Guthaben, ohne UWS, ohne CH seit',
       nurSchnellHaushalt(paarBrasilien, true, false),
     );
-    vergleiche('Paar BR', paarBrasilien, 'Schnell ohne PK, mit CH seit', nurSchnellHaushalt(paarBrasilien, false));
     vergleiche(
       'Paar BR',
       paarBrasilien,
-      'Schnell mit PK + UWS + CH seit',
+      'Schnell ohne PK-Guthaben/UWS, mit CH seit',
+      nurSchnellHaushalt(paarBrasilien, false),
+    );
+    vergleiche(
+      'Paar BR',
+      paarBrasilien,
+      'Schnell mit PK-Guthaben + UWS + CH seit',
       nurSchnellHaushalt(paarBrasilien, true, true, true),
     );
     // Ohne Zuzugsjahr wird die AHV der Ehefrau überschätzt → Vermögen zu hoch
@@ -250,10 +270,15 @@ describe('Schnell vs. Detailliert (Musterhaushalte)', () => {
   });
 
   it('Frühpensionierung: Abweichung vor allem durch den Umwandlungssatz', () => {
-    const a = vergleiche('Frühpension', frueh, 'Schnell mit PK-Guthaben', nurSchnellHaushalt(frueh, true));
+    const a = vergleiche('Frühpension', frueh, 'Schnell mit PK-Guthaben, ohne UWS', nurSchnellHaushalt(frueh, true));
     expect(a.dAlter).not.toBeNull();
-    vergleiche('Frühpension', frueh, 'Schnell ohne PK-Guthaben', nurSchnellHaushalt(frueh, false));
-    const u = vergleiche('Frühpension', frueh, 'Schnell mit PK + UWS', nurSchnellHaushalt(frueh, true, true, true));
+    vergleiche('Frühpension', frueh, 'Schnell ohne PK-Guthaben/UWS', nurSchnellHaushalt(frueh, false));
+    const u = vergleiche(
+      'Frühpension',
+      frueh,
+      'Schnell mit PK-Guthaben + UWS',
+      nurSchnellHaushalt(frueh, true, true, true),
+    );
     expect(Math.abs(u.dAlter ?? 99)).toBeLessThan(Math.abs(a.dAlter ?? 0));
   });
 

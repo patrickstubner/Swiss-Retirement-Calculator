@@ -5,10 +5,12 @@ import {
   ahvLueckenZuzug,
   detailwerte,
   effektiverHaushalt,
+  mitUmwandlungssatz,
   SCHAETZ_FELDER,
   schaetzeAhv,
   schaetzePkGuthaben,
   schaetzePkSparbeitrag,
+  umwandlungssatzZuOptimistisch,
 } from './schaetzwerte';
 import type { Haushalt, Person } from './typen';
 
@@ -142,10 +144,39 @@ describe('Detailwerte (Hinweis im Modus «Schnell»)', () => {
     const p = person({ bargeld: 5000, manuell: { pkUmwandlungssatz: true, pkGuthaben: true } });
     const h = haushalt([p], { annahmen: { ...std.annahmen, renditeNominal: 0.02 } });
     const d = detailwerte(h, std);
-    expect(d).toContain('PK-Umwandlungssatz');
     expect(d).toContain('Bargeld/Konten');
     expect(d).toContain('Annahmen (Rendite, Teuerung usw.)');
-    // PK-Guthaben ist auch im Modus «Schnell» sichtbar → kein Detailwert
+    // PK-Guthaben und Umwandlungssatz sind auch im Modus «Schnell» sichtbar → keine Detailwerte
     expect(d).not.toContain('PK-Altersguthaben heute');
+    expect(d).not.toContain('PK-Umwandlungssatz');
+    expect(detailwerte(haushalt([person({ manuell: { pkSparbeitrag: true } })]), std)).toContain('PK-Sparbeitrag');
+  });
+});
+
+describe('Umwandlungssatz laut Vorsorgeausweis (Schnell und Detailliert, gleicher Zustand)', () => {
+  it('Eingabe setzt die eigene Eingabe; leer/0 → zurück zur Schätzung 6,8%', () => {
+    const p = mitUmwandlungssatz(person(), 0.054);
+    expect(p.manuell.pkUmwandlungssatz).toBe(true);
+    expect(p.pk.umwandlungssatz).toBe(0.054);
+    expect(effektiverHaushalt(haushalt([p]), regeln, heute).haushalt.personen[0]?.pk.umwandlungssatz).toBe(0.054);
+    const leer = mitUmwandlungssatz(p, 0);
+    expect(leer.manuell.pkUmwandlungssatz).toBeUndefined();
+    const e = effektiverHaushalt(haushalt([leer]), regeln, heute);
+    expect(e.haushalt.personen[0]?.pk.umwandlungssatz).toBe(regeln.bvg.mindestumwandlungssatz);
+    expect(e.schaetzungen.some((s) => s.feld === 'pkUmwandlungssatz')).toBe(true);
+    // andere Markierungen bleiben erhalten
+    const q = mitUmwandlungssatz(person({ manuell: { pkGuthaben: true } }), 0.05);
+    expect(mitUmwandlungssatz(q, Number.NaN).manuell).toEqual({ pkGuthaben: true });
+  });
+
+  it('Hinweis «zu optimistisch» nur bei geschätztem Satz und vorhandenem PK-Guthaben', () => {
+    const p = person();
+    const eff = effektiverHaushalt(haushalt([p]), regeln, heute).haushalt.personen[0];
+    expect(umwandlungssatzZuOptimistisch(p, eff)).toBe(true);
+    const mit = mitUmwandlungssatz(p, 0.055);
+    expect(umwandlungssatzZuOptimistisch(mit, eff)).toBe(false);
+    const ohnePk = person({ lohn: 0 });
+    const effOhne = effektiverHaushalt(haushalt([ohnePk]), regeln, heute).haushalt.personen[0];
+    expect(umwandlungssatzZuOptimistisch(ohnePk, effOhne)).toBe(false);
   });
 });

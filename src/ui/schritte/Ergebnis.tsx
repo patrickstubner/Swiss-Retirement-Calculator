@@ -1,5 +1,5 @@
 import { useDeferredValue, useMemo, useState } from 'react';
-import { ahvLueckenZuzug } from '../../core/schaetzwerte';
+import { ahvLueckenZuzug, umwandlungssatzZuOptimistisch } from '../../core/schaetzwerte';
 import { sensitivitaet } from '../../core/sensitivitaet';
 import { referenzPerson, startvermoegen } from '../../core/simulation';
 import type { Haushalt, SimulationsErgebnis, Toepfe } from '../../core/typen';
@@ -12,7 +12,7 @@ import { Segmente } from '../components/Felder';
 import { Karte } from '../components/Karte';
 import { fmtAlter, fmtChf, fmtMonat, fmtProzent } from '../format';
 import type { SchrittProps } from '../kontext';
-import { VEREINFACHUNGEN } from '../texte';
+import { UWS_ZU_OPTIMISTISCH, VEREINFACHUNGEN } from '../texte';
 
 export type SuchModus = 'gemeinsam' | 'p0' | 'p1';
 
@@ -487,6 +487,10 @@ function GenauigkeitKarte({
   }, [effD, regeln, heute, suchModus]);
   const mehrere = h.personen.length > 1;
   const zuzug = h.personen.map((p) => ahvLueckenZuzug(p, regeln));
+  const uwsOptimistisch = namen.filter((_, i) => {
+    const p = h.personen[i];
+    return p ? umwandlungssatzZuOptimistisch(p, eff.haushalt.personen[i]) : false;
+  });
   return (
     <Karte titel="Genauigkeit" untertitel="Welche Werte geschätzt sind und wo sich genauere Angaben lohnen">
       {eff.schaetzungen.length > 0 ? (
@@ -516,6 +520,13 @@ function GenauigkeitKarte({
       ) : (
         <p className="ok">Keine geschätzten Werte – nur die Standardannahmen für Rendite und Teuerung.</p>
       )}
+      {uwsOptimistisch.length > 0 ? (
+        <p className="warnung" role="status">
+          {UWS_ZU_OPTIMISTISCH(fmtProzent(regeln.bvg.mindestumwandlungssatz))}{' '}
+          {mehrere ? `Betrifft: ${uwsOptimistisch.join(', ')}. ` : ''}
+          Den Satz laut Vorsorgeausweis im Feld «Umwandlungssatz laut Vorsorgeausweis» eintragen.
+        </p>
+      ) : null}
       {h.personen.map((p, i) =>
         (zuzug[i] ?? 0) > 0 ? (
           <p key={`zuzug-${namen[i]}`} className="warnung">

@@ -275,10 +275,7 @@ function ui(roh: unknown): UiZustand {
 
 /** Modus für einen geteilten Link: Detailansicht, wenn der Link Detailwerte enthält. */
 export function modusFuerLink(h: Haushalt, regeln: Regeln): EingabeModus {
-  return detailwerte(h, standardHaushalt(regeln)).length > 0 ||
-    h.personen.some((p) => Object.keys(p.manuell).length > 0)
-    ? 'detailliert'
-    : 'schnell';
+  return detailwerte(h, standardHaushalt(regeln)).length > 0 ? 'detailliert' : 'schnell';
 }
 
 export function browserSpeicher(): Storage | null {
