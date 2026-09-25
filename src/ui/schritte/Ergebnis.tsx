@@ -221,7 +221,12 @@ export function Ergebnis({ h, berechnung, heute, suchModus, setSuchModus, eff, r
                 <dt>AHV-Rente</dt>
                 <dd>{fmtChf(info.ahvRenteMonatStart)} / Mt. + 13. Rente</dd>
                 <dt>PK-Bezug</dt>
-                <dd>{fmtMonat(info.pkStart)}</dd>
+                <dd>
+                  {fmtMonat(info.pkStart)}
+                  {info.barauszahlung && (info.barauszahlung.pk > 0 || info.barauszahlung.pkGesperrt > 0)
+                    ? ' (Barauszahlung bei Wegzug)'
+                    : ''}
+                </dd>
                 <dt>PK-Rente</dt>
                 <dd>{fmtChf(info.pkRenteJahr)} / Jahr</dd>
                 <dt>PK-Kapital</dt>
@@ -249,6 +254,26 @@ export function Ergebnis({ h, berechnung, heute, suchModus, setSuchModus, eff, r
                         ? ` (${wegzugsLand(h.personen[i]?.wohnsitzAusland.land ?? '')?.name})`
                         : ''}
                     </dd>
+                    {info.barauszahlung ? (
+                      <>
+                        <dt>Barauszahlung bei Wegzug</dt>
+                        <dd>
+                          {fmtChf(
+                            info.barauszahlung.pk + info.barauszahlung.freizuegigkeit + info.barauszahlung.saeule3a,
+                          )}{' '}
+                          ab {fmtMonat(info.barauszahlung.monat)}
+                          {info.barauszahlung.pkGesperrt > 0
+                            ? `; ${fmtChf(info.barauszahlung.pkGesperrt)} Obligatorium gesperrt (EU/EFTA)`
+                            : ''}
+                        </dd>
+                      </>
+                    ) : null}
+                    {info.quellensteuerKapital > 0 ? (
+                      <>
+                        <dt>Quellensteuer auf Kapital</dt>
+                        <dd>{fmtChf(info.quellensteuerKapital)} total (Näherung, ohne DBA-Rückforderung)</dd>
+                      </>
+                    ) : null}
                     <dt>Freiwillige AHV</dt>
                     <dd>
                       {info.freiwilligeAhvAktiv

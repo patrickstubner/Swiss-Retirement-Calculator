@@ -173,14 +173,14 @@ await karteP1.screenshot({ path: `${out}16-ruecktritt-datum-360.png` });
 
 // Wohnsitz im Ausland: Thailand mit freiwilliger AHV
 await karteP1.getByText('Wohnsitz im Ausland (Wegzug)').click();
-await karteP1.getByText('Wegzug aus der Schweiz geplant').click();
+await karteP1.getByRole('checkbox', { name: /^Endgültiger Wegzug aus der Schweiz geplant/ }).check();
 await fuelle2('Wegzug mit', 59);
-await p2.getByLabel('Land', { exact: true }).selectOption('TH');
+await p2.getByLabel('Zielland', { exact: true }).selectOption('TH');
 await karteP1.getByRole('checkbox', { name: /^Freiwillige AHV\/IV/ }).check();
 await karteP1.locator('.wegzug').screenshot({ path: `${out}17-wohnsitz-ausland-freiwillige-ahv-360.png` });
-await p2.getByLabel('Land', { exact: true }).selectOption('PT');
+await p2.getByLabel('Zielland', { exact: true }).selectOption('PT');
 await karteP1.locator('.wegzug').screenshot({ path: `${out}18-wohnsitz-eu-nicht-moeglich-360.png` });
-await p2.getByLabel('Land', { exact: true }).selectOption('TH');
+await p2.getByLabel('Zielland', { exact: true }).selectOption('TH');
 
 // AHV: frühester Bezug abgeleitet; PK-Feld klar getrennt (mit Warnung bei 62)
 await schritt2(/Vorsorge/);
@@ -426,6 +426,88 @@ await p5.goto(url, { waitUntil: 'networkidle' });
   await genauKarte.screenshot({ path: `${out}36-genauigkeit-ohne-obligatorium-360.png` });
 }
 await ctx5.close();
+
+// 9) Wegzug mit Barauszahlung: Schnellmodus, Karte vor der Pensionskasse, EU/EFTA, Ergebnis
+const ctx6 = await browser.newContext({
+  viewport: { width: 360, height: 780 },
+  deviceScaleFactor: 2,
+  isMobile: true,
+  hasTouch: true,
+  locale: 'de-CH',
+});
+const p6 = await ctx6.newPage();
+p6.on('pageerror', (e) => fehler.push(String(e)));
+p6.on('console', (m) => m.type() === 'error' && fehler.push(m.text()));
+await p6.goto(url, { waitUntil: 'networkidle' });
+{
+  const fuelle6 = async (label, wert, nr = 0) => {
+    const feld = p6
+      .getByLabel(label, { exact: true })
+      .or(p6.getByLabel(`${label} geschätzt`, { exact: true }))
+      .nth(nr);
+    await feld.fill(String(wert));
+    await feld.blur();
+  };
+  // Erfundene Beispielperson: Jg. 1981, Wegzug mit 50 nach Thailand
+  await fuelle6('Geburtsjahr', 1981);
+  await fuelle6('Bruttoeinkommen pro Jahr (heute)', 95000);
+  await fuelle6('PK-Altersguthaben heute (optional)', 280000);
+  await fuelle6('Säule 3a heute (optional)', 40000);
+  await fuelle6('Übriges Vermögen: Konten und Wertschriften', 150000);
+  await fuelle6('Ausgaben pro Jahr (heute)', 60000);
+  await p6.getByLabel('Wohnkanton').selectOption('ZH');
+  const person = p6.locator('.karte', { hasText: 'Person 1' }).first();
+  await person.getByRole('checkbox', { name: /^Endgültiger Wegzug aus der Schweiz geplant/ }).check();
+  await fuelle6('Wegzug mit', 50);
+  await p6.getByLabel('Zielland', { exact: true }).selectOption('TH');
+  await p6.waitForTimeout(500);
+  const wz = person.locator('.wegzug');
+  await wz.scrollIntoViewIfNeeded();
+  await wz.screenshot({ path: `${out}37-schnell-wegzug-barauszahlung-360.png` });
+  const schnellText = await wz.innerText();
+  if (!/Barauszahlung ab/.test(schnellText)) fehler.push(`Schnellmodus: keine Barauszahlung angezeigt: ${schnellText}`);
+
+  // Detail: Karte «Wegzug ins Ausland» steht vor der Pensionskasse (fixe Leiste für Kartenaufnahmen ausblenden)
+  await p6.addStyleTag({ content: '.leiste{display:none!important}' });
+  await p6.getByText('Detailliert', { exact: true }).click();
+  await p6
+    .getByRole('button', { name: /Vorsorge/ })
+    .first()
+    .click();
+  await p6.getByLabel('Sitzkanton der Pensionskasse / Freizügigkeitseinrichtung').selectOption('SZ');
+  await p6.waitForTimeout(400);
+  const karten = await p6.locator('.karte h2, .karte h3, .karte .karte__titel').allInnerTexts();
+  const iW = karten.findIndex((t) => t.includes('Wegzug ins Ausland'));
+  const iP = karten.findIndex((t) => t.includes('Pensionskasse (2. Säule)'));
+  console.log('Reihenfolge Karten:', JSON.stringify({ iW, iP }));
+  if (!(iW >= 0 && iP > iW)) fehler.push('Wegzug-Karte steht nicht vor der Pensionskasse');
+  const wegKarte = p6.locator('.karte', { hasText: 'Wegzug ins Ausland' }).first();
+  await wegKarte.scrollIntoViewIfNeeded();
+  await wegKarte.screenshot({ path: `${out}38-detail-wegzug-vor-pk-360.png` });
+  const pkKarte = p6.locator('.karte', { hasText: 'Pensionskasse (2. Säule)' }).first();
+  await pkKarte.scrollIntoViewIfNeeded();
+  await pkKarte.screenshot({ path: `${out}39-pk-reglement-hinweis-wegzug-360.png` });
+
+  // EU/EFTA: nur Überobligatorium
+  await fuelle6('Davon BVG-Altersguthaben (Obligatorium, optional)', 110000);
+  await p6.getByLabel('Zielland', { exact: true }).selectOption('PT');
+  await p6.waitForTimeout(400);
+  await wegKarte.scrollIntoViewIfNeeded();
+  await wegKarte.screenshot({ path: `${out}40-wegzug-eu-nur-ueberobligatorium-360.png` });
+  const euText = await wegKarte.innerText();
+  if (!/bleibt gesperrt/.test(euText)) fehler.push(`EU/EFTA: gesperrter Teil fehlt: ${euText}`);
+  await p6.getByLabel('Zielland', { exact: true }).selectOption('TH');
+
+  await p6
+    .getByRole('button', { name: /Ergebnis/ })
+    .first()
+    .click();
+  await p6.waitForTimeout(800);
+  const renten = p6.locator('.karte', { hasText: 'Renten und Kapital' }).first();
+  await renten.scrollIntoViewIfNeeded();
+  await renten.screenshot({ path: `${out}41-ergebnis-barauszahlung-quellensteuer-360.png` });
+}
+await ctx6.close();
 
 await browser.close();
 if (fehler.length) {

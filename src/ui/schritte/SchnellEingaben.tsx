@@ -15,6 +15,7 @@ import { gemeindenVon, KANTON_STATUS_TEXT, KANTONE, kantonNach } from '../../dat
 import { AuswahlFeld, BetragFeld, Schalter, Segmente, ZahlFeld } from '../components/Felder';
 import { Karte } from '../components/Karte';
 import { ErwerbsaufgabeFelder, GeburtFelder, InChSeitFeld } from '../components/PersonBasis';
+import { WegzugVorsorgeFelder, WegzugZeitpunktFelder } from '../components/Wegzug';
 import { fmtAlter, fmtChf, fmtProzent } from '../format';
 import { alterMonate, type SchrittProps, setzeManuell, setzePerson } from '../kontext';
 import { UWS_GESCHAETZT, UWS_HILFE, UWS_QUELLE, uwsSchaetzungText } from '../texte';
@@ -118,7 +119,7 @@ export function SchnellEingaben(props: SchrittProps) {
 }
 
 function SchnellPerson({ p, i, props }: { p: Person; i: number; props: SchrittProps }) {
-  const { setH, regeln, heute, eff } = props;
+  const { setH, regeln, heute, eff, berechnung } = props;
   const set = (fn: (p: Person) => Person) => setzePerson(setH, i, fn);
   const w = eff.werte[i];
   const pkManuell = istManuell(p, 'pkGuthaben');
@@ -221,6 +222,20 @@ function SchnellPerson({ p, i, props }: { p: Person; i: number; props: SchrittPr
           }
         />
       ) : null}
+      <div className="wegzug">
+        <WegzugZeitpunktFelder
+          p={p}
+          set={set}
+          hinweis="Z.B. Auswanderung. Ab dem Wegzug werden PK, Freizügigkeit und 3a frei (in jedem Alter) und an der Quelle besteuert."
+        />
+        <WegzugVorsorgeFelder
+          p={p}
+          set={set}
+          info={berechnung.wunsch?.personen[i] ?? null}
+          wohnkanton={props.h.steuern.kanton}
+          mitSitzkanton={false}
+        />
+      </div>
       {effP ? (
         <p className="klein">
           Geschätzt bzw. übernommen: AHV-Rente {fmtChf(effP.ahv.renteMonat)}/Monat

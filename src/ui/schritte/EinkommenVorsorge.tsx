@@ -14,7 +14,8 @@ import { neueAuslandRente, WAEHRUNGEN } from '../../data/defaults';
 import { AhvSchaetzhilfe } from '../components/AhvSchaetzhilfe';
 import { AuswahlFeld, BetragFeld, Schalter, Segmente, TextFeld, ZahlFeld } from '../components/Felder';
 import { Karte } from '../components/Karte';
-import { fmtChf, fmtProzent } from '../format';
+import { WegzugVorsorgeFelder, WegzugZeitpunktFelder } from '../components/Wegzug';
+import { fmtChf, fmtMonat, fmtProzent } from '../format';
 import { type SchrittProps, setzeManuell, setzePerson } from '../kontext';
 import { UWS_GESCHAETZT, UWS_HILFE, UWS_QUELLE, uwsSchaetzungText } from '../texte';
 
@@ -42,7 +43,11 @@ export function EinkommenVorsorge(props: SchrittProps) {
 }
 
 function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittProps }) {
-  const { setH, regeln, eff } = props;
+  const { setH, regeln, eff, berechnung } = props;
+  const info = berechnung.wunsch?.personen[i] ?? null;
+  const wz = p.wohnsitzAusland;
+  const barPk =
+    info?.barauszahlung && (info.barauszahlung.pk > 0 || info.barauszahlung.pkGesperrt > 0) ? info.barauszahlung : null;
   const set = (fn: (p: Person) => Person) => setzePerson(setH, i, fn);
   const w = eff.werte[i];
   const effP = eff.haushalt.personen[i] ?? p;
@@ -166,6 +171,17 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
         ) : null}
       </Karte>
 
+      <Karte titel="Wegzug ins Ausland" untertitel="Endgültiger Wegzug: Vorsorgeguthaben können bar bezogen werden">
+        <div id={`wegzug-vorsorge-${i}`} className="wegzug-karte">
+          <WegzugZeitpunktFelder
+            p={p}
+            set={set}
+            hinweis="Gleiche Angabe wie im Schritt «Personen». Bei endgültigem Wegzug werden Pensionskasse, Freizügigkeit und 3a ab dem Wegzug frei – in jedem Alter (ausserhalb EU/EFTA ganz, in der EU/EFTA ohne das Obligatorium)."
+          />
+          <WegzugVorsorgeFelder p={p} set={set} info={info} wohnkanton={props.h.steuern.kanton} mitSitzkanton />
+        </div>
+      </Karte>
+
       <Karte titel="Pensionskasse (2. Säule)" untertitel="Werte aus dem Vorsorgeausweis">
         <BetragFeld
           label="Altersguthaben heute"
@@ -274,17 +290,27 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
           nachkomma={0}
           gruppieren={false}
           onChange={(v) => set((x) => ({ ...x, pk: { ...x.pk, fruehestesAlter: Math.round(v) } }))}
-          hinweis={`Nur Pensionskasse, nicht AHV: Wert aus dem Reglement Ihrer Kasse (ohne Angabe im Reglement gesetzlich ab ${bezugsalter.gesetzlichAb}; Reglemente dürfen ab ${bezugsalter.reglementFruehestens} erlauben). Die AHV-Übergangsregel für Frauen der Jahrgänge 1961–1969 (AHV-Vorbezug ab 62) gilt für die Pensionskasse nicht. Bis zu diesem Alter bleibt das Guthaben gesperrt und verzinst sich weiter – auch wenn Sie früher aufhören zu arbeiten.`}
+          hinweis={`${barPk ? `Wegzug mit Barauszahlung gesetzt: Das Guthaben ist ab ${fmtMonat(barPk.monat)} frei${barPk.pkGesperrt > 0 ? ' (ohne den obligatorischen Teil, EU/EFTA)' : ''}; dieses Alter gilt nur für einen ordentlichen Bezug. ` : ''}Nur Pensionskasse, nicht AHV: Wert aus dem Reglement Ihrer Kasse (ohne Angabe im Reglement gesetzlich ab ${bezugsalter.gesetzlichAb}; Reglemente dürfen ab ${bezugsalter.reglementFruehestens} erlauben). Die AHV-Übergangsregel für Frauen der Jahrgänge 1961–1969 (AHV-Vorbezug ab 62) gilt für die Pensionskasse nicht. Bis zu diesem Alter bleibt das Guthaben gesperrt und verzinst sich weiter – auch wenn Sie früher aufhören zu arbeiten.`}
           warnung={
             uebergang && p.pk.fruehestesAlter === r.vorbezug.fruehestesAlterUebergangFrauen
               ? `Prüfen: ${r.vorbezug.fruehestesAlterUebergangFrauen} ist das früheste AHV-Bezugsalter für Frauen Jg. 1961–1969. Für die Pensionskasse gilt nur, was im Reglement steht (ohne Regelung ${bezugsalter.gesetzlichAb}).`
               : null
           }
         />
+        {barPk ? (
+          <p className="info" role="status">
+            <strong>Barauszahlung bei Wegzug ab {fmtMonat(barPk.monat)}:</strong> {fmtChf(barPk.pk)} als Kapital, keine
+            PK-Rente
+            {barPk.pkGesperrt > 0 ? `; ${fmtChf(barPk.pkGesperrt)} (Obligatorium, Art. 25f FZG) bleiben gesperrt` : ''}.
+            Das Bezugsalter laut Reglement verhindert das nicht (Details in der Karte «Wegzug ins Ausland» oben).
+          </p>
+        ) : wz.aktiv && !wz.barauszahlung ? (
+          <p className="klein">Wegzug ohne Barauszahlung: ordentlicher Bezug ab dem Bezugsalter laut Reglement.</p>
+        ) : null}
         <p className="klein">
-          Der Wohnkanton beeinflusst nur die Besteuerung des Kapitalbezugs, nicht das früheste Bezugsalter. Eine
-          Barauszahlung vor 58 ist nur in Ausnahmefällen möglich (z.B. definitiver Wegzug ausserhalb EU/EFTA,
-          Selbstständigkeit) – noch nicht abgebildet.
+          Der Wohnkanton beeinflusst nur die Besteuerung des Kapitalbezugs, nicht das früheste Bezugsalter. Vor 58 ist
+          eine Barauszahlung nur in Ausnahmefällen möglich: endgültiger Wegzug (Karte «Wegzug ins Ausland»),
+          Selbstständigkeit (nicht abgebildet).
         </p>
       </Karte>
 
@@ -308,7 +334,8 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
         </div>
         <p className="klein">
           Gesperrt bis frühestens 5 Jahre vor dem Referenzalter; Bezug bei Erwerbsaufgabe, spätestens im Referenzalter
-          (bei Weiterarbeit bis 5 Jahre später). Kapitalbezug mit Kapitalleistungssteuer.
+          (bei Weiterarbeit bis 5 Jahre später). Kapitalbezug mit Kapitalleistungssteuer. Ausnahme: Barauszahlung bei
+          endgültigem Wegzug (ausserhalb EU/EFTA bzw. ohne obligatorische Versicherung im neuen Land).
         </p>
       </Karte>
 
@@ -340,7 +367,7 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
         </div>
         <p className="klein">
           Gesperrt bis frühestens 5 Jahre vor dem Referenzalter; Bezug bei Erwerbsaufgabe, spätestens im Referenzalter
-          (bei Weiterarbeit bis 5 Jahre später).
+          (bei Weiterarbeit bis 5 Jahre später). Ausnahme: Barauszahlung bei endgültigem Wegzug.
         </p>
       </Karte>
 

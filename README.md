@@ -70,6 +70,16 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
   Mit freiwilliger AHV: Jahresbeitrag aus Vermögen am 31.12. + 20× Renteneinkommen (Tabelle 1'010–25'250 plus 5%
   Verwaltungskosten), bis zum Referenzalter als Ausgabe; die Jahre zählen als Beitragsjahre. Ohne: keine
   NE-Beiträge mehr, dafür Beitragslücken (AHV-Rente vereinfacht linear gekürzt).
+- **Barauszahlung bei endgültigem Wegzug** (Art. 5 Abs. 1 lit. a FZG, Art. 25f FZG, Art. 3 Abs. 2 lit. d BVV 3):
+  Mit Wegzug (Datum/Alter + Zielland) und Option «Barauszahlung bei Wegzug» pro Person werden PK, Freizügigkeit und
+  3a ab dem Wegzugsmonat frei – **in jedem Alter**, unabhängig vom PK-Bezugsalter laut Reglement, als Kapital (keine
+  PK-Rente). Ausserhalb EU/EFTA ganz; in der EU/EFTA nur das Überobligatorium, der geschätzte obligatorische Teil
+  bleibt als Freizügigkeitsguthaben gesperrt (Schalter «im neuen Land nicht obligatorisch versichert» → Vollbezug);
+  3a immer ganz (Auslegung, OFFEN). Liegt der Wegzug nach dem PK-Bezugsalter, gilt der ordentliche Bezug.
+  Besteuerung ab dem Wegzug mit der **Schweizer Quellensteuer** (Bund nach QStV-Tarif + Sitzkanton der
+  Vorsorgeeinrichtung, ESTV-Übersicht 2026) statt der Kapitalleistungssteuer des Wohnkantons; DBA-Rückforderung nur
+  als Hinweis. Die Wegzug-Angaben stehen im Schritt «Einkommen & Vorsorge» in einer eigenen Karte **vor** der
+  Pensionskasse (gleicher Zustand wie im Schritt «Personen») und im Modus «Schnell» direkt bei jeder Person.
 - **Vermögenstöpfe pro Person** mit eigener Rendite und Zugriffsregel:
   - verfügbar: Bargeld/Konten (Zins Bargeld), Wertschriften (Börsenrendite), Sonstiges (eigene Rendite),
     Wohneigentum (Nettowert = Verkehrswert − optionale Hypothek, wie Börsenkapital verzinst);
@@ -118,10 +128,10 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
   Quellenliste mit Status jedes Regelwerts.
 
 Vereinfachungen: Wohneigentum wird wie Börsenkapital behandelt (ohne Eigenmietwert, Unterhalt, Verkaufskosten);
-Vermögenssteuer auf dem Verkehrswert (effektiver Satz). Barauszahlung der PK vor 58 (Wegzug, Selbstständigkeit) ist
-noch nicht abgebildet.
+Vermögenssteuer auf dem Verkehrswert (effektiver Satz). Barauszahlung wegen Selbstständigkeit ist nicht abgebildet;
+nach dem Wegzug gelten für Einkommen und Vermögen weiterhin Schweizer Steuern (Näherung).
 
-Geplant: exakte Tarife weiterer Kantone, Steuern bei Wegzug ins Ausland (Quellensteuer, DBA, Wohnsitzstaat), historische Krisenszenarien, Monte Carlo,
+Geplant: exakte Tarife weiterer Kantone, Steuern bei Wegzug ins Ausland (DBA-Rückforderung, Renten, Wohnsitzstaat), historische Krisenszenarien, Monte Carlo,
 Sterbetafeln. Siehe `docs/konzept.md`.
 
 ## Quellen

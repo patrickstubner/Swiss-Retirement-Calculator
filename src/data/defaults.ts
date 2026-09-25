@@ -42,6 +42,9 @@ export function neuerWohnsitzAusland(): WohnsitzAusland {
     nationalitaet: 'CH',
     vorherVersichert5Jahre: true,
     freiwilligeAhv: false,
+    barauszahlung: true,
+    nichtObligatorischVersichert: false,
+    sitzkantonVorsorge: '',
   };
 }
 

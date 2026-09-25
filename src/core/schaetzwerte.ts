@@ -145,6 +145,45 @@ export function schaetzeUmwandlungssatz(
   const bvg = regeln.bvg;
   const satzObligatorium = bvg.mindestumwandlungssatz;
   const satzUeberobligatorium = bvg.umwandlungssatzUmhuellendDurchschnitt;
+  const pr = projiziereObligatorium(p, regeln, heute, guthabenHeute, sparbeitragEingabe, inflation);
+  const anteil = pr.anteil;
+  return {
+    satz: satzObligatorium * anteil + satzUeberobligatorium * (1 - anteil),
+    satzObligatorium,
+    satzUeberobligatorium,
+    anteilObligatorium: anteil,
+    bvgGuthabenHeute: Math.round(pr.bvgHeute),
+    bvgGuthabenEingegeben: pr.eingegeben,
+    ohneObligatorium:
+      anteil > 0 ? null : !(p.lohn > 0) ? 'keinLohn' : p.lohn < bvg.eintrittsschwelle ? 'unterSchwelle' : 'andere',
+  };
+}
+
+export interface ObligatoriumsProjektion {
+  /** BVG-Altersguthaben heute (eingegeben oder geschätzt, höchstens das ganze Guthaben) */
+  bvgHeute: number;
+  eingegeben: boolean;
+  /** Projiziertes BVG-Guthaben bzw. Gesamtguthaben (real) */
+  bvg: number;
+  gesamt: number;
+  /** Anteil des Obligatoriums (0–1; ohne Guthaben 1) */
+  anteil: number;
+}
+
+/**
+ * Hochrechnung von BVG-Altersguthaben und Gesamtguthaben (Näherung, siehe Annahmen oben):
+ * volle Jahre ab dem laufenden Jahr bis zum Referenzalter bzw. bis vor `bisJahr`.
+ */
+export function projiziereObligatorium(
+  p: Person,
+  regeln: Regeln,
+  heute: Monat,
+  guthabenHeute: number,
+  sparbeitragEingabe: number | null,
+  inflation: number,
+  bisJahr: number = Number.POSITIVE_INFINITY,
+): ObligatoriumsProjektion {
+  const bvg = regeln.bvg;
   const g0 = Math.max(0, guthabenHeute);
   const eingegeben = p.pk.bvgGuthaben > 0;
   const b0 = Math.min(g0, eingegeben ? p.pk.bvgGuthaben : schaetzePkGuthaben(p, regeln, heute));
@@ -152,7 +191,7 @@ export function schaetzeUmwandlungssatz(
   const zins = (1 + p.pk.zins) / (1 + inflation) - 1;
   let b = b0;
   let g = g0;
-  for (let jahr = heute.jahr, t = 0; jahr - p.geburtsjahr <= raJahre; jahr++, t++) {
+  for (let jahr = heute.jahr, t = 0; jahr - p.geburtsjahr <= raJahre && jahr < bisJahr; jahr++, t++) {
     const bvgGutschrift = bvgAltersgutschrift(p.lohn, jahr - p.geburtsjahr, raJahre, bvg);
     const beitrag =
       sparbeitragEingabe !== null ? Math.max(0, sparbeitragEingabe) * (1 + p.lohnwachstumReal) ** t : bvgGutschrift;
@@ -160,16 +199,22 @@ export function schaetzeUmwandlungssatz(
     g = g * (1 + zins) + beitrag;
   }
   const anteil = g > 0 ? Math.min(1, Math.max(0, b / g)) : 1;
-  return {
-    satz: satzObligatorium * anteil + satzUeberobligatorium * (1 - anteil),
-    satzObligatorium,
-    satzUeberobligatorium,
-    anteilObligatorium: anteil,
-    bvgGuthabenHeute: Math.round(b0),
-    bvgGuthabenEingegeben: eingegeben,
-    ohneObligatorium:
-      anteil > 0 ? null : !(p.lohn > 0) ? 'keinLohn' : p.lohn < bvg.eintrittsschwelle ? 'unterSchwelle' : 'andere',
-  };
+  return { bvgHeute: b0, eingegeben, bvg: b, gesamt: g, anteil };
+}
+
+/**
+ * Anteil des Obligatoriums am PK-Guthaben beim Wegzug (für Art. 25f FZG), aus der Person des
+ * effektiven Haushalts (Guthaben eingegeben oder geschätzt, Sparbeitrag eingegeben oder BVG-Minimum).
+ */
+export function obligatoriumsAnteilBei(
+  p: Person,
+  regeln: Regeln,
+  heute: Monat,
+  jahr: number,
+  inflation: number,
+): number {
+  const spar = p.pk.beitragModus === 'eingabe' ? p.pk.sparbeitragJahr : null;
+  return projiziereObligatorium(p, regeln, heute, p.pk.guthaben, spar, inflation, jahr).anteil;
 }
 
 /** Erstes Beitragsjahr der AHV (1.1. nach dem 20. Geburtstag). */
@@ -329,7 +374,11 @@ export function detailwerte(h: Haushalt, standard: Haushalt): string[] {
     if (p.auslandRenten.length > 0) out.push(`Ausländische Renten${n}`);
     if (p.ahv.bezugVerschiebungMonate !== 0) out.push(`AHV-Vorbezug/Aufschub${n}`);
     if (p.lohnwachstumReal !== 0) out.push(`Lohnentwicklung${n}`);
-    if (p.wohnsitzAusland.aktiv) out.push(`Wohnsitz im Ausland${n}`);
+    // Wegzug (Alter/Datum, Land, Barauszahlung) ist auch im Modus «Schnell» erfassbar; nur die AHV-Details zählen
+    const w = p.wohnsitzAusland;
+    if (w.aktiv && (w.freiwilligeAhv || w.nationalitaet !== 'CH' || !w.vorherVersichert5Jahre))
+      out.push(`Wohnsitz im Ausland (AHV-Details)${n}`);
+    if (w.aktiv && w.sitzkantonVorsorge !== '') out.push(`Sitzkanton der Vorsorgeeinrichtung${n}`);
     if (std) {
       if (p.pk.kapitalanteil !== std.pk.kapitalanteil) out.push(`PK-Kapitalbezug${n}`);
       if (p.pk.fruehestesAlter !== std.pk.fruehestesAlter) out.push(`PK-Bezugsalter laut Reglement${n}`);

@@ -7,26 +7,16 @@ import {
   monatBeiAlter,
 } from '../../core/ahv';
 import { pruefeFreiwilligeAhv } from '../../core/freiwilligeAhv';
-import type { Monat, Nationalitaet, Person, PersonInfo, WohnsitzAusland, ZeitpunktModus } from '../../core/typen';
-import { monatBeiAlterMonate, wegzugIndex } from '../../core/zeitpunkt';
+import type { Nationalitaet, Person, PersonInfo, WohnsitzAusland } from '../../core/typen';
 import { MAX_PLANUNGSALTER, neuePerson } from '../../data/defaults';
-import { WEGZUGS_LAENDER, wegzugsLand } from '../../data/laender';
-import { AuswahlFeld, Schalter, Segmente, TextFeld, ZahlFeld } from '../components/Felder';
+import { wegzugsLand } from '../../data/laender';
+import { Schalter, Segmente, TextFeld, ZahlFeld } from '../components/Felder';
 import { Karte } from '../components/Karte';
 import { ErwerbsaufgabeFelder, GeburtFelder, InChSeitFeld } from '../components/PersonBasis';
-import { fmtAlter, fmtChf, fmtMonat, MONATSNAMEN } from '../format';
+import { WegzugZeitpunktFelder } from '../components/Wegzug';
+import { fmtAlter, fmtChf, fmtMonat } from '../format';
 import { alterMonate, type SchrittProps, setzePerson } from '../kontext';
 
-const MONATE = MONATSNAMEN.map((n, i) => ({ value: i + 1, label: n }));
-const STOPP_MONATE = Array.from({ length: 12 }, (_, i) => ({ value: i, label: `${i} Mt.` }));
-const MODI = [
-  { value: 'alter', label: 'Alter' },
-  { value: 'datum', label: 'Datum' },
-] as const;
-const LAENDER = [
-  { value: '', label: 'Bitte wählen' },
-  ...WEGZUGS_LAENDER.map((l) => ({ value: l.code, label: `${l.name} (${l.euEfta ? 'EU/EFTA' : 'nicht EU/EFTA'})` })),
-];
 const NATIONALITAETEN = [
   { value: 'CH', label: 'Schweiz' },
   { value: 'EU', label: 'EU/EFTA' },
@@ -147,93 +137,21 @@ function WohnsitzAuslandTeil({
   const w = p.wohnsitzAusland;
   const setW = (patch: Partial<WohnsitzAusland>) =>
     set((x) => ({ ...x, wohnsitzAusland: { ...x.wohnsitzAusland, ...patch } }));
-  const weg = wegzugIndex(p);
-  const wegMonat: Monat | null = weg === null ? null : { jahr: Math.floor(weg / 12), monat: (weg % 12) + 1 };
-  const wegAlter = weg === null ? null : weg - (p.geburtsjahr * 12 + p.geburtsmonat - 1);
   const land = wegzugsLand(w.land);
   const pruefung = pruefeFreiwilligeAhv(p, regeln);
   const fwJahre = info?.freiwilligeAhvJahre.filter((j) => j.betrag > 0) ?? [];
   const fwTotal = fwJahre.reduce((a, j) => a + j.betrag, 0);
-  const alterJ = Math.floor(w.alter + 1e-9);
-  const alterM = Math.round((w.alter - alterJ) * 12);
-
-  const setModus = (m: ZeitpunktModus) =>
-    set((x) => {
-      const wx = x.wohnsitzAusland;
-      const idx = wegzugIndex(x);
-      if (idx === null) return { ...x, wohnsitzAusland: { ...wx, modus: m } };
-      const alter = (idx - (x.geburtsjahr * 12 + x.geburtsmonat - 1)) / 12;
-      return {
-        ...x,
-        wohnsitzAusland:
-          m === 'datum'
-            ? { ...wx, modus: m, datum: monatBeiAlterMonate(x, Math.round(alter * 12)) }
-            : { ...wx, modus: m, alter: Math.max(0, alter) },
-      };
-    });
 
   return (
     <details className="aufklapp wegzug" open={w.aktiv}>
       <summary>Wohnsitz im Ausland (Wegzug){w.aktiv && land ? ` · ${land.name}` : ''}</summary>
-      <Schalter
-        label="Wegzug aus der Schweiz geplant"
-        hinweis="Wohnsitz ausserhalb der Schweiz ab einem Alter oder Datum. Beeinflusst AHV-Beiträge und AHV-Rente."
-        checked={w.aktiv}
-        onChange={(v) => setW({ aktiv: v })}
-      />
+      <WegzugZeitpunktFelder p={p} set={set} />
       {w.aktiv ? (
         <>
-          <Segmente label="Wohnsitz im Ausland ab" value={w.modus} optionen={MODI} onChange={setModus} />
-          {w.modus === 'alter' ? (
-            <div className="raster">
-              <ZahlFeld
-                label="Wegzug mit"
-                einheit="Jahren"
-                value={alterJ}
-                min={0}
-                max={100}
-                nachkomma={0}
-                gruppieren={false}
-                onChange={(v) => setW({ alter: Math.round(v) + alterM / 12 })}
-              />
-              <AuswahlFeld
-                label="und"
-                value={alterM}
-                optionen={STOPP_MONATE}
-                onChange={(v) => setW({ alter: alterJ + v / 12 })}
-              />
-            </div>
-          ) : (
-            <div className="raster">
-              <AuswahlFeld
-                label="Wohnsitz im Ausland ab (Monat)"
-                value={w.datum.monat}
-                optionen={MONATE}
-                onChange={(v) => setW({ datum: { ...w.datum, monat: v } })}
-              />
-              <ZahlFeld
-                label="Jahr"
-                value={w.datum.jahr}
-                min={p.geburtsjahr}
-                max={p.geburtsjahr + 100}
-                nachkomma={0}
-                gruppieren={false}
-                onChange={(v) => setW({ datum: { ...w.datum, jahr: Math.round(v) } })}
-              />
-            </div>
-          )}
-          {wegMonat && wegAlter !== null ? (
-            <p className="klein">
-              Wohnsitz im Ausland ab {fmtMonat(wegMonat)} (mit {fmtAlter(Math.max(0, wegAlter))}).
-            </p>
-          ) : null}
-          <AuswahlFeld
-            label="Land"
-            value={w.land}
-            optionen={LAENDER}
-            onChange={(v) => setW({ land: v })}
-            hinweis="Massgebend für die freiwillige AHV: Wohnsitz in der EU/EFTA oder ausserhalb."
-          />
+          <p className="klein">
+            Barauszahlung von Pensionskasse, Freizügigkeit und 3a beim Wegzug: im Schritt «Einkommen &amp; Vorsorge»
+            (Karte «Wegzug ins Ausland», gleiche Angaben).
+          </p>
           <Segmente<Nationalitaet>
             label="Staatsangehörigkeit"
             value={w.nationalitaet}

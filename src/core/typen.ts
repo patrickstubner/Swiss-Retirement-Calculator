@@ -160,6 +160,15 @@ export interface WohnsitzAusland {
   vorherVersichert5Jahre: boolean;
   /** Beitritt zur freiwilligen AHV/IV gewünscht */
   freiwilligeAhv: boolean;
+  /**
+   * Barauszahlung von PK-, Freizügigkeits- und 3a-Guthaben beim Wegzug (Art. 5 Abs. 1 lit. a FZG,
+   * Art. 3 Abs. 2 lit. d BVV 3). Nur wirksam, wenn der Wegzug vor dem PK-Bezugsalter liegt.
+   */
+  barauszahlung: boolean;
+  /** EU/EFTA: im neuen Land nicht obligatorisch für Alter/Tod/Invalidität versichert → Art. 25f FZG greift nicht */
+  nichtObligatorischVersichert: boolean;
+  /** Sitzkanton der Vorsorge-/Freizügigkeitseinrichtung (Quellensteuer); '' = wie Wohnkanton */
+  sitzkantonVorsorge: string;
 }
 
 /**
@@ -385,7 +394,28 @@ export interface PersonInfo {
   freiwilligeAhvJahre: { jahr: number; betrag: number }[];
   /** Obligatorische NE-Beiträge pro Kalenderjahr (heutige CHF) */
   neBeitraegeJahre: { jahr: number; betrag: number }[];
+  /** Barauszahlung beim Wegzug (null = keine) */
+  barauszahlung: BarauszahlungInfo | null;
+  /** Quellensteuer auf Kapitalleistungen nach dem Wegzug (heutige CHF, Summe) */
+  quellensteuerKapital: number;
   hinweise: string[];
+}
+
+/** Barauszahlung von Vorsorgeguthaben beim Wegzug (Beträge in heutigen CHF). */
+export interface BarauszahlungInfo {
+  monat: Monat;
+  /** Bar ausbezahlter PK-Teil */
+  pk: number;
+  /** Obligatorischer PK-Teil, der wegen Art. 25f FZG als Freizügigkeitsguthaben gesperrt bleibt */
+  pkGesperrt: number;
+  /** Anteil des Obligatoriums am PK-Guthaben beim Wegzug (Näherung) */
+  anteilObligatorium: number;
+  freizuegigkeit: number;
+  saeule3a: number;
+  /** Wohnsitz in der EU/EFTA (Art. 25f FZG) */
+  euEfta: boolean;
+  /** Ganzes Guthaben frei (nicht EU/EFTA oder dort nicht obligatorisch versichert) */
+  voll: boolean;
 }
 
 export interface SimulationsErgebnis {

@@ -10,6 +10,8 @@ export interface WegzugsLand {
   name: string;
   /** Wohnsitz in einem EU- oder EFTA-Staat */
   euEfta: boolean;
+  /** Schweizer Quellensteuer auf PK-Kapital: Rückforderbarkeit laut data/laender-2026.json (ESTV 2-217) */
+  pkKapitalCh?: string;
 }
 
 export const LAND_ANDERES_EU = 'XE';
@@ -19,6 +21,7 @@ const ausDaten: WegzugsLand[] = laenderJson.laender.map((l) => ({
   code: l.code,
   name: l.name.replace(/\s*\(Referenz\)$/, ''),
   euEfta: l.eu === true,
+  pkKapitalCh: l.pkKapital?.ch,
 }));
 
 /** Auswahlliste: zuerst EU/EFTA, dann übrige Länder (je in Datenreihenfolge). */

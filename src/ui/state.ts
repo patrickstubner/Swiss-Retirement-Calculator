@@ -27,6 +27,7 @@ import {
   neuesEreignis,
   standardHaushalt,
 } from '../data/defaults';
+import { kantonNach } from '../data/kantone';
 import { wegzugsLand } from '../data/laender';
 import type { Regeln } from '../rules';
 
@@ -115,6 +116,7 @@ function person(roh: unknown, regeln: Regeln, i: number): Person {
       datum: monat(w.datum),
       land: wegzugsLand(w.land) ? w.land : '',
       nationalitaet: w.nationalitaet === 'EU' || w.nationalitaet === 'andere' ? w.nationalitaet : 'CH',
+      sitzkantonVorsorge: kantonNach(w.sitzkantonVorsorge) ? w.sitzkantonVorsorge : '',
     },
     // Frühere Modi (Skala-44-Schätzung, BVG-Minimum) werden in direkte Eingaben überführt.
     ahv: {
