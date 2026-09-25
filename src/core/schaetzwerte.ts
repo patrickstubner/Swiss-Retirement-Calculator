@@ -121,6 +121,11 @@ export interface UmwandlungssatzSchaetzung {
   bvgGuthabenHeute: number;
   /** true: BVG-Altersguthaben laut Vorsorgeausweis eingegeben (Detailfeld) */
   bvgGuthabenEingegeben: boolean;
+  /**
+   * Warum kein obligatorischer Teil geschätzt wird (nur wenn der Anteil 0 ist):
+   * 'keinLohn' = Lohn 0, 'unterSchwelle' = Lohn unter der BVG-Eintrittsschwelle, 'andere' = sonst.
+   */
+  ohneObligatorium: 'keinLohn' | 'unterSchwelle' | 'andere' | null;
 }
 
 /**
@@ -162,6 +167,8 @@ export function schaetzeUmwandlungssatz(
     anteilObligatorium: anteil,
     bvgGuthabenHeute: Math.round(b0),
     bvgGuthabenEingegeben: eingegeben,
+    ohneObligatorium:
+      anteil > 0 ? null : !(p.lohn > 0) ? 'keinLohn' : p.lohn < bvg.eintrittsschwelle ? 'unterSchwelle' : 'andere',
   };
 }
 

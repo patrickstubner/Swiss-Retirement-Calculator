@@ -376,6 +376,57 @@ await p4.screenshot({ path: `${out}33-erststart-schnell-360.png` });
 }
 await ctx4.close();
 
+// 8) PK-Guthaben ohne Lohn: kein obligatorischer Teil → Durchschnittssatz auf das ganze Guthaben
+const ctx5 = await browser.newContext({
+  viewport: { width: 360, height: 780 },
+  deviceScaleFactor: 2,
+  isMobile: true,
+  hasTouch: true,
+  locale: 'de-CH',
+});
+const p5 = await ctx5.newPage();
+p5.on('pageerror', (e) => fehler.push(String(e)));
+p5.on('console', (m) => m.type() === 'error' && fehler.push(m.text()));
+await p5.goto(url, { waitUntil: 'networkidle' });
+{
+  const feld = p5
+    .getByLabel('PK-Altersguthaben heute (optional)', { exact: true })
+    .or(p5.getByLabel('PK-Altersguthaben heute (optional) geschätzt', { exact: true }))
+    .first();
+  await feld.fill('650000');
+  await feld.blur();
+  const karte = p5.locator('.karte', { hasText: 'Person 1' }).first();
+  const von = karte.locator('.feld', { hasText: 'PK-Altersguthaben heute (optional)' }).first();
+  const bis = karte.locator('.feld', { hasText: 'Säule 3a heute (optional)' }).first();
+  await von.evaluate((el) => {
+    el.scrollIntoView({ block: 'start' });
+    window.scrollBy(0, -12);
+  });
+  const a = await von.boundingBox();
+  const b = await bis.boundingBox();
+  if (!a || !b) throw new Error('PK-Bereich nicht gefunden');
+  await p5.screenshot({
+    path: `${out}35-uws-ohne-obligatorium-kein-lohn-360.png`,
+    clip: { x: 0, y: a.y - 10, width: 360, height: b.y - a.y + 2 },
+  });
+  const text = await karte.locator('.uws-schaetzung').first().innerText();
+  console.log('Ohne Lohn, Schätzung Umwandlungssatz:', text);
+  if (/ca\. 0%/.test(text)) fehler.push(`Text enthält «ca. 0%»: ${text}`);
+  await p5
+    .getByRole('button', { name: /Ergebnis/ })
+    .first()
+    .click();
+  await p5.waitForTimeout(800);
+  const genauKarte = p5.locator('.karte', { hasText: 'Welche Werte geschätzt sind' }).first();
+  const zeile = genauKarte.locator('li', { hasText: 'PK-Umwandlungssatz' }).first();
+  const zText = await zeile.innerText();
+  console.log('Ohne Lohn, Karte «Genauigkeit»:', zText);
+  if (/ca\. 0%/.test(zText)) fehler.push(`Genauigkeit enthält «ca. 0%»: ${zText}`);
+  await genauKarte.scrollIntoViewIfNeeded();
+  await genauKarte.screenshot({ path: `${out}36-genauigkeit-ohne-obligatorium-360.png` });
+}
+await ctx5.close();
+
 await browser.close();
 if (fehler.length) {
   console.error('Fehler im Browser:\n', fehler.join('\n'));
