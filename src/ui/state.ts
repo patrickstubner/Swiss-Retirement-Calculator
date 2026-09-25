@@ -8,7 +8,17 @@
  */
 import LZString from 'lz-string';
 import { ahvRenteSkala44, ahvTeilrente } from '../core/ahv';
-import type { AuslandRente, Haushalt, Indexierung, Monat, Person, PostenArt } from '../core/typen';
+import { detailwerte, SCHAETZ_FELDER } from '../core/schaetzwerte';
+import type {
+  AuslandRente,
+  EingabeModus,
+  Haushalt,
+  Indexierung,
+  Monat,
+  Person,
+  PostenArt,
+  SchaetzFeld,
+} from '../core/typen';
 import {
   MAX_PLANUNGSALTER,
   neueAuslandRente,
@@ -71,6 +81,24 @@ function monat(m: Monat): Monat {
   return { jahr: Math.round(m.jahr), monat: Math.min(12, Math.max(1, Math.round(m.monat))) };
 }
 
+/**
+ * Selbst eingegebene Werte. Zustände ohne `manuell` (vor dem Modus «Schnell») werden
+ * übernommen: Werte ungleich dem Standard gelten als eigene Eingabe.
+ */
+function manuellAus(roh: unknown, p: Person, regeln: Regeln): Partial<Record<SchaetzFeld, true>> {
+  const out: Partial<Record<SchaetzFeld, true>> = {};
+  if (istObj(roh) && istObj(roh.manuell)) {
+    const m = roh.manuell;
+    for (const f of SCHAETZ_FELDER) if (m[f] === true) out[f] = true;
+    return out;
+  }
+  if (p.ahv.renteMonat > 0) out.ahvRente = true;
+  if (p.pk.guthaben > 0) out.pkGuthaben = true;
+  if (p.pk.sparbeitragJahr > 0) out.pkSparbeitrag = true;
+  if (Math.abs(p.pk.umwandlungssatz - regeln.bvg.mindestumwandlungssatz) > 1e-9) out.pkUmwandlungssatz = true;
+  return out;
+}
+
 function person(roh: unknown, regeln: Regeln, i: number): Person {
   const p = mische(neuePerson(regeln, { name: `Person ${i + 1}` }), roh);
   const renten = istObj(roh) && Array.isArray(roh.auslandRenten) ? roh.auslandRenten : [];
@@ -103,10 +131,16 @@ function person(roh: unknown, regeln: Regeln, i: number): Person {
     },
     pk: { ...p.pk, beitragModus: 'eingabe' },
     auslandRenten: renten.slice(0, 10).map(auslandRente),
+    inChSeit: p.inChSeit > 0 ? Math.min(2200, Math.max(1900, Math.round(p.inChSeit))) : 0,
   };
 }
 
 /** Macht einen (evtl. fremden oder alten) Zustand robust nutzbar. */
+function personMitManuell(roh: unknown, regeln: Regeln, i: number): Person {
+  const p = person(roh, regeln, i);
+  return { ...p, manuell: manuellAus(roh, p, regeln) };
+}
+
 export function normalisiere(roh: unknown, regeln: Regeln): Haushalt {
   const def = standardHaushalt(regeln);
   const h = mische(def, roh);
@@ -115,7 +149,7 @@ export function normalisiere(roh: unknown, regeln: Regeln): Haushalt {
   const anzahl = zivilstand === 'verheiratet' ? 2 : 1;
   const personen = Array.from({ length: anzahl }, (_, i) =>
     rohPersonen[i] !== undefined
-      ? person(rohPersonen[i], regeln, i)
+      ? personMitManuell(rohPersonen[i], regeln, i)
       : i === 0
         ? (def.personen[0] as Person)
         : neuePerson(regeln, { name: 'Person 2', geschlecht: 'w' }),
@@ -208,6 +242,8 @@ export type SuchModusZustand = 'gemeinsam' | 'p0' | 'p1';
 export interface UiZustand {
   schritt: number;
   suchModus: SuchModusZustand;
+  /** Eingabemodus; neu: «schnell», bisher gespeicherte Zustände: «detailliert» */
+  modus: EingabeModus;
 }
 
 export interface AppZustand {
@@ -226,13 +262,23 @@ interface SpeicherObjekt {
   ui: UiZustand;
 }
 
-export const STANDARD_UI: UiZustand = { schritt: 0, suchModus: 'gemeinsam' };
+export const STANDARD_UI: UiZustand = { schritt: 0, suchModus: 'gemeinsam', modus: 'schnell' };
 
 function ui(roh: unknown): UiZustand {
-  if (!istObj(roh)) return STANDARD_UI;
+  if (!istObj(roh)) return { ...STANDARD_UI, modus: 'detailliert' };
   const schritt = typeof roh.schritt === 'number' && Number.isFinite(roh.schritt) ? Math.round(roh.schritt) : 0;
   const suchModus = roh.suchModus === 'p0' || roh.suchModus === 'p1' ? roh.suchModus : 'gemeinsam';
-  return { schritt: Math.min(4, Math.max(0, schritt)), suchModus };
+  // Gespeicherte Zustände ohne Modus stammen aus der Zeit vor «Schnell» → Detailansicht beibehalten
+  const modus: EingabeModus = roh.modus === 'schnell' ? 'schnell' : 'detailliert';
+  return { schritt: Math.min(4, Math.max(0, schritt)), suchModus, modus };
+}
+
+/** Modus für einen geteilten Link: Detailansicht, wenn der Link Detailwerte enthält. */
+export function modusFuerLink(h: Haushalt, regeln: Regeln): EingabeModus {
+  return detailwerte(h, standardHaushalt(regeln)).length > 0 ||
+    h.personen.some((p) => Object.keys(p.manuell).length > 0)
+    ? 'detailliert'
+    : 'schnell';
 }
 
 export function browserSpeicher(): Storage | null {
@@ -293,7 +339,7 @@ export function ladeLokal(s: Storage | null, regeln: Regeln): AppZustand | null 
     const h = dekodiere(alt, regeln);
     for (const k of ALTE_KEYS) s.removeItem(k);
     if (h) {
-      const z = { haushalt: h, ui: STANDARD_UI };
+      const z: AppZustand = { haushalt: h, ui: { ...STANDARD_UI, modus: 'detailliert' } };
       speichereLokal(s, z);
       return z;
     }
@@ -325,7 +371,8 @@ export interface Start extends AppZustand {
 export function ladeStartzustand(regeln: Regeln, hash: string, s: Storage | null): Start {
   const lokal = ladeLokal(s, regeln);
   const ausUrl = ausHash(hash, regeln);
-  if (ausUrl) return { haushalt: ausUrl, ui: STANDARD_UI, quelle: 'link', lokal };
+  if (ausUrl)
+    return { haushalt: ausUrl, ui: { ...STANDARD_UI, modus: modusFuerLink(ausUrl, regeln) }, quelle: 'link', lokal };
   if (lokal) return { ...lokal, quelle: 'lokal', lokal };
   return { haushalt: standardHaushalt(regeln), ui: STANDARD_UI, quelle: 'standard', lokal: null };
 }

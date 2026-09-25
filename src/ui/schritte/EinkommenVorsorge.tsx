@@ -8,13 +8,14 @@ import {
   istUebergangsFrau,
   pruefeAhvVerschiebung,
 } from '../../core/ahv';
-import type { AuslandRente, Person } from '../../core/typen';
+import { istManuell } from '../../core/schaetzwerte';
+import type { AuslandRente, Person, SchaetzFeld } from '../../core/typen';
 import { neueAuslandRente, WAEHRUNGEN } from '../../data/defaults';
 import { AhvSchaetzhilfe } from '../components/AhvSchaetzhilfe';
 import { AuswahlFeld, BetragFeld, Schalter, Segmente, TextFeld, ZahlFeld } from '../components/Felder';
 import { Karte } from '../components/Karte';
 import { fmtChf, fmtProzent } from '../format';
-import { type SchrittProps, setzePerson } from '../kontext';
+import { type SchrittProps, setzeManuell, setzePerson } from '../kontext';
 
 export function EinkommenVorsorge(props: SchrittProps) {
   const { h } = props;
@@ -40,8 +41,16 @@ export function EinkommenVorsorge(props: SchrittProps) {
 }
 
 function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittProps }) {
-  const { setH, regeln } = props;
+  const { setH, regeln, eff } = props;
   const set = (fn: (p: Person) => Person) => setzePerson(setH, i, fn);
+  const w = eff.werte[i];
+  const effP = eff.haushalt.personen[i] ?? p;
+  /** Anzeige für geschätzte Felder: Schätzwert mit Badge oder eigene Eingabe mit Rücksetzen */
+  const schaetz = (feld: SchaetzFeld, text: string) => ({
+    geschaetzt: !istManuell(p, feld),
+    wertText: text,
+    onZuruecksetzen: () => set((x) => setzeManuell(x, feld, false)),
+  });
   const r = regeln.ahv;
   const verschiebung = p.ahv.bezugVerschiebungMonate;
   const bezugArt = verschiebung < 0 ? 'vorbezug' : verschiebung > 0 ? 'aufschub' : 'ordentlich';
@@ -83,10 +92,13 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
       <Karte titel="AHV (1. Säule)">
         <BetragFeld
           label="Erwartete AHV-Rente pro Monat"
-          value={p.ahv.renteMonat}
+          value={istManuell(p, 'ahvRente') ? p.ahv.renteMonat : effP.ahv.renteMonat}
           min={0}
           max={10000}
-          onChange={(v) => set((x) => ({ ...x, ahv: { ...x.ahv, modus: 'eingabe', renteMonat: v } }))}
+          onChange={(v) =>
+            set((x) => setzeManuell({ ...x, ahv: { ...x.ahv, modus: 'eingabe', renteMonat: v } }, 'ahvRente', true))
+          }
+          schaetzung={schaetz('ahvRente', `${fmtChf(w?.ahvRente ?? 0)}/Mt.`)}
           hinweis={`Gemäss Rentenvorausberechnung der Ausgleichskasse oder AHV-Schätzhilfe, in heutigen Franken, ungekürzt im Referenzalter (Einzelrente max. ${fmtChf(r.maximalrenteMonat)}). 13. Rente und Plafonierung rechnet die Simulation.`}
         />
         <AhvSchaetzhilfe
@@ -154,18 +166,37 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
       <Karte titel="Pensionskasse (2. Säule)" untertitel="Werte aus dem Vorsorgeausweis">
         <BetragFeld
           label="Altersguthaben heute"
-          value={p.pk.guthaben}
+          value={istManuell(p, 'pkGuthaben') ? p.pk.guthaben : (w?.pkGuthaben ?? 0)}
           min={0}
           max={100_000_000}
-          onChange={(v) => set((x) => ({ ...x, pk: { ...x.pk, guthaben: v } }))}
+          onChange={(v) => set((x) => setzeManuell({ ...x, pk: { ...x.pk, guthaben: v } }, 'pkGuthaben', true))}
+          schaetzung={schaetz('pkGuthaben', fmtChf(w?.pkGuthaben ?? 0))}
+          hinweis={
+            istManuell(p, 'pkGuthaben')
+              ? undefined
+              : 'Grobe Schätzung aus BVG-Mindestgutschriften ab 25 (bzw. ab Zuzug) und BVG-Mindestzins – bei umhüllenden Kassen meist zu tief.'
+          }
         />
         <BetragFeld
           label="Sparbeitrag pro Jahr (Arbeitnehmer + Arbeitgeber)"
-          value={p.pk.sparbeitragJahr}
+          value={istManuell(p, 'pkSparbeitrag') ? p.pk.sparbeitragJahr : (w?.pkSparbeitrag ?? 0)}
           min={0}
           max={1_000_000}
-          onChange={(v) => set((x) => ({ ...x, pk: { ...x.pk, beitragModus: 'eingabe', sparbeitragJahr: v } }))}
-          hinweis="Gemäss Vorsorgeausweis (Altersgutschriften pro Jahr)."
+          onChange={(v) =>
+            set((x) =>
+              setzeManuell(
+                { ...x, pk: { ...x.pk, beitragModus: 'eingabe', sparbeitragJahr: v } },
+                'pkSparbeitrag',
+                true,
+              ),
+            )
+          }
+          schaetzung={schaetz('pkSparbeitrag', fmtChf(w?.pkSparbeitrag ?? 0))}
+          hinweis={
+            istManuell(p, 'pkSparbeitrag')
+              ? 'Gemäss Vorsorgeausweis (Altersgutschriften pro Jahr).'
+              : 'Schätzung: BVG-Mindest-Altersgutschrift auf dem koordinierten Lohn (steigt mit dem Alter). Wert aus dem Vorsorgeausweis eintragen.'
+          }
         />
         <div className="raster">
           <ZahlFeld
@@ -190,10 +221,13 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
           <ZahlFeld
             label="Umwandlungssatz"
             prozent
-            value={p.pk.umwandlungssatz}
+            value={istManuell(p, 'pkUmwandlungssatz') ? p.pk.umwandlungssatz : effP.pk.umwandlungssatz}
             min={0}
             max={0.1}
-            onChange={(v) => set((x) => ({ ...x, pk: { ...x.pk, umwandlungssatz: v } }))}
+            onChange={(v) =>
+              set((x) => setzeManuell({ ...x, pk: { ...x.pk, umwandlungssatz: v } }, 'pkUmwandlungssatz', true))
+            }
+            schaetzung={schaetz('pkUmwandlungssatz', fmtProzent(w?.pkUmwandlungssatz ?? 0))}
             hinweis={`Gemäss Ausweis. BVG-Minimum ${fmtProzent(regeln.bvg.mindestumwandlungssatz)} gilt nur fürs Obligatorium; umhüllende Kassen oft deutlich tiefer.`}
           />
           <ZahlFeld

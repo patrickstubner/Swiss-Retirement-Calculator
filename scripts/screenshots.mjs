@@ -37,14 +37,18 @@ async function ganzeSeite(name) {
 
 /** Feld per Label ausfüllen (Standardwerte sind bewusst leer/0). */
 async function fuelle(label, wert, nr = 0) {
-  const feld = page.getByLabel(label, { exact: true }).nth(nr);
+  const feld = page
+    .getByLabel(label, { exact: true })
+    .or(page.getByLabel(`${label} geschätzt`, { exact: true }))
+    .nth(nr);
   await feld.fill(String(wert));
   await feld.blur();
 }
 const schritt = (name) => page.getByRole('button', { name }).first().click();
 
-// 1) Start mit neutralen Standardwerten (alles leer)
+// 1) Start mit neutralen Standardwerten (alles leer, Modus «Schnell»); danach Detailansicht
 await page.screenshot({ path: `${out}01-start-360.png` });
+await page.getByText('Detailliert', { exact: true }).click();
 await ganzeSeite('02-personen-ganz-360.png');
 
 // 2) Beispielwerte erfassen (nur im Skript, nicht in der App)
@@ -146,8 +150,12 @@ const p2 = await ctx2.newPage();
 p2.on('pageerror', (e) => fehler.push(String(e)));
 p2.on('console', (m) => m.type() === 'error' && fehler.push(m.text()));
 await p2.goto(url, { waitUntil: 'networkidle' });
+await p2.getByText('Detailliert', { exact: true }).click();
 const fuelle2 = async (label, wert, nr = 0) => {
-  const feld = p2.getByLabel(label, { exact: true }).nth(nr);
+  const feld = p2
+    .getByLabel(label, { exact: true })
+    .or(p2.getByLabel(`${label} geschätzt`, { exact: true }))
+    .nth(nr);
   await feld.fill(String(wert));
   await feld.blur();
 };
@@ -220,6 +228,83 @@ const reste = await p2.evaluate(() => Object.keys(localStorage));
 console.log('localStorage nach Ausschalten:', reste);
 await p2.locator('.speicherleiste').screenshot({ path: `${out}22-speicherleiste-aus-360.png` });
 await ctx2.close();
+
+// 6) Modus «Schnell»: wenige Eingaben, Schätzwerte, Genauigkeit, Moduswechsel ohne Datenverlust
+const ctx3 = await browser.newContext({
+  viewport: { width: 360, height: 780 },
+  deviceScaleFactor: 2,
+  isMobile: true,
+  hasTouch: true,
+  locale: 'de-CH',
+});
+const p3 = await ctx3.newPage();
+p3.on('pageerror', (e) => fehler.push(String(e)));
+p3.on('console', (m) => m.type() === 'error' && fehler.push(m.text()));
+await p3.goto(url, { waitUntil: 'networkidle' });
+const fuelle3 = async (label, wert, nr = 0) => {
+  const feld = p3
+    .getByLabel(label, { exact: true })
+    .or(p3.getByLabel(`${label} geschätzt`, { exact: true }))
+    .nth(nr);
+  await feld.fill(String(wert));
+  await feld.blur();
+};
+await p3.locator('.moduswahl').screenshot({ path: `${out}24-moduswahl-360.png` });
+// Ehepaar: Ehemann seit Geburt in der Schweiz, Ehefrau 2008 aus Brasilien zugezogen
+await p3.getByText('Ehepaar', { exact: true }).click();
+await fuelle3('Geburtsjahr', 1968, 0);
+await fuelle3('Bruttoeinkommen pro Jahr (heute)', 110000, 0);
+await fuelle3('Erwerbsaufgabe (Wunsch) mit', 63, 0);
+await fuelle3('PK-Altersguthaben heute (optional)', 420000, 0);
+await fuelle3('Säule 3a heute (optional)', 80000, 0);
+await fuelle3('Übriges Vermögen: Konten und Wertschriften', 250000, 0);
+const karteP2 = p3.locator('.karte', { hasText: 'Person 2' }).first();
+await karteP2.getByText('Frau', { exact: true }).click();
+await fuelle3('Geburtsjahr', 1978, 1);
+await fuelle3('In der Schweiz seit (Jahr, optional)', 2008, 1);
+await fuelle3('Bruttoeinkommen pro Jahr (heute)', 45000, 1);
+await fuelle3('Erwerbsaufgabe (Wunsch) mit', 60, 1);
+await fuelle3('Ausgaben pro Jahr (heute)', 80000);
+await p3.getByLabel('Wohnkanton').selectOption('ZH');
+await p3.getByLabel('Gemeinde', { exact: true }).selectOption('Winterthur');
+await karteP2.scrollIntoViewIfNeeded();
+await karteP2.screenshot({ path: `${out}25-schnell-person-zuzug-360.png` });
+const stil3 = await p3.addStyleTag({ content: '.leiste{position:static!important}' });
+await p3.screenshot({ path: `${out}26-schnell-eingaben-ganz-360.png`, fullPage: true });
+await stil3.evaluate((el) => el.remove());
+await p3
+  .getByRole('button', { name: /Ergebnis/ })
+  .first()
+  .click();
+await p3.waitForTimeout(1200);
+const genau = p3.locator('.karte', { hasText: 'Wo sich Genauigkeit lohnt' });
+await genau.scrollIntoViewIfNeeded();
+await genau.screenshot({ path: `${out}27-ergebnis-genauigkeit-360.png` });
+// Detailliert: Schätzwerte mit Badge, eigene Eingabe mit «Zurücksetzen auf Schätzung»
+await p3.getByText('Detailliert', { exact: true }).click();
+await p3
+  .getByRole('button', { name: /Vorsorge/ })
+  .first()
+  .click();
+const pk3 = p3.locator('.karte', { hasText: 'Pensionskasse (2. Säule)' }).first();
+await pk3.scrollIntoViewIfNeeded();
+await pk3.screenshot({ path: `${out}28-detail-geschaetzt-badge-360.png` });
+await fuelle3('Umwandlungssatz', 5.4);
+await pk3.screenshot({ path: `${out}29-detail-zuruecksetzen-360.png` });
+// zurück zu «Schnell»: Hinweis auf gesetzte Detailwerte, Eingaben unverändert
+await p3.getByText('Schnell', { exact: true }).click();
+await p3
+  .getByRole('button', { name: /Eingaben/ })
+  .first()
+  .click();
+await p3
+  .locator('p.info[role="status"]')
+  .first()
+  .evaluate((el) => el.scrollIntoView({ block: 'center' }));
+await p3.screenshot({ path: `${out}30-schnell-detailwerte-hinweis-360.png` });
+const behalten = await p3.getByLabel('PK-Altersguthaben heute (optional)', { exact: true }).first().inputValue();
+console.log('Nach Moduswechsel PK-Guthaben:', behalten);
+await ctx3.close();
 
 await browser.close();
 if (fehler.length) {

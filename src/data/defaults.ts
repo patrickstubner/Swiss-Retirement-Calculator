@@ -57,6 +57,8 @@ export function neuePerson(regeln: Regeln, overrides: Partial<Person> = {}): Per
     stoppModus: 'alter',
     stoppDatum: { jahr: 2034, monat: 12 },
     wohnsitzAusland: neuerWohnsitzAusland(),
+    inChSeit: 0,
+    manuell: {},
     ahv: {
       modus: 'eingabe',
       renteMonat: 0,

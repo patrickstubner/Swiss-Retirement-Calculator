@@ -35,5 +35,6 @@ export const VEREINFACHUNGEN: readonly string[] = [
   'AHV-Beitragslücken durch Auslandwohnsitz: Rente vereinfacht linear gekürzt (fehlende Jahre / Beitragsjahre), ohne Einfluss auf das massgebende durchschnittliche Jahreseinkommen.',
   'AHV-Beiträge als Nichterwerbstätige (in der Schweiz und freiwillige AHV): Vermögen am 31.12. (ohne noch gesperrte PK/FZ/3a, bezogene Kapitalien ab dem Bezugsjahr) + 20× Renteneinkommen inkl. AHV und PK; Ehepaare je hälftig. Tabellengrenzen real konstant. Vergleich mit Erwerbsbeiträgen bei Teilzeit nicht abgebildet.',
   'Keine PK-Einkäufe (folgen). Einmalereignisse und wiederkehrende Posten in heutigen Franken.',
+  'Schätzwerte (Modus «Schnell» und leere Detailfelder, Badge «geschätzt»): AHV-Rente nach Skala 44 mit heutigem Lohn als Durchschnittseinkommen, ohne Lücken (ausser Zuzug nach dem 20. Altersjahr) und ohne Erziehungsgutschriften, Ehepaare mit Splitting über die ganze Beitragsdauer; PK-Guthaben aus BVG-Mindestgutschriften und BVG-Mindestzins (bei umhüllenden Kassen meist zu tief), Sparbeitrag BVG-Minimum, Umwandlungssatz 6,8% (gilt nur fürs Obligatorium, umhüllende Kassen tiefer), Bezug als Rente, keine 3a-Einzahlungen.',
   'Das Planungsalter gilt für die jüngere Person; beide Personen werden als lebend bis zum Planungshorizont angenommen.',
 ];

@@ -197,3 +197,16 @@ Abkürzungen: MB = Merkblatt der Informationsstelle AHV/IV (ahv-iv.ch), mdJE = m
 | AG Gemeinde- und Kirchensteuerfüsse 2026 | 196 Gemeinden | https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/natuerliche-personen/steuerberechnung-tarife-natuerliche-personen/gemeinde-und-kirchensteuerf-sse-2026-v5.pdf | 16.6.2026 |
 | AG Versicherungsabzug 2026 | 7'600 / 3'800 | https://www.ag.ch/de/medien/medienmitteilungen?mm=rechtsaenderungen-per-1-januar-2026-c32e26a7-5201-4e01-abe9-adda85a75a3d_de | 2026 |
 | ESTV-Steuermäppchen Kapitalleistungen | nur StP 2024 (veraltet für LU, SZ) | https://www.estv2.admin.ch/stp/sm/2024/kapitalleistungen-saeulen-de-fr.pdf | 1.4.2025 |
+
+## 10. Schätzwerte im Modus «Schnell» – Details in src/core/schaetzwerte.ts
+
+Keine eigenen Regelwerte: alle Schätzungen werden aus den oben verifizierten Werten abgeleitet.
+
+| Schätzung | Ableitung | Regelwerte (rules/2026.json) |
+|---|---|---|
+| AHV-Rente | Skala 44, massgebendes Einkommen = heutiger Lohn (gedeckelt beim mdJE-Maximum), Beitragsjahre ab 1.1. nach dem 20. Geburtstag bzw. ab Zuzugsjahr bis vor dem Referenzalter, Ehepaare: Splitting aller Jahre, Plafonierung in der Simulation | ahv.rententabelleSkala44, ahv.schaetzhilfe, ahv.plafondEhepaarFaktor (MB 3.01 https://www.ahv-iv.ch/p/3.01.d) |
+| PK-Altersguthaben heute | Summe der BVG-Altersgutschriften auf dem heutigen koordinierten Lohn ab BVG-Alter 25 bzw. Zuzug, verzinst mit dem Mindestzins 2026 | bvg.altersgutschriften, bvg.koordinationsabzug, bvg.mindestzins2026 (Art. 15/16 BVG) |
+| PK-Sparbeitrag | BVG-Mindest-Altersgutschrift (altersabhängig) | bvg.altersgutschriften |
+| Umwandlungssatz | BVG-Mindestumwandlungssatz 6,8% (nur Obligatorium) | bvg.mindestumwandlungssatz (Art. 14 BVG) |
+| PK-Bezug | Rente (Kapitalanteil 0), frühestens mit 63 | bvg.bezugsalter |
+| Sensitivitätsbandbreiten | −5 AHV-Jahre, −20% PK-Guthaben, −1 Pp Umwandlungssatz, −1 Pp Rendite, +10% Ausgaben | Modellannahmen (keine Regelwerte) |
