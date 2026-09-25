@@ -1,4 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useDeferredValue, useMemo, useState } from 'react';
+import { ahvLueckenZuzug } from '../../core/schaetzwerte';
+import { sensitivitaet } from '../../core/sensitivitaet';
 import { referenzPerson, startvermoegen } from '../../core/simulation';
 import type { Haushalt, SimulationsErgebnis, Toepfe } from '../../core/typen';
 import { stoppAlterMonate } from '../../core/zeitpunkt';
@@ -17,9 +19,11 @@ export type SuchModus = 'gemeinsam' | 'p0' | 'p1';
 interface Props extends SchrittProps {
   suchModus: SuchModus;
   setSuchModus: (m: SuchModus) => void;
+  /** Zum Modus «Detailliert» wechseln (Vorsorge-Schritt) */
+  zuDetail: () => void;
 }
 
-export function Ergebnis({ h, berechnung, heute, suchModus, setSuchModus }: Props) {
+export function Ergebnis({ h, berechnung, heute, suchModus, setSuchModus, eff, regeln, zuDetail }: Props) {
   const [szenario, setSzenario] = useState<'wunsch' | 'frueh'>('wunsch');
   const { wunsch, solver, fehler } = berechnung;
   const ref = referenzPerson(h.personen);
@@ -153,6 +157,18 @@ export function Ergebnis({ h, berechnung, heute, suchModus, setSuchModus }: Prop
           )}
           <LiquiditaetsHinweise e={wunsch} />
         </Karte>
+      ) : null}
+
+      {wunsch ? (
+        <GenauigkeitKarte
+          h={h}
+          eff={eff}
+          regeln={regeln}
+          heute={heute}
+          suchModus={suchModus}
+          namen={namen}
+          zuDetail={zuDetail}
+        />
       ) : null}
 
       {chart && anzeige ? (
@@ -446,4 +462,131 @@ function LiquiditaetsHinweise({ e }: { e: SimulationsErgebnis }) {
       ) : null}
     </>
   );
+}
+
+function GenauigkeitKarte({
+  h,
+  eff,
+  regeln,
+  heute,
+  suchModus,
+  namen,
+  zuDetail,
+}: Pick<Props, 'h' | 'eff' | 'regeln' | 'heute' | 'suchModus' | 'zuDetail'> & { namen: string[] }) {
+  const effD = useDeferredValue(eff);
+  const sens = useMemo(() => {
+    try {
+      return sensitivitaet(effD.haushalt, effD.schaetzungen, regeln, {
+        start: heute,
+        modus: suchModus === 'gemeinsam' ? 'gemeinsam' : 'person',
+        person: suchModus === 'p1' && effD.haushalt.personen.length > 1 ? 1 : 0,
+      });
+    } catch {
+      return null;
+    }
+  }, [effD, regeln, heute, suchModus]);
+  const mehrere = h.personen.length > 1;
+  const zuzug = h.personen.map((p) => ahvLueckenZuzug(p, regeln));
+  return (
+    <Karte titel="Genauigkeit" untertitel="Welche Werte geschätzt sind und wo sich genauere Angaben lohnen">
+      {eff.schaetzungen.length > 0 ? (
+        <>
+          <p>
+            <strong>
+              {eff.schaetzungen.length} {eff.schaetzungen.length === 1 ? 'Wert ist' : 'Werte sind'} geschätzt
+            </strong>{' '}
+            (dazu die Standardannahmen für Rendite und Teuerung):
+          </p>
+          <ul className="liste">
+            {eff.schaetzungen.map((s) => (
+              <li key={`${s.person}-${s.feld}`}>
+                {s.label}
+                {mehrere ? ` (${namen[s.person]})` : ''}:{' '}
+                {s.feld === 'pkUmwandlungssatz'
+                  ? fmtProzent(s.wert)
+                  : s.feld === 'ahvRente'
+                    ? `${fmtChf(s.wert)}/Monat`
+                    : s.feld === 'pkSparbeitrag'
+                      ? `BVG-Minimum (heute ${fmtChf(s.wert)}/Jahr)`
+                      : fmtChf(s.wert)}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p className="ok">Keine geschätzten Werte – nur die Standardannahmen für Rendite und Teuerung.</p>
+      )}
+      {h.personen.map((p, i) =>
+        (zuzug[i] ?? 0) > 0 ? (
+          <p key={`zuzug-${namen[i]}`} className="warnung">
+            AHV-Lücken {mehrere ? `${namen[i]}: ` : ''}Zuzug {p.inChSeit} → ca. {zuzug[i]} fehlende Beitragsjahre
+            {p.manuell.ahvRente
+              ? ' (in der eingegebenen AHV-Rente hoffentlich berücksichtigt)'
+              : ' (in der Schätzung berücksichtigt)'}
+            . Frühere Auslandsjahre erhöhen die Schweizer Rente nicht – eine ausländische Rente (z.B. Brasilien) separat
+            erfassen.
+          </p>
+        ) : p.inChSeit === 0 && p.auslandRenten.length > 0 && !p.manuell.ahvRente ? (
+          <p key={`zuzug-${namen[i]}`} className="warnung">
+            {mehrere ? `${namen[i]}: ` : ''}Eine ausländische Rente ist erfasst, aber kein Zuzugsjahr. Falls Sie nach
+            dem 20. Altersjahr in die Schweiz gekommen sind, «In der Schweiz seit» angeben – jedes fehlende Jahr kürzt
+            die AHV-Rente um rund 1/44.
+          </p>
+        ) : null,
+      )}
+      {sens ? (
+        <>
+          <h3>Wo sich Genauigkeit lohnt</h3>
+          <p className="klein">
+            Wirkung einer ungünstigen Abweichung auf das früheste Rücktrittsalter und auf das Vermögen mit{' '}
+            {sens.vergleichsAlter} ({mehrere ? 'jüngere Person, ' : ''}Wunschalter). Grösste Wirkung zuerst.
+          </p>
+          <ol className="sens-liste">
+            {sens.zeilen.map((z) => (
+              <li key={z.id}>
+                <strong>{z.label}</strong>{' '}
+                <span className="badge-geschaetzt">
+                  {z.id === 'rendite'
+                    ? 'Annahme'
+                    : z.id === 'ausgaben'
+                      ? 'Ihre Eingabe'
+                      : z.geschaetzt
+                        ? 'geschätzt'
+                        : 'Ihre Eingabe'}
+                </span>
+                <span className="sens-wirkung">
+                  {z.variante}: frühestes Alter{' '}
+                  {z.deltaAlterMonate === null
+                    ? 'nicht mehr bis 70'
+                    : z.deltaAlterMonate === 0
+                      ? 'unverändert'
+                      : fmtMonateDelta(z.deltaAlterMonate)}
+                  , Vermögen mit {sens.vergleichsAlter}: {z.deltaVermoegen >= 0 ? '+' : '−'}
+                  {fmtChf(Math.abs(z.deltaVermoegen))}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </>
+      ) : null}
+      {eff.schaetzungen.length > 0 ? (
+        <button type="button" className="knopf knopf--sekundaer" onClick={zuDetail}>
+          Geschätzte Werte genauer erfassen (Detailliert)
+        </button>
+      ) : null}
+      <p className="klein">
+        Genauere Werte: AHV-Rente aus der Rentenvorausberechnung der Ausgleichskasse, PK-Werte aus dem Vorsorgeausweis.
+        Alle Annahmen stehen unten unter «Wie gerechnet? Vereinfachungen».
+      </p>
+    </Karte>
+  );
+}
+
+/** Differenz in Monaten, z.B. «+1 J. 3 Mt.» oder «−5 Mt.» */
+export function fmtMonateDelta(m: number): string {
+  const vz = m > 0 ? '+' : '−';
+  const a = Math.abs(Math.round(m));
+  const j = Math.floor(a / 12);
+  const r = a - j * 12;
+  return `${vz}${j > 0 ? `${j} J.${r > 0 ? ' ' : ''}` : ''}${r > 0 ? `${r} Mt.` : ''}`;
 }

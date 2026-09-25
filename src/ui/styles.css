@@ -698,3 +698,63 @@ tr.negativ td {
   font-weight: 700;
   cursor: pointer;
 }
+
+/* Eingabemodus Schnell / Detailliert */
+.moduswahl {
+  margin: 0 0 8px;
+}
+.moduswahl .segmente {
+  margin-bottom: 4px;
+}
+.moduswahl .klein {
+  margin: 0 0 8px;
+}
+.stepper--kurz ol {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* Geschätzte Werte */
+.badge-geschaetzt {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #fff3cd;
+  color: #7a5200;
+  font-size: 0.75rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+.feld--geschaetzt input {
+  background: #fffbeb;
+  font-style: italic;
+}
+.link-knopf {
+  align-self: flex-start;
+  background: none;
+  border: 0;
+  padding: 6px 0;
+  min-height: 32px;
+  color: var(--farbe-primaer);
+  text-decoration: underline;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.sens-liste {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+}
+.sens-liste li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--farbe-rand);
+}
+.sens-liste li:last-child {
+  border-bottom: 0;
+}
+.sens-wirkung {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--farbe-text-leise);
+}

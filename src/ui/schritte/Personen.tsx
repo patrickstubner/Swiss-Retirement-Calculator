@@ -8,11 +8,12 @@ import {
 } from '../../core/ahv';
 import { pruefeFreiwilligeAhv } from '../../core/freiwilligeAhv';
 import type { Monat, Nationalitaet, Person, PersonInfo, WohnsitzAusland, ZeitpunktModus } from '../../core/typen';
-import { letzterArbeitsmonat, monatBeiAlterMonate, stoppAlterMonate, wegzugIndex } from '../../core/zeitpunkt';
+import { monatBeiAlterMonate, wegzugIndex } from '../../core/zeitpunkt';
 import { MAX_PLANUNGSALTER, neuePerson } from '../../data/defaults';
 import { WEGZUGS_LAENDER, wegzugsLand } from '../../data/laender';
 import { AuswahlFeld, Schalter, Segmente, TextFeld, ZahlFeld } from '../components/Felder';
 import { Karte } from '../components/Karte';
+import { ErwerbsaufgabeFelder, GeburtFelder, InChSeitFeld } from '../components/PersonBasis';
 import { fmtAlter, fmtChf, fmtMonat, MONATSNAMEN } from '../format';
 import { alterMonate, type SchrittProps, setzePerson } from '../kontext';
 
@@ -102,110 +103,16 @@ function PersonKarte({
   const set = (fn: (p: Person) => Person) => setzePerson(setH, i, fn);
   const ra = ahvReferenzalter(p.geburtsjahr, p.geschlecht, regeln.ahv);
   const raM = inMonaten(ra);
-  const stoppJ = Math.floor(p.stoppAlter + 1e-9);
-  const stoppM = Math.round((p.stoppAlter - stoppJ) * 12);
   const heuteM = alterMonate(p, heute);
-  const stoppMonate = stoppAlterMonate(p);
-  const letzter = letzterArbeitsmonat(p, stoppMonate);
   const vorbezugMax = ahvMaxVorbezugMonate(p.geburtsjahr, p.geschlecht, regeln.ahv);
   const ahvFrueh = ahvFruehestesBezugsalter(p.geburtsjahr, p.geschlecht, regeln.ahv);
-
-  const setStoppModus = (m: ZeitpunktModus) =>
-    set((x) => {
-      const monate = stoppAlterMonate(x);
-      // Werte gegenseitig übernehmen, damit der Zeitpunkt beim Umschalten gleich bleibt
-      return m === 'datum'
-        ? { ...x, stoppModus: m, stoppDatum: letzterArbeitsmonat(x, monate) }
-        : { ...x, stoppModus: m, stoppAlter: monate / 12 };
-    });
-  const setStoppDatum = (d: Partial<Monat>) => set((x) => ({ ...x, stoppDatum: { ...x.stoppDatum, ...d } }));
 
   return (
     <Karte titel={p.name || `Person ${i + 1}`} untertitel={`heute ${fmtAlter(Math.max(0, heuteM))}`}>
       <TextFeld label="Name (optional)" value={p.name} onChange={(v) => set((x) => ({ ...x, name: v }))} />
-      <Segmente
-        label="Geschlecht"
-        value={p.geschlecht}
-        optionen={[
-          { value: 'w', label: 'Frau' },
-          { value: 'm', label: 'Mann' },
-        ]}
-        onChange={(g) => set((x) => ({ ...x, geschlecht: g }))}
-      />
-      <div className="raster">
-        <ZahlFeld
-          label="Geburtsjahr"
-          value={p.geburtsjahr}
-          min={1920}
-          max={heute.jahr}
-          nachkomma={0}
-          gruppieren={false}
-          onChange={(v) => set((x) => ({ ...x, geburtsjahr: Math.round(v) }))}
-        />
-        <AuswahlFeld
-          label="Geburtsmonat"
-          value={p.geburtsmonat}
-          optionen={MONATE}
-          onChange={(v) => set((x) => ({ ...x, geburtsmonat: v }))}
-        />
-      </div>
-      <Segmente
-        label="Erwerbsaufgabe (Wunsch) angeben als"
-        value={p.stoppModus}
-        optionen={MODI}
-        onChange={setStoppModus}
-      />
-      {p.stoppModus === 'alter' ? (
-        <div className="raster">
-          <ZahlFeld
-            label="Erwerbsaufgabe (Wunsch) mit"
-            einheit="Jahren"
-            value={stoppJ}
-            min={0}
-            max={80}
-            nachkomma={0}
-            gruppieren={false}
-            onChange={(v) => set((x) => ({ ...x, stoppAlter: Math.round(v) + stoppM / 12 }))}
-          />
-          <AuswahlFeld
-            label="und"
-            value={stoppM}
-            optionen={STOPP_MONATE}
-            onChange={(v) => set((x) => ({ ...x, stoppAlter: stoppJ + v / 12 }))}
-          />
-        </div>
-      ) : (
-        <div className="raster">
-          <AuswahlFeld
-            label="Erwerbsaufgabe per Ende (Monat)"
-            value={p.stoppDatum.monat}
-            optionen={MONATE}
-            onChange={(v) => setStoppDatum({ monat: v })}
-          />
-          <ZahlFeld
-            label="Jahr"
-            value={p.stoppDatum.jahr}
-            min={p.geburtsjahr}
-            max={p.geburtsjahr + 80}
-            nachkomma={0}
-            gruppieren={false}
-            onChange={(v) => setStoppDatum({ jahr: Math.round(v) })}
-          />
-        </div>
-      )}
-      <p className="info" aria-live="polite">
-        {p.stoppModus === 'datum' ? (
-          <>
-            Letzter Arbeitsmonat <strong>{fmtMonat(letzter)}</strong> → Alter bei Erwerbsaufgabe{' '}
-            <strong>{fmtAlter(stoppMonate)}</strong>.
-          </>
-        ) : (
-          <>
-            Letzter Arbeitsmonat <strong>{fmtMonat(letzter)}</strong>.
-          </>
-        )}
-        {stoppMonate < heuteM ? ' Dieser Zeitpunkt liegt in der Vergangenheit: gerechnet wird ab heute ohne Lohn.' : ''}
-      </p>
+      <GeburtFelder p={p} set={set} heute={heute} />
+      <InChSeitFeld p={p} set={set} heute={heute} regeln={regeln} />
+      <ErwerbsaufgabeFelder p={p} set={set} heute={heute} />
       <p className="info">
         AHV-Referenzalter <strong>{fmtAlter(raM)}</strong> (erreicht im{' '}
         {fmtMonat(monatBeiAlter(p.geburtsjahr, p.geburtsmonat, raM))}), ordentliche Rente ab{' '}

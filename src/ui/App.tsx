@@ -1,16 +1,19 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { effektiverHaushalt } from '../core/schaetzwerte';
 import { simuliere } from '../core/simulation';
 import { fruehestesRuecktrittsalter } from '../core/solver';
-import type { Haushalt, Monat } from '../core/typen';
+import type { EingabeModus, Haushalt, Monat } from '../core/typen';
 import { standardHaushalt } from '../data/defaults';
 import { ladeRegeln, type Regeln } from '../rules';
 import { DisclaimerBanner } from './components/Disclaimer';
+import { Segmente } from './components/Felder';
 import { fmtAlter } from './format';
 import type { Berechnung, Setzer } from './kontext';
 import { Annahmen } from './schritte/Annahmen';
 import { EinkommenVorsorge } from './schritte/EinkommenVorsorge';
 import { Ergebnis, type SuchModus } from './schritte/Ergebnis';
 import { Personen } from './schritte/Personen';
+import { SchnellEingaben } from './schritte/SchnellEingaben';
 import { VermoegenAusgaben } from './schritte/VermoegenAusgaben';
 import {
   type AppZustand,
@@ -24,8 +27,9 @@ import {
   speichernAktiv,
 } from './state';
 
-const SCHRITTE = ['Personen', 'Einkommen & Vorsorge', 'Vermögen & Ausgaben', 'Annahmen', 'Ergebnis'] as const;
-const KURZ = ['Personen', 'Vorsorge', 'Vermögen', 'Annahmen', 'Ergebnis'] as const;
+const SCHRITTE_DETAIL = ['Personen', 'Einkommen & Vorsorge', 'Vermögen & Ausgaben', 'Annahmen', 'Ergebnis'] as const;
+const KURZ_DETAIL = ['Personen', 'Vorsorge', 'Vermögen', 'Annahmen', 'Ergebnis'] as const;
+const SCHRITTE_SCHNELL = ['Eingaben', 'Ergebnis'] as const;
 
 function berechne(h: Haushalt, regeln: Regeln, heute: Monat, suchModus: SuchModus): Berechnung {
   const t0 = performance.now();
@@ -61,6 +65,7 @@ export function App() {
   const [speichern, setSpeichernState] = useState<boolean>(() => speichernAktiv(speicher));
   const [schritt, setSchritt] = useState(start.ui.schritt);
   const [suchModus, setSuchModus] = useState<SuchModus>(start.ui.suchModus);
+  const [eingabeModus, setEingabeModus] = useState<EingabeModus>(start.ui.modus);
   // Geteilter Link: erst speichern, wenn übernommen oder geändert (die eigenen Daten bleiben sonst unberührt)
   const [linkQuelle, setLinkQuelle] = useState<{ quelle: StartQuelle; lokal: AppZustand | null } | null>(() =>
     start.quelle === 'link' ? { quelle: 'link', lokal: start.lokal } : null,
@@ -80,7 +85,7 @@ export function App() {
 
   // Ganzen Zustand im localStorage speichern (falls an) – entprellt
   useEffect(() => {
-    const z: AppZustand = { haushalt, ui: { schritt, suchModus } };
+    const z: AppZustand = { haushalt, ui: { schritt, suchModus, modus: eingabeModus } };
     if (ersterLauf.current) {
       ersterLauf.current = false;
       return;
@@ -88,7 +93,7 @@ export function App() {
     if (!speichern || linkQuelle) return;
     const t = window.setTimeout(() => speichereLokal(speicher, z), 300);
     return () => window.clearTimeout(t);
-  }, [haushalt, schritt, suchModus, speichern, linkQuelle, speicher]);
+  }, [haushalt, schritt, suchModus, eingabeModus, speichern, linkQuelle, speicher]);
 
   // Manuell eingefügter oder geänderter Link (#s=…)
   useEffect(() => {
@@ -105,13 +110,33 @@ export function App() {
 
   const onSpeichern = (v: boolean) => {
     setSpeichernState(v);
-    setzeSpeichern(speicher, v, { haushalt, ui: { schritt, suchModus } });
+    setzeSpeichern(speicher, v, { haushalt, ui: { schritt, suchModus, modus: eingabeModus } });
     if (v) setLinkQuelle(null);
   };
 
   const modus: SuchModus = haushalt.personen.length > 1 ? suchModus : 'gemeinsam';
   const verzoegert = useDeferredValue(haushalt);
-  const berechnung = useMemo(() => berechne(verzoegert, regeln, heute, modus), [verzoegert, regeln, heute, modus]);
+  // Schätzwerte für Felder ohne eigene Eingabe (core/schaetzwerte.ts); gerechnet wird mit dem effektiven Haushalt
+  const eff = useMemo(() => effektiverHaushalt(haushalt, regeln, heute), [haushalt, regeln, heute]);
+  const effVerzoegert = useMemo(() => effektiverHaushalt(verzoegert, regeln, heute), [verzoegert, regeln, heute]);
+  const berechnung = useMemo(
+    () => berechne(effVerzoegert.haushalt, regeln, heute, modus),
+    [effVerzoegert, regeln, heute, modus],
+  );
+
+  const schnell = eingabeModus === 'schnell';
+  const SCHRITTE: readonly string[] = schnell ? SCHRITTE_SCHNELL : SCHRITTE_DETAIL;
+  const KURZ: readonly string[] = schnell ? SCHRITTE_SCHNELL : KURZ_DETAIL;
+  const ergebnisSchritt = SCHRITTE.length - 1;
+  const aktSchritt = Math.min(schritt, ergebnisSchritt);
+
+  const wechsleModus = (m: EingabeModus) => {
+    if (m === eingabeModus) return;
+    // Eingaben bleiben erhalten; auf dem Ergebnis bleiben, sonst zum ersten Schritt
+    const warErgebnis = aktSchritt === ergebnisSchritt;
+    setEingabeModus(m);
+    setSchritt(warErgebnis ? (m === 'schnell' ? SCHRITTE_SCHNELL.length : SCHRITTE_DETAIL.length) - 1 : 0);
+  };
 
   const geheZu = (i: number) => {
     setSchritt(Math.max(0, Math.min(SCHRITTE.length - 1, i)));
@@ -119,7 +144,7 @@ export function App() {
     window.scrollTo({ top: 0 });
   };
 
-  const props = { h: haushalt, setH, regeln, heute, berechnung };
+  const props = { h: haushalt, setH, regeln, heute, berechnung, eff, eingabeModus };
   const solver = berechnung.solver;
   const kurzErgebnis = berechnung.fehler
     ? 'Eingaben prüfen'
@@ -182,6 +207,7 @@ export function App() {
                     setHaushalt(l.haushalt);
                     setSchritt(l.ui.schritt);
                     setSuchModus(l.ui.suchModus);
+                    setEingabeModus(l.ui.modus);
                     setLinkQuelle(null);
                   }}
                 >
@@ -192,14 +218,30 @@ export function App() {
           </div>
         ) : null}
         <DisclaimerBanner />
-        <nav className="stepper" aria-label="Schritte">
+        <div className="moduswahl">
+          <Segmente<EingabeModus>
+            label="Eingabe"
+            value={eingabeModus}
+            optionen={[
+              { value: 'schnell', label: 'Schnell' },
+              { value: 'detailliert', label: 'Detailliert' },
+            ]}
+            onChange={wechsleModus}
+          />
+          <p className="klein">
+            {schnell
+              ? 'Wenige Angaben, der Rest wird aus den gesetzlichen Werten geschätzt. Detailwerte gehen nicht verloren.'
+              : 'Alle Felder. Leere Felder mit «geschätzt» verwenden die Schätzung des Modus «Schnell».'}
+          </p>
+        </div>
+        <nav className={`stepper${schnell ? ' stepper--kurz' : ''}`} aria-label="Schritte">
           <ol>
             {SCHRITTE.map((s, i) => (
               <li key={s}>
                 <button
                   type="button"
-                  className={`stepper__schritt${i === schritt ? ' stepper__schritt--aktiv' : ''}`}
-                  aria-current={i === schritt ? 'step' : undefined}
+                  className={`stepper__schritt${i === aktSchritt ? ' stepper__schritt--aktiv' : ''}`}
+                  aria-current={i === aktSchritt ? 'step' : undefined}
                   onClick={() => geheZu(i)}
                 >
                   <span className="stepper__nr">{i + 1}</span>
@@ -210,11 +252,12 @@ export function App() {
           </ol>
         </nav>
         <main ref={hauptRef} className="haupt">
-          <h2 className="schritt-titel">{SCHRITTE[schritt]}</h2>
-          {schritt === 0 ? <Personen {...props} /> : null}
-          {schritt === 1 ? <EinkommenVorsorge {...props} /> : null}
-          {schritt === 2 ? <VermoegenAusgaben {...props} /> : null}
-          {schritt === 3 ? (
+          <h2 className="schritt-titel">{SCHRITTE[aktSchritt]}</h2>
+          {schnell && aktSchritt === 0 ? <SchnellEingaben {...props} /> : null}
+          {!schnell && aktSchritt === 0 ? <Personen {...props} /> : null}
+          {!schnell && aktSchritt === 1 ? <EinkommenVorsorge {...props} /> : null}
+          {!schnell && aktSchritt === 2 ? <VermoegenAusgaben {...props} /> : null}
+          {!schnell && aktSchritt === 3 ? (
             <Annahmen
               {...props}
               onZuruecksetzen={() => {
@@ -226,7 +269,18 @@ export function App() {
               }}
             />
           ) : null}
-          {schritt === 4 ? <Ergebnis {...props} suchModus={modus} setSuchModus={setSuchModus} /> : null}
+          {aktSchritt === ergebnisSchritt ? (
+            <Ergebnis
+              {...props}
+              suchModus={modus}
+              setSuchModus={setSuchModus}
+              zuDetail={() => {
+                setEingabeModus('detailliert');
+                setSchritt(1);
+                window.scrollTo({ top: 0 });
+              }}
+            />
+          ) : null}
         </main>
         <footer className="fuss">
           <p>
@@ -239,19 +293,19 @@ export function App() {
         <button
           type="button"
           className="knopf knopf--sekundaer"
-          onClick={() => geheZu(schritt - 1)}
-          disabled={schritt === 0}
+          onClick={() => geheZu(aktSchritt - 1)}
+          disabled={aktSchritt === 0}
         >
           Zurück
         </button>
-        <button type="button" className="leiste__ergebnis" onClick={() => geheZu(4)} aria-live="polite">
+        <button type="button" className="leiste__ergebnis" onClick={() => geheZu(ergebnisSchritt)} aria-live="polite">
           {kurzErgebnis}
         </button>
         <button
           type="button"
           className="knopf"
-          onClick={() => geheZu(schritt + 1)}
-          disabled={schritt === SCHRITTE.length - 1}
+          onClick={() => geheZu(aktSchritt + 1)}
+          disabled={aktSchritt === ergebnisSchritt}
         >
           Weiter
         </button>

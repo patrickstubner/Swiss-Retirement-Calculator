@@ -212,6 +212,7 @@ export function AhvSchaetzhilfe({ p, partner, verheiratet, regeln, set }: Props)
                     mdje: res.mdjeTabelle,
                     beitragsjahre: res.beitragsjahreSkala44,
                   },
+                  manuell: { ...x.manuell, ahvRente: true },
                 }));
                 setUebernommen(true);
               }}

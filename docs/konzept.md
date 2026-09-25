@@ -164,6 +164,16 @@ Validierung: harte Grenzen aus `rules/2026.json` (z.B. 3a-Maximum, AHV-Vorbezug 
   - Die AHV ist ins Ausland zahlbar (CH/EU/EFTA/Abkommensstaaten). Keine Schweizer Quellensteuer auf AHV-Renten ist abgeleitet, aber OFFEN.
   - Im Wohnsitzstaat wird in der Regel neu besteuert (nicht Teil der App, Hinweis).
 
+### c.7b Modus «Schnell» / «Detailliert» und Schätzwerte
+- «Schnell» (Standard für neue Nutzer) zeigt nur die wichtigsten Eingaben; «Detailliert» alle Schritte.
+- Felder, die sonst geschätzt werden (AHV-Rente, PK-Guthaben, PK-Sparbeitrag, Umwandlungssatz), tragen pro
+  Person eine Markierung `manuell`. Ohne eigene Eingabe setzt `effektiverHaushalt()` den Schätzwert ein;
+  der gespeicherte Zustand bleibt unverändert, der Moduswechsel verliert daher nichts.
+- Alle Annahmen stehen mit Begründung in `src/core/schaetzwerte.ts` (nur aus `rules/2026.json` abgeleitet).
+- Ergebnis: Anzahl geschätzter Werte, Zuzugs-Hinweis zu AHV-Lücken, Sensitivität «Wo sich Genauigkeit lohnt»
+  (`src/core/sensitivitaet.ts`, Bandbreiten als Modellannahmen gekennzeichnet).
+- Vergleich Schnell vs. Detailliert für Musterhaushalte: `src/core/schnellVergleich.test.ts`.
+
 ### c.8 Bekannte Vereinfachungen im MVP (in der App offengelegt)
 - Kantons- und Gemeindesteuern nur über effektive Sätze; keine exakten Abzüge.
 - AHV-Teilrente linear 1/44, keine exakte Einkommensaufwertung, kein Splitting im Detail (Eingabe der Rentenvorausberechnung empfohlen).

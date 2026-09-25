@@ -157,6 +157,15 @@ export interface WohnsitzAusland {
   freiwilligeAhv: boolean;
 }
 
+/**
+ * Felder, die ohne Eingabe geschätzt werden (siehe core/schaetzwerte.ts). Ist ein Feld in
+ * `Person.manuell` markiert, gilt der eingegebene Wert, sonst die Schätzung.
+ */
+export type SchaetzFeld = 'ahvRente' | 'pkGuthaben' | 'pkSparbeitrag' | 'pkUmwandlungssatz';
+
+/** Eingabemodus der Oberfläche: wenige Felder mit Schätzwerten oder alle Felder. */
+export type EingabeModus = 'schnell' | 'detailliert';
+
 export interface Person {
   name: string;
   geburtsjahr: number;
@@ -175,6 +184,10 @@ export interface Person {
   stoppDatum: Monat;
   /** Wohnsitz ausserhalb der Schweiz (Wegzug) */
   wohnsitzAusland: WohnsitzAusland;
+  /** In der Schweiz wohnhaft seit (Kalenderjahr); 0 = keine Angabe (seit Geburt bzw. vor Beitragsbeginn) */
+  inChSeit: number;
+  /** Selbst eingegebene Werte, die sonst geschätzt würden */
+  manuell: Partial<Record<SchaetzFeld, true>>;
   ahv: AhvEingabe;
   /** Eingaben der AHV-Schätzhilfe (nur Hilfsmittel; massgebend ist `ahv.renteMonat`) */
   ahvSchaetzhilfe: AhvSchaetzhilfeEingabe;

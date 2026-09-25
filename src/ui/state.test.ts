@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { effektiverHaushalt } from '../core/schaetzwerte';
 import { standardHaushalt } from '../data/defaults';
 import { ladeRegeln } from '../rules';
 import {
@@ -8,6 +9,7 @@ import {
   kodiere,
   ladeLokal,
   ladeStartzustand,
+  modusFuerLink,
   normalisiere,
   SPEICHER_VERSION,
   STORAGE_KEY,
@@ -113,7 +115,7 @@ describe('Zustand (URL-Fragment)', () => {
 });
 
 describe('Speichern im Browser (localStorage)', () => {
-  const ui = { schritt: 2, suchModus: 'gemeinsam' as const };
+  const ui = { schritt: 2, suchModus: 'gemeinsam' as const, modus: 'detailliert' as const };
   const mitLohn = () => {
     const h = standardHaushalt(regeln);
     (h.personen[0] as (typeof h.personen)[number]).lohn = 123456;
@@ -227,5 +229,89 @@ describe('Neue Felder: Rücktrittsmodus und Wohnsitz im Ausland', () => {
       wohnsitzAusland: { ...p.wohnsitzAusland, aktiv: true, land: 'PY', nationalitaet: 'EU', freiwilligeAhv: true },
     };
     expect(dekodiere(kodiere(h), regeln)).toEqual(h);
+  });
+});
+
+describe('Eingabemodus «Schnell» / «Detailliert»', () => {
+  const detailHaushalt = () => {
+    const h = standardHaushalt(regeln);
+    const p = h.personen[0] as (typeof h.personen)[number];
+    p.lohn = 110000;
+    p.inChSeit = 2008;
+    p.bargeld = 20000;
+    p.ahv = { ...p.ahv, modus: 'eingabe', renteMonat: 2100 };
+    p.pk = { ...p.pk, umwandlungssatz: 0.052, guthaben: 350000 };
+    p.manuell = { ahvRente: true, pkUmwandlungssatz: true, pkGuthaben: true };
+    return h;
+  };
+
+  it('frischer Zustand startet im Modus «Schnell»', () => {
+    expect(ladeStartzustand(regeln, '', new TestSpeicher()).ui.modus).toBe('schnell');
+  });
+
+  it('der gespeicherte Modus bleibt erhalten; frühere Zustände ohne Modus → «Detailliert»', () => {
+    for (const modus of ['schnell', 'detailliert'] as const) {
+      const s = new TestSpeicher();
+      speichereLokal(s, { haushalt: standardHaushalt(regeln), ui: { schritt: 1, suchModus: 'gemeinsam', modus } });
+      expect(ladeStartzustand(regeln, '', s).ui.modus).toBe(modus);
+    }
+    const s = new TestSpeicher();
+    s.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ app: 'ruhestandsrechner', version: 1, schema: 1, haushalt: {}, ui: { schritt: 2 } }),
+    );
+    expect(ladeLokal(s, regeln)?.ui.modus).toBe('detailliert');
+  });
+
+  it('Moduswechsel verliert keine Daten: Detailwerte überstehen Speichern im Modus «Schnell»', () => {
+    const h = normalisiere(detailHaushalt(), regeln);
+    const s = new TestSpeicher();
+    speichereLokal(s, { haushalt: h, ui: { schritt: 2, suchModus: 'gemeinsam', modus: 'detailliert' } });
+    // Wechsel zu «Schnell» (nur der Modus ändert) und wieder zurück
+    const z1 = ladeLokal(s, regeln);
+    speichereLokal(s, { haushalt: z1?.haushalt ?? h, ui: { schritt: 0, suchModus: 'gemeinsam', modus: 'schnell' } });
+    const z2 = ladeLokal(s, regeln);
+    expect(z2?.ui.modus).toBe('schnell');
+    expect(z2?.haushalt).toEqual(h);
+    speichereLokal(s, {
+      haushalt: z2?.haushalt ?? h,
+      ui: { schritt: 0, suchModus: 'gemeinsam', modus: 'detailliert' },
+    });
+    expect(ladeLokal(s, regeln)?.haushalt).toEqual(h);
+    // «Schnell» rechnet mit den Detailwerten
+    const e = effektiverHaushalt(h, regeln, { jahr: 2026, monat: 9 });
+    expect(e.haushalt.personen[0]?.ahv.renteMonat).toBe(2100);
+    expect(e.haushalt.personen[0]?.pk.umwandlungssatz).toBe(0.052);
+    expect(e.schaetzungen.map((x) => x.feld)).toEqual(['pkSparbeitrag']);
+  });
+
+  it('«in der Schweiz seit» und Markierungen werden normalisiert; Kodieren/Dekodieren behält sie', () => {
+    const h = detailHaushalt();
+    expect(dekodiere(kodiere(h), regeln)?.personen[0]?.manuell).toEqual(h.personen[0]?.manuell);
+    expect(dekodiere(kodiere(h), regeln)?.personen[0]?.inChSeit).toBe(2008);
+    const roh = JSON.parse(JSON.stringify(h));
+    roh.personen[0].inChSeit = 'x';
+    roh.personen[0].manuell = { ahvRente: true, unbekannt: true, pkGuthaben: 'ja' };
+    const n = normalisiere(roh, regeln);
+    expect(n.personen[0]?.inChSeit).toBe(0);
+    expect(n.personen[0]?.manuell).toEqual({ ahvRente: true });
+  });
+
+  it('frühere Zustände ohne Markierungen: abweichende Werte gelten als eigene Eingabe', () => {
+    const roh = JSON.parse(JSON.stringify(detailHaushalt()));
+    delete roh.personen[0].manuell;
+    const n = normalisiere(roh, regeln);
+    expect(n.personen[0]?.manuell).toEqual({ ahvRente: true, pkGuthaben: true, pkUmwandlungssatz: true });
+  });
+
+  it('geteilter Link: «Detailliert», wenn er Detailwerte enthält, sonst «Schnell»', () => {
+    const einfach = standardHaushalt(regeln);
+    (einfach.personen[0] as (typeof einfach.personen)[number]).lohn = 90000;
+    expect(modusFuerLink(einfach, regeln)).toBe('schnell');
+    expect(modusFuerLink(detailHaushalt(), regeln)).toBe('detailliert');
+    const s = new TestSpeicher();
+    expect(
+      ladeStartzustand(regeln, teilenLink(detailHaushalt(), 'https://x/').slice('https://x/'.length), s).ui.modus,
+    ).toBe('detailliert');
   });
 });

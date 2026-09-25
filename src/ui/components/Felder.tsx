@@ -2,17 +2,40 @@ import { type ReactNode, useEffect, useId, useLayoutEffect, useRef, useState } f
 import { bearbeiteEingabe, formatBetrag, parseBetrag } from '../betrag';
 import { fmtZahl, parseZahl } from '../format';
 
+/** Feld mit Schätzwert: «geschätzt» (keine eigene Eingabe) oder eigene Eingabe mit Rücksetzen. */
+export interface SchaetzAnzeige {
+  /** true = der angezeigte Wert ist die Schätzung */
+  geschaetzt: boolean;
+  /** Schätzwert formatiert (für den Rücksetz-Hinweis) */
+  wertText: string;
+  onZuruecksetzen: () => void;
+}
+
 interface Basis {
   label: string;
   hinweis?: ReactNode;
   warnung?: string | null;
+  schaetzung?: SchaetzAnzeige;
 }
 
-function Rahmen({ id, label, hinweis, warnung, children }: Basis & { id: string; children: ReactNode }) {
+function Rahmen({ id, label, hinweis, warnung, schaetzung, children }: Basis & { id: string; children: ReactNode }) {
   return (
-    <div className={`feld${warnung ? ' feld--warnung' : ''}`}>
-      <label htmlFor={id}>{label}</label>
+    <div className={`feld${warnung ? ' feld--warnung' : ''}${schaetzung?.geschaetzt ? ' feld--geschaetzt' : ''}`}>
+      <label htmlFor={id}>
+        {label}
+        {schaetzung?.geschaetzt ? (
+          <>
+            {' '}
+            <span className="badge-geschaetzt">geschätzt</span>
+          </>
+        ) : null}
+      </label>
       {children}
+      {schaetzung && !schaetzung.geschaetzt ? (
+        <button type="button" className="link-knopf" onClick={schaetzung.onZuruecksetzen}>
+          Zurücksetzen auf Schätzung ({schaetzung.wertText})
+        </button>
+      ) : null}
       {hinweis ? (
         <small className="feld__hinweis" id={`${id}-h`}>
           {hinweis}
@@ -36,6 +59,8 @@ interface BetragInputProps {
   min?: number;
   max?: number;
   describedBy?: string;
+  /** Beim Antippen den ganzen Text markieren (z.B. Schätzwert überschreiben) */
+  alleMarkieren?: boolean;
   /** Rückmeldung bei ungültiger Eingabe (null = gültig) */
   onFehler?: (fehler: string | null) => void;
 }
@@ -55,6 +80,7 @@ export function BetragInput({
   min = 0,
   max = Number.POSITIVE_INFINITY,
   describedBy,
+  alleMarkieren = false,
   onFehler,
 }: BetragInputProps) {
   const ref = useRef<HTMLInputElement>(null);
@@ -100,7 +126,10 @@ export function BetragInput({
       value={text}
       placeholder="0"
       aria-describedby={describedBy}
-      onFocus={() => setFokus(true)}
+      onFocus={(e) => {
+        setFokus(true);
+        if (alleMarkieren) e.currentTarget.select();
+      }}
       onPaste={(e) => {
         const eingefuegt = e.clipboardData.getData('text');
         const n = parseBetrag(eingefuegt, opt);
@@ -128,7 +157,11 @@ export function BetragInput({
       onBlur={() => {
         setFokus(false);
         const n = text.trim() === '' || text === '-' ? 0 : parseBetrag(text, opt);
-        if (n !== null) onChange(Math.min(max, Math.max(min, n)));
+        // nur bei Änderung melden (sonst würde ein Schätzwert schon durch Antippen zur eigenen Eingabe)
+        if (n !== null) {
+          const w = Math.min(max, Math.max(min, n));
+          if (w !== value) onChange(w);
+        }
         onFehler?.(null);
       }}
     />
@@ -150,6 +183,7 @@ export function BetragFeld({
   label,
   hinweis,
   warnung,
+  schaetzung,
   value,
   onChange,
   min = 0,
@@ -160,7 +194,7 @@ export function BetragFeld({
   const id = useId();
   const [fehler, setFehler] = useState<string | null>(null);
   return (
-    <Rahmen id={id} label={label} hinweis={hinweis} warnung={fehler ?? warnung}>
+    <Rahmen id={id} label={label} hinweis={hinweis} warnung={fehler ?? warnung} schaetzung={schaetzung}>
       <div className="eingabe">
         <BetragInput
           id={id}
@@ -169,6 +203,7 @@ export function BetragFeld({
           min={min}
           max={max}
           dezimal={dezimal}
+          alleMarkieren={schaetzung?.geschaetzt ?? false}
           describedBy={hinweis ? `${id}-h` : undefined}
           onFehler={setFehler}
         />
@@ -213,6 +248,7 @@ export function ZahlFeld({
   label,
   hinweis,
   warnung,
+  schaetzung,
   value,
   onChange,
   min = Number.NEGATIVE_INFINITY,
@@ -237,7 +273,7 @@ export function ZahlFeld({
   }`.trim();
 
   return (
-    <Rahmen id={id} label={label} hinweis={hinweis} warnung={fehler ?? warnung}>
+    <Rahmen id={id} label={label} hinweis={hinweis} warnung={fehler ?? warnung} schaetzung={schaetzung}>
       <div className="eingabe">
         <input
           id={id}
@@ -248,9 +284,13 @@ export function ZahlFeld({
           placeholder="0"
           aria-describedby={hinweis ? `${id}-h` : undefined}
           aria-invalid={fehler ? true : undefined}
-          onFocus={() => {
+          onFocus={(e) => {
             setFokus(true);
             setText(value === 0 ? '' : String(Number((value * faktor).toFixed(nachkomma))));
+            if (schaetzung?.geschaetzt) {
+              const el = e.currentTarget;
+              requestAnimationFrame(() => el.select());
+            }
           }}
           onChange={(e) => {
             setText(e.target.value);
@@ -270,7 +310,10 @@ export function ZahlFeld({
           onBlur={() => {
             setFokus(false);
             const n = text.trim() === '' ? 0 : parseZahl(text);
-            if (n !== null) onChange(Math.min(max, Math.max(min, n / faktor)));
+            if (n !== null) {
+              const w = Math.min(max, Math.max(min, n / faktor));
+              if (Math.abs(w - value) > 1e-12) onChange(w);
+            }
             setFehler(null);
           }}
         />
