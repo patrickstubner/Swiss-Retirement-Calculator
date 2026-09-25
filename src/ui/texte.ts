@@ -27,12 +27,20 @@ export const UWS_HILFE = (mindest: string) =>
 export const UWS_GESCHAETZT =
   'Der Umwandlungssatz ist nur geschätzt – Ihre Pensionskasse kann deutlich abweichen. Tragen Sie den Satz laut Vorsorgeausweis ein; er hat immer Vorrang.';
 
+const OHNE_OBLIGATORIUM_GRUND: Record<NonNullable<UmwandlungssatzSchaetzung['ohneObligatorium']>, string> = {
+  keinLohn: 'kein Lohn angegeben',
+  unterSchwelle: 'Lohn unter der BVG-Eintrittsschwelle',
+  andere: 'keine BVG-Gutschriften bis zum Referenzalter',
+};
+
 /** Aufteilung der Umwandlungssatz-Schätzung, z.B. für den Hinweis beim leeren Feld. */
 export function uwsSchaetzungText(u: UmwandlungssatzSchaetzung): string {
   const anteil = Math.round(u.anteilObligatorium * 100);
   const basis = u.bvgGuthabenEingegeben
     ? 'BVG-Altersguthaben laut Vorsorgeausweis'
     : 'geschätzt aus BVG-Mindestgutschriften';
+  if (u.ohneObligatorium !== null)
+    return `Schätzung: kein obligatorischer Teil geschätzt (${OHNE_OBLIGATORIUM_GRUND[u.ohneObligatorium]}), ${fmtProzent(u.satzUeberobligatorium, 2)} auf das ganze Guthaben.`;
   if (u.anteilObligatorium >= 0.995)
     return `Schätzung: ${fmtProzent(u.satzObligatorium)} – das Guthaben ist voraussichtlich ganz obligatorisch (${basis}).`;
   return `Schätzung: ${fmtProzent(u.satzObligatorium)} auf den obligatorischen Teil (ca. ${anteil}%, ${basis}), ${fmtProzent(u.satzUeberobligatorium, 2)} auf den Rest, ergibt ca. ${fmtProzent(u.satz)}.`;
@@ -40,13 +48,15 @@ export function uwsSchaetzungText(u: UmwandlungssatzSchaetzung): string {
 
 /** Kurzform für die Liste der Schätzwerte (Karte «Genauigkeit»). */
 export function uwsKurz(satz: number, u: UmwandlungssatzSchaetzung | undefined): string {
+  if (u?.ohneObligatorium)
+    return `${fmtProzent(satz, 2)} auf das ganze Guthaben (kein obligatorischer Teil geschätzt: ${OHNE_OBLIGATORIUM_GRUND[u.ohneObligatorium]})`;
   if (!u || u.anteilObligatorium >= 0.995) return fmtProzent(satz);
   return `ca. ${fmtProzent(satz)} (${fmtProzent(u.satzObligatorium)} auf ca. ${Math.round(u.anteilObligatorium * 100)}% obligatorischen Teil, ${fmtProzent(u.satzUeberobligatorium, 2)} auf den Rest)`;
 }
 
 /** Quelle der Umwandlungssatz-Schätzung (kurz, für die Oberfläche). */
 export const UWS_QUELLE = (u: UmwandlungssatzSchaetzung) =>
-  `${fmtProzent(u.satzObligatorium)}: gesetzliches Minimum fürs Obligatorium (Art. 14 BVG). ${fmtProzent(u.satzUeberobligatorium, 2)}: durchschnittlicher Umwandlungssatz der Pensionskassen mit 65 (OAK BV, Bericht zur finanziellen Lage 2025, Stand 31.12.2025) – ein umhüllender Satz, den die Kassen aufs ganze Guthaben anwenden; hier nur für den überobligatorischen Rest verwendet.`;
+  `${fmtProzent(u.satzObligatorium)}: gesetzliches Minimum fürs Obligatorium (Art. 14 BVG). ${fmtProzent(u.satzUeberobligatorium, 2)}: durchschnittlicher Umwandlungssatz der Pensionskassen mit 65 (OAK BV, Bericht zur finanziellen Lage 2025, Stand 31.12.2025) – ein umhüllender Satz, den die Kassen aufs ganze Guthaben anwenden; ${u.ohneObligatorium !== null ? 'hier mangels obligatorischem Teil ebenfalls auf das ganze Guthaben' : 'hier nur für den überobligatorischen Rest verwendet'}.`;
 
 export const VEREINFACHUNGEN: readonly string[] = [
   VEREINFACHUNG_BOERSE,
