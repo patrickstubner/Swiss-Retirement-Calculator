@@ -90,6 +90,16 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
     Kapitalbezüge fliessen in die Wertschriften der Person.
   - **Liquiditätslücke:** Warnung mit Jahren, wenn verfügbares Geld fehlt, obwohl noch gesperrte Vorsorgegelder
     vorhanden sind.
+- **Ausgaben in Phasen** (Detailmodus): Grundbetrag pro Jahr (mit Faktoren ab 75/85) plus optionale Phasen «von … bis …»
+  (beide inklusive; Kalenderjahr oder Alter einer wählbaren Person, Betrag pro Jahr oder pro Monat) und
+  Einzeljahr-Abweichungen (ersetzen die Lebenshaltung eines Kalenderjahres). Vorrang: Einzeljahr → erste passende Phase →
+  Grundbetrag. Vorschau pro Jahr (heute und hochgerechnet). Ohne Phasen gilt der bisherige Einzelbetrag.
+- **Heutige Franken:** Alle Ausgaben, Posten (Indexierung «wie Teuerung»), Einmalereignisse und Vermögenswerte sind in
+  heutigen Franken (Kaufkraft heute). Die App rechnet sie mit der erwarteten Teuerung (Annahmen) auf das jeweilige Jahr
+  hoch; weil die Simulation real rechnet, zeigen Ergebnis und Tabelle ebenfalls heutige Franken. Nominal fixe Beträge
+  sind ausdrücklich beschriftet: Posten mit Indexierung «Keine (nominal fix)», PK-Renten und der AHV-Rentenzuschlag
+  (verlieren real an Wert); ausländische Renten werden als heutiger Betrag in der Fremdwährung erfasst und entwickeln
+  sich gemäss Indexierung und Wechselkursänderung.
 - **Wiederkehrende Posten** (Einnahmen wie Mieteinnahmen, Ausgaben wie Krankenkasse oder Wohnen) mit Start-/Endalter,
   Indexierung und Steuerbarkeit; **Einmalereignisse** (z.B. Erbschaft +, Autokauf −) in einem bestimmten Alter.
 - AHV: Referenzalter nach Jahrgang/Geschlecht (inkl. Übergang Frauen 1961–1963), Eingabe der Rente aus der

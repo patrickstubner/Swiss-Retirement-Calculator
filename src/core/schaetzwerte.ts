@@ -385,6 +385,8 @@ export function detailwerte(h: Haushalt, standard: Haushalt): string[] {
       if (p.pk.zins !== std.pk.zins) out.push(`PK-Verzinsung${n}`);
     }
   });
+  if (h.ausgaben.phasen.length > 0) out.push('Ausgabenphasen');
+  if (h.ausgaben.einzeljahre.length > 0) out.push('Ausgaben: einzelne Jahre');
   if (h.posten.length > 0) out.push('Weitere Einnahmen/Ausgaben');
   if (h.ereignisse.length > 0) out.push('Einmalige Ereignisse');
   if (h.ausgaben.faktorAb75 !== standard.ausgaben.faktorAb75 || h.ausgaben.faktorAb85 !== standard.ausgaben.faktorAb85)

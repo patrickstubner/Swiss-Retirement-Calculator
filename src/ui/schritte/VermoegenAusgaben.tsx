@@ -1,14 +1,15 @@
-import { startvermoegen, wohneigentumNetto } from '../../core/simulation';
+import { referenzPerson, startvermoegen, wohneigentumNetto } from '../../core/simulation';
 import type { Haushalt, Posten, PostenKategorie } from '../../core/typen';
 import { neuerPosten, neuesEreignis } from '../../data/defaults';
 import { gemeindenVon, KANTON_STATUS_TEXT, KANTONE, kantonNach, kantonsModellFuer } from '../../data/kantone';
+import { AusgabenPhasen, HeutigeFrankenHinweis } from '../components/AusgabenPhasen';
 import { AuswahlFeld, BetragFeld, Schalter, TextFeld, ZahlFeld } from '../components/Felder';
 import { Karte } from '../components/Karte';
 import { fmtChf, fmtZahl } from '../format';
 import { type SchrittProps, type Setzer, setzePerson } from '../kontext';
 import { VEREINFACHUNG_BOERSE, VEREINFACHUNG_WOHNEIGENTUM } from '../texte';
 
-export function VermoegenAusgaben({ h, setH, regeln }: SchrittProps) {
+export function VermoegenAusgaben({ h, setH, regeln, heute }: SchrittProps) {
   const ehepaar = h.zivilstand === 'verheiratet';
   return (
     <>
@@ -97,14 +98,15 @@ export function VermoegenAusgaben({ h, setH, regeln }: SchrittProps) {
         Verfügbares Vermögen heute (inkl. Wohneigentum netto): <strong>{fmtChf(startvermoegen(h))}</strong>.{' '}
         {VEREINFACHUNG_BOERSE}
       </p>
-      <Karte titel="Ausgaben">
+      <Karte titel="Ausgaben" untertitel="Lebenshaltung des Haushalts, ohne Steuern und AHV-Beiträge">
+        <HeutigeFrankenHinweis betrag={h.ausgaben.lebenshaltung} heute={heute} inflation={h.annahmen.inflation} />
         <BetragFeld
           label="Lebenshaltungskosten pro Jahr (heute)"
           value={h.ausgaben.lebenshaltung}
           min={0}
           max={100_000_000}
           onChange={(v) => setH((x) => ({ ...x, ausgaben: { ...x.ausgaben, lebenshaltung: v } }))}
-          hinweis={`Ohne Steuern und AHV-Beiträge (werden berechnet). Zum Vergleich: EL-Lebensbedarf ${fmtChf(
+          hinweis={`Grundbetrag: gilt in allen Jahren ohne Phase oder Einzeljahr. Ohne Steuern und AHV-Beiträge (werden berechnet). Zum Vergleich: EL-Lebensbedarf ${fmtChf(
             ehepaar ? regeln.ahv.elLebensbedarf.ehepaar : regeln.ahv.elLebensbedarf.alleinstehend,
           )}.`}
         />
@@ -117,7 +119,7 @@ export function VermoegenAusgaben({ h, setH, regeln }: SchrittProps) {
             min={0}
             max={3}
             onChange={(v) => setH((x) => ({ ...x, ausgaben: { ...x.ausgaben, faktorAb75: v } }))}
-            hinweis="in % der heutigen Ausgaben"
+            hinweis="in % des Grundbetrags"
           />
           <ZahlFeld
             label="Ausgaben ab 85"
@@ -130,7 +132,8 @@ export function VermoegenAusgaben({ h, setH, regeln }: SchrittProps) {
             hinweis="z.B. höher für Pflege"
           />
         </div>
-        {ehepaar ? <p className="klein">Altersphasen beziehen sich auf die jüngere Person.</p> : null}
+        {ehepaar ? <p className="klein">Die Faktoren ab 75/85 beziehen sich auf die jüngere Person.</p> : null}
+        <AusgabenPhasen h={h} setH={setH} heute={heute} refIdx={referenzPerson(h.personen)} />
       </Karte>
       <PostenKarte h={h} setH={setH} />
       <EreignisKarte h={h} setH={setH} />
@@ -161,7 +164,7 @@ function PostenKarte({ h, setH }: { h: Haushalt; setH: Setzer }) {
   return (
     <Karte
       titel="Weitere Einnahmen und Ausgaben"
-      untertitel="Wiederkehrend pro Jahr, mit Start- und Endalter (z.B. Mieteinnahmen, Krankenkasse, Wohnkosten)"
+      untertitel="Wiederkehrend pro Jahr, mit Start- und Endalter (z.B. Mieteinnahmen, Krankenkasse, Wohnkosten). Standard: heutige Franken, mit der Teuerung hochgerechnet"
     >
       {h.posten.length === 0 ? <p className="klein">Keine erfasst.</p> : null}
       {h.posten.map((po) => (
@@ -186,6 +189,13 @@ function PostenKarte({ h, setH }: { h: Haushalt; setH: Setzer }) {
               min={0}
               max={100_000_000}
               onChange={(v) => setP(po.id, (x) => ({ ...x, betragJahr: v }))}
+              hinweis={
+                po.indexierung.art === 'teuerung'
+                  ? 'In heutigen Franken; wächst mit der Teuerung (Kaufkraft bleibt gleich).'
+                  : po.indexierung.art === 'keine'
+                    ? 'Nominaler Betrag, bleibt in Franken fix – verliert mit der Teuerung an Kaufkraft.'
+                    : 'Heutiger Betrag; wächst nominal um den festen Satz pro Jahr.'
+              }
             />
             {h.personen.length > 1 ? (
               <AuswahlFeld
@@ -225,7 +235,7 @@ function PostenKarte({ h, setH }: { h: Haushalt; setH: Setzer }) {
               label="Indexierung"
               value={po.indexierung.art}
               optionen={[
-                { value: 'teuerung', label: 'Wie Teuerung (real konstant)' },
+                { value: 'teuerung', label: 'Wie Teuerung (heutige Franken)' },
                 { value: 'keine', label: 'Keine (nominal fix)' },
                 { value: 'satz', label: 'Fester Satz pro Jahr' },
               ]}
@@ -300,6 +310,7 @@ function EreignisKarte({ h, setH }: { h: Haushalt; setH: Setzer }) {
           <div className="raster">
             <BetragFeld
               label="Betrag (heute, + Zufluss / − Abfluss)"
+              hinweis="In heutigen Franken; die App rechnet ihn mit der Teuerung auf das Jahr des Ereignisses hoch."
               value={ev.betrag}
               min={-1_000_000_000}
               max={1_000_000_000}

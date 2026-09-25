@@ -764,3 +764,24 @@ tr.negativ td {
   display: block;
   font-weight: 600;
 }
+
+/* Ausgabenphasen */
+.ausgaben-phasen h3 {
+  font-size: 1rem;
+  margin: 16px 0 4px;
+}
+.phase__titel {
+  margin: 0 0 6px;
+}
+.ausgaben-vorschau table {
+  font-size: 0.85rem;
+  width: 100%;
+}
+.ausgaben-vorschau th,
+.ausgaben-vorschau td {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+.ausgaben-vorschau tr.hervor td {
+  font-weight: 600;
+}

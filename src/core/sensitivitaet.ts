@@ -5,6 +5,7 @@
  * Rücktrittsalter und auf das Vermögen mit 85 (jüngere Person).
  */
 import type { Regeln } from '../rules';
+import { ausgabenSkaliert } from './ausgaben';
 import { type Schaetzung, SENSITIVITAET } from './schaetzwerte';
 import { referenzPerson, simuliere } from './simulation';
 import { fruehestesRuecktrittsalter, type SolverOptionen } from './solver';
@@ -105,7 +106,7 @@ export function sensitivitaet(
       geschaetzt: false,
       h: {
         ...h,
-        ausgaben: { ...h.ausgaben, lebenshaltung: h.ausgaben.lebenshaltung * (1 + S.ausgabenRelativ) },
+        ausgaben: ausgabenSkaliert(h.ausgaben, 1 + S.ausgabenRelativ),
       },
     },
   ];

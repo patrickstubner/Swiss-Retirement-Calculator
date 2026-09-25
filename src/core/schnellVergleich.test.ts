@@ -8,7 +8,7 @@
  * PR-Beschreibung); die Assertions sind bewusst locker und dokumentieren die Grössenordnung.
  */
 import { describe, expect, it } from 'vitest';
-import { neueAuslandRente, neuePerson, standardHaushalt } from '../data/defaults';
+import { neueAusgaben, neueAuslandRente, neuePerson, standardHaushalt } from '../data/defaults';
 import { ladeRegeln } from '../rules';
 import { effektiverHaushalt } from './schaetzwerte';
 import { vermoegenImAlter } from './sensitivitaet';
@@ -105,7 +105,7 @@ const bvgNah = (() => {
   p.wertschriften = 150000;
   p.bargeld = 30000;
   return haushalt([p], {
-    ausgaben: { lebenshaltung: 62000, faktorAb75: 1, faktorAb85: 1 },
+    ausgaben: { ...neueAusgaben(), lebenshaltung: 62000, faktorAb75: 1, faktorAb85: 1 },
     steuern: { ...standardHaushalt(regeln).steuern, kanton: 'ZH', gemeinde: 'Winterthur' },
   });
 })();
@@ -119,7 +119,7 @@ const umhuellend = (() => {
   p.wertschriften = 120000;
   p.wohneigentum = { vorhanden: true, verkehrswert: 1_200_000, hypothek: 0 };
   return haushalt([p], {
-    ausgaben: { lebenshaltung: 110000, faktorAb75: 1, faktorAb85: 1 },
+    ausgaben: { ...neueAusgaben(), lebenshaltung: 110000, faktorAb75: 1, faktorAb85: 1 },
     steuern: { ...standardHaushalt(regeln).steuern, kanton: 'AG', gemeinde: 'Baden' },
   });
 })();
@@ -147,7 +147,7 @@ const paarBrasilien = (() => {
     { ...inss, bezeichnung: 'INSS', land: 'BR', waehrung: 'BRL', betrag: 1500, wechselkursChf: 0.15, startAlter: 65 },
   ];
   return haushalt([m, f], {
-    ausgaben: { lebenshaltung: 72000, faktorAb75: 1, faktorAb85: 1 },
+    ausgaben: { ...neueAusgaben(), lebenshaltung: 72000, faktorAb75: 1, faktorAb85: 1 },
     steuern: { ...standardHaushalt(regeln).steuern, kanton: 'ZH', gemeinde: 'Zürich' },
   });
 })();
@@ -168,7 +168,7 @@ const frueh = (() => {
   p.saeule3a = { ...p.saeule3a, guthaben: 180000 };
   p.wertschriften = 400000;
   return haushalt([p], {
-    ausgaben: { lebenshaltung: 90000, faktorAb75: 1, faktorAb85: 1 },
+    ausgaben: { ...neueAusgaben(), lebenshaltung: 90000, faktorAb75: 1, faktorAb85: 1 },
     steuern: { ...standardHaushalt(regeln).steuern, kanton: 'ZH', gemeinde: 'Zürich' },
   });
 })();

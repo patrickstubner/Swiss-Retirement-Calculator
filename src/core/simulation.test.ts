@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { neueAuslandRente, neuePerson, neuerPosten, neuesEreignis, standardHaushalt } from '../data/defaults';
+import {
+  neueAusgaben,
+  neueAuslandRente,
+  neuePerson,
+  neuerPosten,
+  neuesEreignis,
+  standardHaushalt,
+} from '../data/defaults';
 import { ladeRegeln } from '../rules';
 import { entnehme, simuliere, startvermoegen, vorsorgeBezugMonate, wohneigentumNetto } from './simulation';
 import { fruehestesRuecktrittsalter } from './solver';
@@ -29,7 +36,7 @@ function einfach(overrides: Partial<Haushalt> = {}): Haushalt {
     ...h,
     personen: [person()],
     planungsalter: 100,
-    ausgaben: { lebenshaltung: 70000, faktorAb75: 0.9, faktorAb85: 1.1 },
+    ausgaben: { ...neueAusgaben(), lebenshaltung: 70000, faktorAb75: 0.9, faktorAb85: 1.1 },
     annahmen: {
       ...h.annahmen,
       renditeNominal: 0.01,
@@ -42,7 +49,7 @@ function einfach(overrides: Partial<Haushalt> = {}): Haushalt {
   };
 }
 
-const ohneAusgaben = { lebenshaltung: 0, faktorAb75: 1, faktorAb85: 1 };
+const ohneAusgaben = { ...neueAusgaben(), lebenshaltung: 0, faktorAb75: 1, faktorAb85: 1 };
 
 describe('simuliere – Grundlagen', () => {
   it('läuft bis zum Planungsalter der jüngeren Person (auch 999)', () => {
@@ -59,7 +66,10 @@ describe('simuliere – Grundlagen', () => {
 
   it('bei Rendite = Inflation sinkt das Vermögen real genau um die Ausgaben (+ NE-Beiträge)', () => {
     const p = leer({ geburtsjahr: 1990, wertschriften: 1_000_000 });
-    const h = einfach({ personen: [p], ausgaben: { lebenshaltung: 50000, faktorAb75: 1, faktorAb85: 1 } });
+    const h = einfach({
+      personen: [p],
+      ausgaben: { ...neueAusgaben(), lebenshaltung: 50000, faktorAb75: 1, faktorAb85: 1 },
+    });
     const z = simuliere(h, regeln, { start }).zeilen[0];
     expect(z?.neBeitraege).toBeGreaterThan(0);
     expect(z?.vermoegen).toBeCloseTo(1_000_000 - 50000 - (z?.neBeitraege ?? 0), 6);
@@ -171,7 +181,7 @@ describe('Sperrfristen (Zugang zu Vorsorgegeldern)', () => {
     p.pk = { ...p.pk, guthaben: 800000, kapitalanteil: 1 };
     expect(p.pk.fruehestesAlter).toBe(63);
     const e = simuliere(
-      einfach({ personen: [p], ausgaben: { lebenshaltung: 40000, faktorAb75: 1, faktorAb85: 1 } }),
+      einfach({ personen: [p], ausgaben: { ...neueAusgaben(), lebenshaltung: 40000, faktorAb75: 1, faktorAb85: 1 } }),
       regeln,
       {
         start,
@@ -348,7 +358,7 @@ describe('fruehestesRuecktrittsalter', () => {
 
   it('unbezahlbare Ausgaben → nicht gefunden', () => {
     const s = fruehestesRuecktrittsalter(
-      einfach({ ausgaben: { lebenshaltung: 1_000_000, faktorAb75: 1, faktorAb85: 1 } }),
+      einfach({ ausgaben: { ...neueAusgaben(), lebenshaltung: 1_000_000, faktorAb75: 1, faktorAb85: 1 } }),
       regeln,
       opt,
     );

@@ -10,7 +10,9 @@ import LZString from 'lz-string';
 import { ahvRenteSkala44, ahvTeilrente } from '../core/ahv';
 import { detailwerte, SCHAETZ_FELDER } from '../core/schaetzwerte';
 import type {
+  Ausgaben,
   AuslandRente,
+  BetragEinheit,
   EingabeModus,
   Haushalt,
   Indexierung,
@@ -21,9 +23,11 @@ import type {
 } from '../core/typen';
 import {
   MAX_PLANUNGSALTER,
+  neueAusgabenPhase,
   neueAuslandRente,
   neuePerson,
   neuerPosten,
+  neuesAusgabenEinzeljahr,
   neuesEreignis,
   standardHaushalt,
 } from '../data/defaults';
@@ -31,7 +35,12 @@ import { kantonNach } from '../data/kantone';
 import { wegzugsLand } from '../data/laender';
 import type { Regeln } from '../rules';
 
-export const SCHEMA_VERSION = 1;
+/**
+ * Version des Haushalt-Schemas (URL-Fragment und localStorage).
+ * 2: Ausgabenphasen und Einzeljahr-Abweichungen (`ausgaben.phasen`, `ausgaben.einzeljahre`,
+ *    `ausgaben.phasenBezug`, `ausgaben.phasenPerson`); Version 1 wird ohne Phasen übernommen.
+ */
+export const SCHEMA_VERSION = 2;
 const HASH_PREFIX = '#s=';
 /** Einziger Schlüssel mit Daten (ganzer Zustand als JSON). */
 export const STORAGE_KEY = 'ruhestandsrechner:v1';
@@ -143,6 +152,44 @@ function personMitManuell(roh: unknown, regeln: Regeln, i: number): Person {
   return { ...p, manuell: manuellAus(roh, p, regeln) };
 }
 
+const ganzzahl = (x: number, min: number, max: number) => Math.min(max, Math.max(min, Math.round(x)));
+const einheit = (x: unknown): BetragEinheit => (x === 'monat' ? 'monat' : 'jahr');
+
+/** Ausgabenphasen/Einzeljahre (Schema 2); ältere Zustände haben keine → leere Listen. */
+function normalisiereAusgaben(a: Ausgaben, roh: unknown, anzahl: number): Ausgaben {
+  const r = istObj(roh) ? roh : {};
+  const phasen = (Array.isArray(r.phasen) ? r.phasen : []).slice(0, 30).map((x) => {
+    const ph = mische(neueAusgabenPhase(0, null), x);
+    const von = ganzzahl(ph.von, 0, 9999);
+    const bis = ph.bis === null ? null : Math.max(von, ganzzahl(ph.bis, 0, 9999));
+    return { ...ph, von, bis, betrag: Math.max(0, ph.betrag), einheit: einheit(istObj(x) ? x.einheit : undefined) };
+  });
+  const gesehen = new Set<number>();
+  const einzeljahre = (Array.isArray(r.einzeljahre) ? r.einzeljahre : [])
+    .slice(0, 60)
+    .map((x) => {
+      const e = mische(neuesAusgabenEinzeljahr(0), x);
+      return {
+        ...e,
+        jahr: ganzzahl(e.jahr, 1900, 9999),
+        betrag: Math.max(0, e.betrag),
+        einheit: einheit(istObj(x) ? x.einheit : undefined),
+      };
+    })
+    .filter((e) => {
+      if (gesehen.has(e.jahr)) return false;
+      gesehen.add(e.jahr);
+      return true;
+    });
+  return {
+    ...a,
+    phasenBezug: a.phasenBezug === 'alter' ? 'alter' : 'jahr',
+    phasenPerson: ganzzahl(a.phasenPerson, 0, anzahl - 1),
+    phasen,
+    einzeljahre,
+  };
+}
+
 export function normalisiere(roh: unknown, regeln: Regeln): Haushalt {
   const def = standardHaushalt(regeln);
   const h = mische(def, roh);
@@ -180,6 +227,7 @@ export function normalisiere(roh: unknown, regeln: Regeln): Haushalt {
     const ev = mische(neuesEreignis(), x);
     return { ...ev, person: Math.min(anzahl - 1, Math.max(0, Math.round(ev.person))) };
   });
+  const ausgaben = normalisiereAusgaben(h.ausgaben, istObj(roh) ? roh.ausgaben : undefined, anzahl);
   const rohSteuern = istObj(roh) && istObj(roh.steuern) ? roh.steuern : {};
   const kirchen = ['reformiert', 'katholisch', 'christkatholisch'] as const;
   const steuern = {
@@ -197,6 +245,7 @@ export function normalisiere(roh: unknown, regeln: Regeln): Haushalt {
     personen,
     posten,
     ereignisse,
+    ausgaben,
     steuern,
     planungsalter: Math.min(MAX_PLANUNGSALTER, Math.max(1, Math.round(h.planungsalter))),
     wohnsitz: { land: 'CH', wegzug: null },
@@ -214,7 +263,7 @@ export function dekodiere(s: string, regeln: Regeln): Haushalt | null {
     if (!json) return null;
     const g: unknown = JSON.parse(json);
     if (!istObj(g) || typeof g.v !== 'number') return null;
-    // Migrationen für künftige Schema-Versionen hier einfügen.
+    // Schema 1 → 2: Ausgabenphasen fehlen und werden in normalisiere() als leere Listen ergänzt.
     return normalisiere(g.h, regeln);
   } catch {
     return null;

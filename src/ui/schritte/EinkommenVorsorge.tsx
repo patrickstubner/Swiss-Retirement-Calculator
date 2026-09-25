@@ -407,8 +407,9 @@ function AuslandRentenKarte({ p, set }: { p: Person; set: (fn: (p: Person) => Pe
           </div>
           <div className="raster">
             <BetragFeld
-              label="Betrag pro Zahlung"
+              label="Betrag pro Zahlung (heute)"
               einheit={r.waehrung}
+              hinweis="Heutiger Betrag in der Fremdwährung (nominal). Weitere Entwicklung gemäss Indexierung und Wechselkursänderung; «Keine» = bleibt nominal fix."
               dezimal
               value={r.betrag}
               min={0}
@@ -453,7 +454,7 @@ function AuslandRentenKarte({ p, set }: { p: Person; set: (fn: (p: Person) => Pe
               label="Indexierung"
               value={r.indexierung.art}
               optionen={[
-                { value: 'teuerung', label: 'Wie Teuerung (real konstant)' },
+                { value: 'teuerung', label: 'Wie Teuerung (Kaufkraft konstant)' },
                 { value: 'keine', label: 'Keine (nominal fix)' },
                 { value: 'satz', label: 'Fester Satz pro Jahr' },
               ]}

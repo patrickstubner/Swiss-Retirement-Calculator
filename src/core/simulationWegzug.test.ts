@@ -3,7 +3,7 @@
  * Art. 3 Abs. 2 lit. d BVV 3) und Quellensteuer. Erfundene Beispielperson, Fantasiezahlen.
  */
 import { describe, expect, it } from 'vitest';
-import { neuePerson, standardHaushalt } from '../data/defaults';
+import { neueAusgaben, neuePerson, standardHaushalt } from '../data/defaults';
 import { ladeRegeln } from '../rules';
 import { quellensteuerBundKapital, quellensteuerKapital } from './quellensteuer';
 import { obligatoriumsAnteilBei } from './schaetzwerte';
@@ -47,7 +47,7 @@ function haushalt(p: Person, kanton = 'ZH'): Haushalt {
     ...h,
     personen: [p],
     planungsalter: 90,
-    ausgaben: { lebenshaltung: 30_000, faktorAb75: 1, faktorAb85: 1 },
+    ausgaben: { ...neueAusgaben(), lebenshaltung: 30_000, faktorAb75: 1, faktorAb85: 1 },
     steuern: { ...h.steuern, kanton },
   };
 }

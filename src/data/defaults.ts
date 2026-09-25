@@ -5,6 +5,9 @@
  */
 import type {
   AhvSchaetzhilfeEingabe,
+  Ausgaben,
+  AusgabenEinzeljahr,
+  AusgabenPhase,
   AuslandRente,
   Einmalereignis,
   Haushalt,
@@ -135,6 +138,26 @@ export function neuesEreignis(): Einmalereignis {
   return { id: neueId('ev'), bezeichnung: 'Erbschaft', betrag: 0, person: 0, alter: 70 };
 }
 
+export function neueAusgaben(): Ausgaben {
+  return {
+    lebenshaltung: 0,
+    faktorAb75: 1,
+    faktorAb85: 1,
+    phasenBezug: 'jahr',
+    phasenPerson: 0,
+    phasen: [],
+    einzeljahre: [],
+  };
+}
+
+export function neueAusgabenPhase(von: number, bis: number | null, betrag = 0): AusgabenPhase {
+  return { id: neueId('ph'), von, bis, betrag, einheit: 'jahr' };
+}
+
+export function neuesAusgabenEinzeljahr(jahr: number, betrag = 0): AusgabenEinzeljahr {
+  return { id: neueId('ej'), jahr, betrag, einheit: 'jahr' };
+}
+
 export function standardHaushalt(regeln: Regeln): Haushalt {
   return {
     zivilstand: 'alleinstehend',
@@ -142,7 +165,7 @@ export function standardHaushalt(regeln: Regeln): Haushalt {
     planungsalter: STANDARD_PLANUNGSALTER,
     posten: [],
     ereignisse: [],
-    ausgaben: { lebenshaltung: 0, faktorAb75: 1, faktorAb85: 1 },
+    ausgaben: neueAusgaben(),
     annahmen: {
       renditeNominal: 0.04,
       renditeBargeld: 0.005,
