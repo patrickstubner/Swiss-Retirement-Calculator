@@ -1,0 +1,68 @@
+{
+  "stand": "2026-09-29",
+  "beschreibung": "Empirische Ausgabenkurve im Ruhestand (Go-go / Slow-go / No-go) als Anteil der Ausgaben der aktiven Jahre, in heutigen Franken (real). Alter der Referenzperson (jüngere Person bzw. Person des Planungsalters). Werte gerundet; Herleitung in docs/quellen.md Abschnitt 14.",
+  "phasen": [
+    {
+      "id": "gogo",
+      "label": "Go-go (aktive Jahre)",
+      "bisAlter": 74,
+      "anteil": 1.0,
+      "herleitung": "BFS HABE Einpersonenhaushalte: Konsumausgaben 65–74 = 99–101 % von 55–64 (2015–2017, 2018–2019)",
+      "status": "belegt"
+    },
+    {
+      "id": "slowgo",
+      "label": "Slow-go",
+      "bisAlter": 84,
+      "anteil": 0.85,
+      "herleitung": "BFS HABE Einpersonenhaushalte, Konsum + Grundversicherung + übrige Versicherungen: 75+ / 65–74 = 0,822 (2015–2017), 0,867 (2018–2019), Mittel 0,845; 2020–2021 (Covid) 0,908. Plausibilisiert mit Blanchett 2014 (Alter 80 vs. 65: 0,81–0,87) und EBRI 2020 (75–85 vs. 65–74: 0,77)",
+      "status": "belegt (Bandbreite 0,82–0,91)"
+    },
+    {
+      "id": "nogo",
+      "label": "No-go",
+      "bisAlter": null,
+      "anteil": 0.75,
+      "herleitung": "HABE hat keine Klasse 85+. Slow-go 0,85 × Rückgang 0,87–0,89 (Blanchett 2014: Alter 90 / 80 = 0,87–0,91; EBRI 2012: 85 / 75 = 0,815) ≈ 0,75",
+      "status": "abgeleitet (keine Schweizer Daten 85+, OFFEN)"
+    }
+  ],
+  "pflege": {
+    "betragJahr": 81000,
+    "jahre": 2,
+    "herleitung": "BFS Kennzahlen Alters- und Pflegeheime 2024: Gesamtkosten CHF 351 pro Tag, davon Pflege 43,4 % (von OKP, Kanton und Patientenbeitrag getragen); selbst zu tragen ca. (1 − 0,434) × 351 ≈ 199 + Patientenbeitrag max. 23 (Art. 25a Abs. 5 KVG) ≈ CHF 222 pro Tag ≈ 81'000 pro Jahr (Obergrenze, kantonal verschieden, ohne Ergänzungsleistungen und Hilflosenentschädigung). Dauer: mittlere Aufenthaltsdauer 784 Tage ≈ 2,1 Jahre",
+    "status": "Näherung; Eintrittsalter frei wählbar (Annahme), altersspezifische Heimquote OFFEN"
+  },
+  "quellen": [
+    {
+      "titel": "BFS, Haushaltsbudgeterhebung (HABE), Ausgaben der Einpersonenhaushalte nach Altersklasse, je-d-20.02.01.02.21",
+      "url": "https://www.bfs.admin.ch/asset/de/32667076",
+      "stand": "publiziert 12.11.2024, abgerufen 28.9.2026"
+    },
+    {
+      "titel": "Blanchett, D. (2014): Estimating the True Cost of Retirement, Morningstar",
+      "url": "https://www.morningstar.com/content/dam/marketing/shared/research/foundational/677785-EstimatingTrueCostRetirement.pdf",
+      "stand": "2014, abgerufen 28.9.2026"
+    },
+    {
+      "titel": "EBRI Issue Brief 368 (Banerjee 2012): Expenditure Patterns of Older Americans, 2001–2009",
+      "url": "https://www.ebri.org/retirement/content/expenditure-patterns-of-older-americans-2001-2009-4992",
+      "stand": "2012, abgerufen 28.9.2026"
+    },
+    {
+      "titel": "EBRI (2020): Getting to the Whys of Spending in Retirement",
+      "url": "https://www.ebri.org/content/getting-to-the-whys-of-spending-in-retirement",
+      "stand": "2020, abgerufen 28.9.2026"
+    },
+    {
+      "titel": "BFS, Alters- und Pflegeheime, Kennzahlen 2024",
+      "url": "https://www.bfs.admin.ch/bfs/de/home/statistiken/gesundheit/gesundheitswesen/alters-pflegeheime.html",
+      "stand": "abgerufen 28.9.2026"
+    },
+    {
+      "titel": "BAG, Pflegeleistungen der Krankenversicherung (OKP-Beiträge, Patientenbeteiligung)",
+      "url": "https://www.bag.admin.ch/de/krankenversicherung-pflegeleistungen",
+      "stand": "abgerufen 28.9.2026"
+    }
+  ]
+}

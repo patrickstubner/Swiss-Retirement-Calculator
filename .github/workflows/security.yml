@@ -1,0 +1,45 @@
+# Sicherheitsprüfung (Audit S-15, Dauerregel): Abhängigkeiten, Geheimnisse, lokale Daten, CSP im Build.
+# Läuft bei Pull Requests, auf main und wöchentlich (neue Schwachstellen in unveränderten Abhängigkeiten).
+name: security
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Abhängigkeiten (npm audit)
+        run: |
+          npm audit --omit=dev --audit-level=high
+          npm audit --audit-level=high
+      - name: Geheimnis-Scan (Muster über getrackte Dateien)
+        run: node scripts/secret-scan.mjs
+      - name: Guard lokale Daten und verbotene Wörter
+        run: node scripts/datenschutz-guard.mjs
+      - name: Build und Prüfung von dist
+        run: |
+          npm run build
+          grep -q 'Content-Security-Policy' dist/index.html
+          node scripts/secret-scan.mjs dist
+          node scripts/datenschutz-guard.mjs dist

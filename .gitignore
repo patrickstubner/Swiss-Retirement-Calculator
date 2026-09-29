@@ -1,0 +1,18 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+test-results/
+
+# Lokale Daten (echte Zahlen, Audit-Ergebnisse): nie committen (S-11)
+lokal/
+audit-local/
+rr-audit/
+*.local.*
+.env
+.env.*
+!.env.example
+fortschritt.md
+*.tsbuildinfo
+.vitest-cache/
+coverage/
