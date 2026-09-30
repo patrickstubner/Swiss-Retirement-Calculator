@@ -112,7 +112,7 @@ const bvgNah = (() => {
 
 // 2) Kader, umhüllende Kasse (hohe Beiträge, tiefer Umwandlungssatz, 3a-Einzahlungen)
 const umhuellend = (() => {
-  const p = detailPerson({ name: 'B', geburtsjahr: 1972, geburtsmonat: 9, geschlecht: 'm', lohn: 160000 });
+  const p = detailPerson({ name: 'B', geburtsjahr: 1973, geburtsmonat: 9, geschlecht: 'm', lohn: 160000 });
   p.ahv = { ...p.ahv, renteMonat: 2520 };
   p.pk = { ...p.pk, guthaben: 720000, beitragModus: 'eingabe', sparbeitragJahr: 32000, umwandlungssatz: 0.052 };
   p.saeule3a = { ...p.saeule3a, guthaben: 140000, beitragJahr: 7258 };
@@ -124,22 +124,22 @@ const umhuellend = (() => {
   });
 })();
 
-// 3) Erfundenes Ehepaar, Person 2 seit 2008 in der Schweiz (AHV-Lücken, Rente aus dem Ausland)
+// 3) Erfundenes Ehepaar, Beispielperson B seit 2014 in der Schweiz (AHV-Lücken, Rente aus dem Ausland)
 const paarAusland = (() => {
-  const m = detailPerson({ name: 'Marco', geburtsjahr: 1968, geburtsmonat: 2, geschlecht: 'm', lohn: 80000 });
+  const m = detailPerson({ name: 'Person A', geburtsjahr: 1980, geburtsmonat: 2, geschlecht: 'm', lohn: 80000 });
   m.ahv = { ...m.ahv, renteMonat: 2000 };
   m.pk = { ...m.pk, guthaben: 380000, beitragModus: 'eingabe', sparbeitragJahr: 12000, umwandlungssatz: 0.06 };
   m.saeule3a = { ...m.saeule3a, guthaben: 90000 };
   m.wertschriften = 200000;
   const f = detailPerson({
-    name: 'Ana',
-    geburtsjahr: 1978,
+    name: 'Person B',
+    geburtsjahr: 1985,
     geburtsmonat: 7,
     geschlecht: 'w',
     lohn: 30000,
-    inChSeit: 2008,
+    inChSeit: 2014,
   });
-  f.ahv = { ...f.ahv, renteMonat: 1550 }; // Vorausberechnung inkl. Splitting, 36 Beitragsjahre
+  f.ahv = { ...f.ahv, renteMonat: 1550 }; // Vorausberechnung inkl. Splitting, mit Beitragslücken vor dem Zuzug
   f.pk = { ...f.pk, guthaben: 60000, beitragModus: 'eingabe', sparbeitragJahr: 2500, umwandlungssatz: 0.065 };
   f.saeule3a = { ...f.saeule3a, guthaben: 25000 };
   const ausl = neueAuslandRente();

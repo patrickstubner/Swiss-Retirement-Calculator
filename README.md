@@ -152,7 +152,7 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
 - Pensionskasse (Werte manuell aus dem Vorsorgeausweis): Altersguthaben, Sparbeiträge, Verzinsung,
   Umwandlungssatz, Kapital/Rente-Mix, frühestes Bezugsalter gemäss Reglement.
 - Säule 3a und Freizügigkeit: Guthaben, Rendite, Einzahlungen (3a-Maximum 2026).
-- Ausländische Renten pro Person (z.B. Rente aus einem Abkommensstaat; Beispiel-Felder in `docs/brasilien.md` §6): Betrag, Währung,
+- Ausländische Renten pro Person (z.B. Rente aus einem Abkommensstaat; Beispiel-Felder in `docs/auslandsszenarien.md` §4): Betrag, Währung,
   Zahlungen/Jahr, Wechselkurs mit realer Auf-/Abwertung pro Jahr, Startalter, Indexierung, Steuer im Quellenstaat,
   in der Schweiz steuerbar ja/nein.
 - Steuern: **direkte Bundessteuer exakt nach Tarif 2026** (Einkommen und Kapitalleistungen zu 1/5).
@@ -311,10 +311,16 @@ docs/        Konzept, Quellen und Sicherheit (docs/SECURITY.md)
 
 Die Berechnung läuft nur im Browser; Eingaben aus Link, Import und Speicher werden zentral validiert (`src/ui/validierung.ts`), eine Content-Security-Policy sperrt Fremdquellen und Netzverbindungen. Bedrohungsmodell, Regeln für jede Änderung und Prüfprotokoll: [docs/SECURITY.md](docs/SECURITY.md).
 
+**Datenschutz-Guard und Wortliste:** `node scripts/datenschutz-guard.mjs [dist]` prüft, dass keine lokalen Daten getrackt sind
+und keine verbotenen Wörter vorkommen. Die Wortliste (gesalzene Hashes) liegt **nicht im Repo**: lokal in der ungetrackten
+Datei `lokal/datenschutz-woerter.json` oder in der Umgebungsvariable `DATENSCHUTZ_LISTE` (Format: `scripts/datenschutz-woerter.beispiel.json`).
+Ohne Liste meldet der Guard «Wortliste nicht vorhanden, übersprungen» (Exit 0) und prüft nur die Pfade; die CI läuft auch so grün.
+
 ## Lizenz
 
 MIT – siehe [LICENSE](LICENSE). Ausnahme: `data/krisen-historisch.json` und `data/krisen-haeufigkeit.json` enthalten
 aus der Jordà-Schularick-Taylor Macrohistory Database (R6) abgeleitete Daten und stehen unter
-[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) (nicht kommerziell). Zitat: Jordà, Schularick,
+[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) (**nicht kommerziell**). Zitat: Jordà, Schularick,
 Taylor (2017), NBER Macroeconomics Annual 2016; Jordà, Knoll, Kuvshinov, Schularick, Taylor (2019), QJE 134(3).
 Schweiz 2021–2024: SNB-Datenportal (nicht kommerziell, mit Quellenangabe) und BFS.
+Quellen, Änderungen und Nutzungsbedingungen im Detail: [NOTICE](NOTICE).

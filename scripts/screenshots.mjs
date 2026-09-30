@@ -6,8 +6,11 @@
 import { mkdir } from 'node:fs/promises';
 import { chromium } from 'playwright';
 
+// bypassCSP: nur in diesem Test-Skript (für addStyleTag); die App selbst behält die strenge CSP.
 const url = process.argv[2] ?? 'http://localhost:4173/Swiss-Retirement-Calculator/';
-const out = new URL('../screenshots/', import.meta.url).pathname;
+const out = process.env.SCREENSHOT_DIR
+  ? `${process.env.SCREENSHOT_DIR.replace(/\/$/, '')}/`
+  : new URL('../screenshots/', import.meta.url).pathname;
 await mkdir(out, { recursive: true });
 
 const browser = await chromium.launch({
@@ -15,6 +18,7 @@ const browser = await chromium.launch({
   args: ['--no-sandbox'],
 });
 const page = await browser.newPage({
+  bypassCSP: true,
   viewport: { width: 360, height: 780 },
   deviceScaleFactor: 2,
   isMobile: true,
@@ -143,6 +147,7 @@ await ganzeSeite('07-ergebnis-ehepaar-ganz-360.png');
 
 // 5) Neue Teile (frische Seite): Speicherleiste, Rücktritt per Datum, AHV/PK-Bezugsalter, Wohnsitz im Ausland
 const ctx2 = await browser.newContext({
+  bypassCSP: true,
   viewport: { width: 360, height: 780 },
   deviceScaleFactor: 2,
   isMobile: true,
@@ -234,6 +239,7 @@ await ctx2.close();
 
 // 6) Modus «Schnell»: wenige Eingaben, Schätzwerte, Genauigkeit, Moduswechsel ohne Datenverlust
 const ctx3 = await browser.newContext({
+  bypassCSP: true,
   viewport: { width: 360, height: 780 },
   deviceScaleFactor: 2,
   isMobile: true,
@@ -253,9 +259,9 @@ const fuelle3 = async (label, wert, nr = 0) => {
   await feld.blur();
 };
 await p3.locator('.moduswahl').screenshot({ path: `${out}24-moduswahl-360.png` });
-// Erfundenes Ehepaar: Person 1 seit Geburt in der Schweiz, Person 2 seit 2008 in der Schweiz
+// Erfundenes Ehepaar: Person 1 seit Geburt in der Schweiz, Person 2 (Beispielperson B) seit 2014 in der Schweiz
 await p3.getByText('Ehepaar', { exact: true }).click();
-await fuelle3('Geburtsjahr', 1968, 0);
+await fuelle3('Geburtsjahr', 1980, 0);
 await fuelle3('Bruttoeinkommen pro Jahr (heute)', 110000, 0);
 await fuelle3('Erwerbsaufgabe (Wunsch) mit', 63, 0);
 await fuelle3('PK-Altersguthaben heute (optional)', 420000, 0);
@@ -263,8 +269,8 @@ await fuelle3('Säule 3a heute (optional)', 80000, 0);
 await fuelle3('Übriges Vermögen: Konten und Wertschriften', 250000, 0);
 const karteP2 = p3.locator('.karte', { hasText: 'Person 2' }).first();
 await karteP2.getByText('Frau', { exact: true }).click();
-await fuelle3('Geburtsjahr', 1978, 1);
-await fuelle3('In der Schweiz seit (Jahr, optional)', 2008, 1);
+await fuelle3('Geburtsjahr', 1985, 1);
+await fuelle3('In der Schweiz seit (Jahr, optional)', 2014, 1);
 await fuelle3('Bruttoeinkommen pro Jahr (heute)', 45000, 1);
 await fuelle3('Erwerbsaufgabe (Wunsch) mit', 60, 1);
 await fuelle3('Ausgaben pro Jahr (heute)', 80000);
@@ -333,6 +339,7 @@ await ctx3.close();
 // 7) Erststart (ohne gespeicherten Zustand): Modus «Schnell» aktiv, Umwandlungssatz leer →
 //    aufgeteilte Schätzung (6,8% auf den obligatorischen Teil, Durchschnitt OAK BV auf den Rest)
 const ctx4 = await browser.newContext({
+  bypassCSP: true,
   viewport: { width: 360, height: 780 },
   deviceScaleFactor: 2,
   isMobile: true,
@@ -354,7 +361,7 @@ const fuelle4 = async (label, wert, nr = 0) => {
   await feld.fill(String(wert));
   await feld.blur();
 };
-await fuelle4('Geburtsjahr', 1972);
+await fuelle4('Geburtsjahr', 1974);
 await fuelle4('Bruttoeinkommen pro Jahr (heute)', 150000);
 await fuelle4('PK-Altersguthaben heute (optional)', 650000);
 await p4.evaluate(() => window.scrollTo(0, 0));
@@ -381,6 +388,7 @@ await ctx4.close();
 
 // 8) PK-Guthaben ohne Lohn: kein obligatorischer Teil → Durchschnittssatz auf das ganze Guthaben
 const ctx5 = await browser.newContext({
+  bypassCSP: true,
   viewport: { width: 360, height: 780 },
   deviceScaleFactor: 2,
   isMobile: true,
@@ -432,6 +440,7 @@ await ctx5.close();
 
 // 9) Wegzug mit Barauszahlung: Schnellmodus, Karte vor der Pensionskasse, EU/EFTA, Ergebnis
 const ctx6 = await browser.newContext({
+  bypassCSP: true,
   viewport: { width: 360, height: 780 },
   deviceScaleFactor: 2,
   isMobile: true,
@@ -514,6 +523,7 @@ await ctx6.close();
 
 // 10) Ausgaben in Phasen und Einzeljahre (heutige Franken, Hochrechnung mit Teuerung)
 const ctx7 = await browser.newContext({
+  bypassCSP: true,
   viewport: { width: 360, height: 780 },
   deviceScaleFactor: 2,
   isMobile: true,
@@ -569,6 +579,7 @@ await ctx7.close();
 
 // 11) Steuern nach dem Wegzug (Zielland), Liechtenstein
 const ctx8 = await browser.newContext({
+  bypassCSP: true,
   viewport: { width: 360, height: 780 },
   deviceScaleFactor: 2,
   isMobile: true,
@@ -641,6 +652,7 @@ await ctx8.close();
 
 // 12) Nicht erwerbstätige Person (z.B. Familienarbeit)
 const ctx9 = await browser.newContext({
+  bypassCSP: true,
   viewport: { width: 360, height: 780 },
   deviceScaleFactor: 2,
   isMobile: true,
@@ -660,11 +672,11 @@ await p9.goto(url, { waitUntil: 'networkidle' });
     await feld.fill(String(wert));
     await feld.blur();
   };
-  // Erfundenes Ehepaar: Person 1 Jg. 1966 erwerbstätig; Person 2 Jg. 1972 nicht erwerbstätig
+  // Erfundenes Ehepaar: Person 1 Jg. 1980 erwerbstätig; Person 2 (Beispielperson B) Jg. 1985 nicht erwerbstätig
   await p9.getByText('Ehepaar', { exact: true }).click();
-  await fuelle9('Geburtsjahr', 1966, 0);
+  await fuelle9('Geburtsjahr', 1980, 0);
   await fuelle9('Bruttoeinkommen pro Jahr (heute)', 98000);
-  await fuelle9('Geburtsjahr', 1972, 1);
+  await fuelle9('Geburtsjahr', 1985, 1);
   const p2 = p9.locator('.karte', { hasText: 'Person 2' }).first();
   await p2.getByText('Nicht erwerbstätig (z.B. Familienarbeit)', { exact: true }).click();
   await p9.waitForTimeout(400);
@@ -674,10 +686,10 @@ await p9.goto(url, { waitUntil: 'networkidle' });
   if (!/gelten als bezahlt/.test(t2)) fehler.push(`Nicht erwerbstätig: Befreiung fehlt: ${t2}`);
   if (/Bruttoeinkommen pro Jahr/.test(t2)) fehler.push('Nicht erwerbstätig: Lohnfeld nicht ausgeblendet');
   await p2.locator('details.aufklapp summary', { hasText: 'Frühere Erwerbstätigkeit' }).click();
-  await fuelle9('Frühere Erwerbsjahre in der Schweiz', 9);
-  await fuelle9('Durchschnittslohn damals (heute)', 62000);
-  await fuelle9('Freizügigkeitsguthaben (optional)', 48000);
-  await fuelle9('Jahre mit Kind unter 16', 19);
+  await fuelle9('Frühere Erwerbsjahre in der Schweiz', 5);
+  await fuelle9('Durchschnittslohn damals (heute)', 58000);
+  await fuelle9('Freizügigkeitsguthaben (optional)', 21000);
+  await fuelle9('Jahre mit Kind unter 16', 7);
   await p9.waitForTimeout(400);
   const det = p2.locator('.nicht-erwerb');
   await det.scrollIntoViewIfNeeded();
@@ -710,6 +722,7 @@ await ctx9.close();
 
 // 13) Krisenszenarien und Monte Carlo (PR D)
 const ctx10 = await browser.newContext({
+  bypassCSP: true,
   viewport: { width: 360, height: 780 },
   deviceScaleFactor: 2,
   isMobile: true,
@@ -780,6 +793,7 @@ await ctx10.close();
 // 14) Interaktive Auswertung und neues Design, hell und dunkel (PR E)
 for (const schema of ['light', 'dark']) {
   const ctx = await browser.newContext({
+    bypassCSP: true,
     viewport: { width: 360, height: 780 },
     deviceScaleFactor: 2,
     isMobile: true,
@@ -847,6 +861,7 @@ for (const schema of ['light', 'dark']) {
 // 15) Regler Rücktritt/Planungsalter, Krisen in der Grafik, Krisenmodus (Nachfolge-PR zu #11)
 for (const schema of ['light', 'dark']) {
   const ctx = await browser.newContext({
+    bypassCSP: true,
     viewport: { width: 360, height: 780 },
     deviceScaleFactor: 2,
     isMobile: true,
@@ -880,8 +895,8 @@ for (const schema of ['light', 'dark']) {
     .filter({ hasNotText: 'Was wäre' });
   if (schema === 'light') {
     // a) Einzelperson: ein Regler Rücktritt, Regler Planungsalter
-    // Erfundenes Beispiel: Jg. 1972, Lohn 96'000, 520'000 Wertschriften, Ausgaben 64'000
-    await f('Geburtsjahr', 1972);
+    // Erfundenes Beispiel: Jg. 1974, Lohn 96'000, 520'000 Wertschriften, Ausgaben 64'000
+    await f('Geburtsjahr', 1974);
     await f('Bruttoeinkommen pro Jahr (heute)', 96000);
     await f('Übriges Vermögen: Konten und Wertschriften', 520000);
     await f('Ausgaben pro Jahr (heute)', 64000);
@@ -959,11 +974,11 @@ for (const schema of ['light', 'dark']) {
     if (!/Japan/.test(await kk.innerText())) fehler.push('Individuell: Japan fehlt');
   } else {
     // Dunkel: Paar mit unterschiedlichem Alter, Krisen automatisch
-    // Erfundenes Ehepaar: A Jg. 1963, B Jg. 1972, beide erwerbstätig
+    // Erfundenes Ehepaar: A Jg. 1963, B Jg. 1974, beide erwerbstätig
     await pg.getByText('Ehepaar', { exact: true }).click();
     await f('Geburtsjahr', 1963, 0);
     await f('Bruttoeinkommen pro Jahr (heute)', 102000, 0);
-    await f('Geburtsjahr', 1972, 1);
+    await f('Geburtsjahr', 1974, 1);
     await f('Bruttoeinkommen pro Jahr (heute)', 74000, 1);
     await f('Übriges Vermögen: Konten und Wertschriften', 650000, 0);
     await f('Ausgaben pro Jahr (heute)', 88000);
@@ -1006,6 +1021,7 @@ for (const schema of ['light', 'dark']) {
 // 16) Erster Start: Krisenmodus «Automatisch» voreingestellt
 {
   const ctx = await browser.newContext({
+    bypassCSP: true,
     viewport: { width: 360, height: 780 },
     deviceScaleFactor: 2,
     isMobile: true,
@@ -1051,6 +1067,7 @@ for (const schema of ['light', 'dark']) {
 //     Krisenausgleich über den Planungszeitraum (Schema 7)
 {
   const ctx = await browser.newContext({
+    bypassCSP: true,
     viewport: { width: 360, height: 780 },
     deviceScaleFactor: 2,
     isMobile: true,
@@ -1135,6 +1152,7 @@ for (const schema of ['light', 'dark']) {
 // 18) PK-Reglementsalter: Statuszeile pro Person (Barauszahlung vs. Pensionierung), Feld ausgegraut ohne Einfluss
 {
   const ctx = await browser.newContext({
+    bypassCSP: true,
     viewport: { width: 360, height: 780 },
     deviceScaleFactor: 2,
     isMobile: true,
@@ -1153,8 +1171,8 @@ for (const schema of ['light', 'dark']) {
     await feld.fill(String(wert));
     await feld.blur();
   };
-  // Erfundene Beispielperson: Jg. 1972, PK 320'000, Aufhören und Wegzug mit 55 nach Thailand
-  await f('Geburtsjahr', 1972);
+  // Erfundene Beispielperson: Jg. 1974, PK 320'000, Aufhören und Wegzug mit 55 nach Thailand
+  await f('Geburtsjahr', 1974);
   await f('Bruttoeinkommen pro Jahr (heute)', 105000);
   await f('PK-Altersguthaben heute (optional)', 320000);
   await f('Übriges Vermögen: Konten und Wertschriften', 400000);
@@ -1218,6 +1236,7 @@ for (const schema of ['light', 'dark']) {
 // 19) Darstellung heutige Kaufkraft / nominal, Monte-Carlo-Fächer, Varianten-Vergleich (Grafik 2)
 {
   const ctx = await browser.newContext({
+    bypassCSP: true,
     viewport: { width: 360, height: 780 },
     deviceScaleFactor: 2,
     isMobile: true,
@@ -1307,6 +1326,7 @@ for (const schema of ['light', 'dark']) {
 // 20) Umkehrrechnung: höchste Ausgaben nach Kurve mit Pflege, Ziel Kaufkraft + Monte Carlo, Vorlage in den Phasen
 {
   const ctx = await browser.newContext({
+    bypassCSP: true,
     viewport: { width: 360, height: 780 },
     deviceScaleFactor: 2,
     isMobile: true,
@@ -1385,6 +1405,7 @@ for (const schema of ['light', 'dark']) {
 // 21) Vermögen (linke Achse) und geplante Ausgaben (rechte Achse), Jahrestabelle mit fixer erster Spalte, CSV
 {
   const ctx = await browser.newContext({
+    bypassCSP: true,
     viewport: { width: 360, height: 780 },
     deviceScaleFactor: 2,
     isMobile: true,
@@ -1476,6 +1497,7 @@ for (const [breite, hoehe, mobil, suffix] of [
   [1280, 900, false, 'desktop'],
 ]) {
   const ctx = await browser.newContext({
+    bypassCSP: true,
     viewport: { width: breite, height: hoehe },
     deviceScaleFactor: mobil ? 2 : 1,
     isMobile: mobil,
@@ -1548,6 +1570,7 @@ for (const [breite, hoehe, mobil, suffix] of [
   [1280, 900, false, 'desktop'],
 ]) {
   const ctx = await browser.newContext({
+    bypassCSP: true,
     viewport: { width: breite, height: hoehe },
     deviceScaleFactor: mobil ? 2 : 1,
     isMobile: mobil,
@@ -1597,6 +1620,7 @@ for (const [breite, hoehe, mobil, suffix] of [
   [1280, 900, false, 'desktop'],
 ]) {
   const ctx = await browser.newContext({
+    bypassCSP: true,
     viewport: { width: breite, height: hoehe },
     deviceScaleFactor: mobil ? 2 : 1,
     isMobile: mobil,
@@ -1666,6 +1690,7 @@ for (const [breite, hoehe, mobil, suffix] of [
   [1280, 900, false, 'desktop'],
 ]) {
   const ctx = await browser.newContext({
+    bypassCSP: true,
     viewport: { width: breite, height: hoehe },
     deviceScaleFactor: mobil ? 2 : 1,
     isMobile: mobil,
@@ -1724,6 +1749,7 @@ for (const [breite, hoehe, mobil, suffix] of [
   [1400, 900, false, 'desktop'],
 ]) {
   const ctx = await browser.newContext({
+    bypassCSP: true,
     viewport: { width: breite, height: hoehe },
     deviceScaleFactor: mobil ? 2 : 1,
     isMobile: mobil,
@@ -1790,6 +1816,7 @@ for (const [breite, hoehe, mobil, suffix] of [
 // 27) Sicherheit (Audit S-02, S-10): Fehlerseite mit Notfall-Reset, Speicherhinweis (nur erfundene Beispielwerte)
 {
   const ctx = await browser.newContext({
+    bypassCSP: true,
     viewport: { width: 360, height: 780 },
     deviceScaleFactor: 2,
     isMobile: true,
@@ -1832,6 +1859,7 @@ for (const [breite, hoehe, mobil, suffix] of [
 // 28) Banner bei fehlendem Regeljahr (K-11): Systemdatum auf 2027 gesetzt (nur im Browser des Skripts)
 {
   const ctx = await browser.newContext({
+    bypassCSP: true,
     viewport: { width: 360, height: 780 },
     deviceScaleFactor: 2,
     isMobile: true,

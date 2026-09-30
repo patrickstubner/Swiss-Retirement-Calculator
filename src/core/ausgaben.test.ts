@@ -41,12 +41,12 @@ describe('Lebenshaltung pro Jahr: Phasen und Einzeljahre (heutige Franken)', () 
   });
 
   it('Bezug auf das Alter einer Person (im Jahr erreichtes Alter)', () => {
-    const b = neuePerson(regeln, { name: 'Beispiel B', geburtsjahr: 1972 });
+    const b = neuePerson(regeln, { name: 'Beispiel B', geburtsjahr: 1973 });
     const a = ausgaben({ phasenBezug: 'alter', phasenPerson: 1, phasen: [neueAusgabenPhase(60, 64, 90_000)] });
-    expect(lebenshaltungImJahr(a, 2031, [person, b], 59).quelle).toBe('grund'); // B wird 59
-    expect(lebenshaltungImJahr(a, 2032, [person, b], 60).betrag).toBe(90_000); // B wird 60
-    expect(lebenshaltungImJahr(a, 2036, [person, b], 64).betrag).toBe(90_000);
-    expect(lebenshaltungImJahr(a, 2037, [person, b], 65).quelle).toBe('grund');
+    expect(lebenshaltungImJahr(a, 2032, [person, b], 59).quelle).toBe('grund'); // B wird 59
+    expect(lebenshaltungImJahr(a, 2033, [person, b], 60).betrag).toBe(90_000); // B wird 60
+    expect(lebenshaltungImJahr(a, 2037, [person, b], 64).betrag).toBe(90_000);
+    expect(lebenshaltungImJahr(a, 2038, [person, b], 65).quelle).toBe('grund');
   });
 
   it('Einzeljahr ersetzt Phase und Grundbetrag; erste passende Phase hat Vorrang', () => {

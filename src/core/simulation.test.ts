@@ -377,8 +377,8 @@ describe('fruehestesRuecktrittsalter', () => {
   });
 
   it('Ehepaar gemeinsam: Stopp am selben Datum', () => {
-    const p1 = person({ geburtsjahr: 1970, geburtsmonat: 1 });
-    const p2 = person({ geburtsjahr: 1972, geburtsmonat: 1, geschlecht: 'w', lohn: 60000 });
+    const p1 = person({ geburtsjahr: 1971, geburtsmonat: 1 });
+    const p2 = person({ geburtsjahr: 1973, geburtsmonat: 1, geschlecht: 'w', lohn: 60000 });
     const s = fruehestesRuecktrittsalter(
       einfach({ zivilstand: 'verheiratet', personen: [p1, p2], planungsalter: 95 }),
       regeln,

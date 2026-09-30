@@ -59,7 +59,7 @@ describe('Schätzwerte: AHV (Skala 44, Einkommen = heutiger Lohn)', () => {
 
   it('Ehepaar: Splitting der Einkommen (je hälftig) → beide gleich hohe Renten', () => {
     const a = person({ lohn: 150000 });
-    const b = person({ geburtsjahr: 1972, geschlecht: 'w', lohn: 0 });
+    const b = person({ geburtsjahr: 1974, geschlecht: 'w', lohn: 0 });
     const ra = schaetzeAhv(a, b, true, regeln).renteMonat;
     const rb = schaetzeAhv(b, a, true, regeln).renteMonat;
     expect(ra).toBe(rb);

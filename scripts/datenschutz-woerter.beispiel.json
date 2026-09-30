@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "salt": "beispiel-salt-v1:",
+  "hashes": [
+    "d519c6187d4c8f28e621a06279047ec46f2d8193bf4b8400dd43e3a43ebb8960",
+    "f524c8fb72b97eb442a6389e794a68ccab4b41041ff62b82b6efa16410f10cf8",
+    "019ed0414ad99e5347e11d5ff2ac468d31f0198c5188112c4c97664d4dc37fde"
+  ],
+  "hinweis": "Vorlage mit erfundenen Platzhaltern (Hashes von «musterwort», «platzhalterone», «platzhaltertwo»). Echte Liste als lokal/datenschutz-woerter.json (ungetrackt) oder als Umgebungsvariable DATENSCHUTZ_LISTE bereitstellen; Hash eines Worts: node scripts/datenschutz-guard.mjs --hash <wort> [--salt <salt>]. Fehlt salt, gilt der Standard-Salt."
+}
