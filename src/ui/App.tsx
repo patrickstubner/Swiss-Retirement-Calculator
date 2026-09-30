@@ -39,6 +39,7 @@ import {
   ueberschreibe,
   type VersionId,
 } from './szenarien';
+import { VorlesenAnbieter, VorlesenLeiste, VorlesenSeitenKopf } from './vorlesen/Vorlesen';
 
 /**
  * Suchmodus für das früheste Rücktrittsalter: bei einem Paar mit nur einer erwerbstätigen Person
@@ -313,202 +314,206 @@ export function App() {
   });
 
   return (
-    <div className={`app${vergleich ? ' app--vergleich' : ''}`}>
-      <section className="speicherleiste" aria-label="Speichern im Browser">
-        <div className="speicherleiste__inner">
-          <label className="speicherleiste__schalter">
-            <input
-              type="checkbox"
-              role="switch"
-              aria-checked={speichern}
-              checked={speichern}
-              disabled={speicher === null}
-              onChange={(e) => onSpeichern(e.target.checked)}
-            />
-            <span>Eingaben im Browser speichern</span>
-          </label>
-          <small className="speicherleiste__hinweis">
-            {speicher === null
-              ? 'Speichern ist in diesem Browser nicht möglich.'
-              : speichern
-                ? 'Die Daten bleiben nur in diesem Browser (localStorage, unverschlüsselt) und werden nirgends hin gesendet. Auf gemeinsam genutzten Geräten ausschalten.'
-                : 'Aus: Es ist nichts gespeichert. Beim Schliessen der Seite gehen die Eingaben verloren.'}
-          </small>
-        </div>
-      </section>
-      <header className="kopf">
-        <div className="kopf__inner">
-          <h1>CH-Rentenrechner</h1>
-          <p className="kopf__frage">Wann kann ich aufhören zu arbeiten – und reicht mein Vermögen?</p>
-        </div>
-      </header>
-      <div className="inhalt">
-        {regelStatus.fehlt ? (
-          <div className="warnung regeljahr-banner" role="alert">
-            <strong>Regeln für {regelStatus.angefragt} noch nicht erfasst.</strong> Der Rechner rechnet mit den Werten
-            von {regelStatus.verwendet} (Beiträge, Renten, Steuertarife und Grenzen können sich geändert haben). Die
-            Ergebnisse sind deshalb möglicherweise ungenau.
+    <VorlesenAnbieter speicher={speicher} speichern={speichern}>
+      <div className={`app${vergleich ? ' app--vergleich' : ''}`}>
+        <section className="speicherleiste" aria-label="Speichern im Browser">
+          <div className="speicherleiste__inner">
+            <label className="speicherleiste__schalter">
+              <input
+                type="checkbox"
+                role="switch"
+                aria-checked={speichern}
+                checked={speichern}
+                disabled={speicher === null}
+                onChange={(e) => onSpeichern(e.target.checked)}
+              />
+              <span>Eingaben im Browser speichern</span>
+            </label>
+            <small className="speicherleiste__hinweis">
+              {speicher === null
+                ? 'Speichern ist in diesem Browser nicht möglich.'
+                : speichern
+                  ? 'Die Daten bleiben nur in diesem Browser (localStorage, unverschlüsselt) und werden nirgends hin gesendet. Auf gemeinsam genutzten Geräten ausschalten.'
+                  : 'Aus: Es ist nichts gespeichert. Beim Schliessen der Seite gehen die Eingaben verloren.'}
+            </small>
           </div>
-        ) : null}
-        {linkQuelle ? (
-          <div className="info link-banner" role="status">
-            <p>
-              <strong>Eingaben aus einem geteilten Link geladen.</strong>{' '}
-              {speichern
-                ? 'Ihre im Browser gespeicherten Eingaben bleiben unverändert, bis Sie übernehmen oder etwas ändern.'
-                : ''}
-            </p>
-            <div className="link-banner__knoepfe">
-              <button type="button" className="knopf" onClick={() => setLinkQuelle(null)}>
-                Übernehmen
-              </button>
-              {linkQuelle.lokal ? (
-                <button
-                  type="button"
-                  className="knopf knopf--sekundaer"
-                  onClick={() => {
-                    const l = linkQuelle.lokal;
-                    if (!l) return;
-                    setHaushalt(l.haushalt);
-                    setSchritt(l.ui.schritt);
-                    setSuchModus(l.ui.suchModus);
-                    setEingabeModus(l.ui.modus);
-                    setLinkQuelle(null);
-                  }}
-                >
-                  Meine gespeicherten Eingaben laden
-                </button>
-              ) : null}
+        </section>
+        <header className="kopf">
+          <div className="kopf__inner">
+            <h1>CH-Rentenrechner</h1>
+            <p className="kopf__frage">Wann kann ich aufhören zu arbeiten – und reicht mein Vermögen?</p>
+          </div>
+        </header>
+        <div className="inhalt">
+          {regelStatus.fehlt ? (
+            <div className="warnung regeljahr-banner" role="alert">
+              <strong>Regeln für {regelStatus.angefragt} noch nicht erfasst.</strong> Der Rechner rechnet mit den Werten
+              von {regelStatus.verwendet} (Beiträge, Renten, Steuertarife und Grenzen können sich geändert haben). Die
+              Ergebnisse sind deshalb möglicherweise ungenau.
             </div>
-          </div>
-        ) : null}
-        <DisclaimerBanner />
-        <div className="moduswahl">
-          <Segmente<EingabeModus>
-            label="Eingabe"
-            value={eingabeModus}
-            optionen={[
-              { value: 'schnell', label: 'Schnell' },
-              { value: 'detailliert', label: 'Detailliert' },
-            ]}
-            onChange={wechsleModus}
-          />
-          <p className="klein">
-            {schnell
-              ? 'Standard beim ersten Start: wenige Angaben, der Rest wird geschätzt (gesetzliche Werte 2026, Umwandlungssatz ohne Angabe aus dem Durchschnitt der Pensionskassen). Detailwerte gehen nicht verloren.'
-              : 'Alle Felder. Leere Felder mit «geschätzt» verwenden die Schätzung des Modus «Schnell».'}
-          </p>
-        </div>
-        {vergleich || (aktSchritt !== 0 && aktSchritt !== ergebnisSchritt) ? null : (
-          <section className="vergleich-start" aria-label="Zwei Versionen vergleichen">
-            <div>
-              <strong>Zwei Varianten vergleichen?</strong>
-              <p className="klein">
-                Legen Sie eine Version B als Kopie Ihrer Eingaben an, ändern Sie dort etwas (z.B. späterer Rücktritt
-                oder anderer Wohnkanton) und sehen Sie beide Ergebnisse nebeneinander.
+          ) : null}
+          {linkQuelle ? (
+            <div className="info link-banner" role="status">
+              <p>
+                <strong>Eingaben aus einem geteilten Link geladen.</strong>{' '}
+                {speichern
+                  ? 'Ihre im Browser gespeicherten Eingaben bleiben unverändert, bis Sie übernehmen oder etwas ändern.'
+                  : ''}
               </p>
-            </div>
-            <button type="button" className="knopf knopf--sekundaer" onClick={legeB}>
-              Version B anlegen
-            </button>
-          </section>
-        )}
-        {vergleich && propsB && vA.effVerzoegert && vB.effVerzoegert ? (
-          <>
-            <Vergleich
-              effA={vA.effVerzoegert.haushalt}
-              effB={vB.effVerzoegert.haushalt}
-              wunschA={berechnung.wunsch}
-              wunschB={vB.berechnung?.wunsch ?? null}
-              namen={namen}
-              darstellung={darstellungVon(haushalt)}
-              onDarstellung={setzeDarstellungBeide}
-              heute={heute}
-            />
-            <VersionenLeiste
-              namen={namen}
-              onNamen={setNamen}
-              onTauschen={tauschen}
-              onKopieren={kopierenVon}
-              onLoeschen={loeschen}
-              onExport={exportieren}
-              onImport={importieren}
-              speichern={speichern}
-            />
-          </>
-        ) : null}
-        <nav className={`stepper${schnell ? ' stepper--kurz' : ''}`} aria-label="Schritte">
-          <ol>
-            {SCHRITTE.map((s, i) => (
-              <li key={s}>
-                <button
-                  type="button"
-                  className={`stepper__schritt${i === aktSchritt ? ' stepper__schritt--aktiv' : ''}`}
-                  aria-current={i === aktSchritt ? 'step' : undefined}
-                  onClick={() => geheZu(i)}
-                >
-                  <span className="stepper__nr">{i + 1}</span>
-                  <span className="stepper__text">{KURZ[i]}</span>
+              <div className="link-banner__knoepfe">
+                <button type="button" className="knopf" onClick={() => setLinkQuelle(null)}>
+                  Übernehmen
                 </button>
-              </li>
-            ))}
-          </ol>
-        </nav>
-        <main ref={hauptRef} className="haupt">
-          <h2 className="schritt-titel">{SCHRITTE[aktSchritt]}</h2>
-          {vergleich && propsB ? (
-            <div className="versionen-spalten">
-              <section
-                className="versionen-spalte versionen-spalte--a"
-                aria-label={`Eingaben ${anzeigeName(namen.a, 'A')}`}
-              >
-                <h3 className="versionen-spalte__kopf">
-                  <VersionsMarke id="A" /> {anzeigeName(namen.a, 'A')}
-                </h3>
-                <SchrittInhalt {...schrittProps(props, false)} />
-              </section>
-              <section
-                className="versionen-spalte versionen-spalte--b"
-                aria-label={`Eingaben ${anzeigeName(namen.b, 'B')}`}
-              >
-                <h3 className="versionen-spalte__kopf">
-                  <VersionsMarke id="B" /> {anzeigeName(namen.b, 'B')}
-                </h3>
-                <SchrittInhalt {...schrittProps(propsB, true)} />
-              </section>
+                {linkQuelle.lokal ? (
+                  <button
+                    type="button"
+                    className="knopf knopf--sekundaer"
+                    onClick={() => {
+                      const l = linkQuelle.lokal;
+                      if (!l) return;
+                      setHaushalt(l.haushalt);
+                      setSchritt(l.ui.schritt);
+                      setSuchModus(l.ui.suchModus);
+                      setEingabeModus(l.ui.modus);
+                      setLinkQuelle(null);
+                    }}
+                  >
+                    Meine gespeicherten Eingaben laden
+                  </button>
+                ) : null}
+              </div>
             </div>
-          ) : (
-            <SchrittInhalt {...schrittProps(props, false)} />
+          ) : null}
+          <VorlesenSeitenKopf />
+          <DisclaimerBanner />
+          <div className="moduswahl">
+            <Segmente<EingabeModus>
+              label="Eingabe"
+              value={eingabeModus}
+              optionen={[
+                { value: 'schnell', label: 'Schnell' },
+                { value: 'detailliert', label: 'Detailliert' },
+              ]}
+              onChange={wechsleModus}
+            />
+            <p className="klein">
+              {schnell
+                ? 'Standard beim ersten Start: wenige Angaben, der Rest wird geschätzt (gesetzliche Werte 2026, Umwandlungssatz ohne Angabe aus dem Durchschnitt der Pensionskassen). Detailwerte gehen nicht verloren.'
+                : 'Alle Felder. Leere Felder mit «geschätzt» verwenden die Schätzung des Modus «Schnell».'}
+            </p>
+          </div>
+          {vergleich || (aktSchritt !== 0 && aktSchritt !== ergebnisSchritt) ? null : (
+            <section className="vergleich-start" aria-label="Zwei Versionen vergleichen">
+              <div>
+                <strong>Zwei Varianten vergleichen?</strong>
+                <p className="klein">
+                  Legen Sie eine Version B als Kopie Ihrer Eingaben an, ändern Sie dort etwas (z.B. späterer Rücktritt
+                  oder anderer Wohnkanton) und sehen Sie beide Ergebnisse nebeneinander.
+                </p>
+              </div>
+              <button type="button" className="knopf knopf--sekundaer" onClick={legeB}>
+                Version B anlegen
+              </button>
+            </section>
           )}
-        </main>
-        <footer className="fuss">
-          <p>
-            Nicht-kommerzielles Projekt · Open Source (MIT) · Regelwerte Stand {regeln.meta.stand} · Keine Cookies, kein
-            Tracking, keine Datenübermittlung. Gespeichert wird nur lokal im Browser (abschaltbar ganz oben).
-          </p>
-        </footer>
+          {vergleich && propsB && vA.effVerzoegert && vB.effVerzoegert ? (
+            <>
+              <Vergleich
+                effA={vA.effVerzoegert.haushalt}
+                effB={vB.effVerzoegert.haushalt}
+                wunschA={berechnung.wunsch}
+                wunschB={vB.berechnung?.wunsch ?? null}
+                namen={namen}
+                darstellung={darstellungVon(haushalt)}
+                onDarstellung={setzeDarstellungBeide}
+                heute={heute}
+              />
+              <VersionenLeiste
+                namen={namen}
+                onNamen={setNamen}
+                onTauschen={tauschen}
+                onKopieren={kopierenVon}
+                onLoeschen={loeschen}
+                onExport={exportieren}
+                onImport={importieren}
+                speichern={speichern}
+              />
+            </>
+          ) : null}
+          <nav className={`stepper${schnell ? ' stepper--kurz' : ''}`} aria-label="Schritte">
+            <ol>
+              {SCHRITTE.map((s, i) => (
+                <li key={s}>
+                  <button
+                    type="button"
+                    className={`stepper__schritt${i === aktSchritt ? ' stepper__schritt--aktiv' : ''}`}
+                    aria-current={i === aktSchritt ? 'step' : undefined}
+                    onClick={() => geheZu(i)}
+                  >
+                    <span className="stepper__nr">{i + 1}</span>
+                    <span className="stepper__text">{KURZ[i]}</span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+          </nav>
+          <main ref={hauptRef} className="haupt">
+            <h2 className="schritt-titel">{SCHRITTE[aktSchritt]}</h2>
+            {vergleich && propsB ? (
+              <div className="versionen-spalten">
+                <section
+                  className="versionen-spalte versionen-spalte--a"
+                  aria-label={`Eingaben ${anzeigeName(namen.a, 'A')}`}
+                >
+                  <h3 className="versionen-spalte__kopf">
+                    <VersionsMarke id="A" /> {anzeigeName(namen.a, 'A')}
+                  </h3>
+                  <SchrittInhalt {...schrittProps(props, false)} />
+                </section>
+                <section
+                  className="versionen-spalte versionen-spalte--b"
+                  aria-label={`Eingaben ${anzeigeName(namen.b, 'B')}`}
+                >
+                  <h3 className="versionen-spalte__kopf">
+                    <VersionsMarke id="B" /> {anzeigeName(namen.b, 'B')}
+                  </h3>
+                  <SchrittInhalt {...schrittProps(propsB, true)} />
+                </section>
+              </div>
+            ) : (
+              <SchrittInhalt {...schrittProps(props, false)} />
+            )}
+          </main>
+          <footer className="fuss">
+            <p>
+              Nicht-kommerzielles Projekt · Open Source (MIT) · Regelwerte Stand {regeln.meta.stand} · Keine Cookies,
+              kein Tracking, keine Datenübermittlung. Gespeichert wird nur lokal im Browser (abschaltbar ganz oben).
+            </p>
+          </footer>
+        </div>
+        <section className="leiste" aria-label="Navigation und Kurzergebnis">
+          <button
+            type="button"
+            className="knopf knopf--sekundaer"
+            onClick={() => geheZu(aktSchritt - 1)}
+            disabled={aktSchritt === 0}
+          >
+            Zurück
+          </button>
+          <button type="button" className="leiste__ergebnis" onClick={() => geheZu(ergebnisSchritt)} aria-live="polite">
+            {kurzErgebnis}
+          </button>
+          <button
+            type="button"
+            className="knopf"
+            onClick={() => geheZu(aktSchritt + 1)}
+            disabled={aktSchritt === ergebnisSchritt}
+          >
+            Weiter
+          </button>
+        </section>
+        <VorlesenLeiste />
       </div>
-      <section className="leiste" aria-label="Navigation und Kurzergebnis">
-        <button
-          type="button"
-          className="knopf knopf--sekundaer"
-          onClick={() => geheZu(aktSchritt - 1)}
-          disabled={aktSchritt === 0}
-        >
-          Zurück
-        </button>
-        <button type="button" className="leiste__ergebnis" onClick={() => geheZu(ergebnisSchritt)} aria-live="polite">
-          {kurzErgebnis}
-        </button>
-        <button
-          type="button"
-          className="knopf"
-          onClick={() => geheZu(aktSchritt + 1)}
-          disabled={aktSchritt === ergebnisSchritt}
-        >
-          Weiter
-        </button>
-      </section>
-    </div>
+    </VorlesenAnbieter>
   );
 }

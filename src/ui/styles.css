@@ -1512,3 +1512,148 @@ tr.negativ td {
   gap: 0.75rem;
   margin: 1rem 0;
 }
+
+/* Vorlesen */
+.karte__kopf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 10px;
+  margin-bottom: 0.5em;
+}
+.karte__kopf h2 {
+  margin: 0;
+}
+.vorlesen-knoepfe {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.vorlesen-knopf {
+  min-height: 40px;
+  min-width: 40px;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--farbe-primaer);
+  background: var(--farbe-primaer-hell);
+  border: 1px solid var(--farbe-rand);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.vorlesen-knopf--leise {
+  background: transparent;
+  font-weight: 500;
+}
+.vorlesen-knopf--rund {
+  border-radius: 12px;
+  padding: 6px 10px;
+}
+.vorlesen-kopf {
+  margin: 0 0 10px;
+}
+.vorlesen-kopf .knopf {
+  width: 100%;
+}
+.vorlesen-hinweis {
+  margin: 0 0 10px;
+}
+.vorlesen-leiste {
+  position: fixed;
+  left: 0;
+  right: 0;
+  /* über der Navigationsleiste (.leiste) */
+  bottom: var(--leiste-hoehe, 65px);
+  z-index: 11;
+  padding: 8px 10px;
+  background: var(--farbe-karte);
+  color: var(--farbe-text);
+  border-top: 2px solid var(--farbe-primaer);
+  box-shadow: var(--schatten-leiste);
+}
+.vorlesen-leiste--fehler {
+  padding: 10px 14px;
+  color: var(--farbe-warnung);
+  background: var(--farbe-warnung-hell);
+  font-size: 0.9rem;
+}
+.vorlesen-leiste__reihe {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr 1fr 1fr 1fr;
+  gap: 6px;
+  align-items: stretch;
+}
+.vorlesen-leiste .knopf,
+.vorlesen-leiste .vorlesen-knopf {
+  min-height: 44px;
+  margin: 0;
+  width: 100%;
+  padding: 6px 4px;
+}
+.vorlesen-leiste__status,
+.vorlesen-leiste__hilfe {
+  margin: 4px 0 0;
+}
+.vorlesen-leiste__hilfe {
+  color: var(--farbe-text-leise);
+  font-size: 0.75rem;
+}
+.vorlesen-leiste__optionen {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 10px;
+  align-items: center;
+  margin-top: 6px;
+}
+.vorlesen-leiste__optionen select {
+  min-height: 44px;
+}
+/* Platz unten, damit nichts hinter den Leisten verschwindet */
+:root[data-vorlesen-aktiv] .inhalt {
+  padding-bottom: calc(260px + env(safe-area-inset-bottom));
+}
+@media (min-width: 760px) {
+  .vorlesen-leiste {
+    max-width: 760px;
+    margin: 0 auto;
+    border: 2px solid var(--farbe-primaer);
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+}
+/* Hervorhebung (CSS Custom Highlight API): ausreichender Kontrast hell und dunkel */
+::highlight(vorlesen-satz) {
+  background-color: #ffe08a;
+  color: #17212b;
+}
+::highlight(vorlesen-wort) {
+  background-color: #1f5fbf;
+  color: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  ::highlight(vorlesen-satz) {
+    background-color: #5a4a12;
+    color: #fff4cf;
+  }
+  ::highlight(vorlesen-wort) {
+    background-color: #ffd166;
+    color: #101418;
+  }
+}
+/* Rückfall ohne Highlight-API */
+[data-vorlesen-aktiv]:not(:root) {
+  background-color: #ffe08a;
+  color: #17212b;
+  outline: 2px solid #b24a17;
+}
+@media (forced-colors: active) {
+  ::highlight(vorlesen-satz) {
+    background-color: Highlight;
+    color: HighlightText;
+  }
+  ::highlight(vorlesen-wort) {
+    background-color: Mark;
+    color: MarkText;
+  }
+}
