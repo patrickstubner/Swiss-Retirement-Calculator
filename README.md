@@ -31,6 +31,17 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
 
 - **Neutrale Standardwerte:** Alle Beträge sind anfangs leer (0) und frei editierbar – keine Beispielvermögen.
   Gesetzliche Werte (z.B. BVG-Mindestzins) und vorsichtige Annahmen (Rendite, Teuerung) sind vorbelegt und anpassbar.
+- **Vorlesen (Sprachausgabe im Browser):** «Ganze Seite vorlesen» oben, dazu je Abschnitt «▶ Vorlesen» und «ab hier».
+  Beim Lesen wird der aktuelle Satz (und, wo der Browser Wortgrenzen meldet, das Wort) hervorgehoben und die Seite
+  scrollt mit (bei «reduzierte Bewegung» ohne Animation). Die Leiste unten bietet Pause/Weiter, Stopp, 10 Sekunden
+  zurück/vor sowie Tempo und Stimme (Esc beendet das Vorlesen). **«10 Sekunden» ist geschätzt:** Die Sprachausgabe
+  kann nicht zeitgenau springen; die Dauer wird aus der Textlänge und der Messung schon gelesener Sätze geschätzt, gesprungen
+  wird zum Satzanfang. Gelesen werden nur Erklär-, Hinweis- und Ergebnistexte, nie Eingabefelder, Beschriftungen,
+  Tabellen oder versteckte Inhalte. Abkürzungen und Zahlen werden für die Aussprache aufbereitet (CHF, AHV, BVG, %,
+  Tausenderapostroph, «Säule 3a», Jahreszahlen). Es werden nur **lokale** deutsche Stimmen des Geräts verwendet
+  (de-CH bevorzugt); Online-Stimmen werden aus Datenschutzgründen nie angeboten. Fehlt die Sprachausgabe oder eine
+  deutsche Stimme, werden die Knöpfe ausgeblendet (mit Hinweis). Tempo und Stimme werden nur gespeichert, wenn
+  «Eingaben im Browser speichern» an ist. Technik und Grenzen: `docs/vorlesen.md`; Screenshots `screenshots/120-…` bis `125-…`.
 - **Beträge mit Tausendertrennzeichen:** Alle Betragsfelder (CHF und Fremdwährungen) zeigen schon beim Tippen das
   Schweizer Format mit Apostroph (1’250’000, Zeichen ’ app-weit einheitlich, auch in den Ergebnissen). Einfügen von
   «1 250 000» oder «1,250,000» funktioniert, der Cursor bleibt an seiner Stelle. Jahre, Alter, Prozente und Anzahlen
@@ -279,6 +290,7 @@ npm run preview   # Build lokal ansehen
 npm run lint      # Biome (Lint + Format-Prüfung)
 npm run typecheck # TypeScript strict
 npm run screenshots -- http://localhost:4173/Swiss-Retirement-Calculator/  # Mobile-Screenshots (Playwright)
+node scripts/vorlesen-browsertest.mjs   # Browsertest «Vorlesen» mit gemocktem speechSynthesis (Preview muss laufen; --screenshots)
 ```
 
 Technik: Rsbuild, React, TypeScript (strict), uPlot (Diagramm), lz-string (URL-Zustand), Vitest, Biome.

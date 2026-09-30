@@ -26,6 +26,7 @@ import { fmtAlter, fmtChf, fmtMonat, fmtProzent } from '../format';
 import type { SchrittProps } from '../kontext';
 import { krisenAbschnitte, krisenText } from '../krisenGrafik';
 import { UWS_GESCHAETZT, uwsKurz, VEREINFACHUNGEN } from '../texte';
+import { VorlesenKnoepfe } from '../vorlesen/Vorlesen';
 
 export type SuchModus = 'gemeinsam' | 'p0' | 'p1';
 
@@ -127,7 +128,10 @@ export function Ergebnis({ h, setH, berechnung, heute, suchModus, setSuchModus, 
   return (
     <>
       <section className="karte karte--ergebnis" aria-live="polite">
-        <h2>Frühestes Rücktrittsalter</h2>
+        <div className="karte__kopf">
+          <h2>Frühestes Rücktrittsalter</h2>
+          <VorlesenKnoepfe titel="Frühestes Rücktrittsalter" />
+        </div>
         {h.krisen.modus === 'automatisch' ? (
           <p className="krisen-hinweis">
             Mit Krisen (automatisch): normale historische Krisen im Abstand gemäss Häufigkeit

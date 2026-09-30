@@ -20,6 +20,7 @@ import { fmtAlter, fmtChf, fmtKompakt, fmtMonat, fmtProzent } from '../format';
 import type { Setzer } from '../kontext';
 import { krisenAbschnitte, krisenText } from '../krisenGrafik';
 import { type Bereich, gemeinsamerBereich, planungsBereich, ruecktrittBereich, verschoben } from '../regler';
+import { VorlesenKnoepfe } from '../vorlesen/Vorlesen';
 import { LinienChart, type Serie } from './Chart';
 import { Faecher } from './Faecher';
 import { Segmente } from './Felder';
@@ -304,7 +305,10 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
 
   return (
     <section className="karte karte--auswertung" aria-labelledby="auswertung-titel">
-      <h2 id="auswertung-titel">Was wäre, wenn …?</h2>
+      <div className="karte__kopf">
+        <h2 id="auswertung-titel">Was wäre, wenn …?</h2>
+        <VorlesenKnoepfe titel="Was wäre, wenn" />
+      </div>
       <p className="karte__untertitel">
         Schieben Sie die Regler – das Ergebnis wird sofort neu gerechnet. Ihre Eingaben bleiben unverändert, bis Sie
         «Übernehmen» wählen.

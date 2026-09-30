@@ -83,6 +83,8 @@ export const STORAGE_KEY = 'ruhestandsrechner:v1';
 export const AUS_KEY = 'ruhestandsrechner:speichern-aus';
 /** Schlüssel früherer Versionen (Opt-in-Speicherung), werden migriert bzw. gelöscht. */
 export const ALTE_KEYS = ['ruhestandsrechner:zustand', 'ruhestandsrechner:speichern'] as const;
+/** Einstellungen des Vorlesens (Tempo, Stimme); ohne Finanzdaten, folgt dem Speichern-Schalter. */
+export const VORLESEN_KEY = 'ruhestandsrechner:vorlesen';
 /** Version des gespeicherten JSON-Objekts. */
 export const SPEICHER_VERSION = 2;
 
@@ -545,7 +547,7 @@ export const speichernAktiv = (s: Storage | null): boolean => s !== null && s.ge
 /** Löscht alle gespeicherten Daten (aktueller und frühere Schlüssel). */
 export function loescheLokal(s: Storage | null): void {
   if (!s) return;
-  for (const k of [STORAGE_KEY, ...ALTE_KEYS]) s.removeItem(k);
+  for (const k of [STORAGE_KEY, VORLESEN_KEY, ...ALTE_KEYS]) s.removeItem(k);
 }
 
 export function speichereLokal(s: Storage | null, z: AppZustand): void {
