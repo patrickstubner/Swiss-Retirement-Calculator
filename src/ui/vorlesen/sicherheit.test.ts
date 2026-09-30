@@ -62,7 +62,8 @@ describe('Vorlesen: Robustheit gegen böse Eingaben', () => {
       expect(p.length).toBeLessThanOrEqual(4000);
       expect(dauer, `${b.slice(0, 20)}: ${dauer.toFixed(0)} ms`).toBeLessThan(4000);
     }
-  });
+    // Gesamt-Timeout grosszügig: auf ausgelasteten CI-Runnern ist es ein Vielfaches der lokalen Zeit (< 1 s).
+  }, 60_000);
 
   it('Sprechtext enthält nie Markup als HTML-Bedeutung (wird nur an die Stimme übergeben, nie in den DOM)', () => {
     const a = bereiteAuf('<img src=x onerror=alert(1)>');
