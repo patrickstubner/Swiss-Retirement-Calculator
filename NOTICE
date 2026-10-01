@@ -1,0 +1,48 @@
+CH-Rentenrechner – Hinweise zu Daten Dritter
+=============================================
+
+Der Quellcode steht unter der MIT-Lizenz (siehe LICENSE). Für die folgenden Dateien gilt stattdessen die Lizenz
+Creative Commons Namensnennung – Nicht kommerziell – Weitergabe unter gleichen Bedingungen 4.0 International
+(CC BY-NC-SA 4.0), weil sie aus Daten der Jordà-Schularick-Taylor Macrohistory Database abgeleitet sind:
+
+  - data/krisen-historisch.json
+  - data/krisen-haeufigkeit.json
+
+Lizenz: https://creativecommons.org/licenses/by-nc-sa/4.0/  (Rechtstext: https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.de)
+
+NICHT KOMMERZIELL: Diese beiden Dateien (und Werke, die sie enthalten) dürfen nur für nicht kommerzielle Zwecke
+genutzt und weitergegeben werden. Wer sie weitergibt oder verändert, muss die Quelle nennen, Änderungen kenntlich
+machen und das abgeleitete Werk unter derselben Lizenz (CC BY-NC-SA 4.0) weitergeben. Der übrige Code bleibt MIT-lizenziert;
+ein kommerzieller Einsatz der Anwendung setzt voraus, dass diese beiden Dateien entfernt oder ersetzt werden.
+
+Quelle
+------
+Jordà-Schularick-Taylor Macrohistory Database, Release 6 (JST R6), https://www.macrohistory.net/database/
+Zitierung:
+  - Jordà, Ò., Schularick, M., Taylor, A. M. (2017): Macrofinancial History and the New Business Cycle Facts.
+    NBER Macroeconomics Annual 2016, Band 31.
+  - Jordà, Ò., Knoll, K., Kuvshinov, D., Schularick, M., Taylor, A. M. (2019): The Rate of Return on Everything,
+    1870–2015. Quarterly Journal of Economics 134(3).
+Verwendete Variablen: eq_tr, bond_tr, bill_rate, cpi, hpnom (Reihen für Schweiz, USA, Japan, 1871–2020) sowie
+crisisJST (Bankenkrisen, 18 Länder, für die Auszählung der Krisenhäufigkeit). Abruf der Datei: 27.9.2026.
+
+Änderungen an den Originaldaten
+-------------------------------
+Die Dateien wurden mit scripts/krisen-daten.py erzeugt und unterscheiden sich vom Original wie folgt:
+  - Auswahl: nur Schweiz, USA und Japan für die Renditereihen; nur die oben genannten Variablen.
+  - Umrechnung: cpi und hpnom (Indexstände) in jährliche Veränderungen (Anteile, z. B. 0.05 = 5 %); Werte auf
+    5 Nachkommastellen gerundet; Kalenderjahre, nominal in Landeswährung.
+  - Ergänzung Schweiz 2021–2024 (das Original endet 2020) aus den unten genannten Quellen.
+  - Eigene Auszählung von Kursrückgängen (real/nominal, Schwellen 20 % und 30 %) und Bankenkrisen je Land und
+    Zeitraum (data/krisen-haeufigkeit.json); Definitionen: docs/krisen.md.
+Die Lizenzgeber haben diese Bearbeitung nicht geprüft oder gebilligt.
+
+Weitere Quellen der Ergänzung Schweiz 2021–2024 (in data/krisen-historisch.json)
+--------------------------------------------------------------------------------
+  - SNB-Datenportal, https://data.snb.ch (Cubes capchstocki, rendoblim, zimoma): Nutzung für nicht kommerzielle Zwecke
+    unter Quellenangabe (https://www.snb.ch/de/srv/disclaimer_copyright). Der SPI ist ein Index der SIX Swiss
+    Exchange; gespeichert sind nur vier daraus abgeleitete Jahresrenditen.
+  - Bundesamt für Statistik (BFS), Landesindex der Konsumentenpreise, durchschnittliche Jahresteuerung:
+    Freie Nutzung mit Quellenangabe (OPEN BY, https://www.bfs.admin.ch/bfs/en/home/fso/swiss-federal-statistical-office/terms-of-use.html).
+
+Ausführliche Angaben zu Quellen, Lizenzen und Stand: docs/krisen.md (Abschnitt 1) und docs/quellen.md (Abschnitt 13).

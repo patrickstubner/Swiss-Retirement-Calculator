@@ -11,10 +11,10 @@ import type { Haushalt, Person } from './typen';
 const regeln = ladeRegeln(2026);
 const start = { jahr: 2026, monat: 1 };
 
-/** Erfundenes Beispiel: erwerbstätige Person Jg. 1966, Ehegatte Jg. 1972 nicht erwerbstätig. */
+/** Erfundenes Beispiel: erwerbstätige Person A Jg. 1966, Beispielperson B Jg. 1985 nicht erwerbstätig. */
 function paar(lohnMann = 90_000, o: Partial<Person> = {}): Person[] {
   const mann = neuePerson(regeln, {
-    name: 'Beat',
+    name: 'Person A',
     geburtsjahr: 1966,
     geburtsmonat: 3,
     geschlecht: 'm',
@@ -23,8 +23,8 @@ function paar(lohnMann = 90_000, o: Partial<Person> = {}): Person[] {
     wertschriften: 400_000,
   });
   const frau = neuePerson(regeln, {
-    name: 'Anna',
-    geburtsjahr: 1972,
+    name: 'Person B',
+    geburtsjahr: 1985,
     geburtsmonat: 8,
     geschlecht: 'w',
     erwerbsstatus: 'nichtErwerbstaetig',
@@ -102,7 +102,7 @@ describe('Nicht erwerbstätige Person (z.B. Familienarbeit)', () => {
 
   it('Betreuungsgutschriften: nicht kumulierbar, höchstens eine Gutschrift pro Beitragsjahr', () => {
     const basis = {
-      geburtsjahr: 1972,
+      geburtsjahr: 1985,
       geburtsmonat: 8,
       geschlecht: 'w' as const,
       beitragsModus: 'jahreCh' as const,
@@ -130,8 +130,8 @@ describe('Nicht erwerbstätige Person (z.B. Familienarbeit)', () => {
     expect(info.neBefreitJahre).toContain(2026);
     expect(info.neBefreitJahre).toContain(2031);
     expect(info.neBeitraegeJahre[0]?.jahr).toBe(2032);
-    // Referenzalter Jg. 1972 = 65 im August 2037 → letztes Beitragsjahr 2037
-    expect(info.neBeitraegeJahre.at(-1)?.jahr).toBe(2037);
+    // Referenzalter Jg. 1985 = 65 im August 2050 → letztes Beitragsjahr 2050
+    expect(info.neBeitraegeJahre.at(-1)?.jahr).toBe(2050);
     // kein Lohn der nicht erwerbstätigen Person trotz gespeichertem Lohn
     expect(e.zeilen[0]?.lohn).toBeCloseTo(90_000, 0);
     const a = nichtErwerbAnnahmen(paar(90_000)[1] as Person, paar(90_000)[0] as Person, true, regeln, info);

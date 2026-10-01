@@ -9,7 +9,7 @@ const regeln = ladeRegeln(2026);
 const heute = { jahr: 2026, monat: 9 };
 
 function schaetzung(lohn: number, guthaben: number) {
-  const p: Person = neuePerson(regeln, { geburtsjahr: 1972, lohn, manuell: { pkGuthaben: true } });
+  const p: Person = neuePerson(regeln, { geburtsjahr: 1974, lohn, manuell: { pkGuthaben: true } });
   p.pk = { ...p.pk, guthaben };
   const e = effektiverHaushalt({ ...standardHaushalt(regeln), personen: [p] }, regeln, heute);
   const u = e.umwandlungssatz[0];

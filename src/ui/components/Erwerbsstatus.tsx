@@ -114,7 +114,7 @@ export function NichtErwerbstaetigFelder({
             nachkomma={0}
             gruppieren={false}
             onChange={(v) => setSh({ erziehungsJahre: Math.round(v) })}
-            hinweis="Erziehungsgutschriften (mehrere Kinder nicht doppelt: z.B. 2 Kinder im Abstand von 3 Jahren = 19 Jahre)."
+            hinweis="Erziehungsgutschriften (mehrere Kinder nicht doppelt: z.B. 2 Kinder im Abstand von 4 Jahren = 20 Jahre)."
           />
           <ZahlFeld
             label="Jahre mit Betreuung von Angehörigen"

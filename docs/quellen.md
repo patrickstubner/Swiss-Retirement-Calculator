@@ -154,7 +154,7 @@ Abkürzungen: MB = Merkblatt der Informationsstelle AHV/IV (ahv-iv.ch), mdJE = m
 | Lebenserwartung mit 65 (2024) | Männer 20,4 Jahre, Frauen 23,0 Jahre | https://www.bfs.admin.ch/bfs/de/home/statistiken/bevoelkerung/geburten-todesfaelle/lebenserwartung.html | 2025 publiziert |
 | Anteil Hundertjährige, Jahrgang 1967 (BFS-Schätzung) | ca. 4% der Männer, 11% der Frauen erreichen 100 | BFS Lebenserwartung (s. oben) | 2023/2024 |
 
-## 7. Brasilien (INSS und AHV, allgemeine Übersicht) – Details in docs/brasilien.md
+## 7. Brasilien (INSS und AHV, allgemeine Übersicht) – Details in docs/auslandsszenarien.md
 
 | Regel/Wert | Wert | Quelle-URL | Stand |
 |---|---|---|---|

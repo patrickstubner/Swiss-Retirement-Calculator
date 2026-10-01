@@ -15,8 +15,8 @@ Stand: 25.9.2026 · Steuerjahr 2026 · Maschinenlesbar: `data/kantone-2026.json`
 |---|---|---|---|---|
 | ESTV-Kantonsblätter (26) | Gesetzestexte zu Tarif, Abzügen und Kapitalleistungen je Kanton | amtlich, Methodik; teils Tarif nur als Verweis | https://www.estv2.admin.ch/stp/kb/{kt}-{de,fr,it}.pdf (lokal: /workspace/research/kb/) | Februar 2026 |
 | ESTV-Steuerrechner | Einkommen/Vermögen, Kapitalleistungen, alle Gemeinden, Steuerjahre 2010–2026 | Referenz und Validierung | https://swisstaxcalculator.estv.admin.ch | Datenstand 2026 |
-| ESTV-Rechner, Tarifexport (`API_exportManyTaxScales`) | Einkommens- und Vermögenstarife 2026 je Kanton (Tabellentypen ZUERICH, BUND, FLATTAX, FREIBURG, FORMEL; Splittingfaktoren) | exakte Tarifdaten; lokal gespeichert unter /workspace/research/estv-scales-2026/ | POST …/lg-proxy/operation/c3b67379_ESTV/API_exportManyTaxScales | abgerufen 24.9.2026 |
-| ESTV-Rechner, Steuerfüsse (`API_exportManySimpleRates`) | Kantons-, Gemeinde- und Kirchensteuerfüsse 2026, 2'110 Gemeinden | exakt; lokal: /workspace/research/estv-steuerfuesse-2026-ch.json | POST …/API_exportManySimpleRates | abgerufen 24.9.2026 |
+| ESTV-Rechner, Tarifexport (`API_exportManyTaxScales`) | Einkommens- und Vermögenstarife 2026 je Kanton (Tabellentypen ZUERICH, BUND, FLATTAX, FREIBURG, FORMEL; Splittingfaktoren) | exakte Tarifdaten; Rohdaten vom 24.9.2026 nur lokal (nicht im Repo) | POST …/lg-proxy/operation/c3b67379_ESTV/API_exportManyTaxScales | abgerufen 24.9.2026 |
+| ESTV-Rechner, Steuerfüsse (`API_exportManySimpleRates`) | Kantons-, Gemeinde- und Kirchensteuerfüsse 2026, 2'110 Gemeinden | exakt; Rohdaten vom 24.9.2026 nur lokal (nicht im Repo) | POST …/API_exportManySimpleRates | abgerufen 24.9.2026 |
 | ESTV-Erläuterungen | Berechnung unverbindlich, ohne Gewähr; Personal-/Kopfsteuern enthalten, Gebühren nicht | Rechtliches | https://www.estv.admin.ch/dam/de/sd-web/4wCmxZ0qNcsD/Erlaeuterungen-Steuerberechnungen_de-fr-it-en.pdf | – |
 | Nutzungsbedingungen der Rechner-API | **nicht gefunden** (API ist undokumentiert, ohne Schlüssel). Empfehlung: nur zur Build-Zeit für Referenzdaten und Tests nutzen, keine Laufzeitabfragen aus der App, Quelle angeben | **OFFEN** | – | – |
 | Kanton ZH: Steuerbuch ZStB 48.1 | Tarife und Abzüge ab 1.1.2026 (Ausgleich kalte Progression) | amtlich | https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-48-1/zstb-nr-48-1.pdf | 1.1.2026 |
@@ -161,7 +161,7 @@ Anmerkungen:
    - Kantone mit `exakt_einfache_steuer`: Formel aus `parameter` × Steuerfüsse.
    - Übrige: effektive Referenzsätze `kapitalleistungSatzPct` (100k–2 Mio.) interpolieren und mit dem Steuerfuss-Verhältnis skalieren.
 3. In der App jede Näherung sichtbar kennzeichnen: „Näherung, basierend auf ESTV-Steuerrechner 2026, Hauptort“.
-4. **Ausbaupfad „exakt“:** Tarife aus `/workspace/research/estv-scales-2026/*.json` übernehmen (Tabellentypen: ZUERICH = Bandbreiten, BUND = Schwellen mit Sockelsteuer, FLATTAX, FREIBURG/FORMEL = Formeln) sowie kantonale Abzüge und Sonderregeln ergänzen. Anschliessend gegen den ESTV-Rechner testen.
+4. **Ausbaupfad „exakt“:** Tarife aus dem ESTV-Tarifexport (`API_exportManyTaxScales`, Rohdaten lokal) übernehmen (Tabellentypen: ZUERICH = Bandbreiten, BUND = Schwellen mit Sockelsteuer, FLATTAX, FREIBURG/FORMEL = Formeln) sowie kantonale Abzüge und Sonderregeln ergänzen. Anschliessend gegen den ESTV-Rechner testen.
 
 ## 7. OFFEN
 - Nutzungsbedingungen der ESTV-Rechner-Schnittstelle (für Laufzeitnutzung); bis zur Klärung nur Build-Zeit-Referenz

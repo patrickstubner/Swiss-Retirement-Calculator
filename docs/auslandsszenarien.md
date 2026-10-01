@@ -1,33 +1,9 @@
-# Brasilien – Sozialversicherung (INSS, AHV) und Steuern: allgemeine Übersicht
+# Auslandsszenarien: Sozialversicherungsabkommen CH–BR, INSS-Rente und Besteuerung (allgemeine Übersicht)
 
 Stand: 25.9.2026 · Werte gültig für 2026 · Alle Angaben mit Quelle; nicht verifizierte Punkte sind als **OFFEN** markiert.
+Allgemeine, schematische Übersicht als Grundlage für das Modell «Ausländische Renten» (Beispielland Brasilien). Sie beschreibt keinen Einzelfall und ist keine Beratung. Die AHV-Regeln (Splitting, Erziehungsgutschriften, Lücken) stehen mit Quellen in `docs/quellen.md`.
 
-## 1. Kurzfassung in einfachen Worten
-
-**Allgemeine Übersicht** für Personen mit Versicherungszeiten in Brasilien und in der Schweiz. Sie beschreibt keinen Einzelfall und ist keine Beratung; alle Beispiele sind schematisch und erfunden.
-
-1. **Brasilianische Rente (INSS) ist möglich, auch mit wenigen Jahren.** Seit dem 1.10.2019 gilt das Sozialversicherungsabkommen Schweiz–Brasilien. Brasilien zählt Schweizer Versicherungszeiten mit, damit die Mindestbeitragszeit von 15 Jahren erreicht wird. Als Schweizer Zeiten zählen auch die Jahre als nichterwerbstätige Person, in denen die AHV-Beiträge durch den Ehegatten als bezahlt galten. Die Rente wird dann **anteilmässig (pro rata)** berechnet, also nur für die in Brasilien zurückgelegten Jahre. Sie dürfte eher klein ausfallen.
-2. **Alter:** Für Frauen, die vor dem 13.11.2019 in Brasilien versichert waren, liegt das Rentenalter für die Altersrente bei **62 Jahren** (Übergangsregel, Quelle in §3).
-3. **Auszahlung in die Schweiz:** Die Rente wird **ohne Kürzung** in die Schweiz überwiesen, in Real (BRL). Wechselkurs und Bankspesen gehen zulasten der empfangenden Person.
-4. **Antrag:** Mit Wohnsitz in der Schweiz stellt die berechtigte Person den Antrag bei der **Schweizerischen Ausgleichskasse SAK in Genf**. Diese leitet ihn an die INSS weiter. Alternativ geht es online über „Meu INSS“ (gov.br-Konto mit CPF).
-5. **Steuern:** Nach dem DBA Schweiz–Brasilien darf Brasilien die Rente besteuern. Die Schweiz befreit die Rente (mit Progressionsvorbehalt) **nur, wenn die tatsächliche Besteuerung in Brasilien nachgewiesen wird**. Eine kleine Rente bleibt in Brasilien seit 2026 wegen des hohen Freibetrags voraussichtlich steuerfrei. Dann besteuert der Wohnkanton sie **voll als Einkommen**. Die brasilianische Praxis für Nichtansässige ist **OFFEN**.
-6. **AHV (Schweiz):** Brasilianische Jahre füllen **keine** AHV-Lücken. Die AHV-Rente einer verheirateten, zeitweise nichterwerbstätigen Person beruht auf:
-   - den eigenen Schweizer Beitragsjahren; dazu zählen auch die Ehejahre, in denen der erwerbstätige Ehegatte mindestens den doppelten Mindestbeitrag bezahlte (2026: CHF 1'060);
-   - dem **Einkommenssplitting**: Die Einkommen beider Ehegatten aus den gemeinsamen, in der Schweiz versicherten Ehejahren werden halbiert und je zur Hälfte gutgeschrieben;
-   - allfälligen **Erziehungsgutschriften** für Kinder unter 16.
-
-   Die Jahre zwischen dem 20. Geburtstag und der Einreise in die Schweiz bleiben **Beitragslücken**. Jedes fehlende Jahr kürzt die Rente um etwa 1/44. Nachzahlen kann man nur für die letzten 5 Jahre.
-
-**Checkliste (allgemein):**
-- [ ] CNIS-Auszug (brasilianisches Versicherungsregister) über Meu INSS beziehen; alte Arbeitsbücher (CTPS) als Nachweis bereithalten
-- [ ] IK-Auszug (individuelles AHV-Konto) der Person bei der Ausgleichskasse bestellen: Sind alle Ehejahre als Beitragsjahre verbucht?
-- [ ] AHV-Rentenvorausberechnung für beide Ehegatten beantragen
-- [ ] Staatsangehörigkeit der Person: nur für Abfindung/Rückvergütung und Auszahlung in Drittstaaten relevant, nicht für die INSS-Rente
-- [ ] Heiratsdatum und Einreisedatum vergleichen: Das Splitting gilt nur für Jahre, in denen **beide** in der Schweiz versichert waren
-- [ ] Kinder unter 16 in der Ehe? → Erziehungsgutschriften
-- [ ] Beitragsjahre in Brasilien zählen (gilt die 15-Jahres-Regel nur mit Schweizer Zeiten?) und Beitragslöhne seit Juli 1994 ermitteln
-
-## 2. Sozialversicherungsabkommen Schweiz–Brasilien
+## 1. Sozialversicherungsabkommen Schweiz–Brasilien
 
 | Punkt | Inhalt | Quelle | Stand |
 |---|---|---|---|
@@ -52,7 +28,7 @@ Stand: 25.9.2026 · Werte gültig für 2026 · Alle Angaben mit Quelle; nicht ve
 - Formular **BRA/SWI 4** (Aposentadoria por idade), Lebensbestätigung **BRA/SWI 12**: https://www.gov.br/previdencia/pt-br/assuntos/acordos-internacionais/pagina-antiga/formularios/formularios-brasil-suica
 - Online über Meu INSS, Dienst „Acordo internacional – aposentadoria por idade“: https://www.gov.br/pt-br/servicos/solicitar-aposentadoria-por-idade-urbana-acordo-internacional
 
-## 3. Brasilianische Altersrente (INSS, aposentadoria por idade urbana)
+## 2. Brasilianische Altersrente (INSS, aposentadoria por idade urbana)
 
 | Regel | Wert | Quelle | Stand |
 |---|---|---|---|
@@ -65,7 +41,7 @@ Stand: 25.9.2026 · Werte gültig für 2026 · Alle Angaben mit Quelle; nicht ve
 
 **Hinweis:** Löhne vor Juli 1994 fliessen nach EC 103/2019 nicht in den Durchschnitt ein. Wie das INSS bei Beitragszeiten, die ganz vor 1994 liegen, und bei der Pro-rata-Rente vorgeht, ist **OFFEN**. Die Höhe lässt sich erst mit dem CNIS-Auszug oder einer INSS-Berechnung abschätzen.
 
-## 4. Besteuerung der INSS-Rente bei Wohnsitz in der Schweiz
+## 3. Besteuerung der INSS-Rente bei Wohnsitz in der Schweiz
 
 | Punkt | Inhalt | Quelle | Stand |
 |---|---|---|---|
@@ -77,25 +53,7 @@ Stand: 25.9.2026 · Werte gültig für 2026 · Alle Angaben mit Quelle; nicht ve
 | Brasilien ab 2026 | Lei 15.270/2025: faktisch steuerfrei bis R$ 5'000/Monat. Die zusätzliche Befreiung ab 65 gilt nur für Ansässige. Praxis für Nichtansässige **OFFEN** | Lei 15.270/2025 | 2026 |
 | Folge für die App | Kleine INSS-Rente: in BR voraussichtlich steuerfrei → in der Schweiz als Einkommen zu 100% steuerbar (Bund, Kanton, Gemeinde) | abgeleitet | – |
 
-## 5. AHV einer nichterwerbstätigen verheirateten Person
-
-| Regel | Inhalt | Quelle | Stand |
-|---|---|---|---|
-| Beiträge gelten als bezahlt (Art. 3 Abs. 3 AHVG) | wenn der erwerbstätige Ehegatte mindestens den **doppelten Mindestbeitrag** zahlt (2026: CHF 1'060); gilt auch bei Mitarbeit im Betrieb ohne Barlohn | AHVG Art. 3 Abs. 3: https://www.fedlex.admin.ch/eli/cc/63/837_843_843/de | 1.1.2026 |
-| Art. 3 Abs. 4 AHVG | gilt auch im Jahr der Heirat oder Auflösung der Ehe und für Jahre, in denen der erwerbstätige Ehegatte eine Altersrente bezieht oder aufschiebt | AHVG | 1.1.2026 |
-| Beitragsjahre | solche Jahre zählen als Beitragsjahre (Art. 29ter Abs. 2 lit. b) | AHVG | 1.1.2026 |
-| Grenze | Hört der erwerbstätige Ehegatte auf zu arbeiten (z.B. Frühpensionierung), muss die nichterwerbstätige Person bis zum Rentenalter NE-Beiträge zahlen; Erziehungsgutschriften befreien nicht | Merkblatt 2.03 (Stand 1.1.2026) | 1.1.2026 |
-| Einkommenssplitting (Art. 29quinquies Abs. 3–5) | Einkommen der Ehejahre werden hälftig geteilt, sobald beide das Rentenalter erreicht haben (oder bei Scheidung/Verwitwung). Massgebend ist die Zeit vom 1.1. nach dem 20. Geburtstag bis zum 31.12. vor Eintritt des Versicherungsfalls beim zuerst Rentenberechtigten. Geteilt wird **nur für Zeiten, in denen beide in der AHV versichert waren** (Ausnahme: Jahr der Heirat/Auflösung) | AHVG; Merkblatt 3.01 | 1.1.2026 |
-| Erziehungsgutschriften (Art. 29sexies) | für Jahre mit Kindern unter 16; Gutschrift = 3 × minimale jährliche Altersrente (2026: CHF 45'360); in den Ehejahren hälftig geteilt. Volle Gutschrift an den versicherten Elternteil, wenn der andere nicht AHV-versichert war (AHVV Art. 52f Abs. 4) | AHVG; AHVV https://www.fedlex.admin.ch/eli/cc/63/1185_1183_1185/de | 1.1.2026 |
-| Mindestdauer | Rentenanspruch ab einem vollen Beitragsjahr (Art. 29 Abs. 1) | AHVG | 1.1.2026 |
-| Lücken vor der Einreise | Jahre zwischen 20 und Einreise: nicht versichert (Wohnsitzprinzip, Art. 1a AHVG) → Lücke, ca. 1/44 Kürzung pro Jahr; Nachzahlung nur 5 Jahre zurück | AHVG Art. 1a, Art. 16 | 1.1.2026 |
-| Jugendjahre (AHVV 52b) | füllen Lücken nur, wenn vor 20 in der Schweiz Beiträge bezahlt wurden → in der Regel nicht | AHVV | 1.1.2026 |
-| Zusatzjahre (AHVV 52d) | nur für Lücken vor 1979 → meist nicht relevant | AHVV | 1.1.2026 |
-| Brasilianische Zeiten | zählen **nicht** für die AHV-Altersrente (Abkommen Art. 17) | fedlex SR 0.831.109.198.1 | – |
-
-**Beispiel (nur schematisch):** Einreise mit 30, danach durchgehend verheiratet und versichert → 10 Jahre Lücke (20–29) → Teilrente etwa 34/44 der Rente, die dem durchschnittlichen Einkommen (nach Splitting) entspricht. Die genaue Zahl liefert nur die Rentenvorausberechnung. Die Plafonierung der Ehepaarrente (150% der Maximalrente) ist zu beachten.
-
-## 6. Welche Eingaben die App für ausländische Renten braucht
+## 4. Welche Eingaben die App für ausländische Renten braucht
 
 | Feld | Beschreibung | Beispiel INSS |
 |---|---|---|
@@ -111,7 +69,7 @@ Stand: 25.9.2026 · Werte gültig für 2026 · Alle Angaben mit Quelle; nicht ve
 | NE-Beitragsbasis | Renteneinkommen × 20 zählt für AHV-Beiträge Nichterwerbstätiger vor dem Rentenalter | falls Rente vor 65 beginnt |
 | Hinterlassenenleistung | Prozentsatz für den überlebenden Ehegatten (optional) | **OFFEN** |
 
-## 7. Offene Punkte (OFFEN)
+## 5. Offene Punkte (OFFEN)
 - Genaue Pro-rata-Formel des INSS (Nenner begrenzt auf die Mindestzeit?), Mindestbetrag bei Pro-rata-Renten
 - Berechnung bei Beitragszeiten ausschliesslich vor Juli 1994
 - 13. Monatsrente bei Abkommensrenten ins Ausland

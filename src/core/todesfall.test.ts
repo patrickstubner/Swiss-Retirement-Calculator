@@ -273,7 +273,7 @@ describe('PK: Abfindung, Kapital, Freizügigkeit und 3a', () => {
   it('Freizügigkeit und 3a der verstorbenen Person fliessen der überlebenden Person als Kapital zu', () => {
     const h = paar();
     const a = h.personen[0]!;
-    a.geburtsjahr = 1972;
+    a.geburtsjahr = 1974;
     a.freizuegigkeit = { ...a.freizuegigkeit, guthaben: 100_000, bezugsAlter: 70 };
     a.saeule3a = { ...a.saeule3a, guthaben: 80_000, bezugsAlter: 70 };
     a.pk = { ...a.pk, guthaben: 0 };
@@ -289,7 +289,7 @@ describe('Konsistenz mit Wohnkanton und Stiftungssitz (Schema 10)', () => {
   const mitKapital = () => {
     const h = paar();
     const a = h.personen[0]!;
-    a.geburtsjahr = 1972;
+    a.geburtsjahr = 1974;
     a.freizuegigkeit = { ...a.freizuegigkeit, guthaben: 100_000, bezugsAlter: 70 };
     a.saeule3a = { ...a.saeule3a, guthaben: 80_000, bezugsAlter: 70 };
     a.pk = { ...a.pk, guthaben: 0 };

@@ -31,10 +31,10 @@ describe('Rücktritt per Alter oder Datum', () => {
   });
 
   it('Datum ↔ Alter sind zueinander konsistent (Umschalten verliert nichts)', () => {
-    const p = person({ geburtsjahr: 1972, geburtsmonat: 9, stoppModus: 'alter', stoppAlter: 62 + 5 / 12 });
+    const p = person({ geburtsjahr: 1974, geburtsmonat: 9, stoppModus: 'alter', stoppAlter: 62 + 5 / 12 });
     const m = stoppAlterMonate(p);
     const letzter = letzterArbeitsmonat(p, m);
-    expect(letzter).toEqual({ jahr: 2035, monat: 1 });
+    expect(letzter).toEqual({ jahr: 2037, monat: 1 });
     expect(stoppAlterMonate({ ...p, stoppModus: 'datum', stoppDatum: letzter })).toBe(m);
   });
 

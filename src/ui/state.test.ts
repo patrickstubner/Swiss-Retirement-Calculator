@@ -297,7 +297,7 @@ describe('Neue Felder: Rücktrittsmodus und Wohnsitz im Ausland', () => {
       ...p,
       erwerbsstatus: 'nichtErwerbstaetig',
       frueherErwerb: { jahre: 8, lohn: 55_000 },
-      ahvSchaetzhilfe: { ...p.ahvSchaetzhilfe, erziehungsJahre: 19, betreuungsJahre: 3 },
+      ahvSchaetzhilfe: { ...p.ahvSchaetzhilfe, erziehungsJahre: 7, betreuungsJahre: 3 },
     };
     expect(dekodiere(kodiere(h), regeln)).toEqual(h);
     // Schema 3 (ohne die neuen Felder): erwerbstätig, keine früheren Jahre, keine Betreuung
@@ -503,7 +503,7 @@ describe('Eingabemodus «Schnell» / «Detailliert»', () => {
     const h = standardHaushalt(regeln);
     const p = h.personen[0] as (typeof h.personen)[number];
     p.lohn = 110000;
-    p.inChSeit = 2008;
+    p.inChSeit = 2014;
     p.bargeld = 20000;
     p.ahv = { ...p.ahv, modus: 'eingabe', renteMonat: 2100 };
     p.pk = { ...p.pk, umwandlungssatz: 0.052, guthaben: 350000 };
@@ -583,7 +583,7 @@ describe('Eingabemodus «Schnell» / «Detailliert»', () => {
   it('«in der Schweiz seit» und Markierungen werden normalisiert; Kodieren/Dekodieren behält sie', () => {
     const h = detailHaushalt();
     expect(dekodiere(kodiere(h), regeln)?.personen[0]?.manuell).toEqual(h.personen[0]?.manuell);
-    expect(dekodiere(kodiere(h), regeln)?.personen[0]?.inChSeit).toBe(2008);
+    expect(dekodiere(kodiere(h), regeln)?.personen[0]?.inChSeit).toBe(2014);
     const roh = JSON.parse(JSON.stringify(h));
     roh.personen[0].inChSeit = 'x';
     roh.personen[0].manuell = { ahvRente: true, unbekannt: true, pkGuthaben: 'ja' };

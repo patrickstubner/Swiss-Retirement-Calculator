@@ -13,56 +13,59 @@ Erzeugt mit `src/core/schnellVergleich.test.ts` (Stand 25.9.2026, Regeln 2026).
 
 | Haushalt | Variante | Frühestes Alter (Detail) | Δ Alter | Δ Vermögen mit 85 (CHF) | in % Vermögen 85 (Detail) | in % Gesamtvermögen heute |
 |---|---|---|---|---|---|---|
-| BVG-nah | Schnell mit PK-Guthaben, ohne UWS | 64 J. 8 Mt. | -7 Mt. | +45k | +26.5% | +9.0% |
-| BVG-nah | Schnell ohne PK-Guthaben/UWS | 64 J. 8 Mt. | +9 Mt. | -43k | -25.3% | -8.6% |
-| BVG-nah | Schnell mit PK-Guthaben + UWS | 64 J. 8 Mt. | -6 Mt. | +41k | +24.0% | +8.1% |
-| Umhüllend | Schnell mit PK-Guthaben, ohne UWS | 57 J. 10 Mt. | -4 Mt. | +12k | +0.6% | +0.5% |
-| Umhüllend | Schnell ohne PK-Guthaben/UWS | 57 J. 10 Mt. | +34 Mt. | -464k | -24.9% | -21.3% |
-| Umhüllend | Schnell mit PK-Guthaben + UWS | 57 J. 10 Mt. | +3 Mt. | -89k | -4.8% | -4.1% |
-| Paar BR | Schnell mit PK-Guthaben, ohne UWS, mit CH seit | 63 J. 4 Mt. | +1 Mt. | -13k | -1.8% | -1.8% |
-| Paar BR | Schnell mit PK-Guthaben, ohne UWS, ohne CH seit | 63 J. 4 Mt. | -2 Mt. | +10k | +1.4% | +1.4% |
-| Paar BR | Schnell ohne PK-Guthaben/UWS, mit CH seit | 63 J. 4 Mt. | +30 Mt. | -294k | -39.8% | -39.0% |
-| Paar BR | Schnell mit PK-Guthaben + UWS + CH seit | 63 J. 4 Mt. | +3 Mt. | -40k | -5.4% | -5.3% |
-| Frühpension | Schnell mit PK-Guthaben, ohne UWS | 61 J. 10 Mt. | -6 Mt. | -22k | -57.6% | -1.5% |
-| Frühpension | Schnell ohne PK-Guthaben/UWS | 61 J. 10 Mt. | +62 Mt. | -589k | -1549.3% | -41.2% |
-| Frühpension | Schnell mit PK-Guthaben + UWS | 61 J. 10 Mt. | +7 Mt. | -156k | -409.8% | -10.9% |
+| BVG-nah | Schnell mit PK-Guthaben, ohne UWS | 64 J. 9 Mt. | -8 Mt. | +45k | +27.0% | +9.0% |
+| BVG-nah | Schnell ohne PK-Guthaben/UWS | 64 J. 9 Mt. | +9 Mt. | -43k | -25.9% | -8.6% |
+| BVG-nah | Schnell mit PK-Guthaben + UWS | 64 J. 9 Mt. | -7 Mt. | +41k | +24.4% | +8.1% |
+| Umhüllend | Schnell mit PK-Guthaben, ohne UWS | 57 J. 6 Mt. | -4 Mt. | +3k | +0.2% | +0.2% |
+| Umhüllend | Schnell ohne PK-Guthaben/UWS | 57 J. 6 Mt. | +35 Mt. | -485k | -25.0% | -22.2% |
+| Umhüllend | Schnell mit PK-Guthaben + UWS | 57 J. 6 Mt. | +3 Mt. | -97k | -5.0% | -4.4% |
+| Paar Ausland | Schnell mit PK-Guthaben, ohne UWS, mit CH seit | 57 J. 9 Mt. | +6 Mt. | -213k | -14.1% | -28.2% |
+| Paar Ausland | Schnell mit PK-Guthaben, ohne UWS, ohne CH seit | 57 J. 9 Mt. | +5 Mt. | -202k | -13.4% | -26.8% |
+| Paar Ausland | Schnell ohne PK-Guthaben/UWS, mit CH seit | 57 J. 9 Mt. | +43 Mt. | -618k | -41.0% | -81.9% |
+| Paar Ausland | Schnell mit PK-Guthaben + UWS + CH seit | 57 J. 9 Mt. | +5 Mt. | -201k | -13.4% | -26.7% |
+| Frühpension | Schnell mit PK-Guthaben, ohne UWS | 61 J. 10 Mt. | -5 Mt. | -22k | -70.5% | -1.6% |
+| Frühpension | Schnell ohne PK-Guthaben/UWS | 61 J. 10 Mt. | +63 Mt. | -589k | -1861.7% | -41.2% |
+| Frühpension | Schnell mit PK-Guthaben + UWS | 61 J. 10 Mt. | +7 Mt. | -156k | -493.3% | -10.9% |
 
 ### Veränderung gegenüber der bisherigen Schätzung 6,8% (Zeilen «mit PK-Guthaben, ohne UWS»)
 
 | Haushalt | Δ Alter bisher (6,8%) | Δ Alter neu | in % Gesamtvermögen heute bisher | neu |
 |---|---|---|---|---|
-| BVG-nah | -11 Mt. | -7 Mt. | +14.2% | +9.0% |
-| Umhüllend | -13 Mt. | -4 Mt. | +7.0% | +0.5% |
-| Paar BR, mit CH seit | -7 Mt. | +1 Mt. | +9.5% | -1.8% |
-| Paar BR, ohne CH seit | -9 Mt. | -2 Mt. | +12.6% | +1.4% |
-| Frühpension | -22 Mt. | -6 Mt. | +10.3% | -1.5% |
+| BVG-nah | -11 Mt. | -8 Mt. | +14.2% | +9.0% |
+| Umhüllend | -13 Mt. | -4 Mt. | +7.0% | +0.2% |
+| Frühpension | -22 Mt. | -5 Mt. | +10.3% | -1.6% |
+
+Der Beispielhaushalt «Paar Ausland» wurde am 30.9.2026 durch eine neue, erfundene Beispielperson B (Jahrgang 1985, seit 2014 in der Schweiz) ersetzt; ein Vergleich mit der früheren 6,8%-Schätzung liegt dafür nicht vor.
 
 Die Zeilen «ohne PK-Guthaben» ändern sich nicht: das dann geschätzte Guthaben besteht nur aus
 BVG-Mindestgutschriften, ist also ganz obligatorisch → 6,8%.
 
 ### Geschätzter Umwandlungssatz (Schnell mit PK-Guthaben, ohne UWS)
 
-| Person | Anteil Obligatorium (geschätzt, im Referenzalter) | UWS geschätzt | UWS laut Vorsorgeausweis (Detail) |
+| Person | Anteil Obligatorium (geschätzt, im RA) | UWS geschätzt | UWS laut Vorsorgeausweis (Detail) |
 |---|---|---|---|
 | BVG-nah (A) | 79% | 6.46% | 6.40% |
-| Umhüllend (B) | 42% | 5.86% | 5.20% |
-| Paar BR (Marco) | 69% | 6.29% | 6.00% |
-| Paar BR (Ana) | 26% | 5.60% | 6.50% |
+| Umhüllend (B) | 42% | 5.85% | 5.20% |
+| Paar Ausland (Person A) | 51% | 6.01% | 6.00% |
+| Paar Ausland (Person B) | 25% | 5.57% | 6.50% |
 | Frühpension (C) | 38% | 5.79% | 5.00% |
 
 ## Einordnung
 
-- **Mit PK-Guthaben und Umwandlungssatz** liegt «Schnell» bei ±3 bis 7 Monaten bzw. −4 bis +8% des heutigen
-  Gesamtvermögens (Frühpension −10,9%: im Detail PK-Bezug ab 58 laut Reglement und höhere Sparbeiträge).
-- **Ohne Umwandlungssatz** (aufgeteilte Schätzung) liegt «Schnell» neu bei −7 bis +1 Monaten (bisher mit 6,8%
-  −7 bis −22 Monate) und ist nicht mehr systematisch zu optimistisch. Der geschätzte Satz liegt bei BVG-nahen
+- **Mit PK-Guthaben und Umwandlungssatz** liegt «Schnell» bei −7 bis +7 Monaten bzw. −4 bis +8% des heutigen
+  Gesamtvermögens (Frühpension −10,9%: im Detail PK-Bezug ab 58 laut Reglement und höhere Sparbeiträge). Beim
+  jüngeren Haushalt «Paar Ausland» (Person B mit Zuzug 2014, viele Beitragslücken, Auslandsrente) ist «Schnell» mit
+  +5 Monaten bzw. −27% des heutigen Gesamtvermögens deutlich pessimistischer: Die Schnell-Schätzung bildet
+  Auslandsrente und Detailwerte der Vorausberechnung nur grob ab.
+- **Ohne Umwandlungssatz** (aufgeteilte Schätzung) liegt «Schnell» neu bei −8 bis +6 Monaten (bisher mit 6,8%
+  −7 bis −22 Monate; Haushalt «Paar Ausland» nicht mehr vergleichbar, siehe oben) und ist nicht mehr systematisch zu optimistisch. Der geschätzte Satz liegt bei BVG-nahen
   Kassen nahe am Vorsorgeausweis; bei stark umhüllenden Kassen eher etwas zu hoch (+0,7 bis +0,8 Pp), weil der
   OAK-Durchschnitt in den Kassen fürs ganze Guthaben gilt, hier aber nur für den Rest verwendet wird; bei kleinen
-  obligatorischen Guthaben (Teilzeit, tiefer Lohn, z.B. Ana) kann er auch zu tief sein. Dass die Abweichung im
+  obligatorischen Guthaben (Teilzeit, tiefer Lohn, z.B. Person B im Haushalt «Paar Ausland») kann er auch zu tief sein. Dass die Abweichung im
   Ergebnis kleiner ist als mit eingegebenem UWS, ist teilweise Zufall (gegenläufige Effekte: im Detail höhere
   Sparbeiträge, frühere PK-Bezüge). Die App empfiehlt darum weiterhin, den Satz vom Vorsorgeausweis einzutragen.
 - **Ohne PK-Guthaben** (Schätzung aus BVG-Mindestgutschriften) ist «Schnell» deutlich zu pessimistisch.
-- **«In der Schweiz seit»** wirkt im Paar-Beispiel schwach, weil die Ehepaar-Plafonierung einen Teil der Lücke
+- **«In der Schweiz seit»** wirkt im Paar-Beispiel schwach (Δ Alter +6 statt +5 Monate), weil die Ehepaar-Plafonierung einen Teil der Lücke
   auffängt (Plafond bei Teilrenten vereinfacht, siehe OFFEN in docs/quellen.md).
 - Prozent bezogen auf das Vermögen mit 85 sind bei fast aufgebrauchtem Vermögen nicht aussagekräftig
   (Frühpension); darum zusätzlich der Bezug auf das heutige Gesamtvermögen.
