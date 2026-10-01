@@ -1,6 +1,6 @@
-# CH-Rentenrechner – Produkt- und Technikkonzept
+# Ruhestandsrechner Schweiz – Produkt- und Technikkonzept
 
-Version 0.1 · Stand 24.09.2026 · Arbeitstitel «CH-Rentenrechner»
+Version 0.1 · Stand 24.09.2026 · Titel «Ruhestandsrechner Schweiz»
 
 > Kernfrage: **«Wann kann ich aufhören zu arbeiten – und reicht mein Vermögen?»**
 > Statische Web-App (GitHub Pages), mobile-first, für Einzelpersonen und Ehepaare. Alle Berechnungen laufen im Browser, es gibt keinen Server und die Daten verlassen das Gerät nicht.
@@ -412,7 +412,7 @@ Die Zahlen im Beispiel sind nur Platzhalter. Dazu kommt `scenarios.json` mit den
 7. **Datenaktualität:** JST endet 2020. Sollen die Jahre 2021–2025 aus anderen Quellen ergänzt werden (Lizenz klären) oder genügt 1870–2020?
 8. **Lokale Speicherung:** Darf localStorage (Opt-in) verwendet werden, und sind teilbare Links mit allen Finanzdaten im URL-Fragment in Ordnung (Datenschutz-Hinweis)?
 9. **Name** der App, Domain (github.io oder eigene Domain), Logo?
-10. **Repository:** Name (z.B. `CH-Rentenrechner`), öffentlich oder privat (GitHub Pages bei privaten Repos erfordert einen kostenpflichtigen Plan), Lizenz des Codes (z.B. MIT)?
+10. **Repository:** Name (z.B. `Swiss-Retirement-Calculator`), öffentlich oder privat (GitHub Pages bei privaten Repos erfordert einen kostenpflichtigen Plan), Lizenz des Codes (z.B. MIT)?
 11. **Zielgruppe/Tiefe:** Laien mit Schnellstart oder Fortgeschrittene mit allen Detailfeldern? Braucht es einen Druck-/PDF-Bericht?
 12. **Selbständigerwerbende und Teilzeit:** im Scope (anderer AHV-Satz, 3a «gross», kein BVG)?
 13. **Wohneigentum:** erledigt mit Schema 7 (Wohnkosten, Verkauf mit Grundstückgewinnsteuer, Eigenmietwert bis 2028). Offen: Kauf eines Ersatzobjekts, Amortisation, Steuerwert unter dem Verkehrswert.

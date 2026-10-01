@@ -340,8 +340,8 @@ export function App() {
         </section>
         <header className="kopf">
           <div className="kopf__inner">
-            <h1>CH-Rentenrechner</h1>
-            <p className="kopf__frage">Wann kann ich aufhören zu arbeiten – und reicht mein Vermögen?</p>
+            <h1>Ruhestandsrechner Schweiz</h1>
+            <p className="kopf__frage">Reicht mein Vermögen für den Ruhestand?</p>
           </div>
         </header>
         <div className="inhalt">

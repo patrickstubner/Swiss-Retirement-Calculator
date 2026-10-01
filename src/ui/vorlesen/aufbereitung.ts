@@ -178,7 +178,7 @@ const REGELN_ROH: RegelRoh[] = [
   [r(String.raw`(?<=\d)\/(?=\d)`), () => ' durch '],
   // Vorzeichen
   [r(String.raw`(?<![\p{L}\p{N}])[−-](?=\d)`), () => 'minus '],
-  // Grossgeschriebene Abkürzungen: «AHV» → «A H V»; «CH-Rentenrechner» → «C H Rentenrechner»
+  // Grossgeschriebene Abkürzungen: «AHV» → «A H V»; «CH-Rente» → «C H Rente»
   [
     r(`${B0}([A-ZÄÖÜ]{2,4})-(?=\\p{L})|${B0}([A-ZÄÖÜ]{2,4})${B1}`),
     (m) => {

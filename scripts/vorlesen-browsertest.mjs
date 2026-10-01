@@ -311,7 +311,7 @@ console.log('4) Keine deutsche Stimme bzw. keine Sprachausgabe');
     'ohne speechSynthesis: Knöpfe ausgeblendet',
   );
   pruefe((await page.locator('.vorlesen-hinweis').count()) === 0, 'ohne speechSynthesis: kein Hinweis');
-  pruefe((await page.locator('h1').innerText()) === 'CH-Rentenrechner', 'Seite funktioniert normal');
+  pruefe((await page.locator('h1').innerText()) === 'Ruhestandsrechner Schweiz', 'Seite funktioniert normal');
 }
 
 // ---------------------------------------------------------------- 5) Dunkel, reduzierte Bewegung, Einstellungen speichern

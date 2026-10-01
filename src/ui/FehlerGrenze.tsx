@@ -36,7 +36,7 @@ export class FehlerGrenze extends Component<Props, { fehler: boolean }> {
     if (!this.state.fehler) return this.props.children;
     return (
       <main className="fehlergrenze" role="alert">
-        <h1>CH-Rentenrechner</h1>
+        <h1>Ruhestandsrechner Schweiz</h1>
         <p>
           <strong>Es ist ein unerwarteter Fehler aufgetreten.</strong> Möglicherweise sind gespeicherte oder importierte
           Eingaben nicht verwendbar.

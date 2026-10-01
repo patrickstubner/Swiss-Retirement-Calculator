@@ -201,7 +201,7 @@ export interface ExportDatei {
   b: Haushalt;
 }
 
-export const exportDateiname = () => 'ch-rentenrechner-versionen-a-b.json';
+export const exportDateiname = () => 'ruhestandsrechner-versionen-a-b.json';
 
 export function exportiere(a: Haushalt, b: Haushalt, namen: VersionsNamen, jetzt = new Date()): string {
   const d: ExportDatei = {
