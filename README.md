@@ -1,6 +1,6 @@
-# CH-Rentenrechner
+# Ruhestandsrechner Schweiz
 
-> **Wann kann ich aufhören zu arbeiten – und reicht mein Vermögen?**
+> **Reicht mein Vermögen für den Ruhestand?**
 
 Statische Web-App (GitHub Pages) für Einzelpersonen und Ehepaare in der Schweiz: AHV, Pensionskasse, Säule 3a,
 ausländische Renten, freies Vermögen, Ausgaben und Steuern werden Jahr für Jahr in heutigen Franken simuliert. Der

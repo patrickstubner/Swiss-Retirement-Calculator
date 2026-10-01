@@ -1,4 +1,4 @@
-# Quellen und verifizierte Werte – CH-Rentenrechner
+# Quellen und verifizierte Werte – Ruhestandsrechner Schweiz
 
 Recherche-Stand: 24.09.2026 (freiwillige AHV/IV: 25.09.2026). Alle Beträge in CHF. «OFFEN» = nicht aus einer offiziellen, aktuellen Quelle verifiziert. In diesem Fall darf der Wert in der App nicht fest eingebaut werden (Nutzereingabe oder Platzhalter mit Warnung).
 

@@ -15,7 +15,7 @@ export default defineConfig({
     base: '/Swiss-Retirement-Calculator/',
   },
   html: {
-    title: 'CH-Rentenrechner',
+    title: 'Ruhestandsrechner Schweiz',
     template: './src/index.html',
     favicon: './public/favicon.svg',
   },

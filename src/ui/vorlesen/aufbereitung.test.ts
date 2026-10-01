@@ -28,7 +28,8 @@ describe('Aufbereitung für die Aussprache', () => {
   it('Abkürzungen der Vorsorge werden buchstabiert, Sonderfälle als Wort', () => {
     expect(s('Die AHV und die BVG-Rente')).toBe('Die A H V und die B V G Rente');
     expect(s('EFTA-Staaten')).toBe('Efta Staaten');
-    expect(s('CH-Rentenrechner')).toBe('C H Rentenrechner');
+    expect(s('CH-Rente')).toBe('C H Rente');
+    expect(s('Ruhestandsrechner Schweiz')).toBe('Ruhestandsrechner Schweiz');
     expect(s('OFFEN')).toBe('OFFEN');
     expect(s('ESTV 2-217')).toBe('E S T V 2-217');
   });
