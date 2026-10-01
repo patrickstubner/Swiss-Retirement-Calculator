@@ -24,6 +24,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
+          fetch-depth: 0 # voller Verlauf für die Prüfung der Commit-Metadaten
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version-file: .nvmrc
@@ -37,6 +38,16 @@ jobs:
         run: node scripts/secret-scan.mjs
       - name: Guard lokale Daten und verbotene Wörter
         run: node scripts/datenschutz-guard.mjs
+      - name: E-Mail-Guard (Dateien und Commit-Metadaten, ohne Wortliste)
+        env:
+          BASIS: ${{ github.event.pull_request.base.sha }}
+          KOPF: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ -n "$BASIS" ] && [ -n "$KOPF" ]; then
+            node scripts/email-guard.mjs --range "$BASIS..$KOPF"
+          else
+            node scripts/email-guard.mjs --alle
+          fi
       - name: Build und Prüfung von dist
         run: |
           npm run build

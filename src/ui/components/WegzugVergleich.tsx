@@ -14,6 +14,7 @@ import { fmtChf } from '../format';
 import { HINWEIS_OBLIGATORIUM, WEGZUG_QUELLEN, zeigeObligatoriumHinweis } from '../wegzugVergleich';
 import { AuswahlFeld, Schalter, ZahlFeld } from './Felder';
 import { Karte } from './Karte';
+import { ScrollTabelle } from './ScrollTabelle';
 
 const sitzOptionen = (leer: string) => [
   { value: '', label: leer },
@@ -163,7 +164,7 @@ export function WegzugVergleichKarte({ h, effH, regeln, heute, namen }: Props) {
 
           {faelle ? (
             <>
-              <div className="tabelle-scroll">
+              <ScrollTabelle label="Wegzug im Vergleich (Tabelle, scrollbar)">
                 <table className="vergleich-tabelle wegzug-tabelle">
                   <caption>
                     {namen[person] ?? 'Person'}: Bezug bei Wohnsitz in der Schweiz gegen Wegzug mit {alterJ} J. {alterM}{' '}
@@ -221,7 +222,7 @@ export function WegzugVergleichKarte({ h, effH, regeln, heute, namen }: Props) {
                     )}
                   </tbody>
                 </table>
-              </div>
+              </ScrollTabelle>
 
               {faelle.some((f) => f.status && f.status.fall !== 'barauszahlung') ? (
                 <p className="warnung">

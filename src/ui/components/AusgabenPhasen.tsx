@@ -10,6 +10,7 @@ import { neueAusgabenPhase, neuesAusgabenEinzeljahr } from '../../data/defaults'
 import { fmtChf, fmtProzent, fmtZahl } from '../format';
 import type { Setzer } from '../kontext';
 import { AuswahlFeld, BetragFeld, ZahlFeld } from './Felder';
+import { ScrollTabelle } from './ScrollTabelle';
 
 const EINHEITEN: { value: BetragEinheit; label: string }[] = [
   { value: 'jahr', label: 'pro Jahr' },
@@ -304,7 +305,7 @@ export function AusgabenPhasen({ h, setH, heute, refIdx }: Props) {
 
       <details className="aufklapp ausgaben-vorschau">
         <summary>Vorschau pro Jahr (heute und hochgerechnet)</summary>
-        <div className="tabelle-scroll">
+        <ScrollTabelle label="Ausgaben pro Jahr (Tabelle, scrollbar)">
           <table>
             <thead>
               <tr>
@@ -331,7 +332,7 @@ export function AusgabenPhasen({ h, setH, heute, refIdx }: Props) {
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollTabelle>
         <p className="klein">
           «Heute» = Kaufkraft heute (so wird gerechnet); «Nominal» = auf jenes Jahr hochgerechnet mit{' '}
           {fmtProzent(inflation)} Teuerung pro Jahr. Das Ergebnis zeigt heutige Franken; das erste Jahr zählt nur ab dem

@@ -257,7 +257,8 @@ describe('S-04/S-08: Längenlimits', () => {
     const gross = LZString.compressToEncodedURIComponent(`{"v":11,"h":{"x":"${'a'.repeat(3_000_000)}"}}`);
     expect(gross.length).toBeLessThan(MAX_HASH_LAENGE);
     expect(dekodiere(gross, regeln)).toBeNull();
-  });
+    // Zeitlimit grosszügig: das Entpacken von 3 MB dauert auf langsamen CI-Rechnern sonst nahe an 5 s (flaky).
+  }, 60_000);
 
   it('zu grosser Import wird verworfen, normaler Export lässt sich importieren', () => {
     const h = vollerHaushalt();
