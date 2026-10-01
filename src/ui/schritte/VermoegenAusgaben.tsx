@@ -362,8 +362,10 @@ function SteuerKarte({ h, setH }: { h: Haushalt; setH: Setzer }) {
           {st.eigeneSaetze ? 'Eigene effektive Sätze' : KANTON_STATUS_TEXT[kanton.status]}
         </p>
       ) : (
-        <p className="warnung">
-          Ohne Kantonswahl werden nur die unten eingegebenen effektiven Sätze verwendet (Standard 0).
+        <p className="warnung" role="alert">
+          Bitte den Wohnkanton wählen: Ohne Kanton rechnet der Rechner ohne Kantons- und Gemeindesteuern (nur die unten
+          eingegebenen effektiven Sätze, Standard 0), ohne Grundstückgewinnsteuer des Kantons und ohne Kantonsteil der
+          Quellensteuer. Das Ergebnis ist dann zu optimistisch.
         </p>
       )}
       {kanton && !st.eigeneSaetze && gemeinden.length > 0 ? (

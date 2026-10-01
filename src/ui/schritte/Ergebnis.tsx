@@ -1,4 +1,6 @@
 import { useDeferredValue, useMemo, useState } from 'react';
+import { ereignisse as flussEreignisse, markerGruppen, rentenUmwandlungen } from '../../core/fluesse';
+import { eingabeHinweise } from '../../core/hinweise';
 import { type Darstellung, inDarstellung } from '../../core/nominal';
 import { ahvLueckenZuzug, umwandlungssatzGeschaetztMitGuthaben } from '../../core/schaetzwerte';
 import { sensitivitaet } from '../../core/sensitivitaet';
@@ -12,6 +14,7 @@ import { Auswertung } from '../components/Auswertung';
 import { LinienChart, type Serie } from '../components/Chart';
 import { DisclaimerVoll } from '../components/Disclaimer';
 import { Segmente } from '../components/Felder';
+import { FlussKarte, MarkerTabelle } from '../components/Fluesse';
 import { JahresUebersicht } from '../components/JahresUebersicht';
 import { KantoneKarte } from '../components/Kantone';
 import { Karte } from '../components/Karte';
@@ -50,6 +53,17 @@ export function Ergebnis({ h, setH, berechnung, heute, suchModus, setSuchModus, 
   // Anzeige in der gewählten Darstellung (nominal: mit der Teuerung des gerechneten Pfads)
   const anzeige = useMemo(() => (anzeigeReal ? inDarstellung(anzeigeReal, dar) : null), [anzeigeReal, dar]);
 
+  const evs = useMemo(() => (anzeige ? flussEreignisse(anzeige, eff.haushalt, dar) : []), [anzeige, eff.haushalt, dar]);
+  const gruppen = useMemo(() => markerGruppen(evs), [evs]);
+  const umwandlungen = useMemo(
+    () => (anzeigeReal ? rentenUmwandlungen(anzeigeReal, eff.haushalt) : []),
+    [anzeigeReal, eff.haushalt],
+  );
+  const refGeburtsjahr = h.personen[ref]?.geburtsjahr ?? 0;
+  const chartMarker = useMemo(
+    () => gruppen.map((g) => ({ x: g.jahr - refGeburtsjahr, nr: g.nr })),
+    [gruppen, refGeburtsjahr],
+  );
   const abschnitte = useMemo(() => (anzeige ? krisenAbschnitte(anzeige, ref) : []), [anzeige, ref]);
   const chart = useMemo(() => {
     if (!anzeige) return null;
@@ -204,6 +218,12 @@ export function Ergebnis({ h, setH, berechnung, heute, suchModus, setSuchModus, 
         </p>
       ) : null}
 
+      {eingabeHinweise(eff.haushalt).map((t) => (
+        <p key={t} className="warnung" role="status">
+          {t}
+        </p>
+      ))}
+
       {wunsch ? (
         <Auswertung
           h={h}
@@ -292,7 +312,8 @@ export function Ergebnis({ h, setH, berechnung, heute, suchModus, setSuchModus, 
             xLabel={h.personen.length > 1 ? `Alter ${namen[ref]}` : 'Alter'}
             serien={chart.serien}
             markierungen={abschnitte}
-            beschreibung={`Gestapeltes Diagramm des Vermögens pro Jahr nach Topf: Bargeld, Wertschriften, Sonstiges, Wohneigentum sowie gesperrte Freizügigkeit, Säule 3a und Pensionskasse. Die Tabelle unten enthält die Summen.${abschnitte.length > 0 ? ` Farbig hinterlegte Krisenjahre: ${krisenText(abschnitte)}.` : ''}`}
+            marker={chartMarker}
+            beschreibung={`Gestapeltes Diagramm des Vermögens pro Jahr nach Topf: Bargeld, Wertschriften, Sonstiges, Wohneigentum sowie gesperrte Freizügigkeit, Säule 3a und Pensionskasse. Die y-Achse beginnt bei 0.${gruppen.length > 0 ? ` Nummerierte Marker zeigen ${gruppen.length} Ereignisse; sie stehen in der Tabelle «Ereignisse in der Grafik».` : ''} Die Tabelle unten enthält die Summen.${abschnitte.length > 0 ? ` Farbig hinterlegte Krisenjahre: ${krisenText(abschnitte)}.` : ''}`}
           />
           {abschnitte.length > 0 ? (
             <p className="krisen-legende">
@@ -305,6 +326,18 @@ export function Ergebnis({ h, setH, berechnung, heute, suchModus, setSuchModus, 
             die Einzelwerte. Wohneigentum wird erst zuletzt angetastet. Wird das PK-Guthaben als Rente bezogen,
             verschwindet es aus der Grafik und erscheint als Einkommen.
           </p>
+          {umwandlungen.map((u) => (
+            <p key={u.person} className="info">
+              Kein Verlust: Das PK-Guthaben von {u.person} verschwindet ab {u.jahr} aus der Grafik, weil es zur Rente
+              wird (
+              {fmtChf(
+                u.renteJahr *
+                  (dar === 'nominal' ? (anzeige.zeilen.find((z) => z.jahr === u.jahr)?.indexBeginn ?? 1) : 1),
+              )}{' '}
+              pro Jahr, {inFranken(dar)}). Sie erscheint unter «Zu- und Abflüsse» als laufende Rente.
+            </p>
+          ))}
+          <MarkerTabelle gruppen={gruppen} dar={dar} />
           {szenario === 'frueh' ? <LiquiditaetsHinweise e={anzeige} /> : null}
           <JahresUebersicht
             e={anzeige}
@@ -316,6 +349,17 @@ export function Ergebnis({ h, setH, berechnung, heute, suchModus, setSuchModus, 
             dateiname={szenario === 'frueh' ? 'ruhestand-fruehestes-alter' : 'ruhestand-wunschalter'}
           />
         </Karte>
+      ) : null}
+
+      {anzeigeReal ? (
+        <FlussKarte
+          real={anzeigeReal}
+          h={eff.haushalt}
+          dar={dar}
+          refIdx={ref}
+          startMonat={heute.monat}
+          ereignisse={evs}
+        />
       ) : null}
 
       <KrisenKarte

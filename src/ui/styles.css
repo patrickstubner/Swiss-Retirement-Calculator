@@ -51,6 +51,15 @@
   --chart-kriseRand: rgba(178, 74, 23, 0.8);
   --chart-kriseText: #8a3310;
   --chart-kriseLabelHg: rgba(255, 255, 255, 0.88);
+  --chart-abfl1: #174e5f;
+  --chart-abfl2: #6d597a;
+  --chart-abfl3: #2a9d8f;
+  --chart-abfl4: #e36414;
+  --chart-abfl5: #b42318;
+  --chart-abfl6: #8a5a44;
+  --chart-abfl7: #7a6a00;
+  --chart-abfl8: #4c7fd9;
+  --chart-abfl9: #6b7780;
   --radius: 16px;
   --radius-klein: 10px;
   --touch: 48px;
@@ -119,6 +128,15 @@
     --chart-kriseRand: rgba(243, 154, 107, 0.6);
     --chart-kriseText: #ffc7a6;
     --chart-kriseLabelHg: rgba(21, 31, 37, 0.88);
+    --chart-abfl1: #6fb7c9;
+    --chart-abfl2: #a792b8;
+    --chart-abfl3: #4cc3b4;
+    --chart-abfl4: #f08a4b;
+    --chart-abfl5: #ff8a80;
+    --chart-abfl6: #c2927a;
+    --chart-abfl7: #d9c24a;
+    --chart-abfl8: #8fb4ff;
+    --chart-abfl9: #a9b7c0;
   }
 }
 
@@ -1656,4 +1674,90 @@ tr.negativ td {
     background-color: Mark;
     color: MarkText;
   }
+}
+
+/* Zu- und Abflüsse */
+.fluss-kennzahl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 8px 0;
+}
+.fluss-kennzahl > div {
+  background: var(--farbe-hintergrund, transparent);
+  border: 1px solid var(--farbe-rand);
+  border-radius: var(--radius-klein);
+  padding: 10px;
+}
+.fluss-kennzahl strong {
+  display: block;
+  font-size: 1.4rem;
+  font-variant-numeric: tabular-nums;
+}
+.fluss-kennzahl span {
+  font-size: 0.8rem;
+}
+.fluss-tabelle caption {
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 8px 0 4px;
+  white-space: normal;
+}
+.fluss-tabelle th[scope="row"],
+.fluss-tabelle td.links,
+.fluss-tabelle th.links {
+  text-align: left;
+  white-space: normal;
+  position: static;
+}
+.fluss-tabelle td.erklaerung {
+  white-space: normal;
+  text-align: left;
+  min-width: 11rem;
+  font-size: 0.78rem;
+}
+.fluss-balken {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+.fluss-balken text {
+  fill: var(--chart-achse);
+  font-size: 9px;
+}
+.fluss-legende {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 0.8rem;
+}
+.fluss-legende__farbe {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 4px;
+  vertical-align: -1px;
+}
+.fluss-jahr-regler {
+  width: 100%;
+  min-height: var(--touch);
+}
+.fluss-detail dt {
+  font-weight: 600;
+}
+.fluss-detail dd {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+}
+.marker-tabelle td.nr,
+.marker-tabelle th.nr {
+  text-align: center;
+  font-weight: 700;
 }

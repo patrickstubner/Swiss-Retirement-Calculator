@@ -631,6 +631,18 @@ export interface JahresZeile {
   grundstueckgewinnsteuer: number;
   /** Nettoerlös aus dem Verkauf (nach Hypothek, Kosten und Steuer), fliesst in die Wertschriften */
   verkaufserloes: number;
+  /** Verkaufskosten (Makler usw.) beim Verkauf der Liegenschaft, vom Erlös abgezogen, nicht im Saldo */
+  verkaufskosten: number;
+  /** Wertänderung des Nettowerts Wohneigentum im Jahr (Preisänderung auf dem Verkehrswert, Hebel der Hypothek) */
+  wohnwertaenderung: number;
+  /** Kapitalzuflüsse des Jahres je Quelle (Summe = `kapitalBezuege`): PK, Freizügigkeit, 3a, Todesfall */
+  kapitalPk: number;
+  kapitalFz: number;
+  kapital3a: number;
+  kapitalTod: number;
+  /** Davon Posten der Kategorie «Gesundheit» (Krankenkasse u.a.) bzw. «Wohnen» in den Ausgaben */
+  ausgabenGesundheit: number;
+  ausgabenWohnenPosten: number;
   /**
    * Kumulierte Teuerung seit Rechnungsbeginn (Π(1 + Teuerung), Schema 8), gemäss dem gerechneten Pfad:
    * Teuerungsannahme bzw. historische Teuerung der Krisenjahre und Monte-Carlo-Läufe.

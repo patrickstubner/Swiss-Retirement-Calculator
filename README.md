@@ -30,7 +30,7 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
 ## Funktionsumfang (Version 0.1)
 
 - **Neutrale Standardwerte:** Alle Beträge sind anfangs leer (0) und frei editierbar – keine Beispielvermögen.
-  Gesetzliche Werte (z.B. BVG-Mindestzins) und vorsichtige Annahmen (Rendite, Teuerung) sind vorbelegt und anpassbar.
+  Gesetzliche Werte (z.B. BVG-Mindestzins) und Annahmen (Standard: 7 % Rendite nominal, 2 % Teuerung; eine Annahme, keine Garantie) sind vorbelegt und anpassbar. Der Schnellmodus rechnet mit denselben Annahmen wie «Detailliert» und zeigt sie sichtbar an.
 - **Vorlesen (Sprachausgabe im Browser):** «Ganze Seite vorlesen» oben, dazu je Abschnitt «▶ Vorlesen» und «ab hier».
   Beim Lesen wird der aktuelle Satz (und, wo der Browser Wortgrenzen meldet, das Wort) hervorgehoben und die Seite
   scrollt mit (bei «reduzierte Bewegung» ohne Animation). Die Leiste unten bietet Pause/Weiter, Stopp, 10 Sekunden

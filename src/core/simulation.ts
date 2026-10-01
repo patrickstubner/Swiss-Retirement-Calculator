@@ -221,6 +221,11 @@ export function startvermoegen(h: Haushalt): number {
   return h.personen.reduce((s, p) => s + verfuegbar(startToepfe(p)), 0);
 }
 
+/** Töpfe aller Personen zu Beginn der Rechnung (Startbestand für die Aufstellung der Zu- und Abflüsse). */
+export function startToepfeHaushalt(h: Haushalt): Toepfe {
+  return summeToepfe(h.personen.map(startToepfe));
+}
+
 const summeToepfe = (xs: Toepfe[]): Toepfe =>
   xs.reduce(
     (s, x) => ({
@@ -840,6 +845,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
     const kapital = neu();
     const kapitalAusland = neu(); // Kapitalleistungen nach dem Wegzug (Quellensteuer)
     const kapAuslQuelle = { pk: neu(), fz: neu(), s3a: neu() }; // dasselbe je auszahlende Einrichtung
+    const kapQuelle = { pk: 0, fz: 0, s3a: 0, tod: 0 }; // Kapitalzuflüsse des Jahres je Quelle (Aufstellung)
     const auslandMonate = neu(); // Monate mit Wohnsitz im Ausland
     const pkRenteAusland = neu(); // PK-Rente in diesen Monaten (Quellensteuer auf Renten)
     const auslandBrutto = neu(); // ausländische Renten brutto (Steuern im Zielland)
@@ -851,6 +857,8 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
     const liegSteuerbar = neu();
     const finanzJahr = finanzStart;
     let weitereAusgaben = 0;
+    let ausgabenGesundheit = 0; // Posten der Kategorie «Gesundheit» (in weitereAusgaben enthalten)
+    let ausgabenWohnenPosten = 0; // Posten der Kategorie «Wohnen» (in weitereAusgaben enthalten)
     let einmalig = 0;
     const ahvIndex = (1 + a.ahvAnpassungReal) ** t;
     /** AHV-Witwen-/Witwerrente je Person (12 Zahlungen, keine 13. Rente) */
@@ -965,6 +973,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
         todesInfo = ev.info;
         if (ev.kapital > 0) {
           kapital[lebtI] = (kapital[lebtI] ?? 0) + ev.kapital;
+          kapQuelle.tod += ev.kapital;
           if (idx >= (plaene[lebtI] as PersonPlan).wegIdx) {
             kapitalAusland[lebtI] = (kapitalAusland[lebtI] ?? 0) + ev.kapital;
             kapAuslQuelle.pk[lebtI] = (kapAuslQuelle.pk[lebtI] ?? 0) + ev.kapital;
@@ -1007,6 +1016,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
 
         const bezug = (betrag: number, quelle: 'pk' | 'fz' | 's3a') => {
           kapital[i] = (kapital[i] ?? 0) + betrag;
+          kapQuelle[quelle] += betrag;
           if (imAusland) {
             kapitalAusland[i] = (kapitalAusland[i] ?? 0) + betrag;
             kapAuslQuelle[quelle][i] = (kapAuslQuelle[quelle][i] ?? 0) + betrag;
@@ -1216,7 +1226,11 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
         if (po.art === 'einnahme') {
           weitereEinnahmen += v;
           if (po.steuerbar) weitereEinnahmenSteuerbar += v;
-        } else weitereAusgaben += v;
+        } else {
+          weitereAusgaben += v;
+          if (po.kategorie === 'gesundheit') ausgabenGesundheit += v;
+          else if (po.kategorie === 'wohnen') ausgabenWohnenPosten += v;
+        }
       }
       // Einmalige Ereignisse
       ereignisse.forEach((e, k) => {
@@ -1540,6 +1554,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
     const rHypoPauschal = real(a.renditeNominal - a.kosten);
     const finanz = () => plaene.reduce((x, pl) => x + pl.t.bargeld + pl.t.wertschriften + pl.t.sonstiges, 0);
     const ertragsBasis = finanz();
+    const wohnVorher = plaene.reduce((x, pl) => x + pl.t.wohneigentum, 0);
     for (const pl of plaene) {
       pl.t.bargeld *= wachstum(rBar);
       pl.t.wertschriften *= wachstum(rWert);
@@ -1556,11 +1571,13 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
       } else pl.t.wohneigentum *= pl.t.wohneigentum > 0 ? wachstum(rWohn) : 1;
     }
     const ertraege = finanz() - ertragsBasis;
+    const wohnwertaenderung = plaene.reduce((x, pl) => x + pl.t.wohneigentum, 0) - wohnVorher;
     // Verkauf der Liegenschaft (am Ende des Verkaufsjahres verbucht): Grundstückgewinnsteuer nach Tarif
     // des Kantons (nominal), Verkaufskosten, Rückzahlung der Hypothek; der Nettoerlös fliesst in die
     // Wertschriften. Wohnkosten und Miete wechseln bereits im Verkaufsmonat.
     let ggstJahr = 0;
     let verkaufserloes = 0;
+    let verkaufskosten = 0;
     plaene.forEach((pl) => {
       const w = pl.p.wohneigentum;
       if (!w.vorhanden || pl.info.verkauf || Math.floor(pl.verkaufIdx / 12) !== jahr) return;
@@ -1603,6 +1620,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
       pl.t.wohneigentum = 0;
       ggstJahr += steuer;
       verkaufserloes += erloes;
+      verkaufskosten += kostenNom / defl;
     });
     // Kapitalbezüge fliessen in die Wertschriften der jeweiligen Person
     plaene.forEach((pl, i) => {
@@ -1720,6 +1738,14 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
       mieteinnahmen,
       grundstueckgewinnsteuer: ggstJahr,
       verkaufserloes,
+      verkaufskosten,
+      wohnwertaenderung,
+      kapitalPk: kapQuelle.pk,
+      kapitalFz: kapQuelle.fz,
+      kapital3a: kapQuelle.s3a,
+      kapitalTod: kapQuelle.tod,
+      ausgabenGesundheit,
+      ausgabenWohnenPosten,
       indexBeginn: deflator,
       indexEnde: deflator * (1 + inflation),
       ...(tod ? { todesjahr: jahr === todJahr } : {}),

@@ -170,7 +170,8 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
                 ...x,
                 ahv: {
                   ...x.ahv,
-                  bezugVerschiebungMonate: v === 'vorbezug' ? -Math.min(12, maxVorbezug) : v === 'aufschub' ? 12 : 0,
+                  bezugVerschiebungMonate:
+                    v === 'vorbezug' ? -maxVorbezug : v === 'aufschub' ? r.aufschub.minMonate : 0,
                 },
               }))
             }
@@ -193,6 +194,12 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
             />
           ) : null}
         </div>
+        {bezugArt === 'vorbezug' ? (
+          <p className="klein">
+            Voreingestellt ist der maximal mögliche Vorbezug ({maxVorbezug} Monate, also ab {ahvFrueh} Jahren). Mit
+            weniger Monaten sinkt die lebenslange Kürzung; die Zahl ist änderbar.
+          </p>
+        ) : null}
         {bezugInfo ? <p className="info">{bezugInfo}</p> : null}
         {fehlerVerschiebung ? <p className="warnung">{fehlerVerschiebung}</p> : null}
         {uebergang ? (
@@ -210,7 +217,14 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
             set={set}
             hinweis="Gleiche Angabe wie im Schritt «Personen». Bei endgültigem Wegzug werden Pensionskasse, Freizügigkeit und 3a ab dem Wegzug frei – in jedem Alter (ausserhalb EU/EFTA ganz, in der EU/EFTA ohne das Obligatorium)."
           />
-          <WegzugVorsorgeFelder p={p} set={set} info={info} wohnkanton={props.h.steuern.kanton} mitSitzkanton />
+          <WegzugVorsorgeFelder
+            p={p}
+            set={set}
+            info={info}
+            wohnkanton={props.h.steuern.kanton}
+            mitSitzkanton
+            pensionierungGrund={pkStatus?.text ?? null}
+          />
         </div>
       </Karte>
 
@@ -294,8 +308,13 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
             value={p.pk.kapitalanteil}
             min={0}
             max={1}
+            gesperrt={barPk !== null}
             onChange={(v) => set((x) => ({ ...x, pk: { ...x.pk, kapitalanteil: v } }))}
-            hinweis="Anteil als Kapital, Rest als Rente. Gesetzlich mind. ¼ des Obligatoriums möglich, mehr gemäss Reglement."
+            hinweis={
+              barPk !== null
+                ? 'Bei Barauszahlung ohne Wirkung: Wegen des Wegzugs vor dem PK-Bezugsalter wird das ganze Guthaben bar ausbezahlt (Karte «Wegzug ins Ausland»). Der Anteil gilt nur, wenn die PK ordentlich bezogen wird.'
+                : 'Anteil als Kapital, Rest als Rente. Gesetzlich mind. ¼ des Obligatoriums möglich, mehr gemäss Reglement.'
+            }
           />
         </div>
         {!istManuell(p, 'pkUmwandlungssatz') ? (

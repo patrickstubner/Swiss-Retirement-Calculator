@@ -9,6 +9,7 @@ Erzeugt mit `src/core/schnellVergleich.test.ts` (Stand 25.9.2026, Regeln 2026).
   Schätzung: 6,8% (Art. 14 BVG) auf den geschätzten obligatorischen Teil, 5,17% (durchschnittlicher Umwandlungssatz
   der Pensionskassen, OAK BV, Bericht zur finanziellen Lage 2025, Stand 31.12.2025) auf den Rest (bis PR #3: 6,8% auf
   dem ganzen Guthaben).
+- Annahmen: «Schnell» und «Detailliert» teilen `haushalt.annahmen`; die Messwerte unten entstanden am 25.9.2026 mit dem damaligen Standard (4 % / 1 %). Seit 2.10.2026 ist der Standard 7 % / 2 %; die Abweichungen Schnell − Detail beruhen auf den Eingaben, nicht auf der Rendite, die absoluten Vermögenswerte wären aber höher. Die Tabelle wurde nicht neu erzeugt.
 - Δ = Schnell − Detail. Δ Alter > 0: «Schnell» pessimistischer. Das Vermögen mit 85 ist real (jüngere Person).
 
 | Haushalt | Variante | Frühestes Alter (Detail) | Δ Alter | Δ Vermögen mit 85 (CHF) | in % Vermögen 85 (Detail) | in % Gesamtvermögen heute |
