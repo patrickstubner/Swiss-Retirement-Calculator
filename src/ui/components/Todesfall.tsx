@@ -29,6 +29,7 @@ import { Faecher } from './Faecher';
 import { AuswahlFeld, Schalter, Segmente, ZahlFeld } from './Felder';
 import { JahresUebersicht } from './JahresUebersicht';
 import { Karte } from './Karte';
+import { ScrollTabelle } from './ScrollTabelle';
 
 interface Props {
   h: Haushalt;
@@ -235,7 +236,7 @@ export function TodesfallKarte({ h, setH, effH, regeln, heute, namen, refIdx }: 
           </p>
 
           {vn ? (
-            <div className="tabelle-scroll">
+            <ScrollTabelle label="Einkommen und Ausgaben vor und nach dem Todesfall (Tabelle, scrollbar)">
               <table className="vergleich-tabelle">
                 <caption>
                   Einkommen und Ausgaben pro Jahr vor und nach dem Todesfall ({inFranken(dar)}; Jahr {vn.jahrVorher}{' '}
@@ -271,7 +272,7 @@ export function TodesfallKarte({ h, setH, effH, regeln, heute, namen, refIdx }: 
                   </tr>
                 </tbody>
               </table>
-            </div>
+            </ScrollTabelle>
           ) : (
             <p className="klein">
               Vor- und Nachher-Vergleich: Der Todesfall liegt zu nahe am Anfang oder Ende des Planungszeitraums.
@@ -387,7 +388,7 @@ export function TodesfallKarte({ h, setH, effH, regeln, heute, namen, refIdx }: 
 
           <h3 className="unter-titel">Wer stirbt zuerst und wann?</h3>
           {matrix ? (
-            <div className="tabelle-scroll">
+            <ScrollTabelle label="Wer stirbt zuerst und wann (Tabelle, scrollbar)">
               <table className="vergleich-tabelle">
                 <caption>
                   Geld reicht bis Alter ({namen[refIdx]}, jüngere Person) – Endvermögen in Klammern ({inFranken(dar)})
@@ -426,7 +427,7 @@ export function TodesfallKarte({ h, setH, effH, regeln, heute, namen, refIdx }: 
                 Beträge in heutigen Franken. «–»: Dieses Alter liegt in der Vergangenheit. Alle anderen Einstellungen
                 (Ausgabenfaktor, Ehejahre, Kinder, Splitting) gelten in jeder Zelle.
               </p>
-            </div>
+            </ScrollTabelle>
           ) : (
             <button type="button" className="knopf knopf--sekundaer" onClick={rechneMatrix} disabled={matrixLaeuft}>
               {matrixLaeuft ? 'Rechnet …' : 'Matrix berechnen (A/B stirbt mit 70, 80, 90)'}

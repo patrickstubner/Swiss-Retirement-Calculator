@@ -11,6 +11,7 @@ import { inFranken } from '../darstellung';
 import { chartFarbe, mitAlpha } from '../farben';
 import { fmtChf } from '../format';
 import { LinienChart, type Markierung, type Serie } from './Chart';
+import { ScrollTabelle } from './ScrollTabelle';
 
 /** Löst im Browser den Download einer Textdatei aus. */
 function herunterladen(name: string, inhalt: string) {
@@ -115,7 +116,7 @@ export function JahresUebersicht({
               Vermögenserträge: Zinsen, Dividenden und Kursänderungen auf Bargeld, Wertschriften und Sonstigem nach
               Kosten{darstellung === 'real' ? ' und Teuerung' : ''}. Erwerb brutto; Beiträge an AHV, PK und 3a separat.
             </p>
-            <div className="tabelle-scroll tabelle-fix">
+            <ScrollTabelle label="Jahresübersicht (Tabelle, scrollbar)" className="tabelle-fix">
               <table className="jahrestabelle">
                 <thead>
                   <tr>
@@ -154,7 +155,7 @@ export function JahresUebersicht({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollTabelle>
           </>
         ) : null}
       </details>

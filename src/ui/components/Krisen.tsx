@@ -40,6 +40,7 @@ import { krisenAbschnitte, krisenText } from '../krisenGrafik';
 import { Faecher } from './Faecher';
 import { AuswahlFeld, Schalter, Segmente, ZahlFeld } from './Felder';
 import { Karte } from './Karte';
+import { ScrollTabelle } from './ScrollTabelle';
 
 const LAENDER: readonly KrisenLand[] = ['CHE', 'USA', 'JPN'];
 const BASIS0 = { renditeNominal: 0, renditeBargeld: 0, inflation: 0 };
@@ -425,7 +426,14 @@ export function HaeufigkeitTabelle() {
     <details className="aufklapp-innen">
       <summary>Wie oft gab es Krisen? (pro 10 Jahre)</summary>
       {[ganz, neu].map((p) => (
-        <div key={p} className="tabelle-scroll">
+        <ScrollTabelle
+          key={p}
+          label={
+            p === ganz
+              ? 'Krisenhäufigkeit, ganze Periode (Tabelle, scrollbar)'
+              : 'Krisenhäufigkeit seit 1950 (Tabelle, scrollbar)'
+          }
+        >
           <table>
             <caption>{p === ganz ? 'Ganze Periode (Aktien Schweiz ab 1900, USA ab 1872)' : 'Seit 1950'}</caption>
             <thead>
@@ -450,7 +458,7 @@ export function HaeufigkeitTabelle() {
               })}
             </tbody>
           </table>
-        </div>
+        </ScrollTabelle>
       ))}
       <p className="klein">
         Gezählt: Der reale Aktien-Gesamtertragsindex (mit Dividenden, nach Teuerung, Jahresendwerte) fällt um mindestens

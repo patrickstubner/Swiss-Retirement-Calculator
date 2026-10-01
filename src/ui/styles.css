@@ -495,9 +495,7 @@ summary:focus-visible {
   color: var(--farbe-text);
   cursor: pointer;
   font-size: 0.95rem;
-  transition:
-    background-color 0.15s,
-    border-color 0.15s;
+  /* Kein Farbübergang: Zwischenfarben unterschreiten den Kontrast von 4.5:1 (axe color-contrast, Audit BAR-02). */
 }
 .segment input {
   position: absolute;
@@ -650,6 +648,10 @@ summary:focus-visible {
 .tabelle-scroll {
   overflow-x: auto;
   max-height: 60vh;
+}
+.tabelle-scroll:focus-visible {
+  outline: 3px solid var(--farbe-fokus);
+  outline-offset: 2px;
 }
 table {
   border-collapse: collapse;

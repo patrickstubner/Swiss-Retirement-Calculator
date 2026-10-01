@@ -27,6 +27,7 @@ import {
 import { LinienChart, type Serie } from './Chart';
 import { Segmente } from './Felder';
 import { Karte } from './Karte';
+import { ScrollTabelle } from './ScrollTabelle';
 
 interface Props {
   /** Haushalte mit Schätzwerten (für Monte Carlo), verzögert wie die Berechnung */
@@ -161,7 +162,7 @@ export function Vergleich({ effA, effB, wunschA, wunschB, namen, darstellung, on
                 'Die Versionen unterscheiden sich in keiner Kennzahl.'
               )}
             </p>
-            <div className="tabelle-scroll versionen-tabelle-box">
+            <ScrollTabelle label="Kennzahlen der Versionen (Tabelle, scrollbar)" className="versionen-tabelle-box">
               <table className="vergleich-tabelle versionen-tabelle">
                 <caption>Kennzahlen im Vergleich (Differenz = B minus A)</caption>
                 <thead>
@@ -203,7 +204,7 @@ export function Vergleich({ effA, effB, wunschA, wunschB, namen, darstellung, on
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollTabelle>
             {mc.laeuft ? (
               <p className="klein" role="status">
                 Monte Carlo rechnet im Hintergrund …

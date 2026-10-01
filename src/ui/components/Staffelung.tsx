@@ -14,6 +14,7 @@ import type { Setzer } from '../kontext';
 import { STAFFEL_QUELLEN, steuerTipps } from '../steuerTipps';
 import { Schalter, ZahlFeld } from './Felder';
 import { Karte } from './Karte';
+import { ScrollTabelle } from './ScrollTabelle';
 
 const JAHRE_LISTE = [1, 2, 3, 4, 5] as const;
 
@@ -101,7 +102,7 @@ export function StaffelungKarte({ h, setH, effH, regeln, heute, namen }: Props) 
       ) : null}
 
       {varianten ? (
-        <div className="tabelle-scroll">
+        <ScrollTabelle label="Steuer je Anzahl Bezugsjahre (Tabelle, scrollbar)">
           <table className="vergleich-tabelle staffel-tabelle">
             <caption>Steuer auf Kapitalleistungen je Anzahl Bezugsjahre ({inFranken(dar)})</caption>
             <thead>
@@ -125,11 +126,11 @@ export function StaffelungKarte({ h, setH, effH, regeln, heute, namen }: Props) 
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollTabelle>
       ) : null}
 
       {gewaehlt && st.aktiv ? (
-        <div className="tabelle-scroll">
+        <ScrollTabelle label="Bezugsjahre im Detail (Tabelle, scrollbar)">
           <table className="vergleich-tabelle staffel-tabelle">
             <caption>
               Bezugsjahre bei {gewaehlt.jahre} {gewaehlt.jahre === 1 ? 'Jahr' : 'Jahren'} ({inFranken(dar)})
@@ -153,7 +154,7 @@ export function StaffelungKarte({ h, setH, effH, regeln, heute, namen }: Props) 
                 ))}
             </tbody>
           </table>
-        </div>
+        </ScrollTabelle>
       ) : null}
 
       {tipps.length > 0 ? (

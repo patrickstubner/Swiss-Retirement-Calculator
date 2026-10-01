@@ -19,6 +19,7 @@ import { fmtChf, fmtProzent } from '../format';
 import { KANTONS_QUELLEN, VERGLEICH_BETRAG_MAX, VERGLEICH_BETRAG_STANDARD, vorschlagBetrag } from '../kantonsVergleich';
 import { AuswahlFeld, BetragFeld, Segmente } from './Felder';
 import { Karte } from './Karte';
+import { ScrollTabelle } from './ScrollTabelle';
 
 const name = (code: string) => kantonNach(code)?.name ?? code;
 
@@ -104,7 +105,7 @@ export function KantoneKarte({ h, regeln }: { h: Haushalt; regeln: Regeln }) {
         <p className="warnung">Bitte den Wohnkanton wählen, damit Ihr Kanton in der Liste hervorgehoben wird.</p>
       )}
 
-      <div className="tabelle-scroll">
+      <ScrollTabelle label="Steuervergleich der Kantone (Tabelle, scrollbar)">
         <table className="vergleich-tabelle kantons-tabelle">
           <caption>
             {fall === 'wohnsitz'
@@ -147,7 +148,7 @@ export function KantoneKarte({ h, regeln }: { h: Haushalt; regeln: Regeln }) {
             })}
           </tbody>
         </table>
-      </div>
+      </ScrollTabelle>
       <p className="klein">
         {fall === 'wohnsitz'
           ? 'Kantonswerte aus dem ESTV-Steuerrechner 2026 (Kantonshauptort, ohne Kirchensteuer; Stützpunkte, dazwischen linear interpoliert; ZH und AG mit exakten Tarifen). Die Gemeinde und die Kirchensteuer verändern den Wert: z.B. Zürich mit reformierter Kirchensteuer ca. 4 % höher. ◀ = Ihr Wohnkanton.'
@@ -181,7 +182,7 @@ export function KantoneKarte({ h, regeln }: { h: Haushalt; regeln: Regeln }) {
         ]}
         onChange={setBisher}
       />
-      <div className="tabelle-scroll">
+      <ScrollTabelle label="Wirkung eines Sitzes in ZG, SZ oder NW (Tabelle, scrollbar)">
         <table className="vergleich-tabelle kantons-tabelle">
           <caption>Wirkung eines Sitzes in ZG, SZ oder NW auf {fmtChf(b)}</caption>
           <thead>
@@ -214,7 +215,7 @@ export function KantoneKarte({ h, regeln }: { h: Haushalt; regeln: Regeln }) {
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollTabelle>
       <ul className="liste klein">
         <li>
           <strong>Bleiben Sie in der Schweiz wohnen: kein Vorteil.</strong> Massgebend ist Ihr Wohnkanton bei Fälligkeit

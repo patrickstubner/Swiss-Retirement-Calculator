@@ -23,6 +23,7 @@ import { chfKurz, inFranken } from '../darstellung';
 import { type ChartFarbe, chartFarbe } from '../farben';
 import { fmtChf, fmtKompakt, fmtProzent, MONATSNAMEN } from '../format';
 import { Karte } from './Karte';
+import { ScrollTabelle } from './ScrollTabelle';
 
 const FARBEN: ChartFarbe[] = ['abfl1', 'abfl2', 'abfl3', 'abfl4', 'abfl5', 'abfl6', 'abfl7', 'abfl8', 'abfl9'];
 
@@ -142,7 +143,7 @@ function Zufluesse({
       {kapital.length === 0 ? (
         <p className="klein">Keine Kapitalzuflüsse im Planungszeitraum (kein PK-, 3a- oder Hauserlös als Kapital).</p>
       ) : (
-        <div className="tabelle-scroll">
+        <ScrollTabelle label="Kapitalzuflüsse (Tabelle, scrollbar)">
           <table className="fluss-tabelle">
             <caption>
               Kapitalzuflüsse mit Datum ({chfKurz(dar)}); Summe {fmtChf(summeKapital)}
@@ -175,13 +176,13 @@ function Zufluesse({
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollTabelle>
       )}
       <h3 className="unter-titel">Zuflüsse: laufende Renten und Einkommen</h3>
       {laufend.length === 0 ? (
         <p className="klein">Keine laufenden Renten erfasst.</p>
       ) : (
-        <div className="tabelle-scroll">
+        <ScrollTabelle label="Laufende Zuflüsse (Tabelle, scrollbar)">
           <table className="fluss-tabelle">
             <caption>Laufende Zuflüsse pro Jahr ({chfKurz(dar)}, im Startjahr)</caption>
             <thead>
@@ -211,7 +212,7 @@ function Zufluesse({
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollTabelle>
       )}
       <details className="aufklapp">
         <summary>Was zählt als Zufluss?</summary>
@@ -344,7 +345,7 @@ function Abfluesse({ jahre, dar }: { jahre: ReturnType<typeof flussJahre>; dar: 
       {gewaehlt ? <JahrDetail j={gewaehlt} dar={dar} /> : null}
       <details className="aufklapp">
         <summary>Tabelle: Abflüsse aller Jahre</summary>
-        <div className="tabelle-scroll tabelle-fix">
+        <ScrollTabelle label="Abflüsse aller Jahre (Tabelle, scrollbar)" className="tabelle-fix">
           <table className="jahrestabelle fluss-tabelle">
             <caption>Abflüsse pro Jahr ({chfKurz(dar)})</caption>
             <thead>
@@ -371,7 +372,7 @@ function Abfluesse({ jahre, dar }: { jahre: ReturnType<typeof flussJahre>; dar: 
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollTabelle>
       </details>
       <details className="aufklapp">
         <summary>Bilanz: Zuflüsse − Abflüsse = Veränderung des Vermögens</summary>
@@ -383,7 +384,7 @@ function Abfluesse({ jahre, dar }: { jahre: ReturnType<typeof flussJahre>; dar: 
             ? ' In der nominalen Darstellung bleibt eine Differenz «Teuerung auf dem Bestand» (Vermögen wird am Jahresende, Flüsse werden zu Jahresbeginn umgerechnet).'
             : ''}
         </p>
-        <div className="tabelle-scroll tabelle-fix">
+        <ScrollTabelle label="Jahresbilanz (Tabelle, scrollbar)" className="tabelle-fix">
           <table className="jahrestabelle fluss-tabelle">
             <caption>Jahresbilanz ({chfKurz(dar)})</caption>
             <thead>
@@ -409,7 +410,7 @@ function Abfluesse({ jahre, dar }: { jahre: ReturnType<typeof flussJahre>; dar: 
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollTabelle>
       </details>
     </>
   );
@@ -456,7 +457,7 @@ export function MarkerTabelle({
   return (
     <details className="aufklapp" open>
       <summary>Ereignisse in der Grafik ({gruppen.length})</summary>
-      <div className="tabelle-scroll">
+      <ScrollTabelle label="Ereignisse in der Grafik (Tabelle, scrollbar)">
         <table className="fluss-tabelle marker-tabelle">
           <caption>Nummerierte Marker der Vermögensgrafik ({chfKurz(dar)})</caption>
           <thead>
@@ -493,7 +494,7 @@ export function MarkerTabelle({
             )}
           </tbody>
         </table>
-      </div>
+      </ScrollTabelle>
     </details>
   );
 }

@@ -384,9 +384,11 @@ export function App() {
               </div>
             </div>
           ) : null}
-          <VorlesenSeitenKopf />
-          <DisclaimerBanner />
-          <div className="moduswahl">
+          <section className="seiten-hinweise" aria-label="Hinweise">
+            <VorlesenSeitenKopf />
+            <DisclaimerBanner />
+          </section>
+          <section className="moduswahl" aria-label="Eingabemodus">
             <Segmente<EingabeModus>
               label="Eingabe"
               value={eingabeModus}
@@ -401,7 +403,7 @@ export function App() {
                 ? 'Standard beim ersten Start: wenige Angaben, der Rest wird geschätzt (gesetzliche Werte 2026, Umwandlungssatz ohne Angabe aus dem Durchschnitt der Pensionskassen). Detailwerte gehen nicht verloren.'
                 : 'Alle Felder. Leere Felder mit «geschätzt» verwenden die Schätzung des Modus «Schnell».'}
             </p>
-          </div>
+          </section>
           {vergleich || (aktSchritt !== 0 && aktSchritt !== ergebnisSchritt) ? null : (
             <section className="vergleich-start" aria-label="Zwei Versionen vergleichen">
               <div>
