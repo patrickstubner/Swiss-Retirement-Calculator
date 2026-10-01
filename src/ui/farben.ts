@@ -24,6 +24,16 @@ const ERSATZ = {
   kriseRand: 'rgba(178,74,23,0.8)',
   kriseText: '#8a3310',
   kriseLabelHg: 'rgba(255,255,255,0.88)',
+  // Abflüsse (gestapelte Grafik «Zu- und Abflüsse»)
+  abfl1: '#174e5f',
+  abfl2: '#6d597a',
+  abfl3: '#2a9d8f',
+  abfl4: '#e36414',
+  abfl5: '#b42318',
+  abfl6: '#8a5a44',
+  abfl7: '#7a6a00',
+  abfl8: '#4c7fd9',
+  abfl9: '#6b7780',
 } as const;
 
 export type ChartFarbe = keyof typeof ERSATZ;

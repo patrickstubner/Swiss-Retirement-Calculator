@@ -13,6 +13,7 @@ import { wohneigentumNetto } from '../../core/simulation';
 import type { Person } from '../../core/typen';
 import { MAX_PLANUNGSALTER, neuePerson, standardHaushalt } from '../../data/defaults';
 import { gemeindenVon, KANTON_STATUS_TEXT, KANTONE, kantonNach } from '../../data/kantone';
+import { AnnahmenSchnellHinweis } from '../components/AnnahmenHinweis';
 import { ErwerbsstatusFeld, NichtErwerbstaetigFelder } from '../components/Erwerbsstatus';
 import { AuswahlFeld, BetragFeld, Schalter, Segmente, ZahlFeld } from '../components/Felder';
 import { Karte } from '../components/Karte';
@@ -20,6 +21,7 @@ import { ErwerbsaufgabeFelder, GeburtFelder, InChSeitFeld } from '../components/
 import { WegzugVorsorgeFelder, WegzugZeitpunktFelder } from '../components/Wegzug';
 import { fmtAlter, fmtChf, fmtProzent } from '../format';
 import { alterMonate, type SchrittProps, setzeManuell, setzePerson } from '../kontext';
+import { pkWegzugAnzeige } from '../pkWegzugText';
 import { UWS_GESCHAETZT, UWS_HILFE, UWS_QUELLE, uwsSchaetzungText } from '../texte';
 
 export function SchnellEingaben(props: SchrittProps) {
@@ -49,6 +51,7 @@ export function SchnellEingaben(props: SchrittProps) {
         gesetzlichen Werten 2026 geschätzt, der Umwandlungssatz ohne Angabe zusätzlich aus dem Durchschnitt der
         Pensionskassen (OAK BV), und im Ergebnis ausgewiesen. Genauer wird es im Modus «Detailliert».
       </p>
+      <AnnahmenSchnellHinweis a={h.annahmen} />
       {detail.length > 0 ? (
         <p className="info" role="status">
           <strong>
@@ -200,6 +203,15 @@ function SchnellPerson({ p, i, props }: { p: Person; i: number; props: SchrittPr
           info={berechnung.wunsch?.personen[i] ?? null}
           wohnkanton={props.h.steuern.kanton}
           mitSitzkanton={false}
+          pensionierungGrund={
+            berechnung.wunsch?.personen[i]?.pkWegzug
+              ? pkWegzugAnzeige(
+                  berechnung.wunsch.personen[i].pkWegzug,
+                  { name: props.h.personen.length > 1 ? p.name.trim() || `Person ${i + 1}` : null },
+                  regeln.bvg.bezugsalter,
+                ).text
+              : null
+          }
         />
       </div>
       {effP ? (

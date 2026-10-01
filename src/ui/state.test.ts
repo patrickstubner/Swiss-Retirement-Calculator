@@ -789,3 +789,31 @@ describe('Schema 11: Staffelung der Kapitalbezüge', () => {
     expect(dekodiere(kodiere(h), regeln)?.staffelung).toEqual(h.staffelung);
   });
 });
+
+describe('Standard für Rendite und Teuerung (30.9.2026)', () => {
+  it('neue Nutzer: 7 % nominal, 2 % Teuerung, gleiche Annahmen für Schnell und Detailliert', () => {
+    const h = standardHaushalt(regeln);
+    expect(h.annahmen.renditeNominal).toBe(0.07);
+    expect(h.annahmen.inflation).toBe(0.02);
+  });
+
+  it('gespeicherte Eingaben (4 % / 1 %) werden beim Laden nicht überschrieben', () => {
+    const alt = {
+      ...standardHaushalt(regeln),
+      annahmen: { ...standardHaushalt(regeln).annahmen, renditeNominal: 0.04, inflation: 0.01 },
+    };
+    const geladen = dekodiere(kodiere(alt), regeln);
+    expect(geladen?.annahmen.renditeNominal).toBe(0.04);
+    expect(geladen?.annahmen.inflation).toBe(0.01);
+    const ausJson = normalisiere(JSON.parse(JSON.stringify(alt)), regeln);
+    expect(ausJson.annahmen.renditeNominal).toBe(0.04);
+    expect(ausJson.annahmen.inflation).toBe(0.01);
+  });
+
+  it('Stände ohne Annahmen erhalten den neuen Standard', () => {
+    const roh = JSON.parse(JSON.stringify(standardHaushalt(regeln)));
+    roh.annahmen = undefined;
+    const h = normalisiere(roh, regeln);
+    expect(h.annahmen.renditeNominal).toBe(0.07);
+  });
+});

@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import { ANNAHMEN_STANDARD } from '../../data/defaults';
 import { ZahlFeld } from '../components/Felder';
 import { Karte } from '../components/Karte';
 import { AktienanteilFeld } from '../components/Krisen';
@@ -33,6 +34,7 @@ export function Annahmen({ h, setH, regeln, onZuruecksetzen }: Props) {
             min={-0.2}
             max={0.3}
             onChange={(v) => setA({ renditeNominal: v })}
+            hinweis={`Gilt für alle Wertschriften. Der Aktienanteil unten wirkt nur im Krisenmodus und bei Monte Carlo (dort mischt er Aktien und Obligationen), nicht auf diese Rendite. Standard für neue Eingaben: ${fmtProzent(ANNAHMEN_STANDARD.renditeNominal)} nominal, eine Annahme und keine Garantie.`}
           />
           <ZahlFeld
             label="Anlagekosten (TER)"
@@ -58,6 +60,7 @@ export function Annahmen({ h, setH, regeln, onZuruecksetzen }: Props) {
           min={-0.05}
           max={0.2}
           onChange={(v) => setA({ inflation: v })}
+          hinweis={`Standard für neue Eingaben: ${fmtProzent(ANNAHMEN_STANDARD.inflation)}. Gilt im Modus «Schnell» und «Detailliert» gleich.`}
         />
         <AktienanteilFeld h={h} setH={setH} />
         <p className="info">

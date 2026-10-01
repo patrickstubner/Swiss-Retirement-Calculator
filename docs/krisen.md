@@ -81,8 +81,8 @@ weil `normalisiere` den Modus aus den Rohdaten ableitet statt aus dem Standard (
   die ältere bzw. letzte Person das Planungsalter erreicht; erstes Jahr anteilig) **genau** der Annahme entspricht,
   getrennt für Wertschriften und Hauspreise (`ausgleichHorizont` in `src/core/krisen.ts`, seit Schema 7). Fallen
   wenige Krisen in den Zeitraum, sind die normalen Jahre nur wenig erhöht; bei vielen Krisen mehr. Beispiel aus
-  Screenshot 81 (4 % nominal, 1 % Teuerung, 50 % Aktien, Planungszeitraum 2026–2086): normale Jahre 4,79 %
-  (Wertschriften) und 5,56 % (Hauspreise). Bis Schema 6 galt der Ausgleich über einen ganzen Umlauf der Liste
+  Screenshot 81 (damals explizit gesetzt: 4 % nominal, 1 % Teuerung, 50 % Aktien, Planungszeitraum 2026–2086): normale Jahre 4,79 %
+  (Wertschriften) und 5,56 % (Hauspreise). Der Standard für neue Eingaben ist seit 2.10.2026 7 % nominal und 2 % Teuerung (`ANNAHMEN_STANDARD`); die Tests, die diese Regeln prüfen, setzen 4 %/1 % ausdrücklich. Bis Schema 6 galt der Ausgleich über einen ganzen Umlauf der Liste
   (8 Krisen, 108 Jahre; `ausgleichZyklus`: 4,84 % bei 50 % Aktien, Wohneigentum 4,78 %); die App zeigt diesen Wert
   zum Vergleich. Nach einem Verkauf der Liegenschaft zählen die Hauspreise weiterhin über den ganzen Zeitraum
   (vereinfacht). Krisenjahre ohne Daten für

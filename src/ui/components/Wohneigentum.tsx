@@ -3,6 +3,7 @@
  * Eigenmietwert bis 2028, Vermietung nach dem Wegzug) und Verkauf mit Grundstückgewinnsteuer.
  * Rechnung in core/simulation.ts und core/grundstueckgewinn.ts.
  */
+import { ANLAGEKOSTEN_WARNUNG } from '../../core/hinweise';
 import { wohneigentumNetto } from '../../core/simulation';
 import type { Haushalt, Person, VerkaufZeitpunkt, Wohneigentum } from '../../core/typen';
 import { fmtChf, MONATSNAMEN } from '../format';
@@ -189,6 +190,7 @@ export function WohneigentumFelder({ p, set, separat, kanton }: Props) {
                 max={1_000_000_000}
                 onChange={(anlagekosten) => setV({ anlagekosten })}
                 hinweis="Kaufpreis inkl. wertvermehrende Investitionen (nicht Unterhalt), in damaligen Franken."
+                warnung={v.anlagekosten > 0 ? null : ANLAGEKOSTEN_WARNUNG}
               />
               <div className="raster">
                 <AuswahlFeld

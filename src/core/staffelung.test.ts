@@ -46,6 +46,8 @@ function haushalt(kanton = 'ZH', verheiratet = false): Haushalt {
     personen,
     planungsalter: 90,
     ausgaben: { ...neueAusgaben(), lebenshaltung: 50_000, faktorAb75: 1, faktorAb85: 1 },
+    // Annahmen fix (unabhängig vom Standard), damit die Tests die Regeln prüfen und nicht den Standardwert
+    annahmen: { ...h.annahmen, renditeNominal: 0.04, inflation: 0.01 },
     steuern: { ...h.steuern, kanton, gemeinde: '' },
     krisen: { ...h.krisen, modus: 'keine' },
   };

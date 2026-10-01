@@ -431,7 +431,7 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
           label="Rendite Börse (nominal)"
           wert={w.rendite ?? effH.annahmen.renditeNominal}
           min={0}
-          max={0.08}
+          max={0.1}
           schritt={0.0025}
           anzeige={fmtProzent(w.rendite ?? effH.annahmen.renditeNominal, 2)}
           geaendert={w.rendite !== null}
