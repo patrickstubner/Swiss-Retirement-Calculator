@@ -42,6 +42,16 @@ interface Props {
   y2Label?: string;
   /** x-Achse nur mit ganzen Zahlen beschriften (Kalenderjahre) */
   xGanzzahl?: boolean;
+  /** y-Achse (links) beginnt bei 0 (oder darunter, wenn Werte negativ sind), Standard: an (Vermögensgrafiken) */
+  yAbNull?: boolean;
+  /** Nummerierte Ereignis-Marker (senkrechte Linie mit Nummer); Erklärung steht in der Tabelle darunter */
+  marker?: ChartMarker[];
+}
+
+export interface ChartMarker {
+  /** x-Wert (gleiche Einheit wie x) */
+  x: number;
+  nr: number;
 }
 
 export interface Markierung {
@@ -110,6 +120,47 @@ function zeichneLabels(u: uPlot, m: readonly Markierung[]) {
   ctx.restore();
 }
 
+/** Zeichnet die nummerierten Ereignis-Marker (Linie und Nummer am oberen Rand) */
+function zeichneMarker(u: uPlot, m: readonly ChartMarker[]) {
+  const ctx = u.ctx;
+  const { left, top, width, height } = u.bbox;
+  const pr = uPlot.pxRatio;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(left - 12 * pr, top, width + 24 * pr, height);
+  ctx.clip();
+  ctx.font = `700 ${Math.round(11 * pr)}px system-ui, sans-serif`;
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'center';
+  const r = 9 * pr;
+  // Eng beieinanderliegende Marker (Abstand < Kreisdurchmesser) werden gestaffelt, damit keiner verdeckt wird.
+  const ebenenEnde: number[] = [];
+  for (const k of [...m].sort((a, b) => a.x - b.x)) {
+    const x = u.valToPos(k.x, 'x', true);
+    if (x < left || x > left + width) continue;
+    let ebene = ebenenEnde.findIndex((e) => x - e >= 2 * r + pr);
+    if (ebene < 0) ebene = ebenenEnde.length;
+    ebenenEnde[ebene] = x;
+    const yc = top + r + pr + ebene * (2 * r + pr);
+    ctx.strokeStyle = chartFarbe('achse');
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3 * pr, 3 * pr]);
+    ctx.beginPath();
+    ctx.moveTo(x, yc + r);
+    ctx.lineTo(x, top + height);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = chartFarbe('kriseLabelHg');
+    ctx.beginPath();
+    ctx.arc(x, yc, r, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = chartFarbe('achse');
+    ctx.fillText(String(k.nr), x, yc + 0.5 * pr);
+  }
+  ctx.restore();
+}
+
 export function LinienChart({
   x,
   xLabel,
@@ -121,6 +172,8 @@ export function LinienChart({
   yLabel,
   y2Label,
   xGanzzahl,
+  yAbNull = true,
+  marker,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -149,9 +202,22 @@ export function LinienChart({
       bands,
       width: Math.max(280, el.clientWidth),
       height: hoehe,
-      scales: mitRechts
-        ? { x: { time: false }, y2: { range: (_u, _min, max) => [0, max > 0 ? max * 1.08 : 1] } }
-        : { x: { time: false } },
+      scales: {
+        x: { time: false },
+        ...(yAbNull
+          ? {
+              y: {
+                range: (_u: uPlot, min: number, max: number): [number, number] => [
+                  Math.min(0, min),
+                  max > 0 ? max * 1.08 : 1,
+                ],
+              },
+            }
+          : {}),
+        ...(mitRechts
+          ? { y2: { range: (_u: uPlot, _min: number, max: number): [number, number] => [0, max > 0 ? max * 1.08 : 1] } }
+          : {}),
+      },
       cursor: { drag: { x: false, y: false }, points: { size: 8 } },
       legend: { show: true, live: true },
       axes: [
@@ -211,6 +277,9 @@ export function LinienChart({
             zeichneLabels(u, markierungen);
           },
           (u) => {
+            if (marker?.length) zeichneMarker(u, marker);
+          },
+          (u) => {
             // Null-Linie hervorheben
             const y0 = u.valToPos(0, 'y', true);
             if (y0 < u.bbox.top || y0 > u.bbox.top + u.bbox.height) return;
@@ -236,7 +305,7 @@ export function LinienChart({
       ro.disconnect();
       plot.destroy();
     };
-  }, [x, xLabel, serien, hoehe, baender, markierungen, yLabel, y2Label, xGanzzahl]);
+  }, [x, xLabel, serien, hoehe, baender, markierungen, yLabel, y2Label, xGanzzahl, yAbNull, marker]);
 
   return <div ref={ref} className="chart" role="img" aria-label={beschreibung} />;
 }

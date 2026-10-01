@@ -422,3 +422,9 @@ Frage: Zählt der Sitz der Vorsorgeeinrichtung (Stiftung), wenn man zum Zeitpunk
 Der Szenario-Vergleich enthält **keine neuen Regelwerte und keine neuen Quellen**. Beide Versionen rechnen mit derselben Simulation, denselben Regeln (`src/rules/2026.json`) und denselben Monte-Carlo-Zufallspfaden (Seed 20260927) wie die einzelne Version; alle Quellen der Regeln stehen in den Abschnitten 1–18. Die Kennzahlen (Endvermögen, Steuern total, Ø Nettoeinkommen im Ruhestand, Erfolgsquote, «Geld reicht bis») sind aus dem Simulationsergebnis abgeleitete Modellgrössen, keine amtlichen Werte. Die Schwellen für «gleichwertig» (CHF 100, 0,5 Prozentpunkte, 0,1 Jahre) sind Darstellungsentscheide, keine Regeln.
 
 **OFFEN:** keine Regelpunkte. Gewichtung der Kennzahlen (was «besser» für den Einzelfall heisst) ist eine Entscheidung des Nutzers; die App bewertet nur je Kennzahl.
+
+## 20. Standard-Annahmen Rendite und Teuerung (7 % / 2 %) – `src/data/defaults.ts` (`ANNAHMEN_STANDARD`)
+
+Rendite Börse 7 % nominal und Teuerung 2 % sind **Modellannahmen des Eigentümers** (Auftrag vom 30.9.2026), **keine amtlichen oder belegten Zahlen**; es wird bewusst keine Quelle genannt. Die App sagt das im Schnellmodus und im Schritt «Annahmen» ausdrücklich (keine Garantie, Renditen schwanken, Krisenmodus bleibt aktiv). Die Standards gelten für «Schnell» und «Detailliert» gleich, weil beide `haushalt.annahmen` teilen; vorher 4 % / 1 %. Gespeicherte Eingaben (`localStorage`, Links) werden nicht überschrieben. Die reale Nettorendite nach Kosten wird in der App aus Rendite, Anlagekosten und Teuerung gerechnet (`realNetto`).
+
+**OFFEN:** keine Regelpunkte; die Höhe der Annahmen bleibt eine Entscheidung des Nutzers.

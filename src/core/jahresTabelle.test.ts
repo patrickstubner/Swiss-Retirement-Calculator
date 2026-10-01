@@ -25,7 +25,7 @@ function haushalt(): Haushalt {
     zivilstand: 'verheiratet',
     personen: [a, { ...b, erwerbsstatus: 'nichtErwerbstaetig' }],
     ausgaben: { ...h.ausgaben, lebenshaltung: 65_000 },
-    annahmen: { ...h.annahmen, inflation: 0.015 },
+    annahmen: { ...h.annahmen, renditeNominal: 0.04, inflation: 0.015 },
     planungsalter: 92,
   };
 }

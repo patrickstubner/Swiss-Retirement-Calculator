@@ -232,6 +232,13 @@ export function neuesAusgabenEinzeljahr(jahr: number, betrag = 0): AusgabenEinze
   return { id: neueId('ej'), jahr, betrag, einheit: 'jahr' };
 }
 
+/**
+ * Standard der Rendite- und Teuerungsannahme für NEUE Nutzer (seit 30.9.2026: 7 % nominal, 2 % Teuerung; vorher
+ * 4 % und 1 %). Gilt für «Schnell» und «Detailliert» gleich (gemeinsame `annahmen`). Gespeicherte Stände behalten
+ * ihre Werte (`mische` in ui/state.ts übernimmt vorhandene Zahlen). Eine Annahme, keine Prognose oder Garantie.
+ */
+export const ANNAHMEN_STANDARD = { renditeNominal: 0.07, inflation: 0.02 } as const;
+
 export function standardHaushalt(regeln: Regeln): Haushalt {
   return {
     zivilstand: 'alleinstehend',
@@ -241,10 +248,10 @@ export function standardHaushalt(regeln: Regeln): Haushalt {
     ereignisse: [],
     ausgaben: neueAusgaben(),
     annahmen: {
-      renditeNominal: 0.04,
+      renditeNominal: ANNAHMEN_STANDARD.renditeNominal,
       aktienanteil: 0.5,
       renditeBargeld: 0.005,
-      inflation: 0.01,
+      inflation: ANNAHMEN_STANDARD.inflation,
       kosten: 0.005,
       ahvAnpassungReal: 0,
       steuerbarerErtrag: 0.015,

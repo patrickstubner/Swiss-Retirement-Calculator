@@ -5,7 +5,7 @@
  * Art. 3 Abs. 2 lit. d BVV 3), siehe core/simulation.ts.
  */
 import type { Monat, Person, PersonInfo, WohnsitzAusland, ZeitpunktModus } from '../../core/typen';
-import { monatBeiAlterMonate, wegzugIndex } from '../../core/zeitpunkt';
+import { monatBeiAlterMonate, stoppAlterMonate, wegzugIndex } from '../../core/zeitpunkt';
 import { KANTONE, kantonNach } from '../../data/kantone';
 import { WEGZUGS_LAENDER, wegzugsLand } from '../../data/laender';
 import { fmtAlter, fmtChf, fmtMonat, MONATSNAMEN } from '../format';
@@ -30,6 +30,22 @@ interface Props {
 
 const setzeW = (set: Props['set']) => (patch: Partial<WohnsitzAusland>) =>
   set((x) => ({ ...x, wohnsitzAusland: { ...x.wohnsitzAusland, ...patch } }));
+
+/**
+ * Schaltet den Wegzug ein und belegt den Zeitpunkt mit dem Rücktrittsdatum der Person vor (erster Monat ohne
+ * Erwerbseinkommen, gleiche Logik wie die Rechnung); bei Nichterwerbstätigen bleibt der bisherige Wert.
+ */
+export function mitRuecktritt(p: Person): Person {
+  const w = { ...p.wohnsitzAusland, aktiv: true };
+  if (p.erwerbsstatus === 'nichtErwerbstaetig') return { ...p, wohnsitzAusland: w };
+  const stopp = stoppAlterMonate(p);
+  const datum = monatBeiAlterMonate(p, stopp);
+  return {
+    ...p,
+    wohnsitzAusland:
+      p.stoppModus === 'datum' ? { ...w, modus: 'datum', datum } : { ...w, modus: 'alter', alter: stopp / 12, datum },
+  };
+}
 
 /** Schalter «Wegzug geplant», Zeitpunkt (Alter oder Datum) und Zielland. */
 export function WegzugZeitpunktFelder({ p, set, hinweis }: Props & { hinweis?: string }) {
@@ -63,10 +79,21 @@ export function WegzugZeitpunktFelder({ p, set, hinweis }: Props & { hinweis?: s
           'Wohnsitz ausserhalb der Schweiz ab einem Alter oder Datum. Beeinflusst AHV, die Barauszahlung von Vorsorgeguthaben und deren Besteuerung.'
         }
         checked={w.aktiv}
-        onChange={(v) => setW({ aktiv: v })}
+        onChange={(v) =>
+          set((x) =>
+            v && !x.wohnsitzAusland.aktiv
+              ? mitRuecktritt(x)
+              : { ...x, wohnsitzAusland: { ...x.wohnsitzAusland, aktiv: v } },
+          )
+        }
       />
       {w.aktiv ? (
         <>
+          <p className="klein">
+            Voreingestellt ist Ihr Rücktrittsdatum (Erwerbsaufgabe); bitte anpassen. Wichtig für die PK: Bar ausbezahlt
+            wird nur, wenn der Wegzug <strong>vor</strong> dem PK-Bezugsalter laut Reglement liegt (Art. 2 Abs. 1bis
+            FZG). Ab diesem Alter gilt es als Pensionierung (Rente oder Kapital nach Reglement).
+          </p>
           <Segmente label="Wohnsitz im Ausland ab" value={w.modus} optionen={MODI} onChange={setModus} />
           {w.modus === 'alter' ? (
             <div className="raster">
@@ -131,7 +158,14 @@ export function WegzugVorsorgeFelder({
   info,
   wohnkanton,
   mitSitzkanton,
-}: Props & { info: PersonInfo | null; wohnkanton: string; mitSitzkanton: boolean }) {
+  pensionierungGrund,
+}: Props & {
+  info: PersonInfo | null;
+  wohnkanton: string;
+  mitSitzkanton: boolean;
+  /** Erklärung (aus pkWegzugText), warum keine Barauszahlung gerechnet wird, wenn der Wegzug als Pensionierung gilt */
+  pensionierungGrund?: string | null;
+}) {
   const w = p.wohnsitzAusland;
   if (!w.aktiv) return null;
   const setW = setzeW(set);
@@ -147,10 +181,16 @@ export function WegzugVorsorgeFelder({
     <div className="wegzug-vorsorge">
       <Schalter
         label="Barauszahlung bei Wegzug (PK, Freizügigkeit, 3a)"
-        hinweis="Bei endgültigem Verlassen der Schweiz kann das Guthaben in jedem Alter bar bezogen werden (Art. 5 Abs. 1 lit. a FZG; 3a: Art. 3 Abs. 2 lit. d BVV 3). Verheiratete: nur mit schriftlicher Zustimmung des Ehegatten. Aus: ordentlicher Bezug im Alter."
+        hinweis="Bei endgültigem Verlassen der Schweiz kann das Guthaben bar bezogen werden, die PK aber nur, wenn der Wegzug vor dem PK-Bezugsalter laut Reglement liegt (Art. 5 Abs. 1 lit. a und Art. 2 Abs. 1bis FZG; 3a: Art. 3 Abs. 2 lit. d BVV 3, in jedem Alter). Verheiratete: nur mit schriftlicher Zustimmung des Ehegatten. Aus: ordentlicher Bezug im Alter."
         checked={w.barauszahlung}
         onChange={(v) => setW({ barauszahlung: v })}
       />
+      {w.barauszahlung && !wohnkanton && !w.sitzkantonVorsorge ? (
+        <p className="warnung">
+          Kein Wohnkanton gewählt: Ohne Kanton fehlt der Kantonsteil der Quellensteuer auf Kapital, und die
+          Kantonssteuern bis zum Wegzug sind 0. Bitte den Wohnkanton wählen.
+        </p>
+      ) : null}
       {w.barauszahlung && land?.obligatoriumImmerGesperrt ? (
         <p className="info">
           {land.name}: Der obligatorische Teil (BVG-Altersguthaben) bleibt bei Wohnsitz dort immer gesperrt, unabhängig
@@ -245,9 +285,11 @@ export function WegzugVorsorgeFelder({
             </p>
           </div>
         ) : (
-          <p className="info">
-            Keine Barauszahlung gerechnet: Der Wegzug liegt nicht vor dem frühesten Bezugsalter (dann gilt der
-            ordentliche Bezug als Altersleistung) oder es ist kein Guthaben vorhanden.
+          <p className="info" role="status">
+            <strong>Keine Barauszahlung der PK gerechnet.</strong>{' '}
+            {info?.pkWegzug.fall === 'pensionierung' && pensionierungGrund
+              ? pensionierungGrund
+              : 'Der Wegzug liegt nicht vor dem frühesten Bezugsalter (dann gilt der ordentliche Bezug als Altersleistung) oder es ist kein Guthaben vorhanden.'}
           </p>
         )
       ) : null}
