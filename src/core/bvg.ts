@@ -1,18 +1,22 @@
 /** BVG / Pensionskasse (reine Funktionen). */
 import type { Regeln } from '../rules';
+import { endlich } from './zahlen';
 
 type BvgRegeln = Regeln['bvg'];
 
 /** Koordinierter Lohn nach BVG (Obligatorium). 0 unter der Eintrittsschwelle. */
-export function bvgKoordinierterLohn(jahreslohn: number, r: BvgRegeln): number {
+export function bvgKoordinierterLohn(jahreslohnRoh: number, r: BvgRegeln): number {
+  const jahreslohn = endlich(jahreslohnRoh);
   if (jahreslohn < r.eintrittsschwelle) return 0;
   const koord = Math.min(jahreslohn, r.obereGrenzeJahreslohn) - r.koordinationsabzug;
   return Math.min(Math.max(koord, r.koordinierterLohnMin), r.koordinierterLohnMax);
 }
 
 /** Altersgutschrift-Satz nach BVG-Alter (Kalenderjahr − Geburtsjahr). */
-export function bvgAltersgutschriftSatz(bvgAlter: number, referenzalterJahre: number, r: BvgRegeln): number {
-  if (bvgAlter > referenzalterJahre) return 0;
+export function bvgAltersgutschriftSatz(bvgAlterRoh: number, referenzalterJahreRoh: number, r: BvgRegeln): number {
+  if (!Number.isFinite(bvgAlterRoh) || !Number.isFinite(referenzalterJahreRoh)) return 0;
+  const bvgAlter = bvgAlterRoh;
+  if (bvgAlter > referenzalterJahreRoh) return 0;
   let satz = 0;
   for (const s of r.altersgutschriften) if (bvgAlter >= s.abAlter) satz = s.satz;
   return satz;
@@ -34,8 +38,9 @@ export function bvgAltersgutschrift(
  * @param beitraege Beitrag je Projektionsjahr (Länge = Anzahl Jahre)
  */
 export function pkProjektion(guthaben: number, beitraege: readonly number[], zins: number): number {
-  let g = guthaben;
-  for (const b of beitraege) g = g * (1 + zins) + b;
+  let g = endlich(guthaben);
+  const z = endlich(zins);
+  for (const b of beitraege) g = g * (1 + z) + endlich(b);
   return g;
 }
 
@@ -46,8 +51,9 @@ export interface PkLeistung {
 
 /** Aufteilung des Altersguthabens in Kapital (Anteil) und Rente (Umwandlungssatz). */
 export function pkLeistung(guthaben: number, umwandlungssatz: number, kapitalanteil: number): PkLeistung {
-  const k = Math.min(Math.max(kapitalanteil, 0), 1);
-  return { kapital: guthaben * k, renteJahr: guthaben * (1 - k) * umwandlungssatz };
+  const k = Math.min(Math.max(endlich(kapitalanteil), 0), 1);
+  const g = endlich(guthaben);
+  return { kapital: g * k, renteJahr: g * (1 - k) * endlich(umwandlungssatz) };
 }
 
 /** Prüft PK-Eingaben gegen die Regeln; gibt Hinweise zurück. */

@@ -479,6 +479,7 @@ summary:focus-visible {
   gap: 6px;
 }
 .segment {
+  position: relative;
   flex: 1 1 0;
   min-width: 88px;
   overflow-wrap: anywhere;
@@ -498,7 +499,12 @@ summary:focus-visible {
   /* Kein Farbübergang: Zwischenfarben unterschreiten den Kontrast von 4.5:1 (axe color-contrast, Audit BAR-02). */
 }
 .segment input {
+  /* unsichtbar, füllt aber das ganze Segment: Zielgrösse ≥ 24×24 px (WCAG 2.2 SC 2.5.8, Audit BAR-02) */
   position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
   opacity: 0;
   pointer-events: none;
 }
@@ -678,6 +684,11 @@ tr.negativ td {
 .aufklapp ul.quellen {
   list-style: none;
   padding: 0;
+}
+.quellen a,
+.inhalt a {
+  /* Zielgrösse ≥ 24 px Höhe ohne Zeilenabstand zu ändern (WCAG 2.2 SC 2.5.8) */
+  padding-block: 4px;
 }
 .quellen li {
   padding: 6px 0;

@@ -27,7 +27,9 @@ Die Berechnungen beruhen auf vereinfachten Modellen, auf Ihren Eingaben und auf 
 Gesetze, Renten, Steuertarife und Zinsen können sich ändern. Für die Richtigkeit, Vollständigkeit und Aktualität der
 Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
 
-## Funktionsumfang (Version 0.1)
+## Funktionsumfang (Version 1.0)
+
+Aktuelle Version: **1.0.0** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [CONTRIBUTING](CONTRIBUTING.md)).
 
 - **Neutrale Standardwerte:** Alle Beträge sind anfangs leer (0) und frei editierbar – keine Beispielvermögen.
   Gesetzliche Werte (z.B. BVG-Mindestzins) und Annahmen (Standard: 7 % Rendite nominal, 2 % Teuerung; eine Annahme, keine Garantie) sind vorbelegt und anpassbar. Der Schnellmodus rechnet mit denselben Annahmen wie «Detailliert» und zeigt sie sichtbar an.

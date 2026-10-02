@@ -1,17 +1,19 @@
 /** Direkte Bundessteuer (DBG) – reine Funktionen. */
 import type { Regeln } from '../rules';
 import type { Zivilstand } from './typen';
+import { endlich } from './zahlen';
 
 type SteuerRegeln = Regeln['steuern'];
 type Tarif = SteuerRegeln['dbgTarifAlleinstehend'];
 
 /** Steuerbares Einkommen auf volle 100 Fr. abrunden (ESTV RS 2-216). */
 export function rundeEinkommen(betrag: number, r: SteuerRegeln): number {
-  return Math.floor(Math.max(0, betrag) / r.rundungEinkommen) * r.rundungEinkommen;
+  return Math.floor(Math.max(0, endlich(betrag)) / r.rundungEinkommen) * r.rundungEinkommen;
 }
 
 /** Wendet einen Tarif nach Art. 36 DBG auf ein bereits gerundetes Einkommen an. */
-export function wendeTarifAn(einkommen: number, t: Tarif): number {
+export function wendeTarifAn(einkommenRoh: number, t: Tarif): number {
+  const einkommen = endlich(einkommenRoh);
   if (einkommen >= t.proportionalAb) return einkommen * t.proportionalSatz;
   if (einkommen < t.steuerfreiBis) return 0;
   let stufe = t.stufen[0];
@@ -37,7 +39,7 @@ export const runde5Rp = (x: number): number => Math.floor(x * 20 + 1e-9) / 20;
  */
 export function dbgEinkommen(steuerbar: number, zivilstand: Zivilstand, r: SteuerRegeln, kinder = 0): number {
   const e = rundeEinkommen(steuerbar, r);
-  const steuer = wendeTarifAn(e, tarifFuer(zivilstand, r)) - kinder * r.dbgAbzugProKind;
+  const steuer = wendeTarifAn(e, tarifFuer(zivilstand, r)) - Math.max(0, endlich(kinder)) * r.dbgAbzugProKind;
   return runde5Rp(Math.max(0, steuer));
 }
 
