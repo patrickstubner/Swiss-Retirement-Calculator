@@ -1,5 +1,6 @@
 import { useId, useState } from 'react';
 import { ANNAHMEN_STANDARD } from '../../data/defaults';
+import { RenditeEinordnung } from '../components/AnnahmenHinweis';
 import { ZahlFeld } from '../components/Felder';
 import { Karte } from '../components/Karte';
 import { AktienanteilFeld } from '../components/Krisen';
@@ -62,6 +63,7 @@ export function Annahmen({ h, setH, regeln, onZuruecksetzen }: Props) {
           onChange={(v) => setA({ inflation: v })}
           hinweis={`Standard für neue Eingaben: ${fmtProzent(ANNAHMEN_STANDARD.inflation)}. Gilt im Modus «Schnell» und «Detailliert» gleich.`}
         />
+        <RenditeEinordnung ausfuehrlich />
         <AktienanteilFeld h={h} setH={setH} />
         <p className="info">
           {VEREINFACHUNG_BOERSE} {VEREINFACHUNG_WOHNEIGENTUM}

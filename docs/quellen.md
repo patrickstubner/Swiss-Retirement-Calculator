@@ -425,6 +425,38 @@ Der Szenario-Vergleich enthält **keine neuen Regelwerte und keine neuen Quellen
 
 ## 20. Standard-Annahmen Rendite und Teuerung (7 % / 2 %) – `src/data/defaults.ts` (`ANNAHMEN_STANDARD`)
 
-Rendite Börse 7 % nominal und Teuerung 2 % sind **Modellannahmen des Eigentümers** (Auftrag vom 30.9.2026), **keine amtlichen oder belegten Zahlen**; es wird bewusst keine Quelle genannt. Die App sagt das im Schnellmodus und im Schritt «Annahmen» ausdrücklich (keine Garantie, Renditen schwanken, Krisenmodus bleibt aktiv). Die Standards gelten für «Schnell» und «Detailliert» gleich, weil beide `haushalt.annahmen` teilen; vorher 4 % / 1 %. Gespeicherte Eingaben (`localStorage`, Links) werden nicht überschrieben. Die reale Nettorendite nach Kosten wird in der App aus Rendite, Anlagekosten und Teuerung gerechnet (`realNetto`).
+Rendite Börse 7 % nominal und Teuerung 2 % sind **Modellannahmen des Eigentümers** (Auftrag vom 30.9.2026), **keine amtlichen oder belegten Zahlen**; als Annahme wird sie bewusst nicht mit einer Quelle begründet, die Einordnung steht unten. Die App sagt das im Schnellmodus und im Schritt «Annahmen» ausdrücklich (keine Garantie, Renditen schwanken, Krisenmodus bleibt aktiv). Die Standards gelten für «Schnell» und «Detailliert» gleich, weil beide `haushalt.annahmen` teilen; vorher 4 % / 1 %. Gespeicherte Eingaben (`localStorage`, Links) werden nicht überschrieben. Die reale Nettorendite nach Kosten wird in der App aus Rendite, Anlagekosten und Teuerung gerechnet (`realNetto`).
 
-**OFFEN:** keine Regelpunkte; die Höhe der Annahmen bleibt eine Entscheidung des Nutzers.
+### Einordnung der 7 % (Recherche, abgerufen am 2.10.2026)
+
+**Aussage in der App:** 7 % nominal ist für ein Portfolio mit (fast) **100 % Aktien** plausibel, weil es in der belegten Spanne historischer Aktienrenditen liegt. **Mit Obligationenanteil sinkt die erwartete Rendite**; dann ist der Regler «Rendite Börse (nominal)» anzupassen. Das ist eine Rückschau, keine Prognose; Anlagekosten und Steuern sind nicht abgezogen.
+
+| Grösse | Wert | Quelle |
+|---|---|---|
+| Schweizer Aktien 1900–2020, nominal in CHF | 7.2 % p. a. (real 4.9 %, Teuerung 2.1 %) | JST Macrohistory Database R6, https://www.macrohistory.net/database/ (CC BY-NC-SA 4.0), eigene Rechnung aus `data/krisen-historisch.json` |
+| US-Aktien 1900–2020, nominal in USD | 9.7 % p. a. (real 6.7 % geometrisch; 8.5 % arithmetisch) | JST R6, eigene Rechnung |
+| US-Aktien 1900–2024, nominal | 9.7 % p. a.; real im durchschnittlichen Jahr 8.5 %; US-Teuerung 2.9 % | UBS Global Investment Returns Yearbook 2025, Public Summary (Dimson/Marsh/Staunton, DMS-Datenbank), https://www.ubs.com/content/dam/assets/wm/static/cio/documents/giry-2025-summary-public.pdf |
+| US-Aktien 1900–2024, real, geometrisch (USD) | 6.6 % p. a.; Nicht-US-Aktien real 4.3 % | Sekundärquelle: Interview mit Elroy Dimson, T. Rowe Price 2025, https://www.troweprice.com/institutional/lu/en/insights/articles/2025/q3/125-years-of-returns-timeless-lessons-in-investing.html |
+| Schweizer Teuerung seit 1900 | 2.1 % p. a. | UBS-Yearbook 2025 und JST (2.14 %) |
+| Weltweite Aktien **nur 2000–2024**, real | 3.5 % p. a. (Risikoprämie ggü. Bills 4.3 %) | UBS-Yearbook 2025 (gilt **nicht** für 1900–2024) |
+| MSCI World netto, in USD, seit 29.12.2000 | 7.53 % p. a. (Stand 31.8.2026); 10 Jahre 13.01 % p. a. | MSCI Factsheet (USD, Net), https://www.msci.com/documents/10199/255599/msci-world-index-usd-net.pdf |
+| MSCI World brutto, in USD, seit 31.12.1987 | 9.08 % p. a. (Stand 31.8.2026) | MSCI Factsheet (Gross), https://www.msci.com/documents/10199/178e6643-6ae6-47b9-82be-e1fc565ededb |
+
+Die MSCI-Index-Zahlen stammen aus Rückrechnung vor dem Start (31.3.1986); die 10-Jahres-Zahl ist ein Ausnahmezeitraum und **kein** Erwartungswert. Achtung: das MSCI-Factsheet unter `…/c12db7f7-a56a-4546-aed0-d2ffd6c01414` ist die AUD-Variante (6.47 %) und wird nicht verwendet.
+
+**Orientierungstabelle Aktienanteil → Richtwert** (belegt, weil aus den JST-Reihen im Repo gerechnet, `src/core/richtwerte.ts`): jährlich auf den Zielanteil rebalanciertes Portfolio aus Aktien und Staatsanleihen des gleichen Landes, geometrisches Mittel 1900–2020, nominal in Landeswährung, vor Kosten und Steuern.
+
+| Aktienanteil | Schweiz (CHF) | USA (USD) |
+|---|---|---|
+| 100 % | 7.2 % | 9.7 % |
+| 75 % | 6.7 % | 8.8 % |
+| 50 % | 6.1 % | 7.6 % |
+| 25 % | 5.2 % | 6.3 % |
+| 0 % (nur Obligationen) | 4.1 % | 4.6 % |
+
+Die App berechnet die Tabelle aus denselben Daten (kein fest einprogrammierter Wert) und zeigt sie im Schritt «Annahmen»; der Schnellmodus nennt nur den Hinweis.
+
+**OFFEN:**
+- Langfristige **Rendite von Welt- oder US-Aktien in CHF** (Währungseffekt: der Franken hat sich gegenüber dem US-Dollar stark aufgewertet). Die vollständige Länder-/Währungstabelle des UBS-Yearbooks liegt hinter der Bezahlschranke und wurde nicht gelesen. Die App nennt die USD-Werte ausdrücklich als USD.
+- Ein amtlich oder wissenschaftlich belegter **Erwartungswert** für die Zukunft: Die 7 % bleiben eine Modellannahme des Eigentümers (Auftrag vom 30.9.2026); belegt ist nur, dass sie in der historischen Spanne für 100 % Aktien liegt.
+- Eine Tabelle mit Richtwerten für Welt-Aktien in CHF nach Aktienanteil.
