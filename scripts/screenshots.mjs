@@ -182,6 +182,11 @@ await karteP1.screenshot({ path: `${out}16-ruecktritt-datum-360.png` });
 // Wohnsitz im Ausland: Thailand mit freiwilliger AHV
 await karteP1.getByText('Wohnsitz im Ausland (Wegzug)').click();
 await karteP1.getByRole('checkbox', { name: /^Endgültiger Wegzug aus der Schweiz geplant/ }).check();
+// Der Wegzug übernimmt beim Einschalten den Rücktritts-Modus (hier «Datum»); für das Beispiel auf «Alter» umstellen.
+await karteP1
+  .locator('fieldset', { hasText: 'Wohnsitz im Ausland ab' })
+  .locator('label.segment', { hasText: 'Alter' })
+  .click();
 await fuelle2('Wegzug mit', 59);
 await p2.getByLabel('Zielland', { exact: true }).selectOption('TH');
 await karteP1.getByRole('checkbox', { name: /^Freiwillige AHV\/IV/ }).check();
@@ -1128,7 +1133,7 @@ for (const schema of ['light', 'dark']) {
   await f('Jahr', 2040, vk, 0);
   await f('Anlagekosten', 610000, vk);
   await vk.getByLabel('Gekauft im Monat', { exact: true }).selectOption('5');
-  await f('Jahr', 2008, vk, 1);
+  await f('Jahr', 2012, vk, 1);
   await f('Verkaufskosten', '2', vk);
   await vk.scrollIntoViewIfNeeded();
   await vk.screenshot({ path: `${out}79-wohneigentum-verkauf-grundstueckgewinnsteuer-360.png` });
@@ -1881,6 +1886,28 @@ for (const [breite, hoehe, mobil, suffix] of [
   if ((await heute.locator('.regeljahr-banner').count()) !== 0)
     fehler.push('Regeljahr-Banner erscheint im aktuellen Jahr');
   await ctxHeute.close();
+}
+
+// 29) Rendite-Einordnung (7 % ↔ Aktienanteil): Schnellmodus-Hinweis und Orientierungstabelle im Schritt «Annahmen»
+{
+  const ctx = await browser.newContext({ viewport: { width: 360, height: 780 }, deviceScaleFactor: 2, locale: 'de-CH' });
+  const pg = await ctx.newPage();
+  pg.on('pageerror', (e) => fehler.push(String(e)));
+  await pg.goto(url, { waitUntil: 'networkidle' });
+  const hinweis = pg.locator('.annahmen-schnell');
+  const t = await hinweis.innerText();
+  if (!t.includes('100 % Aktien') || !t.includes('Obligationenanteil')) fehler.push(`Rendite-Hinweis fehlt: ${t}`);
+  await hinweis.scrollIntoViewIfNeeded();
+  await hinweis.screenshot({ path: `${out}132-rendite-hinweis-schnell-360.png` });
+  await pg.getByText('Detailliert', { exact: true }).click();
+  await pg.getByRole('button', { name: /Annahmen/ }).first().click();
+  const aufklapp = pg.locator('details.aufklapp', { hasText: 'Aktienanteil und historische Rendite' });
+  await aufklapp.locator('summary').click();
+  const tab = aufklapp.locator('table');
+  if ((await tab.locator('tbody tr').count()) !== 5) fehler.push('Richtwert-Tabelle: nicht 5 Zeilen');
+  await aufklapp.scrollIntoViewIfNeeded();
+  await pg.locator('.karte', { has: aufklapp }).first().screenshot({ path: `${out}133-rendite-richtwerte-tabelle-360.png` });
+  await ctx.close();
 }
 
 await browser.close();
