@@ -190,6 +190,8 @@ export function monteCarlo(
   e: MonteCarloEinstellung,
   daten: KrisenDaten,
   pool: readonly PoolKrise[],
+  /** Optional: wird nach einzelnen Läufen mit (fertig, von) aufgerufen; ändert das Ergebnis nicht */
+  fortschritt?: (fertig: number, von: number) => void,
 ): MonteCarloErgebnis {
   const a = h.annahmen;
   const annahme: BasisAnnahmen = {
@@ -219,6 +221,7 @@ export function monteCarlo(
     const aus = ausgleichErwartetHorizont(annahme, a.aktienanteil, pool, e.krisenProDekade, gewichte, daten);
     basis = { ...annahme, renditeNominal: aus.wertschriften, wohneigentumNominal: aus.wohneigentum };
   }
+  const schritt = Math.max(1, Math.floor(laeufe / 50));
   for (let i = 0; i < laeufe; i++) {
     let werte: JahresRenditen[];
     if (e.art === 'bootstrap') {
@@ -238,6 +241,7 @@ export function monteCarlo(
     ruinAlter.push(erg.ruinAlter);
     vermoegen.push(erg.zeilen.map((z) => z.vermoegen));
     nominal.push(erg.zeilen.map((z) => z.vermoegen * z.indexEnde));
+    if (fortschritt && (i + 1 === laeufe || (i + 1) % schritt === 0)) fortschritt(i + 1, laeufe);
   }
   const baender = (reihen: number[][]) => {
     const b = {

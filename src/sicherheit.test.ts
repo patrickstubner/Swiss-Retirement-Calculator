@@ -27,6 +27,16 @@ describe('Content-Security-Policy (Meta)', () => {
     expect(direktiven.get('worker-src')).toBe("'self'");
   });
 
+  it('Worker nur aus der eigenen Datei (kein blob:/data:), Monte Carlo nicht mehr im Hauptthread der Komponenten', () => {
+    expect(direktiven.get('worker-src')).not.toMatch(/blob:|data:/);
+    const lauf = lies('src/ui/mcLauf.ts');
+    expect(lauf).toMatch(/new Worker\(new URL\('\.\/mc\.worker\.ts', import\.meta\.url\)/);
+    expect(lauf).not.toMatch(/blob:|data:|createObjectURL/);
+    for (const f of ['src/ui/components/Auswertung.tsx', 'src/ui/components/Krisen.tsx']) {
+      expect(lies(f)).not.toMatch(/\bmonteCarlo\(/);
+    }
+  });
+
   it('erlaubt weder unsafe-eval noch unsafe-inline für Skripte noch Fremdquellen', () => {
     expect(csp).not.toMatch(/unsafe-eval/);
     expect(direktiven.get('script-src')).not.toMatch(/unsafe-inline/);

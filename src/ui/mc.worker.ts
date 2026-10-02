@@ -1,23 +1,13 @@
 /**
- * Web-Worker: rechnet die Monte-Carlo-Kurzfassung beider Versionen, ohne die Oberfläche zu blockieren.
- * Nachricht rein: {id, jahr, monat, haushalte: [effHaushaltA, effHaushaltB]}; raus: {id, ergebnisse} bzw. {id, fehler}.
+ * Web-Worker: rechnet Monte-Carlo-Aufgaben (Szenario-Vergleich und volle Rechnung mit Fortschritt), ohne die
+ * Oberfläche zu blockieren. Nachrichten: siehe `McNachricht` / `McRueckmeldung` in `mcKern.ts`. Abbrechen geschieht
+ * durch Beenden des Workers (`terminate`) auf der Seite der Oberfläche.
  */
-import { ladeRegeln } from '../rules';
-import { vergleichsMonteCarlo } from './mcKern';
-import type { McAnfrage, McAntwort } from './mcVergleich';
+import { bearbeiteMcNachricht, type McNachricht, type McRueckmeldung } from './mcKern';
 
 const ctx = self as unknown as {
-  onmessage: ((e: MessageEvent<McAnfrage>) => void) | null;
-  postMessage: (m: McAntwort) => void;
+  onmessage: ((e: MessageEvent<McNachricht>) => void) | null;
+  postMessage: (m: McRueckmeldung) => void;
 };
 
-ctx.onmessage = (e) => {
-  const { id, jahr, monat, haushalte, laeufe } = e.data;
-  try {
-    const regeln = ladeRegeln(jahr);
-    const ergebnisse = haushalte.map((h) => vergleichsMonteCarlo(h, regeln, { jahr, monat }, laeufe));
-    ctx.postMessage({ id, ergebnisse });
-  } catch (x) {
-    ctx.postMessage({ id, fehler: x instanceof Error ? x.message : String(x) });
-  }
-};
+ctx.onmessage = (e) => bearbeiteMcNachricht(e.data, (m) => ctx.postMessage(m));

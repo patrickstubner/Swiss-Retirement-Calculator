@@ -5,20 +5,21 @@
  * Gerechnet wird mit denselben Funktionen wie im übrigen Ergebnis (simuliere, Solver, Monte Carlo).
  */
 import { useDeferredValue, useId, useMemo, useState } from 'react';
-import { monteCarlo } from '../../core/montecarlo';
 import type { Darstellung } from '../../core/nominal';
 import { simuliere } from '../../core/simulation';
 import { fruehestesRuecktrittsalter, type SolverErgebnis } from '../../core/solver';
 import type { Haushalt, KrisenModus, Monat, Person, SimulationsErgebnis } from '../../core/typen';
 import { letzterArbeitsmonat } from '../../core/zeitpunkt';
 import { neueKrisenAuswahl } from '../../data/defaults';
-import { KRISEN_DATEN, krisenOptionen, mcKrisenPool, STANDARD_KRISEN_PRO_DEKADE } from '../../data/krisen';
+import { krisenOptionen, STANDARD_KRISEN_PRO_DEKADE } from '../../data/krisen';
 import type { Regeln } from '../../rules';
 import { chfKurz, darstellungVon, endBetrag, inFranken, vermoegenReihe } from '../darstellung';
 import { chartFarbe } from '../farben';
 import { fmtAlter, fmtChf, fmtKompakt, fmtMonat, fmtProzent } from '../format';
 import type { Setzer } from '../kontext';
 import { krisenAbschnitte, krisenText } from '../krisenGrafik';
+import type { McEinstellung } from '../mcKern';
+import { useVollMc } from '../mcVergleich';
 import { type Bereich, gemeinsamerBereich, planungsBereich, ruecktrittBereich, verschoben } from '../regler';
 import { VorlesenKnoepfe } from '../vorlesen/Vorlesen';
 import { LinienChart, type Serie } from './Chart';
@@ -227,30 +228,21 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
       return null;
     }
   }, [hwVerz, regeln, heute, suchModus]);
-  const pool = useMemo(() => mcKrisenPool(), []);
   // Monte Carlo (wiederkehrende Krisen) für Erfolgswahrscheinlichkeit und Bandbreite – etwas verzögert
   const mcEingabe = useDeferredValue(hwVerz);
-  const mc = useMemo(() => {
-    try {
-      return monteCarlo(
-        mcEingabe,
-        regeln,
-        heute,
-        {
-          art: 'wiederkehrend',
-          laeufe: 150,
-          seed: 20260927,
-          krisenProDekade: mcEingabe.krisen.mcKrisenProDekade ?? STANDARD_KRISEN_PRO_DEKADE,
-          blockLaenge: 5,
-          bootstrapLand: 'CHE',
-        },
-        KRISEN_DATEN,
-        pool,
-      );
-    } catch {
-      return null;
-    }
-  }, [mcEingabe, regeln, heute, pool]);
+  const mcEinstellung = useMemo<McEinstellung>(
+    () => ({
+      art: 'wiederkehrend',
+      laeufe: 150,
+      seed: 20260927,
+      krisenProDekade: mcEingabe.krisen.mcKrisenProDekade ?? STANDARD_KRISEN_PRO_DEKADE,
+      blockLaenge: 5,
+      bootstrapLand: 'CHE',
+    }),
+    [mcEingabe.krisen.mcKrisenProDekade],
+  );
+  // Läuft im Web-Worker (Ersatz im Hauptthread ohne Worker); die Oberfläche bleibt bedienbar
+  const mc = useVollMc(mcEingabe, heute, mcEinstellung).ergebnis;
 
   const abschnitte = useMemo(() => (k ? krisenAbschnitte(k.wunsch, refIdx) : []), [k, refIdx]);
   const dar = darstellungVon(h);

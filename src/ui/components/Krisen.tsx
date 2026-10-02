@@ -2,9 +2,8 @@
  * Krisenszenarien im Ergebnis: historische Krisen abspielen, Monte Carlo mit wiederkehrenden
  * Krisen und die historische Krisenhäufigkeit pro Dekade (JST R6).
  */
-import { useDeferredValue, useMemo } from 'react';
+import { useDeferredValue, useId, useMemo } from 'react';
 import { datenVollstaendig, type KrisenLand, krisenPfad, maxRealerRueckgang } from '../../core/krisen';
-import { monteCarlo } from '../../core/montecarlo';
 import { simuliere } from '../../core/simulation';
 import type {
   Haushalt,
@@ -28,7 +27,6 @@ import {
   krisenAbstand,
   krisenOptionen,
   LAND_NAMEN,
-  mcKrisenPool,
   STANDARD_KRISEN_PRO_DEKADE,
   standardErsteKrise,
 } from '../../data/krisen';
@@ -37,6 +35,8 @@ import { darstellungVon, endBetrag, inFranken } from '../darstellung';
 import { fmtChf, fmtProzent } from '../format';
 import type { Setzer } from '../kontext';
 import { krisenAbschnitte, krisenText } from '../krisenGrafik';
+import type { McEinstellung } from '../mcKern';
+import { useVollMc } from '../mcVergleich';
 import { Faecher } from './Faecher';
 import { AuswahlFeld, Schalter, Segmente, ZahlFeld } from './Felder';
 import { Karte } from './Karte';
@@ -486,29 +486,29 @@ interface McProps {
   namen: string[];
 }
 
-export function MonteCarloKarte({ h, setH, effH, regeln, heute, refIdx, namen }: McProps) {
+export function MonteCarloKarte({ h, setH, effH, heute, refIdx, namen }: McProps) {
   const k = h.krisen;
-  const pool = useMemo(() => mcKrisenPool(), []);
   const rate = k.mcKrisenProDekade ?? STANDARD_KRISEN_PRO_DEKADE;
-  const eingabe = useDeferredValue({ effH, k, rate });
-  const erg = useMemo(() => {
-    if (!eingabe.k.mcAktiv) return null;
-    return monteCarlo(
-      eingabe.effH,
-      regeln,
-      heute,
-      {
-        art: eingabe.k.mcArt,
-        laeufe: eingabe.k.mcLaeufe,
-        seed: 20260927,
-        krisenProDekade: eingabe.rate,
-        blockLaenge: eingabe.k.mcBlockLaenge,
-        bootstrapLand: 'CHE',
-      },
-      KRISEN_DATEN,
-      pool,
-    );
-  }, [eingabe, regeln, heute, pool]);
+  // Objekt nur bei echter Änderung neu bilden, sonst würde die Rechnung bei jeder Darstellung neu starten
+  const eingabeJetzt = useMemo(() => ({ effH, k, rate }), [effH, k, rate]);
+  const eingabe = useDeferredValue(eingabeJetzt);
+  const einstellung = useMemo<McEinstellung | null>(
+    () =>
+      eingabe.k.mcAktiv
+        ? {
+            art: eingabe.k.mcArt,
+            laeufe: eingabe.k.mcLaeufe,
+            seed: 20260927,
+            krisenProDekade: eingabe.rate,
+            blockLaenge: eingabe.k.mcBlockLaenge,
+            bootstrapLand: 'CHE',
+          }
+        : null,
+    [eingabe],
+  );
+  // Läuft im Web-Worker (Ersatz im Hauptthread ohne Worker): Oberfläche bleibt bedienbar, Fortschritt und Abbruch
+  const mcStand = useVollMc(eingabe.effH, heute, einstellung);
+  const erg = mcStand.ergebnis;
 
   const x = useMemo(() => {
     if (!erg) return null;
@@ -516,6 +516,7 @@ export function MonteCarloKarte({ h, setH, effH, regeln, heute, refIdx, namen }:
     return erg.jahre.map((j) => j - geb);
   }, [erg, effH, refIdx]);
   const dar = darstellungVon(h);
+  const fortschrittId = useId();
 
   return (
     <Karte
@@ -561,6 +562,28 @@ export function MonteCarloKarte({ h, setH, effH, regeln, heute, refIdx, namen }:
             />
           )}
           <AktienanteilFeld h={h} setH={setH} />
+          {mcStand.laeuft ? (
+            <div className="mc-fortschritt" role="status">
+              <label htmlFor={fortschrittId}>Monte Carlo rechnet … {Math.round(mcStand.fortschritt * 100)} %</label>
+              <progress id={fortschrittId} max={1} value={mcStand.fortschritt} />
+              <button type="button" className="knopf knopf--sekundaer" onClick={mcStand.abbrechen}>
+                Abbrechen
+              </button>
+            </div>
+          ) : null}
+          {mcStand.abgebrochen ? (
+            <p className="info" role="status">
+              Die Rechnung wurde abgebrochen.{' '}
+              <button type="button" className="knopf knopf--sekundaer" onClick={mcStand.neuStarten}>
+                Erneut rechnen
+              </button>
+            </p>
+          ) : null}
+          {mcStand.fehler ? (
+            <p className="warnung" role="alert">
+              Die Monte-Carlo-Rechnung ist fehlgeschlagen: {mcStand.fehler}
+            </p>
+          ) : null}
           {erg ? (
             <>
               <div className="kennzahlen" role="status">

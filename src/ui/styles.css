@@ -1763,3 +1763,13 @@ tr.negativ td {
   text-align: center;
   font-weight: 700;
 }
+
+.mc-fortschritt {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0.75rem 0;
+}
+.mc-fortschritt progress {
+  width: 100%;
+  height: 0.9rem;
+}
