@@ -1890,7 +1890,11 @@ for (const [breite, hoehe, mobil, suffix] of [
 
 // 29) Rendite-Einordnung (7 % ↔ Aktienanteil): Schnellmodus-Hinweis und Orientierungstabelle im Schritt «Annahmen»
 {
-  const ctx = await browser.newContext({ viewport: { width: 360, height: 780 }, deviceScaleFactor: 2, locale: 'de-CH' });
+  const ctx = await browser.newContext({
+    viewport: { width: 360, height: 780 },
+    deviceScaleFactor: 2,
+    locale: 'de-CH',
+  });
   const pg = await ctx.newPage();
   pg.on('pageerror', (e) => fehler.push(String(e)));
   await pg.goto(url, { waitUntil: 'networkidle' });
@@ -1900,13 +1904,19 @@ for (const [breite, hoehe, mobil, suffix] of [
   await hinweis.scrollIntoViewIfNeeded();
   await hinweis.screenshot({ path: `${out}132-rendite-hinweis-schnell-360.png` });
   await pg.getByText('Detailliert', { exact: true }).click();
-  await pg.getByRole('button', { name: /Annahmen/ }).first().click();
+  await pg
+    .getByRole('button', { name: /Annahmen/ })
+    .first()
+    .click();
   const aufklapp = pg.locator('details.aufklapp', { hasText: 'Aktienanteil und historische Rendite' });
   await aufklapp.locator('summary').click();
   const tab = aufklapp.locator('table');
   if ((await tab.locator('tbody tr').count()) !== 5) fehler.push('Richtwert-Tabelle: nicht 5 Zeilen');
   await aufklapp.scrollIntoViewIfNeeded();
-  await pg.locator('.karte', { has: aufklapp }).first().screenshot({ path: `${out}133-rendite-richtwerte-tabelle-360.png` });
+  await pg
+    .locator('.karte', { has: aufklapp })
+    .first()
+    .screenshot({ path: `${out}133-rendite-richtwerte-tabelle-360.png` });
   await ctx.close();
 }
 
