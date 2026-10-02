@@ -28,6 +28,7 @@ import { chartFarbe, mitAlpha } from '../farben';
 import { fmtAlter, fmtChf, fmtMonat, fmtProzent } from '../format';
 import type { SchrittProps } from '../kontext';
 import { krisenAbschnitte, krisenText } from '../krisenGrafik';
+import { misserfolgErklaerung } from '../misserfolg';
 import { UWS_GESCHAETZT, uwsKurz, VEREINFACHUNGEN } from '../texte';
 import { VorlesenKnoepfe } from '../vorlesen/Vorlesen';
 
@@ -609,9 +610,27 @@ export function jahresBereiche(jahre: number[]): string {
   return teile.join(', ');
 }
 
+function MisserfolgHinweis({ e }: { e: SimulationsErgebnis }) {
+  const x = misserfolgErklaerung(e);
+  if (!x) return null;
+  return (
+    <p className="info misserfolg-hinweis">
+      Warum «reicht nicht», obwohl am Ende Vermögen übrig ist? Das Ergebnis gilt als nicht erfüllt, sobald in einem
+      einzelnen Jahr ({jahresBereiche(x.fehlJahre)}) die verfügbaren Mittel nicht für die Ausgaben reichen.{' '}
+      {x.mitLiquiditaetsluecke
+        ? 'Der Grund: Gesperrte Vorsorgegelder (PK, Freizügigkeit, 3a) sind erst ab dem Bezugsalter zugänglich. '
+        : ''}
+      Später fliesst wieder Geld zu (z. B. durch einen Kapitalbezug), und das Endvermögen ist deshalb positiv. Mögliche
+      Auswege: früherer Bezug, mehr frei verfügbare Mittel bis zum Bezug, tiefere Ausgaben in diesen Jahren oder ein
+      späterer Rücktritt.
+    </p>
+  );
+}
+
 function LiquiditaetsHinweise({ e }: { e: SimulationsErgebnis }) {
   return (
     <>
+      <MisserfolgHinweis e={e} />
       {e.liquiditaetsluecken.length > 0 ? (
         <p className="warnung" role="alert">
           ⚠ Liquiditätslücke {jahresBereiche(e.liquiditaetsluecken)}: Die verfügbaren Mittel reichen nicht, obwohl noch

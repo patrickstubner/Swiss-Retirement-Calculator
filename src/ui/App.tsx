@@ -6,6 +6,7 @@ import type { EingabeModus, Haushalt, Monat } from '../core/typen';
 import { standardHaushalt } from '../data/defaults';
 import { krisenOptionen } from '../data/krisen';
 import { anzahlFortgeschrieben, ladeRegeln, type Regeln, regelJahrStatus } from '../rules';
+import { APP_VERSION } from '../version';
 import { DisclaimerBanner } from './components/Disclaimer';
 import { Segmente } from './components/Felder';
 import { anzeigeName, Vergleich, VersionsMarke } from './components/Vergleich';
@@ -499,8 +500,9 @@ export function App() {
           </main>
           <footer className="fuss">
             <p>
-              Nicht-kommerzielles Projekt · Open Source (MIT) · Regelwerte Stand {regeln.meta.stand} · Keine Cookies,
-              kein Tracking, keine Datenübermittlung. Gespeichert wird nur lokal im Browser (abschaltbar ganz oben).
+              Nicht-kommerzielles Projekt · Open Source (MIT) · Version {APP_VERSION} · Regelwerte Stand{' '}
+              {regeln.meta.stand} · Keine Cookies, kein Tracking, keine Datenübermittlung. Gespeichert wird nur lokal im
+              Browser (abschaltbar ganz oben).
             </p>
           </footer>
         </div>

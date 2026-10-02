@@ -48,6 +48,11 @@ jobs:
           else
             node scripts/email-guard.mjs --alle
           fi
+      - name: Versionsregel (Version in package.json gegenüber dem Zielzweig erhöht; Dependabot ausgenommen)
+        if: github.event_name == 'pull_request' && github.event.pull_request.user.login != 'dependabot[bot]'
+        env:
+          ZIEL: ${{ github.event.pull_request.base.sha }}
+        run: node scripts/version-check.mjs "$ZIEL"
       - name: Build und Prüfung von dist
         run: |
           npm run build

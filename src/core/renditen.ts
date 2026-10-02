@@ -3,6 +3,8 @@
  * nominale Rendite und Inflation ab. Deterministisch hier; Krisen-Replay in krisen.ts,
  * Monte Carlo (wiederkehrende Krisen, Block-Bootstrap) in montecarlo.ts.
  */
+import { endlich } from './zahlen';
+
 export interface RenditeModell {
   readonly art: 'deterministisch' | 'historisch' | 'montecarlo';
   /** Nominale Rendite Wertschriften (und ohne `wohneigentum` auch Wohneigentum) */
@@ -22,5 +24,5 @@ export function deterministisch(renditeNominal: number, inflation: number): Rend
 
 /** Reale Nettorendite: (1 + r − Kosten) / (1 + i) − 1 */
 export function realeNettorendite(renditeNominal: number, kosten: number, inflation: number): number {
-  return (1 + renditeNominal - kosten) / (1 + inflation) - 1;
+  return (1 + endlich(renditeNominal) - endlich(kosten)) / (1 + endlich(inflation)) - 1;
 }

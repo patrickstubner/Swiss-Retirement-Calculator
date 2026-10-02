@@ -14,10 +14,12 @@
  * (rules: steuern.quellensteuerVorsorgeRentenKantone), nur wo kein DBA das Besteuerungsrecht dem
  * Wohnsitzstaat zuweist.
  */
+
 import tarifDatei from '../../data/qst-kapital-kantone-2026.json';
 import type { Regeln } from '../rules';
 import type { KantonsSteuerModell } from './kantone';
 import type { Zivilstand } from './typen';
+import { endlich } from './zahlen';
 
 export type QstKantonTarif =
   | { art: 'flach'; satz: number; inklBund?: boolean }
@@ -63,7 +65,8 @@ export function tabellenSatz(kanton: string, betrag: number, zivilstand: Zivilst
 }
 
 /** Teilbetragstarif (Grenzsätze je Stufe). */
-export function stufenSteuer(betrag: number, stufen: readonly [number | null, number][]): number {
+export function stufenSteuer(betragRoh: number, stufen: readonly [number | null, number][]): number {
+  const betrag = endlich(betragRoh);
   let steuer = 0;
   let unten = 0;
   for (const [bis, satz] of stufen) {

@@ -1,5 +1,6 @@
 /** AHV/IV/EO-Beiträge für Nichterwerbstätige (MB 2.03) – reine Funktionen. */
 import type { Regeln } from '../rules';
+import { endlich } from './zahlen';
 
 type NeRegeln = Regeln['beitraege']['nichterwerbstaetige'];
 /** Beitragstabelle (gleicher Aufbau für obligatorische und freiwillige Versicherung). */
@@ -7,7 +8,7 @@ export type BeitragsTabelle = NeRegeln['tabelle'];
 
 /** Bemessungsgrundlage: Vermögen + 20 × Renteneinkommen; Verheiratete je die Hälfte. */
 export function neBemessung(vermoegen: number, renteneinkommenJahr: number, verheiratet: boolean, r: NeRegeln): number {
-  const basis = Math.max(0, vermoegen) + r.bemessung.rentenFaktor * Math.max(0, renteneinkommenJahr);
+  const basis = Math.max(0, endlich(vermoegen)) + r.bemessung.rentenFaktor * Math.max(0, endlich(renteneinkommenJahr));
   return verheiratet && r.bemessung.verheirateteHaelftig ? basis / 2 : basis;
 }
 
@@ -20,7 +21,8 @@ export function neBeitragTabelle(bemessung: number, r: NeRegeln): number {
  * Jahresbeitrag aus einer Beitragstabelle: Bemessung auf die nächsttiefere Stufe
  * abgerundet (Art. 28 Abs. 3 AHVV), ohne Verwaltungskosten.
  */
-export function beitragAusTabelle(bemessung: number, t: BeitragsTabelle): number {
+export function beitragAusTabelle(bemessungRoh: number, t: BeitragsTabelle): number {
+  const bemessung = endlich(bemessungRoh);
   if (bemessung < t.untergrenze) return t.minimalbeitrag;
   if (bemessung < t.grenzeStufe2) {
     const n = Math.floor((bemessung - t.untergrenze) / t.schritt);
@@ -44,7 +46,7 @@ export function neBeitrag(
   verwaltungskosten: number,
   r: NeRegeln,
 ): number {
-  const vk = Math.min(Math.max(verwaltungskosten, 0), r.verwaltungskostenMax);
+  const vk = Math.min(Math.max(endlich(verwaltungskosten), 0), r.verwaltungskostenMax);
   return neBeitragTabelle(neBemessung(vermoegen, renteneinkommenJahr, verheiratet, r), r) * (1 + vk);
 }
 
@@ -53,5 +55,5 @@ export function neBeitrag(
  * doppelten Mindestbeitrag entrichtet (AN- + AG-Beiträge, Annahme).
  */
 export function neBefreitDurchEhegatte(lohnEhegatteJahr: number, beitragssatzTotal: number, r: NeRegeln): boolean {
-  return lohnEhegatteJahr * beitragssatzTotal >= r.befreiungEhegatteMindestbeitrag;
+  return endlich(lohnEhegatteJahr) * endlich(beitragssatzTotal) >= r.befreiungEhegatteMindestbeitrag;
 }

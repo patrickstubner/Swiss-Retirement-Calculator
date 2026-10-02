@@ -106,6 +106,7 @@ import type {
   TodesfallInfo,
   Toepfe,
 } from './typen';
+import { ersteNichtEndlicheZahl } from './zahlen';
 import { geburtIndex, stoppAlterMonate, wegzugIndex } from './zeitpunkt';
 import { type ZiellandEinkommen, ziellandKurz, ziellandSteuer } from './zielland';
 
@@ -687,6 +688,9 @@ export const MAX_SIMULATIONSJAHRE = 1200;
 
 export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): SimulationsErgebnis {
   if (h.personen.length === 0) throw new Error('Mindestens eine Person erforderlich');
+  // SEC-02: nicht endliche Zahlen (NaN, Infinity) in den Eingaben abweisen, statt sie in die Rechnung zu tragen
+  const ungueltig = ersteNichtEndlicheZahl(h, 'haushalt') ?? ersteNichtEndlicheZahl(opt, 'optionen');
+  if (ungueltig) throw new Error(`Eingabe ist keine endliche Zahl: ${ungueltig}`);
   const verheiratetPlan = h.zivilstand === 'verheiratet' && h.personen.length >= 2;
   const a = h.annahmen;
   let modell = opt.renditeModell ?? deterministisch(a.renditeNominal, a.inflation);

@@ -4,6 +4,7 @@
  */
 import type { Regeln } from '../rules';
 import type { Geschlecht, Monat } from './typen';
+import { endlich } from './zahlen';
 
 type AhvRegeln = Regeln['ahv'];
 
@@ -16,6 +17,7 @@ export const inMonaten = (a: AlterJM): number => a.jahre * 12 + a.monate;
 
 /** Referenzalter nach Jahrgang und Geschlecht (AHV 21, Übergang Frauen 1961–1963). */
 export function ahvReferenzalter(geburtsjahr: number, geschlecht: Geschlecht, r: AhvRegeln): AlterJM {
+  if (!Number.isFinite(geburtsjahr)) throw new RangeError('Geburtsjahr muss eine endliche Zahl sein');
   const ra = r.referenzalter;
   if (geschlecht === 'm') return { jahre: ra.maenner.jahre, monate: ra.maenner.monate };
   const stufe = ra.frauen.find((s) => geburtsjahr <= s.bisJahrgang);
@@ -32,6 +34,8 @@ export const ausMonatIndex = (i: number): Monat => ({ jahr: Math.floor(i / 12), 
  * Erreichens).
  */
 export function monatBeiAlter(geburtsjahr: number, geburtsmonat: number, alterMonate: number): Monat {
+  if (![geburtsjahr, geburtsmonat, alterMonate].every(Number.isFinite))
+    throw new RangeError('Geburtsjahr, Geburtsmonat und Alter müssen endliche Zahlen sein');
   return ausMonatIndex(geburtsjahr * 12 + (geburtsmonat - 1) + alterMonate);
 }
 
@@ -49,7 +53,8 @@ export function ahvRentenbeginn(
 }
 
 /** mdJE auf Tabellenstufe runden (gemäss Regel `mdjeRundung`). */
-export function mdjeTabellenwert(mdje: number, r: AhvRegeln): number {
+export function mdjeTabellenwert(mdjeRoh: number, r: AhvRegeln): number {
+  const mdje = endlich(mdjeRoh);
   const f = r.rentenformel;
   if (mdje <= f.mdjeMinimum) return f.mdjeMinimum;
   if (mdje >= f.mdjeMaximum) return f.mdjeMaximum;
@@ -62,7 +67,8 @@ export function mdjeTabellenwert(mdje: number, r: AhvRegeln): number {
  * Volle Altersrente Skala 44 nach Art. 34 AHVG (CHF/Monat, auf Franken gerundet).
  * @param tabellenStufen mdJE vorher auf die Stufe der Rententabelle runden
  */
-export function ahvRenteSkala44(mdje: number, r: AhvRegeln, tabellenStufen = true): number {
+export function ahvRenteSkala44(mdjeRoh: number, r: AhvRegeln, tabellenStufen = true): number {
+  const mdje = endlich(mdjeRoh);
   const f = r.rentenformel;
   const min = r.minimalrenteMonat;
   const x = tabellenStufen ? mdjeTabellenwert(mdje, r) : Math.min(Math.max(mdje, f.mdjeMinimum), f.mdjeMaximum);
@@ -75,7 +81,8 @@ export function ahvRenteSkala44(mdje: number, r: AhvRegeln, tabellenStufen = tru
 }
 
 /** Umkehrung der Rentenformel: geschätztes mdJE aus einer vollen Monatsrente. */
-export function ahvMdjeAusRente(renteMonat: number, r: AhvRegeln): number {
+export function ahvMdjeAusRente(renteMonatRoh: number, r: AhvRegeln): number {
+  const renteMonat = endlich(renteMonatRoh);
   const f = r.rentenformel;
   const min = r.minimalrenteMonat;
   if (renteMonat <= min) return f.mdjeMinimum;
@@ -89,8 +96,8 @@ export function ahvMdjeAusRente(renteMonat: number, r: AhvRegeln): number {
 /** Teilrente vereinfacht linear: Rente × Beitragsjahre / 44. */
 export function ahvTeilrente(renteMonat: number, beitragsjahre: number, r: AhvRegeln): number {
   const voll = r.vollrenteBeitragsjahre;
-  const j = Math.min(Math.max(beitragsjahre, 0), voll);
-  return (renteMonat * j) / voll;
+  const j = Math.min(Math.max(endlich(beitragsjahre), 0), voll);
+  return (endlich(renteMonat) * j) / voll;
 }
 
 export function istUebergangsFrau(geburtsjahr: number, geschlecht: Geschlecht, r: AhvRegeln): boolean {
@@ -118,7 +125,8 @@ export function ahvMaxVorbezugMonate(geburtsjahr: number, geschlecht: Geschlecht
   return Math.max(0, Math.min(r.vorbezug.maxMonateOrdentlich, ra - r.vorbezug.fruehestesAlter * 12));
 }
 
-function stufeNachMdje<T extends { mdjeBis: number | null }>(stufen: readonly T[], mdje: number): T {
+function stufeNachMdje<T extends { mdjeBis: number | null }>(stufen: readonly T[], mdjeRoh: number): T {
+  const mdje = endlich(mdjeRoh);
   const s = stufen.find((x) => x.mdjeBis === null || mdje <= x.mdjeBis);
   if (!s) throw new RangeError('Keine mdJE-Stufe gefunden');
   return s;
@@ -220,7 +228,7 @@ export function ahvRentenzuschlag(
   const z = r.rentenzuschlagUebergang;
   const anteil = z.jahrgangsanteil.find(([j]) => j === geburtsjahr)?.[1] ?? 0;
   const betrag = stufeNachMdje(z.stufen, mdje).betragMonat;
-  const jahre = Math.min(Math.max(beitragsjahre, 0), r.vollrenteBeitragsjahre);
+  const jahre = Math.min(Math.max(endlich(beitragsjahre), 0), r.vollrenteBeitragsjahre);
   const skala = jahre / r.vollrenteBeitragsjahre;
   const zuschlag = betrag * anteil * skala;
   return jahre < r.vollrenteBeitragsjahre ? Math.max(0, Math.ceil(zuschlag - 1e-9)) : zuschlag;
@@ -230,7 +238,9 @@ export function ahvRentenzuschlag(
  * Plafonierung Ehepaar: Summe beider Renten höchstens 150% der Maximalrente,
  * proportional gekürzt.
  */
-export function ahvPlafonierung(rente1: number, rente2: number, r: AhvRegeln): [number, number] {
+export function ahvPlafonierung(rente1Roh: number, rente2Roh: number, r: AhvRegeln): [number, number] {
+  const rente1 = endlich(rente1Roh);
+  const rente2 = endlich(rente2Roh);
   const plafond = r.plafondEhepaarFaktor * r.maximalrenteMonat;
   const summe = rente1 + rente2;
   if (summe <= plafond || summe <= 0) return [rente1, rente2];
@@ -241,5 +251,5 @@ export function ahvPlafonierung(rente1: number, rente2: number, r: AhvRegeln): [
 /** 13. AHV-Rente: 1/12 der im Jahr ausbezahlten Altersrenten (ab 2026). */
 export function ahv13(jahresrente: number, jahr: number, r: AhvRegeln): number {
   const d = r.dreizehnteRente;
-  return jahr >= d.abJahr ? jahresrente / d.divisor : 0;
+  return endlich(jahr, 0) >= d.abJahr ? endlich(jahresrente) / d.divisor : 0;
 }

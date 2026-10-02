@@ -10,6 +10,7 @@
  */
 import type { KantonsSteuerModell } from './kantone';
 import type { Konfession, Zivilstand } from './typen';
+import { endlich } from './zahlen';
 
 /** [Bandbreite in CHF | null = Rest, Satz in % (Einkommen) bzw. ‰ (Vermögen)] */
 export type Band = [number | null, number];
@@ -77,7 +78,7 @@ export interface KantonsDaten {
 
 /** Steuer nach Bandtarif (Bandbreiten nacheinander); Satz in Einheiten von `einheit` (100 = %, 1000 = ‰). */
 export function bandTarif(betrag: number, baender: readonly Band[], einheit = 100): number {
-  let rest = Math.max(0, betrag);
+  let rest = Math.max(0, endlich(betrag));
   let steuer = 0;
   for (const [breite, satz] of baender) {
     if (rest <= 0) break;
@@ -188,7 +189,7 @@ export function agModell(d: AgDaten, gemeindeName: string, kirche: Konfession): 
 
 /** Lineare Interpolation der Steuer zwischen Stützpunkten (inkl. Ursprung), darüber konstanter Satz. */
 export function interpoliereSteuer(betrag: number, punkte: readonly [number, number][]): number {
-  const x = Math.max(0, betrag);
+  const x = Math.max(0, endlich(betrag));
   const p: [number, number][] = [[0, 0], ...[...punkte].sort((a, b) => a[0] - b[0])];
   for (let i = 1; i < p.length; i++) {
     const [x1, y1] = p[i] as [number, number];
@@ -200,7 +201,8 @@ export function interpoliereSteuer(betrag: number, punkte: readonly [number, num
 }
 
 /** Interpolierter effektiver Satz (in %) zwischen Stützpunkten, ausserhalb konstant. */
-export function interpoliereSatz(betrag: number, saetze: Record<string, number>): number {
+export function interpoliereSatz(betragRoh: number, saetze: Record<string, number>): number {
+  const betrag = endlich(betragRoh);
   const p = Object.entries(saetze)
     .map(([k, v]) => [Number(k), v] as [number, number])
     .sort((a, b) => a[0] - b[0]);
