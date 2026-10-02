@@ -59,6 +59,14 @@ describe('Grundstückgewinnsteuer AG', () => {
     expect(ggstSatzAG(25, regeln)).toBe(0.05);
     expect(ggstSatzAG(40, regeln)).toBe(0.05);
   });
+
+  it('alle 26 Stufen entsprechen der amtlichen Tabelle (§ 109 StG AG, Kanton Aargau, Seite vom 01.07.2025)', () => {
+    // Index = vollendete Besitzjahre; Prozentsätze Zeile für Zeile aus der amtlichen Tabelle abgeschrieben
+    const amtlich = [40, 38, 36, 34, 32, 30, 28, 26, 24, 22, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5];
+    amtlich.forEach((prozent, jahre) => {
+      expect(Math.round(ggstSatzAG(jahre, regeln) * 100), `${jahre} Jahre`).toBe(prozent);
+    });
+  });
 });
 
 describe('Auswahl nach Kanton', () => {

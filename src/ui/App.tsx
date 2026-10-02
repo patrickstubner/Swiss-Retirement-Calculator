@@ -5,7 +5,7 @@ import { fruehestesRuecktrittsalter } from '../core/solver';
 import type { EingabeModus, Haushalt, Monat } from '../core/typen';
 import { standardHaushalt } from '../data/defaults';
 import { krisenOptionen } from '../data/krisen';
-import { ladeRegeln, type Regeln, regelJahrStatus } from '../rules';
+import { anzahlFortgeschrieben, ladeRegeln, type Regeln, regelJahrStatus } from '../rules';
 import { DisclaimerBanner } from './components/Disclaimer';
 import { Segmente } from './components/Felder';
 import { anzeigeName, Vergleich, VersionsMarke } from './components/Vergleich';
@@ -114,6 +114,10 @@ export function App() {
   }, []);
   const regeln = useMemo(() => ladeRegeln(heute.jahr), [heute.jahr]);
   const regelStatus = useMemo(() => regelJahrStatus(heute.jahr), [heute.jahr]);
+  const fortgeschrieben = useMemo(
+    () => (regelStatus.fehlt ? 0 : anzahlFortgeschrieben(heute.jahr)),
+    [regelStatus.fehlt, heute.jahr],
+  );
   const speicher = useMemo(() => browserSpeicher(), []);
   const [start] = useState(() => ladeStartzustand(regeln, window.location.hash, speicher));
   const [haushalt, setHaushalt] = useState<Haushalt>(start.haushalt);
@@ -350,6 +354,13 @@ export function App() {
               <strong>Regeln für {regelStatus.angefragt} noch nicht erfasst.</strong> Der Rechner rechnet mit den Werten
               von {regelStatus.verwendet} (Beiträge, Renten, Steuertarife und Grenzen können sich geändert haben). Die
               Ergebnisse sind deshalb möglicherweise ungenau.
+            </div>
+          ) : fortgeschrieben > 0 ? (
+            <div className="warnung regeljahr-banner" role="status">
+              <strong>Regeln für {regelStatus.angefragt} teilweise erfasst.</strong> Die Tarife und Abzüge der direkten
+              Bundessteuer {regelStatus.angefragt} sind berücksichtigt. Für {fortgeschrieben} Werte (AHV-Renten und
+              -Beiträge, BVG-Grenzen, Säule 3a, kantonale Tarife) gibt es noch keinen amtlichen Beschluss; dort gelten
+              vorläufig die Werte von {regelStatus.angefragt - 1}. Die Ergebnisse können deshalb leicht abweichen.
             </div>
           ) : null}
           {linkQuelle ? (

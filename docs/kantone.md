@@ -13,7 +13,7 @@ Stand: 25.9.2026 · Steuerjahr 2026 · Maschinenlesbar: `data/kantone-2026.json`
 
 | Quelle | Inhalt | Eignung | URL | Stand |
 |---|---|---|---|---|
-| ESTV-Kantonsblätter (26) | Gesetzestexte zu Tarif, Abzügen und Kapitalleistungen je Kanton | amtlich, Methodik; teils Tarif nur als Verweis | https://www.estv2.admin.ch/stp/kb/{kt}-{de,fr,it}.pdf (lokal: /workspace/research/kb/) | Februar 2026 |
+| ESTV-Kantonsblätter (26) | Gesetzestexte zu Tarif, Abzügen und Kapitalleistungen je Kanton | amtlich, Methodik; teils Tarif nur als Verweis | https://www.estv2.admin.ch/stp/kb/{kt}-{de,fr,it}.pdf | Februar 2026 |
 | ESTV-Steuerrechner | Einkommen/Vermögen, Kapitalleistungen, alle Gemeinden, Steuerjahre 2010–2026 | Referenz und Validierung | https://swisstaxcalculator.estv.admin.ch | Datenstand 2026 |
 | ESTV-Rechner, Tarifexport (`API_exportManyTaxScales`) | Einkommens- und Vermögenstarife 2026 je Kanton (Tabellentypen ZUERICH, BUND, FLATTAX, FREIBURG, FORMEL; Splittingfaktoren) | exakte Tarifdaten; Rohdaten vom 24.9.2026 nur lokal (nicht im Repo) | POST …/lg-proxy/operation/c3b67379_ESTV/API_exportManyTaxScales | abgerufen 24.9.2026 |
 | ESTV-Rechner, Steuerfüsse (`API_exportManySimpleRates`) | Kantons-, Gemeinde- und Kirchensteuerfüsse 2026, 2'110 Gemeinden | exakt; Rohdaten vom 24.9.2026 nur lokal (nicht im Repo) | POST …/API_exportManySimpleRates | abgerufen 24.9.2026 |

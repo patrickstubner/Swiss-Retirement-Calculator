@@ -36,7 +36,7 @@ describe('rules/2026.json', () => {
   });
 
   it('spätere Jahre fallen auf die jüngste verfügbare Datei zurück', () => {
-    expect(ladeRegeln(2030).meta.jahr).toBe(2026);
+    expect(ladeRegeln(2030).meta.jahr).toBe(2027);
   });
 
   it('erkennt fehlerhafte Einträge', () => {
