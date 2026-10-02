@@ -1,4 +1,5 @@
 import regeln2026Json from './2026.json';
+import regeln2027Json from './2027.json';
 import { extrahiereWerte, flacheRegeln, pruefeRegeln, type RegelEintrag, type Werte } from './schema';
 
 export type { RegelEintrag, RegelStatus, Regelwert } from './schema';
@@ -14,6 +15,7 @@ export type Regeln = Werte<Omit<RegelnJson, 'meta'>> & { meta: RegelnJson['meta'
  */
 const REGELDATEIEN: Record<number, RegelnJson> = {
   2026: regeln2026Json,
+  2027: regeln2027Json,
 };
 
 export const VERFUEGBARE_JAHRE: readonly number[] = Object.keys(REGELDATEIEN)
@@ -55,6 +57,17 @@ export interface RegelJahrStatus {
 export function regelJahrStatus(jahr: number, verfuegbar: readonly number[] = VERFUEGBARE_JAHRE): RegelJahrStatus {
   const verwendet = [...verfuegbar].reverse().find((j) => j <= jahr) ?? verfuegbar[0] ?? jahr;
   return { angefragt: jahr, verwendet, fehlt: verwendet !== jahr };
+}
+
+/** Marker im Hinweis eines Regelwerts, der für das Jahr noch nicht amtlich bestätigt ist und den Vorjahreswert fortführt. */
+export const FORTGESCHRIEBEN = 'Fortgeschrieben';
+
+/**
+ * Anzahl Regelwerte der verwendeten Regeldatei, die noch den Wert des Vorjahres fortführen (status offen, Hinweis
+ * «Fortgeschrieben»). > 0 heisst: Regeldatei ist eine Vorbereitung, die Oberfläche zeigt einen Hinweis.
+ */
+export function anzahlFortgeschrieben(jahr: number): number {
+  return regelEintraege(jahr).filter((e) => e.status === 'offen' && (e.hinweis ?? '').includes(FORTGESCHRIEBEN)).length;
 }
 
 /** Alle Regelwerte eines Jahres flach mit Quelle/Stand/Status. */

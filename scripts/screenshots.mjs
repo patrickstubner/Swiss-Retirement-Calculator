@@ -1861,27 +1861,32 @@ for (const [breite, hoehe, mobil, suffix] of [
   await ctx.close();
 }
 
-// 28) Banner bei fehlendem Regeljahr (K-11): Systemdatum auf 2027 gesetzt (nur im Browser des Skripts)
+// 28) Banner bei fehlendem bzw. teilweise erfasstem Regeljahr (K-11): Systemdatum nur im Browser des Skripts gesetzt
 {
-  const ctx = await browser.newContext({
-    bypassCSP: true,
-    viewport: { width: 360, height: 780 },
-    deviceScaleFactor: 2,
-    isMobile: true,
-    hasTouch: true,
-    locale: 'de-CH',
-  });
-  const pg = await ctx.newPage();
-  await pg.clock.setFixedTime(new Date('2027-01-15T10:00:00'));
-  await pg.goto(url, { waitUntil: 'networkidle' });
-  const banner = pg.locator('.regeljahr-banner');
-  if ((await banner.count()) !== 1) fehler.push('Regeljahr-Banner fehlt im Jahr 2027');
-  else if (!(await banner.innerText()).includes('Regeln für 2027 noch nicht erfasst'))
-    fehler.push('Regeljahr-Banner: Text falsch');
-  await pg.screenshot({ path: `${out}119-banner-regeljahr-fehlt-360.png` });
-  await ctx.close();
+  for (const [jahr, text, datei] of [
+    [2028, 'Regeln für 2028 noch nicht erfasst', '119-banner-regeljahr-fehlt-360.png'],
+    [2027, 'Regeln für 2027 teilweise erfasst', '134-banner-regeljahr-teilweise-360.png'],
+  ]) {
+    const ctx = await browser.newContext({
+      bypassCSP: true,
+      viewport: { width: 360, height: 780 },
+      deviceScaleFactor: 2,
+      isMobile: true,
+      hasTouch: true,
+      locale: 'de-CH',
+    });
+    const pg = await ctx.newPage();
+    await pg.clock.setFixedTime(new Date(`${jahr}-01-15T10:00:00`));
+    await pg.goto(url, { waitUntil: 'networkidle' });
+    const banner = pg.locator('.regeljahr-banner');
+    if ((await banner.count()) !== 1) fehler.push(`Regeljahr-Banner fehlt im Jahr ${jahr}`);
+    else if (!(await banner.innerText()).includes(text)) fehler.push(`Regeljahr-Banner ${jahr}: Text falsch`);
+    await pg.screenshot({ path: `${out}${datei}` });
+    await ctx.close();
+  }
   const ctxHeute = await browser.newContext({ viewport: { width: 360, height: 780 }, locale: 'de-CH' });
   const heute = await ctxHeute.newPage();
+  await heute.clock.setFixedTime(new Date('2026-06-15T10:00:00'));
   await heute.goto(url, { waitUntil: 'networkidle' });
   if ((await heute.locator('.regeljahr-banner').count()) !== 0)
     fehler.push('Regeljahr-Banner erscheint im aktuellen Jahr');

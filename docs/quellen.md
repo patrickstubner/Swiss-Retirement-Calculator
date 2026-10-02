@@ -1,6 +1,6 @@
 # Quellen und verifizierte Werte – Ruhestandsrechner Schweiz
 
-Recherche-Stand: 24.09.2026 (freiwillige AHV/IV: 25.09.2026). Alle Beträge in CHF. «OFFEN» = nicht aus einer offiziellen, aktuellen Quelle verifiziert. In diesem Fall darf der Wert in der App nicht fest eingebaut werden (Nutzereingabe oder Platzhalter mit Warnung).
+Recherche-Stand: 24.09.2026 (freiwillige AHV/IV: 25.09.2026; Regeljahr 2027, Witwenrente, AG-Grundstückgewinnsteuer: 02.10.2026, siehe Abschnitt 21). Alle Beträge in CHF. «OFFEN» = nicht aus einer offiziellen, aktuellen Quelle verifiziert. In diesem Fall darf der Wert in der App nicht fest eingebaut werden (Nutzereingabe oder Platzhalter mit Warnung).
 
 Abkürzungen: MB = Merkblatt der Informationsstelle AHV/IV (ahv-iv.ch), mdJE = massgebendes durchschnittliches Jahreseinkommen, RA = Referenzalter, NE = Nichterwerbstätige.
 
@@ -128,7 +128,7 @@ Abkürzungen: MB = Merkblatt der Informationsstelle AHV/IV (ahv-iv.ch), mdJE = m
 | Grundstückgewinnsteuer ZH – Besitzdauer (§ 225 Abs. 2–3 StG) | Zuschlag +50 % bei weniger als 1 Jahr, +25 % bei weniger als 2 Jahren; Ermässigung 5 % ab 5 vollen Jahren, +3 % pro weiteres Jahr, höchstens 50 % (ab 20 Jahren) | dito | dito |
 | Grundstückgewinn ZH – Anlagekosten, Verkaufskosten | Erwerbspreis + wertvermehrende Aufwendungen; übliche Mäklerprovision und Insertionskosten abziehbar (§ 221 StG); über 20 Jahre Besitz Verkehrswert vor 20 Jahren wählbar (§ 220 Abs. 2 StG, **nicht gerechnet**) | § 220–221 StG ZH; Formular Stadt Zürich https://www.stadt-zuerich.ch/content/dam/web/de/lebenslagen/steuern/dokumente/steuererklaerung-grundstueckgewinnsteuer.pdf | 09/2026 |
 | Ersatzbeschaffung selbstgenutztes Wohneigentum | Aufschub der Grundstückgewinnsteuer bei Kauf eines Ersatz-Eigenheims in der Schweiz (§ 216 Abs. 3 lit. i, § 226a StG ZH) – **nur Hinweis, nicht gerechnet** | ZStB Nr. 216.3 https://www.zh.ch/de/steuern-finanzen/steuern/treuhaender/steuerbuch/steuerbuch-definition/zstb-216-3.html | 09/2026 |
-| Grundstückgewinnsteuer AG (§ 109 StG AG) | Satz nach vollen Besitzjahren: unter 1 Jahr 40 %, dann je Jahr −2 Prozentpunkte bis 20 % bei 10 Jahren, danach −1 Prozentpunkt pro Jahr bis 6 % bei 24 Jahren, ab 25 Jahren 5 %; Pauschalierung der Anlagekosten (§ 105) und Freigrenze/Rundung **OFFEN** | Kanton Aargau https://www.ag.ch/de/themen/steuern-finanzen/steuern-startseite/alles-zu-steuern?dc=997973d5-a19b-4351-baa1-657dbec5ff85_de (Merkblatt Grundstückgewinnsteuer) | Seite 01.07.2025, Merkblatt 01.07.2023 (abgerufen 27.09.2026) |
+| Grundstückgewinnsteuer AG (§ 109 StG AG) | Satz nach vollendeten Besitzjahren, **alle 26 Stufen amtlich**: 40 % bis zum vollendeten 1. Besitzjahr, 38 % (2.), 36 % (3.), 34 % (4.), 32 % (5.), 30 % (6.), 28 % (7.), 26 % (8.), 24 % (9.), 22 % (10.), 20 % (11.), dann −1 Prozentpunkt je Jahr (19 % 12. … 6 % 25.), 5 % ab dem vollendeten 25. Besitzjahr. Pauschalierung der Anlagekosten (§ 105) und Freigrenze/Rundung **OFFEN** | Kanton Aargau, Seite «Grundstückgewinnsteuer» (Tabelle «Tarif für die Steuerberechnung (§ 109 Steuergesetz)») https://www.ag.ch/de/themen/steuern-finanzen/steuern-startseite/alles-zu-steuern?dc=997973d5-a19b-4351-baa1-657dbec5ff85_de ; Merkblatt https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/natuerliche-personen/merkblaetter-zu-steuern-natuerliche-personen/grundst-ckgewinnsteuer2023-neu.pdf | Seite publiziert 01.07.2025, Merkblatt 01.07.2023 (Tabelle am 02.10.2026 Zeile für Zeile mit der Regeldatei verglichen) |
 | Grundstückgewinnsteuer übrige Kantone | **OFFEN** – Näherung mit dem ZH-Tarif (in der App gekennzeichnet) oder eigener effektiver Satz | – | – |
 | Hypothekarzins (Vorschlag) | 1,31 % Durchschnittszinssatz aller Schweizer Hypotheken; nur Vorschlag für das editierbare Feld | BWO, Medienmitteilung 01.09.2026 https://www.bwo.admin.ch/de/newnsb/Ozmbl-Ca5Ee4 | Stichtag 30.06.2026 (Referenzzinssatz 1,25 %) |
 | Reform Wohneigentumsbesteuerung ab 2029 – Abzüge | Selbstnutzung: kein Eigenmietwert, kein Unterhaltsabzug, kein Schuldzinsabzug; Vermietung: Unterhaltsabzug bleibt, Schuldzinsen nur im Verhältnis vermietete Liegenschaften / gesamtes Vermögen; kantonale Objektsteuer auf Zweitliegenschaften möglich (**OFFEN**) | Bundesrat 01.04.2026 https://www.admin.ch/de/newnsb/yGTqBPowRqyVh0zPokW-q | Inkraftsetzung 01.01.2029 |
@@ -460,3 +460,42 @@ Die App berechnet die Tabelle aus denselben Daten (kein fest einprogrammierter W
 - Langfristige **Rendite von Welt- oder US-Aktien in CHF** (Währungseffekt: der Franken hat sich gegenüber dem US-Dollar stark aufgewertet). Die vollständige Länder-/Währungstabelle des UBS-Yearbooks liegt hinter der Bezahlschranke und wurde nicht gelesen. Die App nennt die USD-Werte ausdrücklich als USD.
 - Ein amtlich oder wissenschaftlich belegter **Erwartungswert** für die Zukunft: Die 7 % bleiben eine Modellannahme des Eigentümers (Auftrag vom 30.9.2026); belegt ist nur, dass sie in der historischen Spanne für 100 % Aktien liegt.
 - Eine Tabelle mit Richtwerten für Welt-Aktien in CHF nach Aktienanteil.
+
+## 21. Regeljahr 2027 (Vorbereitung) – `src/rules/2027.json`, Stand 2.10.2026
+
+**Grundsatz:** `2027.json` enthält nur dort neue Werte, wo ein amtlicher Text vorliegt. Alles andere führt den Wert 2026 fort, steht auf **offen** und trägt den Hinweis «Fortgeschrieben» (die App zeigt dazu ab 1.1.2027 den Hinweis «Regeln für 2027 teilweise erfasst»). Für 2028 und später zeigt die App weiterhin «noch nicht erfasst».
+
+### Amtlich bestätigt (Status «verifiziert»)
+
+Quelle: EFD, Vorabdruck der Verordnung über die Anpassung der Tarife und Abzugsbeträge bei der direkten Bundessteuer an die Teuerung (VKP), Erläuterungen der ESTV vom 11.9.2026 und Medienmitteilung vom 22.9.2026, https://www.efd.admin.ch/de/newnsb/rq9rumbCaofX (Beilagen als PDF, abgerufen 2.10.2026). **Vorabdruck:** verbindlich ist die Veröffentlichung in der AS (Bundesblatt). Inkrafttreten 1.1.2027, Teuerungsausgleich **0.47 %** (LIK-Stand 30.6.2026), gilt ab Steuerjahr 2027.
+
+| Wert | 2027 | 2026 |
+|---|---|---|
+| DBG-Tarif Alleinstehende (Art. 36 Abs. 1): Beginn / Stufen | steuerfrei bis 15'300; ab 33'400 Basis 139.35; 43'700: 229.95; 58'300: 615.35; 76'500: 1'155.85; 82'400: 1'506.30; 109'400: 3'288.30; 142'200: 6'174.70; 185'900: 10'981.70; Stufensätze 0.77 / 0.88 / 2.64 / 2.97 / 5.94 / 6.60 / 8.80 / 11.00 / 13.20 je 100 Franken; ab 797'500 11.5 % (797'400 → 91'699.70; 797'500 → 91'712.50) | steuerfrei bis 15'200; proportional ab 794'000 |
+| DBG-Tarif Verheiratete (Art. 36 Abs. 2) | steuerfrei bis 29'900; ab 53'700 Basis 238; 61'600: 396; 79'500: 933; 95'400: 1'569; 109'200: 2'259; 121'200: 2'979; 131'100: 3'672; 139'100: 4'312; 145'000: 4'843; 149'000: 5'243; 151'100: 5'474; 153'100: 5'714; Sätze 1 bis 13 je 100 Franken; ab 946'000 11.5 % (945'900 → 108'778; 946'000 → 108'790) | steuerfrei bis 29'700; proportional ab 941'400 |
+| **Kinderermässigung** (Abzug vom Steuerbetrag je Kind/unterstützte Person) | **264** | 263 |
+| Drittbetreuungsabzug (max. je Kind) | 25'900 | 25'800 (nicht in der App) |
+| Weiterbildungsabzug (max.) | 13'100 | 13'000 (nicht in der App) |
+| Aufwandbesteuerung, Mindestbemessung | 437'000 | nicht in der App |
+| Zinssätze (Verzugs-/Vergütungszins) | unverändert 4.00 % / 0.00 % bei freiwilligen Vorauszahlungen | – |
+| Berufskostenverordnung | unverändert | – |
+
+Die Tests in `src/rules/regeljahr2027.test.ts` prüfen alle Stützpunkte der beiden Tarife gegen diese Tabelle. Ein im Netz gefundener «Kinderabzug 8'100» ist **nicht belegt** und wurde nicht übernommen (die Kinderermässigung 264 ist der amtliche Abzug vom Steuerbetrag; der Kinderabzug vom Einkommen bei Art. 35 DBG ist ein anderer Wert und wird von der App nicht verwendet).
+
+### Quellensteuer Kapitalleistungen Bund (QStV, Anhang Ziff. 3): Abweichung, **OFFEN**
+
+Der EFD-Vorabdruck der QStV-Änderung per 1.1.2027 nennt für die Stufe 125'000–150'000 **1,90 %** (Alleinstehende) und **1,70 %** (Verheiratete). Die Regeldatei 2026 führt dort 1,95 % bzw. 1,75 % (Quelle: ESTV-Übersicht 2026, TG-Tarif 2026; Gegenrechnung TG: 150'000 → 11'925 Franken, passt zu 1,95 %). Alle anderen Stufen sind 2027 unverändert. Ob die Abweichung ein Tippfehler im Vorabdruck oder eine echte Änderung ist, ist nicht geklärt (Fedlex-Text per Abruf nicht lesbar). **Entscheid:** Status «offen», in der App gilt der Wert 2026 (höherer Satz, also vorsichtiger). Prüfen, sobald die AS-Veröffentlichung vorliegt.
+
+### Noch nicht amtlich beschlossen (OFFEN, Wert 2026 fortgeschrieben)
+
+AHV/IV-Renten 2027 (Rentenanpassung: bis 2.10.2026 kein Bundesratsentscheid gefunden), Beitragsgrenzen AHV/ALV, BVG-Grenzbeträge, BVG-Mindestzins 2027 (Kommission empfiehlt 1.75 %, Bundesrat entscheidet im November), Säule-3a-Maxima 2027 (Banken sprechen von «Oktober 2026», amtlich noch nicht publiziert), neue AHV-Vorbezugs-/Aufschubsätze («frühestens 2027»), kantonale Tarife, Steuerfüsse und Kapitalleistungssteuern 2027, Hypothekarzinsdurchschnitt, Quellensteuer-Rentensätze der Kantone. Sobald der Bundesrat/BSV die Werte veröffentlicht, in `2027.json` ersetzen, auf «verifiziert» setzen und «Fortgeschrieben» entfernen; der Zähler im Banner geht dann automatisch zurück.
+
+## 22. Prüfung Audit-Bericht Punkte 7/8 (2.10.2026)
+
+| Thema | Ergebnis | Quelle |
+|---|---|---|
+| **Witwen-/Witwerrente** | In der App bereits umgesetzt (80 % der Rente der verstorbenen Person, Anspruch Witwe mit Kindern oder ab 45 Jahren und 5 Ehejahren, Witwer nur mit Kindern, Erlöschen bei Wiederverheiratung). Gegenprüfung am 2.10.2026 mit dem Merkblatt bestätigt; Vollrente Witwen-/Witwerrente 1'008–2'016 pro Monat, Waisenrente 504–1'008. Nicht umgesetzt: Anspruch geschiedener Witwen, Karrierezuschlag (Plafonierung bleibt aufgehoben) – bleibt **OFFEN**, kleine Wirkung | Merkblatt 3.03 «Hinterlassenenrenten der AHV», Stand 1.1.2026, https://www.ahv-iv.ch/p/3.03.d |
+| **Grundstückgewinnsteuer AG** | Alle 26 Satzstufen amtlich belegt und mit der Regeldatei verglichen (Zeile «Grundstückgewinnsteuer AG» weiter oben; Test `grundstueckgewinn.test.ts` prüft alle Stufen). Merkblatt-Beispiele passen (3 vollendete Jahre 34 %, 6 → 28 %, 10 → 20 %, 15 → 15 %, über 25 Jahre 5 %). **OFFEN:** Pauschalierung der Anlagekosten bei Besitz über 10 Jahre (§ 105 StG AG; Merkblatt nennt über 25 Jahre 65 % des Erlöses, weitere Stufen nicht gelesen), Freigrenzen | Kanton Aargau (siehe Zeile «Grundstückgewinnsteuer AG» weiter oben) |
+| **Freigrenze ZH-Grundstückgewinnsteuer 5'000** | unverändert **OFFEN** (ZStB 225.1 nicht erneut geprüft) | ZStB Nr. 225.1 |
+| **Kirchensteuer** | Nur ZH und AG mit Steuerfüssen; für die übrigen 24 Kantone fehlen die Kirchensteuerfüsse je Gemeinde als amtliche Daten im Repo (Referenzraster ohne Kirchensteuer). **OFFEN**; Umsetzungsplan in `docs/umsetzungsplan.md` | ESTV-Steuerrechner (Steuerfüsse, lokal) |
+
