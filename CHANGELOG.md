@@ -3,6 +3,14 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.1.1] - 2026-10-05
+
+### Geändert
+- Beschriftungen nennen das Jahr der geladenen Regeln (`regeln.meta.jahr`) statt fest «2026»: Maximum Säule 3a, «gesetzliche Werte», Disclaimer «Stand».
+- Screenshot `screenshots/134-banner-regeljahr-teilweise-360.png` zeigt den Bannertext nach dem Bundesratsentscheid.
+- Beispielperson B in zwei Tests: Jahrgang 1985.
+- Vorbezugs- und Aufschubsätze 2027: Status offen. Die Sätze für die Rechnung bleiben 6,8 % / 13,6 % bzw. 5,2–31,5 %, solange der Widerspruch zwischen BSV AHV 21 und den Berechnungsvorschriften 2027 nicht geklärt ist.
+
 ## [1.1.0] - 2026-10-05
 
 ### Geändert

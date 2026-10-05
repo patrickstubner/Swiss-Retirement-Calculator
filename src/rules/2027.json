@@ -4,7 +4,7 @@
     "jahr": 2027,
     "stand": "2026-10-05",
     "quellenDokument": "docs/quellen.md",
-    "hinweis": "Beträge in CHF, Sätze als Dezimalzahl (0.053 = 5,3%). status 'offen' = nicht aus offizieller, aktueller Quelle verifiziert; darf nur als Default einer Nutzereingabe mit Warnung verwendet werden. Regeljahr 2027 (Stand 05.10.2026): Bundesratsentscheid vom 02.10.2026 zu AHV/IV/EO, BVG-Grenzbeträgen und Säule 3a ist eingearbeitet (Quellen in den einzelnen Werten). DBG-Tarife und Kinderermässigung bleiben der EFD-Vorabdruck. Weiter offen und mit «Fortgeschrieben» gekennzeichnet: BVG-Mindestzins 2027, Quellensteuer Bund auf Kapitalleistungen bis zur AS, kantonale Tarife, ALV-Höchstlohn und weitere nicht beschlossene Werte. Die Skala-44-Rententabelle ist aus Art. 34 AHVG abgeleitet (amtliche Rententabellen 2027 lagen nicht vor) und steht auf offen, ohne «Fortgeschrieben»."
+    "hinweis": "Beträge in CHF, Sätze als Dezimalzahl (0.053 = 5,3%). status 'offen' = nicht aus offizieller, aktueller Quelle verifiziert; darf nur als Default einer Nutzereingabe mit Warnung verwendet werden. Regeljahr 2027 (Stand 05.10.2026): Bundesratsentscheid vom 02.10.2026 zu AHV/IV/EO, BVG-Grenzbeträgen und Säule 3a ist eingearbeitet (Quellen in den einzelnen Werten). DBG-Tarife und Kinderermässigung bleiben der EFD-Vorabdruck. Weiter offen und mit «Fortgeschrieben» gekennzeichnet: BVG-Mindestzins 2027, Quellensteuer Bund auf Kapitalleistungen bis zur AS, kantonale Tarife, ALV-Höchstlohn und weitere nicht beschlossene Werte. Die Skala-44-Rententabelle ist aus Art. 34 AHVG abgeleitet (amtliche Rententabellen 2027 lagen nicht vor) und steht auf offen, ohne «Fortgeschrieben». Vorbezugs- und Aufschubsätze: Zahlen wie 2026 (6,8 % / 13,6 %), Status offen, weil die BSV-Seite AHV 21 eine Anpassung 2027 weiter ankündigt, die Berechnungsvorschriften 2027 aber die bisherigen Sätze zeigen."
   },
   "ahv": {
     "minimalrenteMonat": {
@@ -479,9 +479,10 @@
         0.136
       ],
       "einheit": "Kürzung für 1..24 Monate Vorbezug (Index = Monate − 1), lebenslang",
-      "source": "https://www.ahv-iv.ch/p/3.04.d",
-      "stand": "1.1.2026",
-      "status": "verifiziert"
+      "source": "https://sozialversicherungen.admin.ch/de/d/18438/download ; https://www.bsv.admin.ch/de/ahv-21 ; https://www.ahv-iv.ch/p/3.04.d",
+      "stand": "abgerufen 05.10.2026",
+      "status": "offen",
+      "hinweis": "Zahlen für die Rechnung unverändert (12 Monate 6,8 %, 24 Monate 13,6 %). Die BSV-Seite AHV 21 sagt weiterhin, die Sätze könnten 2027 angepasst werden und seien noch nicht bekannt. Die Berechnungsvorschriften gültig ab 1.1.2027 zeigen weiterhin 6,8 % und 13,6 %."
     },
     "aufschub": {
       "value": {
@@ -523,9 +524,10 @@
         ]
       ],
       "einheit": "[Jahre−1][0–2 / 3–5 / 6–8 / 9–11 Monate]",
-      "source": "https://www.ahv-iv.ch/p/3.04.d",
-      "stand": "1.1.2026",
-      "status": "verifiziert"
+      "source": "https://sozialversicherungen.admin.ch/de/d/18438/download ; https://www.bsv.admin.ch/de/ahv-21 ; https://www.ahv-iv.ch/p/3.04.d",
+      "stand": "abgerufen 05.10.2026",
+      "status": "offen",
+      "hinweis": "Zahlen für die Rechnung unverändert (5,2 % bis 31,5 %). Die BSV-Seite AHV 21 sagt weiterhin, die Aufschubszuschläge könnten 2027 angepasst werden und seien noch nicht bekannt. Die Berechnungsvorschriften gültig ab 1.1.2027 zeigen weiterhin 6,8 % und 13,6 % beim Vorbezug und die bisherigen Aufschubsätze."
     },
     "uebergangKuerzung": {
       "value": [
@@ -631,8 +633,8 @@
       "value": null,
       "source": "https://sozialversicherungen.admin.ch/de/d/18438/download ; https://www.bsv.admin.ch/de/ahv-21",
       "stand": "abgerufen 05.10.2026",
-      "status": "verifiziert",
-      "hinweis": "Für 2027 unverändert gegenüber 2026: Vorbezug 6,8 % pro Jahr (13,6 % bei zwei Jahren), Aufschub 5,2–31,5 %. Reduzierte Sätze der Übergangsgeneration Frauen ebenfalls unverändert. Die BSV-Seite AHV 21 schreibt weiterhin, die Sätze würden ab 2027 an die Lebenserwartung angepasst und seien noch nicht bekannt (abgerufen 05.10.2026). Die Berechnungsvorschriften gültig ab 1.1.2027 enthalten die bisherigen Sätze. Widerspruch im Auge behalten."
+      "status": "offen",
+      "hinweis": "Für 2027 numerisch unverändert gegenüber 2026: Vorbezug 6,8 % pro Jahr (13,6 % bei zwei Jahren), Aufschub 5,2–31,5 %. Die BSV-Seite AHV 21 sagt weiterhin, die Sätze könnten 2027 an die Lebenserwartung angepasst werden und seien noch nicht bekannt (abgerufen 05.10.2026). Die Berechnungsvorschriften gültig ab 1.1.2027 zeigen weiterhin 6,8 % und 13,6 %. Status offen, bis geklärt ist, ob noch eine Änderung kommt. Die Rechnung verwendet die bisherigen Sätze."
     },
     "rentenzahlungAusland": {
       "value": "CH-, EU/EFTA-Staatsangehörige und Angehörige von Abkommensstaaten: weltweit; Nichtvertragsstaaten: keine Auszahlung, Rückvergütung der Beiträge; keine EL im Ausland",

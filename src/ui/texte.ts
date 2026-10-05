@@ -5,13 +5,18 @@ import { fmtProzent } from './format';
 export const DISCLAIMER_KURZ =
   'Unverbindliche Orientierung – ersetzt keine Finanz-, Steuer-, Rechts- oder Vorsorgeberatung.';
 
-/** Entwurf aus docs/konzept.md, Abschnitt (e). */
-export const DISCLAIMER_ABSAETZE: readonly string[] = [
-  'Dieser Rechner dient ausschliesslich der unverbindlichen Information und Orientierung. Er ersetzt keine persönliche Finanz-, Steuer-, Rechts- oder Vorsorgeberatung. Massgebend sind allein die Verfügungen und Auskünfte der zuständigen Ausgleichskasse, Ihrer Pensionskasse (Reglement und Vorsorgeausweis), der Steuerbehörden sowie die geltenden Gesetze.',
-  'Die Berechnungen beruhen auf vereinfachten Modellen, auf den von Ihnen eingegebenen Daten und auf den gesetzlichen Werten mit Stand 2026 (siehe Quellenverzeichnis). Gesetze, Renten, Steuertarife und Zinsen können sich ändern. Historische Renditen und Szenarien sind keine Prognose für die Zukunft; auch Ergebnisse mit hoher «Erfolgswahrscheinlichkeit» bieten keine Garantie.',
-  'Ihre Eingaben werden nur in Ihrem Browser verarbeitet und nicht an uns oder Dritte übermittelt. Für die Richtigkeit, Vollständigkeit und Aktualität der Ergebnisse wird keine Haftung übernommen.',
-  'Datenquellen: Bundesamt für Sozialversicherungen, Informationsstelle AHV/IV, ESTV, BFS, Jordà-Schularick-Taylor Macrohistory Database (CC BY-NC-SA 4.0) u.a. – siehe Quellen.',
-];
+/**
+ * Entwurf aus docs/konzept.md, Abschnitt (e).
+ * `regeljahr` ist das Jahr der geladenen Regeldatei (`regeln.meta.jahr`, gewählt über `ladeRegeln(heute.jahr)`).
+ */
+export function disclaimerAbsaetze(regeljahr: number): readonly string[] {
+  return [
+    'Dieser Rechner dient ausschliesslich der unverbindlichen Information und Orientierung. Er ersetzt keine persönliche Finanz-, Steuer-, Rechts- oder Vorsorgeberatung. Massgebend sind allein die Verfügungen und Auskünfte der zuständigen Ausgleichskasse, Ihrer Pensionskasse (Reglement und Vorsorgeausweis), der Steuerbehörden sowie die geltenden Gesetze.',
+    `Die Berechnungen beruhen auf vereinfachten Modellen, auf den von Ihnen eingegebenen Daten und auf den gesetzlichen Werten mit Stand ${regeljahr} (siehe Quellenverzeichnis). Gesetze, Renten, Steuertarife und Zinsen können sich ändern. Historische Renditen und Szenarien sind keine Prognose für die Zukunft; auch Ergebnisse mit hoher «Erfolgswahrscheinlichkeit» bieten keine Garantie.`,
+    'Ihre Eingaben werden nur in Ihrem Browser verarbeitet und nicht an uns oder Dritte übermittelt. Für die Richtigkeit, Vollständigkeit und Aktualität der Ergebnisse wird keine Haftung übernommen.',
+    'Datenquellen: Bundesamt für Sozialversicherungen, Informationsstelle AHV/IV, ESTV, BFS, Jordà-Schularick-Taylor Macrohistory Database (CC BY-NC-SA 4.0) u.a. – siehe Quellen.',
+  ];
+}
 
 export const VEREINFACHUNG_WOHNEIGENTUM =
   'Wertentwicklung wie die Börsenrendite, aber auf dem ganzen Verkehrswert (in Krisenjahren mit historischen Hauspreisen – die Hypothek bleibt stehen, das verstärkt Verluste und Gewinne). Hypothekarzins, Unterhalt und Eigenmietwert nur mit «Wohnkosten separat rechnen», sonst stecken sie in den Ausgaben. Verkauf optional mit Grundstückgewinnsteuer.';

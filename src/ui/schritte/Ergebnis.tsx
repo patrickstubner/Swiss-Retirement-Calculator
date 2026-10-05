@@ -513,7 +513,7 @@ export function Ergebnis({ h, setH, berechnung, heute, suchModus, setSuchModus, 
       </details>
 
       <QuellenListe jahr={heute.jahr} />
-      <DisclaimerVoll />
+      <DisclaimerVoll jahr={regeln.meta.jahr} />
     </>
   );
 }

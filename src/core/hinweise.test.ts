@@ -13,7 +13,7 @@ function paar(): Haushalt {
     zivilstand: 'verheiratet',
     personen: [
       neuePerson(regeln, { name: 'Beispiel A', geburtsjahr: 1970 }),
-      neuePerson(regeln, { name: 'Beispiel B', geburtsjahr: 1972, geschlecht: 'w' }),
+      neuePerson(regeln, { name: 'Beispiel B', geburtsjahr: 1985, geschlecht: 'w' }),
     ],
   };
 }

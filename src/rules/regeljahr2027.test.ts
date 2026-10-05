@@ -137,7 +137,6 @@ describe('rules/2027.json', () => {
       'bvg.maxVersicherbarerLohn',
       'saeule3a.maxMitPk',
       'saeule3a.maxOhnePk',
-      'ahv.neueVorbezugsAufschubsaetze',
       'ahv.rentenanpassung2027',
     ]) {
       const e = regelEintraege(2027).find((x) => x.pfad === p);
@@ -146,10 +145,20 @@ describe('rules/2027.json', () => {
       expect(e?.source.length, p).toBeGreaterThan(0);
       expect(e?.hinweis ?? '', p).not.toContain('Fortgeschrieben');
     }
+    expect(r27.ahv.vorbezugKuerzung[11]).toBe(0.068);
+    expect(r27.ahv.vorbezugKuerzung[23]).toBe(0.136);
+    for (const p of ['ahv.vorbezugKuerzung', 'ahv.aufschubZuschlag', 'ahv.neueVorbezugsAufschubsaetze']) {
+      const e = regelEintraege(2027).find((x) => x.pfad === p);
+      expect(e?.status, p).toBe('offen');
+      expect(e?.hinweis ?? '', p).not.toContain('Fortgeschrieben');
+      expect(e?.hinweis, p).toContain('AHV 21');
+      expect(e?.hinweis, p).toContain('6,8');
+      expect(e?.hinweis, p).toContain('13,6');
+      expect(e?.source, p).toContain('https://sozialversicherungen.admin.ch/de/d/18438/download');
+      expect(e?.source, p).toContain('https://www.bsv.admin.ch/de/ahv-21');
+    }
     const saetze = regelEintraege(2027).find((x) => x.pfad === 'ahv.neueVorbezugsAufschubsaetze');
     expect(saetze?.hinweis).toContain('unverändert');
-    expect(saetze?.hinweis).toContain('AHV 21');
-    expect(saetze?.source).toContain('https://sozialversicherungen.admin.ch/de/d/18438/download');
   });
 
   it('Beitragstabelle Nichterwerbstätige: AHVV-Schwellen und Summe AHV+IV+EO', () => {
@@ -221,6 +230,9 @@ describe('rules/2027.json', () => {
     for (const p of [
       'bvg.mindestzins2027',
       'ahv.rententabelleSkala44',
+      'ahv.vorbezugKuerzung',
+      'ahv.aufschubZuschlag',
+      'ahv.neueVorbezugsAufschubsaetze',
       'steuern.quellensteuer.kapitalBundAlleinstehend',
       'steuern.quellensteuer.kapitalBundVerheiratet',
       'beitraege.alvHoechstlohn',
@@ -235,7 +247,6 @@ describe('rules/2027.json', () => {
       'bvg.koordinationsabzug',
       'bvg.obereGrenzeJahreslohn',
       'ahv.rentenanpassung2027',
-      'ahv.neueVorbezugsAufschubsaetze',
       'steuern.dbgTarifAlleinstehend',
       'steuern.dbgTarifVerheiratet',
       'steuern.dbgAbzugProKind',

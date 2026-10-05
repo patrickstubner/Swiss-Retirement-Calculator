@@ -385,7 +385,7 @@ export function App() {
           ) : null}
           <section className="seiten-hinweise" aria-label="Hinweise">
             <VorlesenSeitenKopf />
-            <DisclaimerBanner />
+            <DisclaimerBanner jahr={regeln.meta.jahr} />
           </section>
           <section className="moduswahl" aria-label="Eingabemodus">
             <Segmente<EingabeModus>
@@ -399,7 +399,7 @@ export function App() {
             />
             <p className="klein">
               {schnell
-                ? 'Standard beim ersten Start: wenige Angaben, der Rest wird geschätzt (gesetzliche Werte 2026, Umwandlungssatz ohne Angabe aus dem Durchschnitt der Pensionskassen). Detailwerte gehen nicht verloren.'
+                ? `Standard beim ersten Start: wenige Angaben, der Rest wird geschätzt (gesetzliche Werte ${regeln.meta.jahr}, Umwandlungssatz ohne Angabe aus dem Durchschnitt der Pensionskassen). Detailwerte gehen nicht verloren.`
                 : 'Alle Felder. Leere Felder mit «geschätzt» verwenden die Schätzung des Modus «Schnell».'}
             </p>
           </section>
