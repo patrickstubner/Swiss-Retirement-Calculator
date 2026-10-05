@@ -1,9 +1,21 @@
 /** Texte (de-CH). Später in eine Übersetzungsdatei auslagerbar. */
 import type { UmwandlungssatzSchaetzung } from '../core/schaetzwerte';
-import { fmtProzent } from './format';
+import type { Regeln } from '../rules';
+import { fmtChf, fmtProzent } from './format';
 
 export const DISCLAIMER_KURZ =
   'Unverbindliche Orientierung – ersetzt keine Finanz-, Steuer-, Rechts- oder Vorsorgeberatung.';
+
+/**
+ * Hinweis zum Säule-3a-Maximum. Die Rechnung bleibt beim geladenen Regeljahr.
+ * Liegt das darunter, nennt der Text zusätzlich das bereits bekannte Maximum ab 2027.
+ */
+export function saeule3aMaxHinweis(aktuell: Regeln, ab2027: Regeln | null): string {
+  const jahr = aktuell.meta.jahr;
+  const jetzt = `Maximum ${jahr}: mit PK ${fmtChf(aktuell.saeule3a.maxMitPk)}, ohne PK ${fmtChf(aktuell.saeule3a.maxOhnePk)}.`;
+  if (!ab2027 || jahr >= ab2027.meta.jahr) return jetzt;
+  return `${jetzt} Ab ${ab2027.meta.jahr} beträgt das gesetzliche Maximum mit PK ${fmtChf(ab2027.saeule3a.maxMitPk)} und ohne PK ${fmtChf(ab2027.saeule3a.maxOhnePk)}. Für Ihre Rechnung gelten weiterhin die Beträge ${jahr}.`;
+}
 
 /**
  * Entwurf aus docs/konzept.md, Abschnitt (e).

@@ -829,6 +829,17 @@ tr.negativ td {
 .liste li + li {
   margin-top: 4px;
 }
+.ahv-bezug-zeiten {
+  list-style: none;
+  padding-left: 0;
+}
+.ahv-bezug-zeiten li {
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+.ahv-bezug-zeiten__aktiv {
+  background: var(--farbe-karte);
+}
 .warnung p,
 .info p {
   margin: 0 0 6px;

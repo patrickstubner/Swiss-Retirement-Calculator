@@ -3,6 +3,12 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.2.1] - 2026-10-05
+
+### Geändert
+- AHV-Bezug: Bei Referenzalter, Vorbezug und Aufschub stehen Rentenbeginn (1. des Folgemonats) und das Alter in diesem Monat, nicht nur die Monate früher oder später. Beim Referenzalter zusätzlich das gesetzliche Alter in Jahren und Monaten (Übergang AHV 21).
+- Säule 3a: Die Rechnung und die Eingabegrenze bleiben beim geladenen Regeljahr (2026: mit PK 7'258, ohne PK 36'288). Der Hinweis nennt zusätzlich das gesetzliche Maximum ab 2027 (mit PK 7'373, ohne PK 36'864).
+
 ## [1.2.0] - 2026-10-05
 
 ### Geändert
