@@ -16,7 +16,7 @@ import {
 import { ladeRegeln } from '../rules';
 import { ausHash, dekodiere, kodiere, normalisiere } from './state';
 import { exportiere, importiere } from './szenarien';
-import { begrenze, GRENZEN, klemme, MAX_HASH_LAENGE, zahlenPfade } from './validierung';
+import { AHV_VERSCHIEBUNG_MIN, begrenze, GRENZEN, klemme, MAX_HASH_LAENGE, zahlenPfade } from './validierung';
 
 const regeln = ladeRegeln(2026);
 const heute = { jahr: 2026, monat: 9 };
@@ -85,6 +85,19 @@ describe('Validierungsschema: Abdeckung', () => {
 
   it('jeder Eintrag der Tabelle hat min ≤ max', () => {
     for (const [pfad, [min, max]] of Object.entries(GRENZEN)) expect(min, pfad).toBeLessThanOrEqual(max);
+  });
+
+  it('AHV-Bezugsverschiebung reicht bis zum weitesten gesetzlichen Vorbezug', () => {
+    const bereich = GRENZEN['personen.*.ahv.bezugVerschiebungMonate'];
+    expect(bereich).toEqual([AHV_VERSCHIEBUNG_MIN, 60, true]);
+    expect(AHV_VERSCHIEBUNG_MIN).toBe(-36);
+    if (!bereich) throw new Error('Bereich fehlt');
+    expect(klemme(-36, bereich)).toBe(-36);
+    expect(klemme(-48, bereich)).toBe(-36);
+    const n = normalisiere({ personen: [{ ahv: { bezugVerschiebungMonate: -36 } }] }, regeln);
+    expect(n.personen[0]?.ahv.bezugVerschiebungMonate).toBe(-36);
+    const geklemmt = normalisiere({ personen: [{ ahv: { bezugVerschiebungMonate: -100 } }] }, regeln);
+    expect(geklemmt.personen[0]?.ahv.bezugVerschiebungMonate).toBe(-36);
   });
 
   it('klemme: NaN/Infinity → im Bereich, Ganzzahlen werden gerundet', () => {

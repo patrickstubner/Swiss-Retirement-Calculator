@@ -3,6 +3,12 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.2.2] - 2026-10-06
+
+### Geändert
+- AHV-Vorbezug: Die Speichergrenze folgt der weitesten gesetzlichen Spanne (höchstes Referenzalter minus frühestes Übergangsalter, derzeit 36 Monate). Ein zulässiger Vorbezug bleibt beim Laden aus Link, Datei und lokalem Speicher erhalten.
+- AHV-Bezug: Hinweis «Bei Geburt am 1. eines Monats beginnt die Rente einen Monat früher.» Liegt ein Rentenbeginn in der Vergangenheit, steht das bei der Variante. Der gewählte Satz erscheint nur noch in der Liste.
+
 ## [1.2.1] - 2026-10-05
 
 ### Geändert

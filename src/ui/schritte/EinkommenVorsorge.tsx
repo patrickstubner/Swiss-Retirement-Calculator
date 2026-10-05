@@ -17,7 +17,13 @@ import {
 import type { AuslandRente, Person, SchaetzFeld } from '../../core/typen';
 import { neueAuslandRente, WAEHRUNGEN } from '../../data/defaults';
 import { ladeRegeln } from '../../rules';
-import { ahvBezugAnzeigen, fmtJahreMonate } from '../ahvBezugAnzeige';
+import {
+  AHV_HINWEIS_GEBURTSTAG_ERSTER,
+  AHV_HINWEIS_VERGANGENHEIT,
+  ahvBeginnInVergangenheit,
+  ahvBezugAnzeigen,
+  fmtJahreMonate,
+} from '../ahvBezugAnzeige';
 import { AhvSchaetzhilfe } from '../components/AhvSchaetzhilfe';
 import { ErwerbsstatusFeld, NichtErwerbstaetigFelder } from '../components/Erwerbsstatus';
 import { AuswahlFeld, BetragFeld, Schalter, Segmente, TextFeld, ZahlFeld } from '../components/Felder';
@@ -165,7 +171,7 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
           <AuswahlFeld
             label="AHV-Bezug"
             value={bezugArt}
-            hinweis={bezugZeit ? bezugZeit.saetze[bezugZeit.art] : undefined}
+            hinweis={AHV_HINWEIS_GEBURTSTAG_ERSTER}
             optionen={[
               { value: 'ordentlich', label: 'Im Referenzalter' },
               { value: 'vorbezug', label: 'Vorbezug' },
@@ -233,6 +239,9 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
                   >
                     {gewaehlt ? <strong>Gewählt. </strong> : null}
                     {bezugZeit.saetze[art]}
+                    {ahvBeginnInVergangenheit(bezugZeit[art].beginn, props.heute) ? (
+                      <> {AHV_HINWEIS_VERGANGENHEIT}</>
+                    ) : null}
                   </li>
                 );
               })}

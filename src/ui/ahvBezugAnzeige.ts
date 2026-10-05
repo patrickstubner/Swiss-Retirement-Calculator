@@ -13,6 +13,7 @@ import {
   ahvRentenbeginn,
   inMonaten,
   monatBeiAlter,
+  monatIndex,
 } from '../core/ahv';
 import type { Geschlecht, Monat } from '../core/typen';
 import type { Regeln } from '../rules';
@@ -87,17 +88,18 @@ export function ahvBezugZeitpunkt(
   };
 }
 
-/** Sichtbare Bezeichnung der Auswahl (Monat, Datum, Alter). */
-export function ahvBezugOptionLabel(z: AhvBezugZeitpunkt): string {
-  const ab = `ab 1. ${fmtMonat(z.beginn)}`;
-  const alter = `Alter ${fmtJahreMonate(z.alterBeiBeginnMonate)}`;
-  if (z.art === 'referenzalter') {
-    return `Im Referenzalter (${fmtJahreMonate(z.referenzalterMonate)}, ${ab}, ${alter})`;
-  }
-  if (z.art === 'vorbezug') {
-    return `Vorbezug (${fmtMonatszahl(-z.verschiebungMonate)} früher, ${ab}, ${alter})`;
-  }
-  return `Aufschub (${fmtMonatszahl(z.verschiebungMonate)} später, ${ab}, ${alter})`;
+/**
+ * Die App kennt nur Jahr und Monat. Wer am 1. geboren ist, erreicht das Alter am Vortag;
+ * die Rente beginnt dann einen Monat früher als angezeigt.
+ */
+export const AHV_HINWEIS_GEBURTSTAG_ERSTER = 'Bei Geburt am 1. eines Monats beginnt die Rente einen Monat früher.';
+
+/** Kurzer Hinweis, wenn der errechnete Rentenbeginn vor dem aktuellen Monat liegt. */
+export const AHV_HINWEIS_VERGANGENHEIT = 'Dieser Rentenbeginn wäre bereits möglich gewesen.';
+
+/** true, wenn der Rentenbeginn vor dem Monat von `heute` liegt. */
+export function ahvBeginnInVergangenheit(beginn: Monat, heute: Monat): boolean {
+  return monatIndex(beginn) < monatIndex(heute);
 }
 
 /**

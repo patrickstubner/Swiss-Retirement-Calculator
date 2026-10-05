@@ -29,6 +29,8 @@ import {
   speichernAktiv,
   teilenLink,
 } from './state';
+import { exportiere, importiere } from './szenarien';
+import { AHV_VERSCHIEBUNG_MIN } from './validierung';
 
 /** Einfacher Storage-Ersatz (Tests laufen in Node ohne localStorage). */
 class TestSpeicher implements Storage {
@@ -58,7 +60,50 @@ class TestSpeicher implements Storage {
 
 const regeln = ladeRegeln(2026);
 
+/** Frau der Übergangsgeneration, gesetzlicher Höchstvorbezug. Jahrgang ist die Kohorte, kein Personenbezug. */
+function haushaltVorbezug36() {
+  const h = standardHaushalt(regeln);
+  const p = h.personen[0];
+  if (!p) throw new Error('Person fehlt');
+  h.personen[0] = {
+    ...p,
+    geburtsjahr: 1965,
+    geburtsmonat: 6,
+    geschlecht: 'w',
+    ahv: { ...p.ahv, bezugVerschiebungMonate: -36 },
+  };
+  return h;
+}
+
 describe('Zustand (URL-Fragment)', () => {
+  it('Frau Jahrgang 1965 mit Vorbezug −36 bleibt −36 nach Link, Datei und lokalem Speicher', () => {
+    expect(AHV_VERSCHIEBUNG_MIN).toBe(-36);
+    const h = haushaltVorbezug36();
+    const ausLink = dekodiere(kodiere(h), regeln);
+    expect(ausLink?.personen[0]?.ahv.bezugVerschiebungMonate).toBe(-36);
+    expect(ausLink?.personen[0]?.geburtsjahr).toBe(1965);
+    expect(ausLink?.personen[0]?.geschlecht).toBe('w');
+
+    const s = new TestSpeicher();
+    const link = teilenLink(h, 'https://example.org/');
+    const start = ladeStartzustand(regeln, link.slice(link.indexOf('#')), s);
+    expect(start.quelle).toBe('link');
+    expect(start.haushalt.personen[0]?.ahv.bezugVerschiebungMonate).toBe(-36);
+
+    speichereLokal(s, { haushalt: h, ui: STANDARD_UI });
+    expect(ladeLokal(s, regeln)?.haushalt.personen[0]?.ahv.bezugVerschiebungMonate).toBe(-36);
+    expect(ladeStartzustand(regeln, '', s).haushalt.personen[0]?.ahv.bezugVerschiebungMonate).toBe(-36);
+
+    const datei = importiere(exportiere(h, standardHaushalt(regeln), { a: 'Version A', b: 'Version B' }), regeln);
+    expect(datei?.a.personen[0]?.ahv.bezugVerschiebungMonate).toBe(-36);
+
+    const zuWeit = haushaltVorbezug36();
+    const p = zuWeit.personen[0];
+    if (!p) throw new Error('Person fehlt');
+    zuWeit.personen[0] = { ...p, ahv: { ...p.ahv, bezugVerschiebungMonate: -48 } };
+    expect(dekodiere(kodiere(zuWeit), regeln)?.personen[0]?.ahv.bezugVerschiebungMonate).toBe(-36);
+  });
+
   it('Kodieren und Dekodieren ergibt denselben Haushalt', () => {
     const h = standardHaushalt(regeln);
     h.personen[0] = {
