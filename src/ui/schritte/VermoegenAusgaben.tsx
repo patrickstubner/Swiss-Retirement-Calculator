@@ -346,7 +346,7 @@ function SteuerKarte({ h, setH }: { h: Haushalt; setH: Setzer }) {
   return (
     <Karte
       titel="Kantons- und Gemeindesteuern"
-      untertitel="Direkte Bundessteuer exakt nach Tarif 2026. Kanton und Gemeinde gemäss Kantonsdaten 2026."
+      untertitel="Direkte Bundessteuer nach dem Tarif des Regeljahrs. Kanton und Gemeinde gemäss Kantonsdaten 2026."
     >
       <AuswahlFeld
         label="Wohnkanton"

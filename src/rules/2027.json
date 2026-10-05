@@ -2,32 +2,32 @@
   "meta": {
     "schemaVersion": 1,
     "jahr": 2027,
-    "stand": "2026-10-02",
+    "stand": "2026-10-05",
     "quellenDokument": "docs/quellen.md",
-    "hinweis": "Beträge in CHF, Sätze als Dezimalzahl (0.053 = 5,3%). status 'offen' = nicht aus offizieller, aktueller Quelle verifiziert; darf nur als Default einer Nutzereingabe mit Warnung verwendet werden. Regeljahr 2027 (Vorbereitung, Stand 02.10.2026): nur amtlich bestätigte Werte (DBG-Tarife, Kinderermässigung, Quellensteuer-Kapitalsätze Bund) sind neu und 'verifiziert'. Werte, die für 2027 noch nicht amtlich beschlossen sind (AHV-Renten und -Beiträge, BVG-Grenzbeträge, Säule 3a, kantonale Tarife), sind 'offen' und führen den Wert 2026 fort (Hinweis «Fortgeschrieben»)."
+    "hinweis": "Beträge in CHF, Sätze als Dezimalzahl (0.053 = 5,3%). status 'offen' = nicht aus offizieller, aktueller Quelle verifiziert; darf nur als Default einer Nutzereingabe mit Warnung verwendet werden. Regeljahr 2027 (Stand 05.10.2026): Bundesratsentscheid vom 02.10.2026 zu AHV/IV/EO, BVG-Grenzbeträgen und Säule 3a ist eingearbeitet (Quellen in den einzelnen Werten). DBG-Tarife und Kinderermässigung bleiben der EFD-Vorabdruck. Weiter offen und mit «Fortgeschrieben» gekennzeichnet: BVG-Mindestzins 2027, Quellensteuer Bund auf Kapitalleistungen bis zur AS, kantonale Tarife, ALV-Höchstlohn und weitere nicht beschlossene Werte. Die Skala-44-Rententabelle ist aus Art. 34 AHVG abgeleitet (amtliche Rententabellen 2027 lagen nicht vor) und steht auf offen, ohne «Fortgeschrieben»."
   },
   "ahv": {
     "minimalrenteMonat": {
-      "value": 1260,
+      "value": 1280,
       "einheit": "CHF/Monat",
-      "source": "https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf",
-      "stand": "BSV «Beträge gültig ab 1.1.2026», 06.11.2025",
-      "status": "offen",
-      "hinweis": "Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+      "source": "https://www.bsv.admin.ch/de/newnsb/BqB41FVYi5FB ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/7c36e40d-4e66-4431-887b-d18ffc5009f3.pdf",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+      "status": "verifiziert",
+      "hinweis": "Volle Altersrente Skala 44, 13 Auszahlungen. Verordnungstexte in der Beilage sind eine provisorische Fassung; massgebend wird die Veröffentlichung in der AS. Die Beträge stehen im BSV-Hintergrunddokument «Beträge gültig ab dem 1. Januar 2027» (Stand: Bundesratsentscheid)."
     },
     "maximalrenteMonat": {
-      "value": 2520,
+      "value": 2560,
       "einheit": "CHF/Monat",
-      "source": "https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf",
-      "stand": "1.1.2026 (unverändert seit 1.1.2025)",
-      "status": "offen",
-      "hinweis": "Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+      "source": "https://www.bsv.admin.ch/de/newnsb/BqB41FVYi5FB ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/7c36e40d-4e66-4431-887b-d18ffc5009f3.pdf",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+      "status": "verifiziert",
+      "hinweis": "Doppelte Minimalrente. Plafond Ehepaar 150 % = 3'840 Fr./Monat."
     },
     "plafondEhepaarFaktor": {
       "value": 1.5,
-      "einheit": "Faktor der Maximalrente (3'780/Monat)",
-      "source": "https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf ; https://www.ahv-iv.ch/p/3.01.d",
-      "stand": "1.1.2026",
+      "einheit": "Faktor der Maximalrente (3'840/Monat)",
+      "source": "https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf ; https://www.ahv-iv.ch/p/3.01.d",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
       "status": "verifiziert"
     },
     "dreizehnteRente": {
@@ -48,21 +48,21 @@
         "obenFaktorMin": 1.04,
         "obenSatzZaehler": 8,
         "satzNenner": 600,
-        "mdjeMinimum": 15120,
-        "mdjeMaximum": 90720
+        "mdjeMinimum": 15360,
+        "mdjeMaximum": 92160
       },
-      "source": "https://www.fedlex.admin.ch/eli/cc/63/837_843_843/de",
-      "stand": "Art. 34 AHVG, geltendes Recht 2026",
-      "status": "offen",
-      "hinweis": "Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+      "source": "https://www.fedlex.admin.ch/eli/cc/63/837_843_843/de ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+      "status": "verifiziert",
+      "hinweis": "Koeffizienten unverändert (Art. 34 AHVG). mdJE-Minimum 15'360 = 12 × Minimalrente 1'280; mdJE-Maximum 92'160 = Einkommen, bei dem die Formel die Maximalrente 2'560 erreicht (72 × Minimalrente). Knick 36 × Minimalrente = 46'080 wird im Code aus dem Faktor gerechnet."
     },
     "rententabelleStufe": {
-      "value": 1512,
+      "value": 1536,
       "einheit": "CHF mdJE",
-      "source": "https://sozialversicherungen.admin.ch/de/d/6850/download",
-      "stand": "Rententabellen 2025, gültig auch 2026",
+      "source": "https://www.fedlex.admin.ch/eli/cc/63/837_843_843/de ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
       "status": "offen",
-      "hinweis": "Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+      "hinweis": "Abgeleitet nach Art. 34 AHVG aus der festgesetzten Minimalrente 1'280, Stufenabstand 1'536 = 1/10 der jährlichen Minimalrente, Rente auf Franken gerundet. Dieselbe Formel reproduziert die amtliche Rententabelle 2025/2026 exakt. Die Publikation «Rententabellen 2027» bzw. Merkblatt 3.01 mit Anhang 2027 lag am 05.10.2026 nicht vor (nicht in den Beschluss-PDFs). OFFEN bis zur Gegenprobe mit dieser Publikation."
     },
     "mdjeRundung": {
       "value": "aufrunden",
@@ -73,248 +73,248 @@
     "rententabelleReferenz": {
       "value": [
         [
-          15120,
-          1260
+          15360,
+          1280
         ],
         [
-          30240,
-          1588
+          30720,
+          1613
         ],
         [
-          45360,
-          1915
+          46080,
+          1946
         ],
         [
-          60480,
-          2117
+          61440,
+          2150
         ],
         [
-          75600,
-          2318
+          76800,
+          2355
         ],
         [
-          90720,
-          2520
+          92160,
+          2560
         ]
       ],
       "einheit": "[mdJE, CHF/Monat] Skala 44",
-      "source": "https://sozialversicherungen.admin.ch/de/d/6850/download",
-      "stand": "Rententabellen 2025, gültig auch 2026",
+      "source": "https://www.fedlex.admin.ch/eli/cc/63/837_843_843/de ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
       "status": "offen",
-      "hinweis": "Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+      "hinweis": "Abgeleitet nach Art. 34 AHVG aus der festgesetzten Minimalrente 1'280, Stufenabstand 1'536 = 1/10 der jährlichen Minimalrente, Rente auf Franken gerundet. Dieselbe Formel reproduziert die amtliche Rententabelle 2025/2026 exakt. Die Publikation «Rententabellen 2027» bzw. Merkblatt 3.01 mit Anhang 2027 lag am 05.10.2026 nicht vor (nicht in den Beschluss-PDFs). OFFEN bis zur Gegenprobe mit dieser Publikation."
     },
     "rententabelleSkala44": {
       "value": [
         [
-          15120,
-          1260
+          15360,
+          1280
         ],
         [
-          16632,
-          1293
+          16896,
+          1313
         ],
         [
-          18144,
-          1326
+          18432,
+          1347
         ],
         [
-          19656,
-          1358
+          19968,
+          1380
         ],
         [
-          21168,
-          1391
+          21504,
+          1413
         ],
         [
-          22680,
-          1424
+          23040,
+          1446
         ],
         [
-          24192,
-          1457
+          24576,
+          1480
         ],
         [
-          25704,
-          1489
+          26112,
+          1513
         ],
         [
-          27216,
-          1522
+          27648,
+          1546
         ],
         [
-          28728,
-          1555
+          29184,
+          1580
         ],
         [
-          30240,
-          1588
+          30720,
+          1613
         ],
         [
-          31752,
-          1620
+          32256,
+          1646
         ],
         [
-          33264,
-          1653
+          33792,
+          1679
         ],
         [
-          34776,
-          1686
+          35328,
+          1713
         ],
         [
-          36288,
-          1719
+          36864,
+          1746
         ],
         [
-          37800,
-          1751
+          38400,
+          1779
         ],
         [
-          39312,
-          1784
+          39936,
+          1812
         ],
         [
-          40824,
-          1817
+          41472,
+          1846
         ],
         [
-          42336,
-          1850
+          43008,
+          1879
         ],
         [
-          43848,
-          1882
+          44544,
+          1912
         ],
         [
-          45360,
-          1915
+          46080,
+          1946
         ],
         [
-          46872,
-          1935
+          47616,
+          1966
         ],
         [
-          48384,
-          1956
+          49152,
+          1987
         ],
         [
-          49896,
-          1976
+          50688,
+          2007
         ],
         [
-          51408,
-          1996
+          52224,
+          2028
         ],
         [
-          52920,
-          2016
+          53760,
+          2048
         ],
         [
-          54432,
-          2036
+          55296,
+          2068
         ],
         [
-          55944,
-          2056
+          56832,
+          2089
         ],
         [
-          57456,
-          2076
+          58368,
+          2109
         ],
         [
-          58968,
-          2097
+          59904,
+          2130
         ],
         [
-          60480,
-          2117
+          61440,
+          2150
         ],
         [
-          61992,
-          2137
+          62976,
+          2171
         ],
         [
-          63504,
-          2157
+          64512,
+          2191
         ],
         [
-          65016,
-          2177
+          66048,
+          2212
         ],
         [
-          66528,
-          2197
+          67584,
+          2232
         ],
         [
-          68040,
-          2218
+          69120,
+          2253
         ],
         [
-          69552,
-          2238
+          70656,
+          2273
         ],
         [
-          71064,
-          2258
+          72192,
+          2294
         ],
         [
-          72576,
-          2278
+          73728,
+          2314
         ],
         [
-          74088,
-          2298
+          75264,
+          2335
         ],
         [
-          75600,
-          2318
+          76800,
+          2355
         ],
         [
-          77112,
-          2339
+          78336,
+          2376
         ],
         [
-          78624,
-          2359
+          79872,
+          2396
         ],
         [
-          80136,
-          2379
+          81408,
+          2417
         ],
         [
-          81648,
-          2399
+          82944,
+          2437
         ],
         [
-          83160,
-          2419
+          84480,
+          2458
         ],
         [
-          84672,
-          2439
+          86016,
+          2478
         ],
         [
-          86184,
-          2460
+          87552,
+          2499
         ],
         [
-          87696,
-          2480
+          89088,
+          2519
         ],
         [
-          89208,
-          2500
+          90624,
+          2540
         ],
         [
-          90720,
-          2520
+          92160,
+          2560
         ]
       ],
       "einheit": "[mdJE, CHF/Monat] Altersrente 1/1, Skala 44",
-      "source": "https://www.ahv-iv.ch/p/3.01.d",
-      "stand": "MB 3.01 Ausgabe November 2025, Anhang «AHV/IV-Renten ab 1. Januar 2025» (gültig 2026)",
+      "source": "https://www.fedlex.admin.ch/eli/cc/63/837_843_843/de ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
       "status": "offen",
-      "hinweis": "Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+      "hinweis": "Abgeleitet nach Art. 34 AHVG aus der festgesetzten Minimalrente 1'280, Stufenabstand 1'536 = 1/10 der jährlichen Minimalrente, Rente auf Franken gerundet. Dieselbe Formel reproduziert die amtliche Rententabelle 2025/2026 exakt. Die Publikation «Rententabellen 2027» bzw. Merkblatt 3.01 mit Anhang 2027 lag am 05.10.2026 nicht vor (nicht in den Beschluss-PDFs). OFFEN bis zur Gegenprobe mit dieser Publikation."
     },
     "schaetzhilfe": {
       "value": {
@@ -346,9 +346,9 @@
     "plafonierungTeilrenten": {
       "value": "150% der Maximalrente, auch bei Teilrenten",
       "source": "https://www.ahv-iv.ch/p/3.01.d Ziff. 23",
-      "stand": "1.1.2026",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
       "status": "offen",
-      "hinweis": "Bei Teilrenten liegt die Plafonierungsgrenze tiefer (MB 3.01); der Rechner verwendet vereinfacht immer 3'780/Monat."
+      "hinweis": "Bei Teilrenten liegt die Plafonierungsgrenze tiefer (MB 3.01); der Rechner verwendet vereinfacht immer 150 % der Maximalrente (2027: 3'840/Monat)."
     },
     "vollrenteBeitragsjahre": {
       "value": 44,
@@ -359,7 +359,7 @@
     },
     "erziehungsgutschriftFaktorMinimalrente": {
       "value": 3,
-      "einheit": "× jährliche Minimalrente (45'360)",
+      "einheit": "× jährliche Minimalrente (46'080)",
       "source": "https://www.ahv-iv.ch/p/3.01.d",
       "stand": "1.1.2026",
       "status": "verifiziert"
@@ -530,7 +530,7 @@
     "uebergangKuerzung": {
       "value": [
         {
-          "mdjeBis": 60480,
+          "mdjeBis": 61440,
           "saetzeProJahr": [
             0,
             0.02,
@@ -538,7 +538,7 @@
           ]
         },
         {
-          "mdjeBis": 75600,
+          "mdjeBis": 76800,
           "saetzeProJahr": [
             0.025,
             0.045,
@@ -555,20 +555,20 @@
         }
       ],
       "einheit": "reduzierte Kürzung Frauen Jg. 1961–1969 für 1/2/3 Jahre Vorbezug",
-      "source": "https://sozialversicherungen.admin.ch/de/d/20135/download ; Art. 40c AHVG",
-      "stand": "gültig ab 1.1.2024, Stand 1.1.2026",
-      "status": "offen",
-      "hinweis": "Jahreswerte verifiziert. Monatswerte werden linear interpoliert (Näherung); offizielle Monatstabelle im KS-R AHV 21. Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+      "source": "https://sozialversicherungen.admin.ch/de/d/18438/download ; Art. 40c AHVG",
+      "stand": "Berechnungsvorschriften AHV/IV-Renten gültig ab 1.1.2027, abgerufen 05.10.2026",
+      "status": "verifiziert",
+      "hinweis": "Jahreswerte unverändert gegenüber 2026 (Berechnungsvorschriften gültig ab 1.1.2027). Einkommensgrenzen 48 × bzw. 60 × Minimalrente = 61'440 bzw. 76'800. Monatswerte werden linear interpoliert (Näherung); die monatsgenaue Tabelle steht in den Berechnungsvorschriften, Punkt 6.3.2."
     },
     "rentenzuschlagUebergang": {
       "value": {
         "stufen": [
           {
-            "mdjeBis": 60480,
+            "mdjeBis": 61440,
             "betragMonat": 160
           },
           {
-            "mdjeBis": 75600,
+            "mdjeBis": 76800,
             "betragMonat": 100
           },
           {
@@ -615,24 +615,24 @@
           ]
         ]
       },
-      "source": "https://sozialversicherungen.admin.ch/de/d/20135/download ; Art. 34bis AHVG ; https://www.ahv-iv.ch/p/3.04.d",
-      "stand": "Stand 1.1.2026",
-      "status": "offen",
-      "hinweis": "Nur ohne Vorbezug; lebenslang, nicht plafoniert, nicht indexiert, nicht Teil der 13. Rente; bei Teilrente anteilig. Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+      "source": "https://sozialversicherungen.admin.ch/de/d/18438/download ; Art. 34bis AHVG ; https://www.ahv-iv.ch/p/3.04.d",
+      "stand": "Berechnungsvorschriften AHV/IV-Renten gültig ab 1.1.2027, abgerufen 05.10.2026",
+      "status": "verifiziert",
+      "hinweis": "Beträge 160 / 100 / 50 Fr. unverändert (nicht indexiert, Art. 34bis AHVG). Einkommensgrenzen mit der Minimalrente angepasst (48 × / 60 × = 61'440 / 76'800). Nur ohne Vorbezug; lebenslang, nicht plafoniert, nicht Teil der 13. Rente; bei Teilrente anteilig."
     },
     "rentenanpassung2027": {
       "value": null,
-      "source": "https://www.bsv.admin.ch (Medienmitteilungen)",
-      "stand": "24.09.2026",
-      "status": "offen",
-      "hinweis": "Bis 24.09.2026 kein Bundesratsentscheid gefunden."
+      "source": "https://www.bsv.admin.ch/de/newnsb/BqB41FVYi5FB ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/7c36e40d-4e66-4431-887b-d18ffc5009f3.pdf",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+      "status": "verifiziert",
+      "hinweis": "Beschlossen am 02.10.2026: Minimalrente 1'280 (vorher 1'260), Maximalrente 2'560 (vorher 2'520) Franken/Monat. Anpassung (1'280 − 1'260) / 1'260 = 1,587 % (Verordnung Art. 3)."
     },
     "neueVorbezugsAufschubsaetze": {
       "value": null,
-      "source": "https://www.bsv.admin.ch/de/ahv-21",
-      "stand": "09/2026",
-      "status": "offen",
-      "hinweis": "«frühestens 2027», Sätze noch nicht bekannt."
+      "source": "https://sozialversicherungen.admin.ch/de/d/18438/download ; https://www.bsv.admin.ch/de/ahv-21",
+      "stand": "abgerufen 05.10.2026",
+      "status": "verifiziert",
+      "hinweis": "Für 2027 unverändert gegenüber 2026: Vorbezug 6,8 % pro Jahr (13,6 % bei zwei Jahren), Aufschub 5,2–31,5 %. Reduzierte Sätze der Übergangsgeneration Frauen ebenfalls unverändert. Die BSV-Seite AHV 21 schreibt weiterhin, die Sätze würden ab 2027 an die Lebenserwartung angepasst und seien noch nicht bekannt (abgerufen 05.10.2026). Die Berechnungsvorschriften gültig ab 1.1.2027 enthalten die bisherigen Sätze. Widerspruch im Auge behalten."
     },
     "rentenzahlungAusland": {
       "value": "CH-, EU/EFTA-Staatsangehörige und Angehörige von Abkommensstaaten: weltweit; Nichtvertragsstaaten: keine Auszahlung, Rückvergütung der Beiträge; keine EL im Ausland",
@@ -642,14 +642,14 @@
     },
     "elLebensbedarf": {
       "value": {
-        "alleinstehend": 20670,
-        "ehepaar": 31005
+        "alleinstehend": 21000,
+        "ehepaar": 31500
       },
       "einheit": "CHF/Jahr (nur Info)",
-      "source": "https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf",
-      "stand": "1.1.2026",
-      "status": "offen",
-      "hinweis": "Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+      "source": "https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/7c36e40d-4e66-4431-887b-d18ffc5009f3.pdf",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+      "status": "verifiziert",
+      "hinweis": "Nur Info, nicht in der Simulation als Ausgabe verwendet. Verordnung über Anpassungen bei den EL/ÜL ab 2027, Art. 1."
     },
     "reformAhv2030": {
       "value": "Vernehmlassung 20.05.–11.09.2026, nicht in Kraft",
@@ -686,11 +686,22 @@
       "hinweis": "Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
     },
     "mindestbeitrag": {
-      "value": 530,
-      "source": "https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf",
-      "stand": "1.1.2026",
-      "status": "offen",
-      "hinweis": "AHV 435, IV 70, EO 25 Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+      "value": 541,
+      "source": "https://www.bsv.admin.ch/de/newnsb/BqB41FVYi5FB ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/7c36e40d-4e66-4431-887b-d18ffc5009f3.pdf",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+      "status": "verifiziert",
+      "hinweis": "AHV 444, IV 71, EO 26. Verordnungstexte in der Beilage sind eine provisorische Fassung; massgebend wird die Veröffentlichung in der AS. Die Beträge stehen im BSV-Hintergrunddokument «Beträge gültig ab dem 1. Januar 2027» (Stand: Bundesratsentscheid)."
+    },
+    "sinkendeSkalaSelbststaendig": {
+      "value": {
+        "untereGrenze": 10300,
+        "obereGrenze": 61500
+      },
+      "einheit": "CHF Jahreseinkommen, AHV/IV/EO",
+      "source": "https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/7c36e40d-4e66-4431-887b-d18ffc5009f3.pdf ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+      "status": "verifiziert",
+      "hinweis": "Art. 1 der Anpassungsverordnung und Art. 21 AHVV (Änderung): untere Grenze 10'300, obere Grenze 61'500. Die Beitragssätze der Stufen stehen in der Verordnungsbeilage; der Rechner wendet die Skala nicht an (kein Erwerbsmodell für Selbstständigerwerbende). Grenze für den Mindestbeitrag nach Art. 8 Abs. 2 AHVG separat 10'200 (Art. 2 der Anpassungsverordnung), nicht diese Untergrenze."
     },
     "nichterwerbstaetige": {
       "beitragspflicht": {
@@ -732,19 +743,19 @@
       },
       "tabelle": {
         "value": {
-          "minimalbeitrag": 530,
-          "untergrenze": 350000,
-          "beitragAbUntergrenze": 636,
+          "minimalbeitrag": 541,
+          "untergrenze": 360000,
+          "beitragAbUntergrenze": 657.2,
           "schritt": 50000,
           "zuschlagStufe1": 106,
-          "grenzeStufe2": 1750000,
+          "grenzeStufe2": 1760000,
           "zuschlagStufe2": 159,
-          "maximalbeitrag": 26500
+          "maximalbeitrag": 27050
         },
-        "source": "https://www.ahv-iv.ch/p/2.03.d ; https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf",
-        "stand": "1.1.2026",
-        "status": "offen",
-        "hinweis": "Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+        "source": "https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/7c36e40d-4e66-4431-887b-d18ffc5009f3.pdf ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf",
+        "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+        "status": "verifiziert",
+        "hinweis": "Kombinierte AHV/IV/EO-Tabelle, abgeleitet aus Art. 28 AHVV (nur AHV: bis 360'000: 444; ab 360'000: 539.40 + 87 je 50'000; ab 1'760'000: 2'975.40 + 130.50; ab 9'160'000: Höchstbeitrag 22'200) plus IV und EO «sinngemäss» (IVV Art. 1bis: 71–3'550; EOV Art. 36: 26–1'300). Aufteilung nach den Beitragssätzen 8,7 % / 1,4 % / 0,5 % (Faktoren 87 / 14 / 5): 539.40 + 86.80 + 31.00 = 657.20, Zuschläge 87+14+5 = 106 und 130.50+21+7.50 = 159. Dieselbe Aufteilung reproduziert die kombinierte Tabelle 2026. Höchstbeitrag 22'200 + 3'550 + 1'300 = 27'050 (= 50 × 541), erreicht ab 9'160'000. Merkblatt 2.03 mit der gedruckten Kombinationstabelle 2027 lag am 05.10.2026 nicht vor."
       },
       "verwaltungskostenMax": {
         "value": 0.05,
@@ -754,11 +765,11 @@
         "hinweis": "bis 5%, je nach Ausgleichskasse"
       },
       "befreiungEhegatteMindestbeitrag": {
-        "value": 1060,
-        "source": "Art. 3 Abs. 3 lit. a und Abs. 4 AHVG, Art. 29ter Abs. 2 lit. b AHVG https://www.fedlex.admin.ch/eli/cc/63/837_843_843/de ; MB 2.03 Ziff. 3 https://www.ahv-iv.ch/p/2.03.d",
-        "stand": "MB 2.03 Stand 1.1.2026 (Ausgabe November 2025)",
-        "status": "offen",
-        "hinweis": "Eigene Beiträge des nichterwerbstätigen Ehegatten gelten als bezahlt, wenn der im Sinne der AHV erwerbstätige Ehegatte jährlich mind. 1'060 (doppelter Mindestbeitrag 530) entrichtet – bei 10,6 % ab ca. 10'000 Lohn; die Jahre zählen als Beitragsjahre (Art. 29ter Abs. 2 lit. b). Gilt auch im Jahr der Heirat/Scheidung und wenn der erwerbstätige Ehegatte schon eine Altersrente bezieht (Abs. 4). Erziehungs-/Betreuungsgutschriften befreien nicht. Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+        "value": 1082,
+        "source": "Art. 3 Abs. 3 lit. a und Abs. 4 AHVG, Art. 29ter Abs. 2 lit. b AHVG https://www.fedlex.admin.ch/eli/cc/63/837_843_843/de ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf",
+        "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+        "status": "verifiziert",
+        "hinweis": "Eigene Beiträge des nichterwerbstätigen Ehegatten gelten als bezahlt, wenn der erwerbstätige Ehegatte jährlich mind. 1'082 (doppelter Mindestbeitrag 541) entrichtet – bei 10,6 % ab ca. 10'210 Lohn; die Jahre zählen als Beitragsjahre (Art. 29ter Abs. 2 lit. b). Gilt auch im Jahr der Heirat/Scheidung und wenn der erwerbstätige Ehegatte schon eine Altersrente bezieht (Abs. 4). Erziehungs-/Betreuungsgutschriften befreien nicht."
       }
     },
     "freiwilligeAhv": {
@@ -795,36 +806,36 @@
         "hinweis": "AHV 8,7% + IV 1,4% des massgebenden Erwerbseinkommens (weltweit), zuzüglich 5% Verwaltungskosten; keine EO."
       },
       "mindestbeitrag": {
-        "value": 1010,
+        "value": 1030,
         "einheit": "CHF/Jahr ohne Verwaltungskosten",
-        "source": "Art. 13b VFV https://www.fedlex.admin.ch/eli/cc/1961/419_429_439/de ; https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf",
-        "stand": "BSV «Beträge gültig ab 1.1.2026» (AHV 870 + IV 140)",
-        "status": "offen",
-        "hinweis": "Gilt für Erwerbstätige und Nichterwerbstätige. Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+        "source": "https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/7c36e40d-4e66-4431-887b-d18ffc5009f3.pdf ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf",
+        "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+        "status": "verifiziert",
+        "hinweis": "AHV 888 + IV 142 (Hintergrunddokument). VFV Art. 13b Abs. 1: mindestens 1'030. Gilt für Erwerbstätige und Nichterwerbstätige."
       },
       "tabelleNichterwerbstaetige": {
         "value": {
-          "minimalbeitrag": 1010,
-          "untergrenze": 600000,
-          "beitragAbUntergrenze": 1111,
+          "minimalbeitrag": 1030,
+          "untergrenze": 610000,
+          "beitragAbUntergrenze": 1131.2,
           "schritt": 50000,
           "zuschlagStufe1": 101,
-          "grenzeStufe2": 1750000,
+          "grenzeStufe2": 1760000,
           "zuschlagStufe2": 151.5,
-          "maximalbeitrag": 25250
+          "maximalbeitrag": 25750
         },
         "einheit": "CHF/Jahr AHV+IV ohne Verwaltungskosten",
-        "source": "Art. 13b Abs. 2 VFV https://www.fedlex.admin.ch/eli/cc/1961/419_429_439/de ; MB 10.02 Ziff. 4 https://www.ahv-iv.ch/p/10.02.d ; Art. 2 Abs. 5 AHVG (Höchstbeitrag = 25 × Mindestbeitrag)",
-        "stand": "VFV Stand 1.1.2025 (Fassung AS 2024 464, gilt 2026 unverändert – keine neuere konsolidierte Fassung, fedlex abgefragt 25.09.2026); MB 10.02 Stand 1.1.2025; WFV Stand 1.1.2025",
-        "status": "offen",
-        "hinweis": "Bemessung: Vermögen + 20 × jährliches Renteneinkommen. Bis 600'000: 1'010; ab 600'000: 1'111 + 101 je weitere 50'000; ab 1'750'000: 3'434 + 151.50 je 50'000; ab 8'950'000: 25'250 (Maximum). Auf die nächsttiefere Stufe abgerundet (Art. 28 Abs. 3 AHVV i.V.m. Art. 25 VFV). Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+        "source": "https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/7c36e40d-4e66-4431-887b-d18ffc5009f3.pdf (VFV Art. 13b)",
+        "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+        "status": "verifiziert",
+        "hinweis": "Bemessung: Vermögen + 20 × jährliches Renteneinkommen. Bis 610'000: 1'030; ab 610'000: 1'131.20 + 101 je weitere 50'000; ab 1'760'000: 3'454.20 + 151.50 je 50'000; ab 9'160'000: 25'750 (Maximum = 25 × Mindestbeitrag). Auf die nächsttiefere Stufe abgerundet (Art. 28 Abs. 3 AHVV i.V.m. Art. 25 VFV). Erste Vermögensschwelle 610'000, nicht die 360'000 der obligatorischen AHVV-Tabelle."
       },
       "verwaltungskosten": {
         "value": 0.05,
         "source": "Art. 18a VFV https://www.fedlex.admin.ch/eli/cc/1961/419_429_439/de ; Art. 1 V des EDI SR 831.143.41 https://www.fedlex.admin.ch/eli/cc/2011/675/de ; MB 10.02 Ziff. 3 https://www.ahv-iv.ch/p/10.02.d",
         "stand": "SR 831.143.41 Stand 1.1.2012; VFV Stand 1.1.2025 (Fassung AS 2024 464, gilt 2026 unverändert – keine neuere konsolidierte Fassung, fedlex abgefragt 25.09.2026); MB 10.02 Stand 1.1.2025; WFV Stand 1.1.2025",
         "status": "verifiziert",
-        "hinweis": "In der freiwilligen Versicherung immer der Höchstansatz von 5% (Art. 18a VFV), also Minimum inkl. Verwaltungskosten 1'060.50, Maximum 26'512.50 pro Jahr."
+        "hinweis": "In der freiwilligen Versicherung immer der Höchstansatz von 5% (Art. 18a VFV), also Minimum inkl. Verwaltungskosten 1'081.50, Maximum 27'037.50 pro Jahr."
       },
       "bemessung": {
         "value": {
@@ -847,14 +858,14 @@
       },
       "befreiungEhegatte": {
         "value": {
-          "freiwilligErwerbstaetig": 2020,
-          "obligatorischErwerbstaetig": 1060
+          "freiwilligErwerbstaetig": 2060,
+          "obligatorischErwerbstaetig": 1082
         },
         "einheit": "CHF/Jahr Beiträge des erwerbstätigen Ehegatten",
-        "source": "Art. 13a Abs. 3 VFV https://www.fedlex.admin.ch/eli/cc/1961/419_429_439/de ; MB 10.02 Ziff. 4 https://www.ahv-iv.ch/p/10.02.d ; WFV Rz 4003, 4003.1",
-        "stand": "VFV Stand 1.1.2025 (Fassung AS 2024 464, gilt 2026 unverändert – keine neuere konsolidierte Fassung, fedlex abgefragt 25.09.2026); MB 10.02 Stand 1.1.2025; WFV Stand 1.1.2025",
-        "status": "offen",
-        "hinweis": "Beiträge des nichterwerbstätigen, freiwillig versicherten Ehegatten gelten als bezahlt, wenn der erwerbstätige Ehegatte freiwillig versichert ist und mind. 2'020 bzw. obligatorisch versichert ist und mind. 1'060 bezahlt. Der Beitritt muss trotzdem erklärt werden. Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+        "source": "Art. 13a Abs. 3 VFV https://www.fedlex.admin.ch/eli/cc/1961/419_429_439/de ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/7c36e40d-4e66-4431-887b-d18ffc5009f3.pdf ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf",
+        "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+        "status": "verifiziert",
+        "hinweis": "Beiträge des nichterwerbstätigen, freiwillig versicherten Ehegatten gelten als bezahlt, wenn der erwerbstätige Ehegatte freiwillig versichert ist und mind. 2'060 (doppelter Mindestbeitrag 1'030) bzw. obligatorisch versichert ist und mind. 1'082 (doppelter Mindestbeitrag AHV/IV/EO 541) bezahlt. Der Beitritt muss trotzdem erklärt werden."
       },
       "beitragspflicht": {
         "value": {
@@ -923,46 +934,46 @@
   },
   "bvg": {
     "eintrittsschwelle": {
-      "value": 22680,
-      "source": "https://www.bsv.admin.ch/dam/de/sd-web/sAgdISSXenMT/d_Betr%C3%A4ge%202026.pdf ; https://sozialversicherungen.admin.ch/de/d/21427/download",
-      "stand": "1.1.2026",
-      "status": "offen",
-      "hinweis": "Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+      "value": 23040,
+      "source": "https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/7c36e40d-4e66-4431-887b-d18ffc5009f3.pdf",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+      "status": "verifiziert",
+      "hinweis": "Mindestjahreslohn, BVV 2 Art. 3a und Art. 5 (bisher 22'680)."
     },
     "koordinationsabzug": {
-      "value": 26460,
-      "source": "https://sozialversicherungen.admin.ch/de/d/21427/download",
-      "stand": "1.1.2026",
-      "status": "offen",
-      "hinweis": "Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+      "value": 26880,
+      "source": "https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/7c36e40d-4e66-4431-887b-d18ffc5009f3.pdf",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+      "status": "verifiziert",
+      "hinweis": "BVV 2 Art. 5 (bisher 26'460)."
     },
     "obereGrenzeJahreslohn": {
-      "value": 90720,
-      "source": "https://sozialversicherungen.admin.ch/de/d/21427/download",
-      "stand": "1.1.2026",
-      "status": "offen",
-      "hinweis": "Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+      "value": 92160,
+      "source": "https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/7c36e40d-4e66-4431-887b-d18ffc5009f3.pdf",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+      "status": "verifiziert",
+      "hinweis": "Obere Limite des Jahreslohns, BVV 2 Art. 5 (bisher 90'720)."
     },
     "koordinierterLohnMax": {
-      "value": 64260,
-      "source": "https://sozialversicherungen.admin.ch/de/d/21427/download",
-      "stand": "1.1.2026",
-      "status": "offen",
-      "hinweis": "Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+      "value": 65280,
+      "source": "https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/7c36e40d-4e66-4431-887b-d18ffc5009f3.pdf",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+      "status": "verifiziert",
+      "hinweis": "Nicht als eigene Zeile im Betragsdokument. Art. 8 BVG: oberer Grenzbetrag minus Koordinationsabzug = 92'160 − 26'880 = 65'280."
     },
     "koordinierterLohnMin": {
-      "value": 3780,
-      "source": "https://sozialversicherungen.admin.ch/de/d/21427/download",
-      "stand": "1.1.2026",
-      "status": "offen",
-      "hinweis": "Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+      "value": 3840,
+      "source": "https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/7c36e40d-4e66-4431-887b-d18ffc5009f3.pdf",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+      "status": "verifiziert",
+      "hinweis": "Minimaler koordinierter Lohn, BVV 2 Art. 3a und Art. 5 (bisher 3'780)."
     },
     "maxVersicherbarerLohn": {
-      "value": 907200,
-      "source": "https://sozialversicherungen.admin.ch/de/d/21427/download",
-      "stand": "1.1.2026",
-      "status": "offen",
-      "hinweis": "Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+      "value": 921600,
+      "source": "https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/7c36e40d-4e66-4431-887b-d18ffc5009f3.pdf",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+      "status": "verifiziert",
+      "hinweis": "Nicht als eigene Zeile im Betragsdokument. Art. 79c BVG: das Zehnfache des oberen Grenzbetrags nach Art. 8 = 10 × 92'160 = 921'600."
     },
     "mindestzins2026": {
       "value": 0.0125,
@@ -1097,11 +1108,11 @@
   },
   "saeule3a": {
     "maxMitPk": {
-      "value": 7258,
-      "source": "https://www.bsv.admin.ch/de/die-dritte-saeule",
-      "stand": "1.1.2026",
-      "status": "offen",
-      "hinweis": "Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+      "value": 7373,
+      "source": "https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+      "status": "verifiziert",
+      "hinweis": "Mit Zugehörigkeit zu einer Vorsorgeeinrichtung. Hintergrunddokument «Beträge gültig ab dem 1. Januar 2027»."
     },
     "maxOhnePkSatz": {
       "value": 0.2,
@@ -1110,11 +1121,11 @@
       "status": "verifiziert"
     },
     "maxOhnePk": {
-      "value": 36288,
-      "source": "https://www.bsv.admin.ch/de/die-dritte-saeule",
-      "stand": "1.1.2026",
-      "status": "offen",
-      "hinweis": "Fortgeschrieben: Wert 2026 (noch nicht amtlich für 2027 beschlossen; Stand 02.10.2026). Vor Verwendung für 2027 amtlich prüfen."
+      "value": 36864,
+      "source": "https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf",
+      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
+      "status": "verifiziert",
+      "hinweis": "Ohne Zugehörigkeit zu einer Vorsorgeeinrichtung, wie im Hintergrunddokument publiziert (36'864). Nicht als 5 × 7'373 gerechnet (das ergäbe 36'865)."
     },
     "bezug": {
       "value": {
@@ -1127,7 +1138,7 @@
       "hinweis": "Aufschub nur bei nachgewiesener Erwerbstätigkeit."
     },
     "nachzahlung": {
-      "value": "Lücken ab 2025, bis 10 Jahre zurück, erstmals 2026; pro Jahr bis 7'258",
+      "value": "Lücken ab 2025, bis 10 Jahre zurück, erstmals 2026; pro Jahr bis zum kleinen Maximalbetrag (2027: 7'373)",
       "source": "https://www.fedlex.admin.ch/eli/oc/2024/622/de",
       "stand": "in Kraft 1.1.2025",
       "status": "verifiziert"
@@ -2083,7 +2094,7 @@
     "lebenserwartungMit65": {
       "value": {
         "maenner": 20.4,
-        "frauen": 23.0,
+        "frauen": 23,
         "jahr": 2024
       },
       "source": "https://www.bfs.admin.ch/bfs/de/home/statistiken/bevoelkerung/geburten-todesfaelle/lebenserwartung.html",

@@ -12,10 +12,10 @@ Nichts davon ist gebaut. Aufwand in Personentagen (PT) grob, jeweils mit Tests u
 | 6 | «Umherreisen mit CH-Wohnsitz» | mittel bis gross, 5–8 PT | Entscheid zum Steuerdomizil, Krankenversicherung |
 | 7 | Teilvorbezug 20–80 % und AHV-Skalen 1–43 | mittel, 3–4 PT | Tabellen aus MB 3.04 / Art. 52 AHVV |
 
-## 1. Regeljahr 2027 fertigstellen (0.5 PT)
-- `src/rules/2027.json` hat bereits die DBG-Tarife und die Kinderermässigung 264 (Abschnitt 21 in `docs/quellen.md`). Fortgeschriebene Werte tragen den Hinweis «Fortgeschrieben» und sind «offen».
-- Offen und zu ersetzen, sobald amtlich: AHV/IV-Renten, Beitragsgrenzen, BVG-Grenzbeträge und Mindestzins (Bundesrat, voraussichtlich November), 3a-Maxima, QStV-Satz 125–150k (1,90 % gegenüber 1,95 %).
-- Abnahme: Banner-Zähler «teilweise erfasst» geht auf 0; Wächter `regeljahr.yml` bleibt grün.
+## 1. Regeljahr 2027 fertigstellen
+- Stand 5.10.2026: Bundesratsentscheid vom 2.10.2026 (AHV/IV/EO, BVG-Grenzen, Säule 3a) ist in `src/rules/2027.json` (Abschnitt 21 in `docs/quellen.md`). DBG-Tarife und Kinderermässigung 264 bleiben der EFD-Vorabdruck.
+- Weiter offen: BVG-Mindestzins (Bundesrat, voraussichtlich November), QStV-Satz 125–150k bis zur AS, kantonale Tarife, Gegenprobe der abgeleiteten Skala-44-Tabelle mit «Rententabellen 2027».
+- Abnahme: Banner ab 1.1.2027 sagt «teilweise erfasst» und trennt Beschlossenes von den fortgeschriebenen Werten; Wächter `regeljahr.yml` bleibt grün. Der Zähler geht auf 0, wenn keine Hinweise «Fortgeschrieben» mehr übrig sind.
 
 ## 2. Kirchensteuer übrige Kantone (3–5 PT)
 - Ist-Zustand: Nur ZH und AG mit Steuerfüssen je Gemeinde; sonst Referenzraster ohne Kirchensteuer.
