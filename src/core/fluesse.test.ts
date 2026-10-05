@@ -76,7 +76,7 @@ function szenario(o: { wegzug?: boolean; verkauf?: boolean; krise?: boolean } = 
     };
   const b = neuePerson(regeln, {
     name: 'Beispiel B',
-    geburtsjahr: 1972,
+    geburtsjahr: 1985,
     geburtsmonat: 9,
     geschlecht: 'w',
     lohn: 40_000,

@@ -48,8 +48,8 @@ export function SchnellEingaben(props: SchrittProps) {
     <>
       <p className="info">
         Schnellstart: wenige Angaben genügen. AHV-Rente, Pensionskasse (falls unbekannt) und Annahmen werden aus den
-        gesetzlichen Werten 2026 geschätzt, der Umwandlungssatz ohne Angabe zusätzlich aus dem Durchschnitt der
-        Pensionskassen (OAK BV), und im Ergebnis ausgewiesen. Genauer wird es im Modus «Detailliert».
+        gesetzlichen Werten {regeln.meta.jahr} geschätzt, der Umwandlungssatz ohne Angabe zusätzlich aus dem
+        Durchschnitt der Pensionskassen (OAK BV), und im Ergebnis ausgewiesen. Genauer wird es im Modus «Detailliert».
       </p>
       <AnnahmenSchnellHinweis a={h.annahmen} />
       {detail.length > 0 ? (

@@ -411,7 +411,7 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
               min={0}
               max={regeln.saeule3a.maxOhnePk}
               onChange={(v) => set((x) => ({ ...x, saeule3a: { ...x.saeule3a, beitragJahr: v } }))}
-              hinweis={`Maximum 2026 mit PK: ${fmtChf(regeln.saeule3a.maxMitPk)}`}
+              hinweis={`Maximum ${regeln.meta.jahr} mit PK: ${fmtChf(regeln.saeule3a.maxMitPk)}`}
             />
           )}
           <ZahlFeld

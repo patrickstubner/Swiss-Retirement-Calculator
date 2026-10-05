@@ -3,7 +3,7 @@ import { effektiverHaushalt } from '../core/schaetzwerte';
 import type { Person } from '../core/typen';
 import { neuePerson, standardHaushalt } from '../data/defaults';
 import { ladeRegeln } from '../rules';
-import { uwsKurz, uwsSchaetzungText } from './texte';
+import { disclaimerAbsaetze, uwsKurz, uwsSchaetzungText } from './texte';
 
 const regeln = ladeRegeln(2026);
 const heute = { jahr: 2026, monat: 9 };
@@ -16,6 +16,16 @@ function schaetzung(lohn: number, guthaben: number) {
   if (!u) throw new Error('keine Schätzung');
   return { u, satz: e.werte[0]?.pkUmwandlungssatz ?? 0 };
 }
+
+describe('Disclaimer nennt das Regeljahr der geladenen Regeln', () => {
+  it('setzt das übergebene Jahr ein und enthält kein festes 2026', () => {
+    const text = disclaimerAbsaetze(2027).join('\n');
+    expect(text).toContain('Stand 2027');
+    expect(text).not.toContain('Stand 2026');
+    expect(text).toContain('Ihnen');
+    expect(disclaimerAbsaetze(2026).join('\n')).toContain('Stand 2026');
+  });
+});
 
 describe('Text der Umwandlungssatz-Schätzung ohne obligatorischen Teil', () => {
   it('PK-Guthaben, Lohn 0 → «kein obligatorischer Teil geschätzt (kein Lohn angegeben)», kein «ca. 0%»', () => {
