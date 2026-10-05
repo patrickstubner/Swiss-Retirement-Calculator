@@ -7,6 +7,8 @@
  * Pfade: Array-Indizes stehen als `*` (z.B. `personen.*.pk.zins`). Ein Zahlenfeld ohne Eintrag wird auf
  * ±ALLGEMEIN_MAX geklemmt (Notnetz); ein Test verlangt für alle Felder der Standardwerte einen Eintrag.
  */
+import { ahvWeitesterVorbezugMonate } from '../core/ahv';
+import { ladeRegeln, VERFUEGBARE_JAHRE } from '../rules';
 
 /** Höchstlänge eines Links (`#s=…`), Zeichen. Ein Link mit vollem Haushalt umfasst rund 3'000 Zeichen. */
 export const MAX_HASH_LAENGE = 20_000;
@@ -22,6 +24,16 @@ export const ALLGEMEIN_MAX = 1e12;
 type Bereich = readonly [min: number, max: number, ganz?: true];
 
 const JAHR_MAX = () => new Date().getFullYear();
+
+/**
+ * Untergrenze der AHV-Bezugsverschiebung (negativ = Vorbezug). Abgeleitet aus den Regeln:
+ * höchstes Referenzalter in Monaten minus frühestes Übergangsalter × 12, über alle Regeljahre.
+ * Eine feste −24 würde den gesetzlichen Vorbezug der Übergangsgeneration (bis 36 Monate) beim Laden kürzen.
+ */
+export const AHV_VERSCHIEBUNG_MIN = -Math.max(
+  0,
+  ...VERFUEGBARE_JAHRE.map((j) => ahvWeitesterVorbezugMonate(ladeRegeln(j).ahv)),
+);
 
 /** Bereich je Pfad; `geburtsjahr` hängt vom aktuellen Jahr ab und wird in `bereichFuer` ergänzt. */
 export const GRENZEN: Readonly<Record<string, Bereich>> = {
@@ -101,7 +113,7 @@ export const GRENZEN: Readonly<Record<string, Bereich>> = {
   'personen.*.ahv.renteMonat': [0, 10_000],
   'personen.*.ahv.mdje': [0, 1e7],
   'personen.*.ahv.beitragsjahre': [0, 50],
-  'personen.*.ahv.bezugVerschiebungMonate': [-24, 60, true],
+  'personen.*.ahv.bezugVerschiebungMonate': [AHV_VERSCHIEBUNG_MIN, 60, true],
   'personen.*.ahvSchaetzhilfe.luecken': [0, 50],
   'personen.*.ahvSchaetzhilfe.jahreCh': [0, 50],
   'personen.*.ahvSchaetzhilfe.einkommen': [0, 1e7],

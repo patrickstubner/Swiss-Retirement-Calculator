@@ -1,9 +1,13 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ahvRentenbeginn, monatBeiAlter } from '../core/ahv';
 import { ladeRegeln } from '../rules';
 import {
+  AHV_HINWEIS_GEBURTSTAG_ERSTER,
+  AHV_HINWEIS_VERGANGENHEIT,
+  ahvBeginnInVergangenheit,
   ahvBezugAnzeigen,
-  ahvBezugOptionLabel,
   ahvBezugSatz,
   ahvBezugZeitpunkt,
   fmtJahreMonate,
@@ -196,10 +200,37 @@ describe('AHV-Bezug: Texte aller drei Varianten', () => {
     expect(a.vorbezug.verschiebungMonate).toBe(-27);
     expect(a.saetze.vorbezug).toContain('27 Monate früher (frühestmöglich)');
     expect(a.saetze.vorbezug).toContain('1. September 2023');
-    expect(ahvBezugOptionLabel(a.aufschub)).toBe(
-      'Aufschub (24 Monate später, ab 1. Dezember 2027, Alter 66 Jahre und 4 Monate)',
-    );
-    expect(ahvBezugOptionLabel(a.referenzalter)).toContain('Im Referenzalter (64 Jahre und 3 Monate');
-    expect(ahvBezugOptionLabel(a.vorbezug)).toContain('27 Monate früher');
+  });
+});
+
+describe('AHV-Bezug: Hinweise Monatserster und Vergangenheit', () => {
+  it('nennt den Monatsersten in einem Satz', () => {
+    expect(AHV_HINWEIS_GEBURTSTAG_ERSTER).toBe('Bei Geburt am 1. eines Monats beginnt die Rente einen Monat früher.');
+    expect(AHV_HINWEIS_GEBURTSTAG_ERSTER).not.toMatch(/ß/);
+    expect(AHV_HINWEIS_VERGANGENHEIT).toBe('Dieser Rentenbeginn wäre bereits möglich gewesen.');
+    expect(AHV_HINWEIS_VERGANGENHEIT).not.toMatch(/ß/);
+  });
+
+  it('erkennt einen Rentenbeginn vor dem aktuellen Monat', () => {
+    const heute = { jahr: 2026, monat: 10 };
+    expect(ahvBeginnInVergangenheit({ jahr: 2025, monat: 12 }, heute)).toBe(true);
+    expect(ahvBeginnInVergangenheit({ jahr: 2026, monat: 9 }, heute)).toBe(true);
+    expect(ahvBeginnInVergangenheit({ jahr: 2026, monat: 10 }, heute)).toBe(false);
+    expect(ahvBeginnInVergangenheit({ jahr: 2026, monat: 11 }, heute)).toBe(false);
+    const frau = ahvBezugZeitpunkt(1965, 6, 'w', -36, ahv);
+    expect(frau.beginn).toEqual({ jahr: 2027, monat: 7 });
+    expect(ahvBeginnInVergangenheit(frau.beginn, heute)).toBe(false);
+    expect(ahvBeginnInVergangenheit(frau.beginn, { jahr: 2028, monat: 1 })).toBe(true);
+  });
+
+  it('die Oberfläche zeigt den Monatsersten einmal und die Vergangenheit je Variante', () => {
+    const ui = readFileSync(resolve(__dirname, 'schritte/EinkommenVorsorge.tsx'), 'utf8');
+    const anzeige = readFileSync(resolve(__dirname, 'ahvBezugAnzeige.ts'), 'utf8');
+    expect(ui).toContain('hinweis={AHV_HINWEIS_GEBURTSTAG_ERSTER}');
+    expect(ui).not.toContain('bezugZeit.saetze[bezugZeit.art]');
+    expect(ui).toContain('AHV_HINWEIS_VERGANGENHEIT');
+    expect(ui).toContain('ahvBeginnInVergangenheit');
+    expect(ui).not.toContain('ahvBezugOptionLabel');
+    expect(anzeige).not.toContain('ahvBezugOptionLabel');
   });
 });

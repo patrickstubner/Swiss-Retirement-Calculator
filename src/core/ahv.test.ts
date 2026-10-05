@@ -17,6 +17,7 @@ import {
   ahvRenteSkala44,
   ahvTeilrente,
   ahvVorbezugKuerzung,
+  ahvWeitesterVorbezugMonate,
   pruefeAhvVerschiebung,
 } from './ahv';
 
@@ -104,8 +105,18 @@ describe('Vorbezug (MB 3.04, ordentliche Kürzung)', () => {
   it('Übergangsfrauen: Vorbezug ab 62', () => {
     expect(ahvMaxVorbezugMonate(1961, 'w', r)).toBe(27);
     expect(ahvMaxVorbezugMonate(1964, 'w', r)).toBe(36);
+    expect(ahvMaxVorbezugMonate(1965, 'w', r)).toBe(36);
     expect(ahvMaxVorbezugMonate(1970, 'w', r)).toBe(24);
     expect(ahvMaxVorbezugMonate(1960, 'w', r)).toBe(12);
+  });
+  it('weitester Vorbezug ist Referenzalter max. minus frühestes Übergangsalter', () => {
+    const maxRa = Math.max(
+      r.referenzalter.maenner.jahre * 12 + r.referenzalter.maenner.monate,
+      ...r.referenzalter.frauen.map((s) => s.jahre * 12 + s.monate),
+    );
+    expect(ahvWeitesterVorbezugMonate(r)).toBe(maxRa - r.vorbezug.fruehestesAlterUebergangFrauen * 12);
+    expect(ahvWeitesterVorbezugMonate(r)).toBe(36);
+    expect(ahvWeitesterVorbezugMonate(ladeRegeln(2027).ahv)).toBe(36);
   });
 });
 

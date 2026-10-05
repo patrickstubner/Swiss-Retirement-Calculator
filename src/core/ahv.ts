@@ -125,6 +125,17 @@ export function ahvMaxVorbezugMonate(geburtsjahr: number, geschlecht: Geschlecht
   return Math.max(0, Math.min(r.vorbezug.maxMonateOrdentlich, ra - r.vorbezug.fruehestesAlter * 12));
 }
 
+/**
+ * Weitester Vorbezug in Monaten, den die Regeln für irgendeinen Jahrgang zulassen:
+ * höchstes Referenzalter minus frühestes Übergangsalter (× 12). Für die Speichergrenze,
+ * nicht für die Prüfung einer einzelnen Person.
+ */
+export function ahvWeitesterVorbezugMonate(r: AhvRegeln): number {
+  const ra = r.referenzalter;
+  const maxRa = Math.max(inMonaten(ra.maenner), ...ra.frauen.map((s) => inMonaten(s)));
+  return Math.max(0, maxRa - r.vorbezug.fruehestesAlterUebergangFrauen * 12);
+}
+
 function stufeNachMdje<T extends { mdjeBis: number | null }>(stufen: readonly T[], mdjeRoh: number): T {
   const mdje = endlich(mdjeRoh);
   const s = stufen.find((x) => x.mdjeBis === null || mdje <= x.mdjeBis);

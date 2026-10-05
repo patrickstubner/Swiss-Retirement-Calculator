@@ -29,7 +29,7 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
 
 ## Funktionsumfang (Version 1.2)
 
-Aktuelle Version: **1.2.1** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [CONTRIBUTING](CONTRIBUTING.md)).
+Aktuelle Version: **1.2.2** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [CONTRIBUTING](CONTRIBUTING.md)).
 
 - **Neutrale Standardwerte:** Alle Beträge sind anfangs leer (0) und frei editierbar – keine Beispielvermögen.
   Gesetzliche Werte (z.B. BVG-Mindestzins) und Annahmen (Standard: 7 % Rendite nominal, 2 % Teuerung; eine Annahme, keine Garantie) sind vorbelegt und anpassbar. Der Schnellmodus rechnet mit denselben Annahmen wie «Detailliert» und zeigt sie sichtbar an.
@@ -76,8 +76,10 @@ Aktuelle Version: **1.2.1** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [
 - **Erwerbsaufgabe als Alter oder Datum:** Alter (Jahre + Monate) oder «per Ende» Monat + Jahr (z.B. November 2027);
   beim Datum zeigt die App das resultierende Alter. Der gewählte Modus wird gespeichert.
 - **Frühester AHV-Bezug** wird aus Jahrgang und Geschlecht abgeleitet und nur angezeigt (Vorbezug ab 63; Frauen der
-  Jahrgänge 1961–1969 ab 62). Bei Referenzalter, Vorbezug und Aufschub nennt die Auswahl den Rentenbeginn
+  Jahrgänge 1961–1969 ab 62, bis 36 Monate). Bei Referenzalter, Vorbezug und Aufschub nennt die Liste den Rentenbeginn
   (1. des Monats nach dem massgebenden Alter) und das Alter dann, beim Referenzalter auch Jahre und Monate.
+  Liegt der Beginn in der Vergangenheit, steht das dabei. Bei Geburt am 1. eines Monats beginnt die Rente
+  einen Monat früher.
   Das früheste PK-Bezugsalter ist ein eigenes, klar beschriftetes Feld
   («Pensionskasse: frühester Bezug laut Reglement (58–70)») mit kurzem Hilfetext (Vorsorgeausweis/Reglement,
   «vorzeitige Pensionierung ab …») und einer **Statuszeile pro Person**, die aus den aktuellen Eingaben sagt, welcher
