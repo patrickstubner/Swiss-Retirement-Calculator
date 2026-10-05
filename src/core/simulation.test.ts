@@ -9,6 +9,7 @@ import {
   standardHaushalt,
 } from '../data/defaults';
 import { ladeRegeln } from '../rules';
+import { entnahmeAusgaben } from './entnahme';
 import { entnehme, simuliere, startvermoegen, vorsorgeBezugMonate, wohneigentumNetto } from './simulation';
 import { fruehestesRuecktrittsalter } from './solver';
 import type { Haushalt, Person, Toepfe } from './typen';
@@ -46,6 +47,8 @@ function einfach(overrides: Partial<Haushalt> = {}): Haushalt {
       kosten: 0,
       steuerbarerErtrag: 0,
     },
+    // Diese Fälle prüfen das ausgabengetriebene Lückenmodell, nicht die Standardstrategie.
+    entnahme: entnahmeAusgaben(),
     ...overrides,
   };
 }

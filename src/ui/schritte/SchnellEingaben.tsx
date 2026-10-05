@@ -14,6 +14,7 @@ import type { Person } from '../../core/typen';
 import { MAX_PLANUNGSALTER, neuePerson, standardHaushalt } from '../../data/defaults';
 import { gemeindenVon, KANTON_STATUS_TEXT, KANTONE, kantonNach } from '../../data/kantone';
 import { AnnahmenSchnellHinweis } from '../components/AnnahmenHinweis';
+import { EntnahmeStrategie } from '../components/EntnahmeStrategie';
 import { ErwerbsstatusFeld, NichtErwerbstaetigFelder } from '../components/Erwerbsstatus';
 import { AuswahlFeld, BetragFeld, Schalter, Segmente, ZahlFeld } from '../components/Felder';
 import { Karte } from '../components/Karte';
@@ -98,6 +99,7 @@ export function SchnellEingaben(props: SchrittProps) {
               : `Lebenshaltung des ganzen Haushalts ohne Steuern und AHV-Beiträge (die werden berechnet). In heutigen Franken – die App rechnet mit ${fmtProzent(h.annahmen.inflation)} Teuerung pro Jahr hoch. Phasen (z.B. die ersten Jahre mehr) im Modus «Detailliert».`
           }
         />
+        <EntnahmeStrategie h={h} setH={setH} kompakt />
         <AuswahlFeld
           label="Wohnkanton"
           value={kanton?.code ?? ''}

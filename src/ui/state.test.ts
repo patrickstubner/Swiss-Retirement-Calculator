@@ -741,7 +741,7 @@ describe('Schema 9: Todesfall-Szenario', () => {
 
 describe('Schema 10: Sitzkanton je Vorsorgeform', () => {
   it('Version 10; ältere Links erhalten leere Sitze, ungültige Codes werden bereinigt', () => {
-    expect(SCHEMA_VERSION).toBe(11);
+    expect(SCHEMA_VERSION).toBeGreaterThanOrEqual(11);
     const h = standardHaushalt(regeln);
     const p0 = h.personen[0] as (typeof h.personen)[number];
     const alt = {
@@ -771,7 +771,7 @@ describe('Schema 10: Sitzkanton je Vorsorgeform', () => {
 
 describe('Schema 11: Staffelung der Kapitalbezüge', () => {
   it('Version 11; ältere Links erhalten die inaktive Staffelung, ungültige Werte werden begrenzt', () => {
-    expect(SCHEMA_VERSION).toBe(11);
+    expect(SCHEMA_VERSION).toBeGreaterThanOrEqual(11);
     const h = standardHaushalt(regeln);
     expect(h.staffelung?.aktiv).toBe(false);
     const { staffelung: _weg, ...alt } = h;
@@ -815,5 +815,29 @@ describe('Standard für Rendite und Teuerung (30.9.2026)', () => {
     roh.annahmen = undefined;
     const h = normalisiere(roh, regeln);
     expect(h.annahmen.renditeNominal).toBe(0.07);
+  });
+});
+
+describe('Schema 12: Entnahmestrategie', () => {
+  it('Standard ist dynamisch gestaffelt; ohne Feld gilt derselbe Standard', () => {
+    expect(SCHEMA_VERSION).toBe(12);
+    const h = standardHaushalt(regeln);
+    expect(h.entnahme?.art).toBe('gestaffelt');
+    const { entnahme: _weg, ...alt } = h;
+    expect(normalisiere(alt, regeln).entnahme).toEqual(h.entnahme);
+  });
+
+  it('Kodieren und Dekodieren erhält den festen Prozentsatz', () => {
+    const h = standardHaushalt(regeln);
+    h.entnahme = { art: 'dynamisch', satz: 0.05 };
+    expect(dekodiere(kodiere(h), regeln)?.entnahme).toEqual({ art: 'dynamisch', satz: 0.05 });
+  });
+
+  it('unbekannte Art fällt auf den Standard zurück, der Satz wird begrenzt', () => {
+    expect(normalisiere({ entnahme: { art: 'unbekannt' } }, regeln).entnahme?.art).toBe('gestaffelt');
+    expect(normalisiere({ entnahme: { art: 'dynamisch', satz: 9 } }, regeln).entnahme).toEqual({
+      art: 'dynamisch',
+      satz: 0.2,
+    });
   });
 });

@@ -3,6 +3,15 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.2.0] - 2026-10-05
+
+### Geändert
+- Standard-Entnahmestrategie ist «Dynamisch gestaffelt (nach Depotwachstum)». Der Satz für das nächste Jahr hängt vom realen Depotwachstum des Vorjahres ab (Rendite des freien Finanzvermögens, ohne Kapitalbezüge; Teiljahre auf ein Jahr hochgerechnet). Stufen, editierbar: ab 14 % → 6 %, ab 7 % → 5 %, ab 2 % → 4 %, unter 2 % → 3,5 %. Der Standard geht nicht unter 3,5 %, auch nicht bei Verlusten unter −4 %. Eine optionale tiefere Stufe (unter −4 % → 3 %, genau −4 % bleibt 3,5 %) lässt sich ergänzen. Im ersten Simulationsjahr gibt es kein Vorjahr; gerechnet wird mit 0 % (3,5 %).
+- Weitere Strategien bleiben wählbar: Statisch (inflationsangepasst, über die erfassten Ausgaben oder über einen Anfangssatz), Dynamisch (fester Prozentsatz, Standard 4 %), Annuität / Vermögensrente, Mehr-Töpfe. Schwellen, Sätze und Topf-Angaben sind editierbar.
+- Mehr-Töpfe: Der Puffer heisst «Cash / Geldmarkt» (Konto, Geldmarkt, sehr kurze Papiere; reale Rendite Standard 0,5 %). Mittel- bis langfristige Obligationen liegen im mittleren Topf, nicht im Puffer. Zu Beginn der Entnahmephase deckt der Puffer etwa ein Jahr des Nettobedarfs und wächst über vier Jahre auf etwa zwei Jahre. Ausgaben kommen zuerst aus dem Puffer. Einmal jährlich wird er aus den Risikotöpfen aufgefüllt, aber nicht aus einem Topf, dessen reale Jahresrendite unter −10 % liegt. Reicht der Puffer nicht, werden die Risikotöpfe für die Ausgaben trotzdem angetastet.
+- Schema 12. Fehlt das Feld `entnahme` in einem gespeicherten Stand oder Link, gilt die gestaffelte Strategie. Das ändert die Rechnung gegenüber dem bisherigen Lückenmodell. «Statisch (Ausgaben)» stellt das bisherige Verhalten wieder her. Die Umkehrrechnung bleibt bei «Statisch (Ausgaben)».
+- Bei den Satz-Strategien senken AHV, Pensionskasse und weitere Einnahmen den Entnahmesatz nicht; sie kommen zur Entnahme hinzu. Bei «Statisch (Ausgaben)» und «Mehr-Töpfe» senken sie die Lücke wie bisher.
+
 ## [1.1.1] - 2026-10-05
 
 ### Geändert

@@ -77,6 +77,10 @@ export function nominalZeile(z: JahresZeile): JahresZeile {
     total: z.total * b,
     pkGuthaben: z.pkGuthaben * b,
     saeule3aGuthaben: z.saeule3aGuthaben * b,
+    // Entnahme und Bezugsbasis als Paar mit demselben Index, damit der Satz gleich bleibt
+    entnahmeFrei: z.entnahmeFrei * f,
+    entnahmeBasis: z.entnahmeBasis * f,
+    entnahmeToepfe: z.entnahmeToepfe?.map((t) => ({ ...t, wert: t.wert * b })) ?? null,
   };
 }
 

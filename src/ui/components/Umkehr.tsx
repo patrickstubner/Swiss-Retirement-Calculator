@@ -4,6 +4,7 @@
  * Rechnet erst auf Knopfdruck (Monte Carlo: viele Simulationen).
  */
 import { useState } from 'react';
+import { entnahmeAusgaben } from '../../core/entnahme';
 import { inDarstellung } from '../../core/nominal';
 import { referenzPerson } from '../../core/simulation';
 import type { Haushalt, KrisenModus, Monat } from '../../core/typen';
@@ -129,6 +130,7 @@ export function UmkehrKarte({ h, setH, effH, regeln, heute, namen }: Props) {
     const phasen = phasenZumUebernehmen(h, erg.r.basis, erg.e, heute.jahr);
     setH((x) => ({
       ...x,
+      entnahme: entnahmeAusgaben(),
       ausgaben: {
         ...x.ausgaben,
         lebenshaltung: erg.r.basis,
@@ -147,7 +149,7 @@ export function UmkehrKarte({ h, setH, effH, regeln, heute, namen }: Props) {
   return (
     <Karte
       titel="Wie viel kann ich ausgeben? (Umkehrrechnung)"
-      untertitel="Die App sucht die höchsten Ausgaben pro Jahr, mit denen das Geld bis zum Planungsalter reicht und am Ende Ihr Ziel übrig bleibt. Alle Beträge in heutigen Franken."
+      untertitel="Die App sucht die höchsten Ausgaben pro Jahr, mit denen das Geld bis zum Planungsalter reicht und am Ende Ihr Ziel übrig bleibt. Gerechnet wird dafür mit «Statisch (inflationsangepasst)», auch wenn oben eine andere Entnahmestrategie gewählt ist. Alle Beträge in heutigen Franken."
     >
       <Segmente<'konstant' | 'kurve'>
         label="Ausgabenmuster"
@@ -313,7 +315,8 @@ export function UmkehrKarte({ h, setH, effH, regeln, heute, namen }: Props) {
               {uebernommen ? (
                 <p className="ok">
                   ✓ Übernommen: Ausgabenphasen nach Alter{refName} (Modus «Detailliert», Schritt «Vermögen und
-                  Ausgaben»). Das Ergebnis oben rechnet jetzt damit.
+                  Ausgaben»). Die Entnahmestrategie steht auf «Statisch (inflationsangepasst)», damit diese Ausgaben
+                  massgebend sind. Das Ergebnis oben rechnet jetzt damit.
                 </p>
               ) : null}
             </>

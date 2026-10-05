@@ -308,8 +308,8 @@ describe('Speichern der Versionen (Speicher-Version 2)', () => {
     expect(ladeLokal(s, regeln)?.szenarien?.namen).toEqual(namen);
   });
 
-  it('Regression: Haushalt-Schema unverändert (B braucht kein neues Schema)', () => {
-    expect(SCHEMA_VERSION).toBe(11);
+  it('Haushalt-Schema 12 gilt für Version A und B (Entnahmestrategie)', () => {
+    expect(SCHEMA_VERSION).toBe(12);
   });
 });
 

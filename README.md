@@ -27,9 +27,9 @@ Die Berechnungen beruhen auf vereinfachten Modellen, auf Ihren Eingaben und auf 
 Gesetze, Renten, Steuertarife und Zinsen können sich ändern. Für die Richtigkeit, Vollständigkeit und Aktualität der
 Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
 
-## Funktionsumfang (Version 1.1)
+## Funktionsumfang (Version 1.2)
 
-Aktuelle Version: **1.1.1** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [CONTRIBUTING](CONTRIBUTING.md)).
+Aktuelle Version: **1.2.0** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [CONTRIBUTING](CONTRIBUTING.md)).
 
 - **Neutrale Standardwerte:** Alle Beträge sind anfangs leer (0) und frei editierbar – keine Beispielvermögen.
   Gesetzliche Werte (z.B. BVG-Mindestzins) und Annahmen (Standard: 7 % Rendite nominal, 2 % Teuerung; eine Annahme, keine Garantie) sind vorbelegt und anpassbar. Der Schnellmodus rechnet mit denselben Annahmen wie «Detailliert» und zeigt sie sichtbar an.
@@ -120,6 +120,14 @@ Aktuelle Version: **1.1.1** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [
     (bei Weiterarbeit bis 5 Jahre später). Der Wohnkanton beeinflusst nur die Kapitalbezugssteuer.
   - Entnahmen in der Reihenfolge Bargeld → Wertschriften → Sonstiges → Wohneigentum (zuletzt, mit Warnung).
     Kapitalbezüge fliessen in die Wertschriften der Person.
+  - **Entnahmestrategie** für das freie Finanzvermögen (Bargeld, Wertschriften, Sonstiges; nicht Wohneigentum und nicht
+    noch gebundene Vorsorge). Standard: «Dynamisch gestaffelt (nach Depotwachstum)» – der Satz des nächsten Jahres
+    folgt dem realen Depotwachstum des Vorjahres (ab 14 % → 6 %, ab 7 % → 5 %, ab 2 % → 4 %, unter 2 % → 3,5 %,
+    auch bei starken Verlusten; Schwellen editierbar, optional eine tiefere Stufe). Alternativen: statisch
+    inflationsangepasst, fester Prozentsatz,
+    Annuität / Vermögensrente, Mehr-Töpfe mit Puffer «Cash / Geldmarkt» (etwa 1 Jahr Bedarf, über 4 Jahre auf etwa
+    2 Jahre; Obligationen im mittleren Topf). Ab dem ersten Jahr ohne Erwerbseinkommen. Gespeichert im Link und im
+    Browser (Schema 12). «Statisch (Ausgaben)» entspricht der bisherigen Lücke.
   - **Liquiditätslücke:** Warnung mit Jahren, wenn verfügbares Geld fehlt, obwohl noch gesperrte Vorsorgegelder
     vorhanden sind.
 - **Ausgaben in Phasen** (Detailmodus): Grundbetrag pro Jahr (mit Faktoren ab 75/85) plus optionale Phasen «von … bis …»

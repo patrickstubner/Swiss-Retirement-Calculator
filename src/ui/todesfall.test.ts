@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { entnahmeAusgaben } from '../core/entnahme';
 import type { Haushalt, Todesfall } from '../core/typen';
 import { neueAusgaben, neuePerson, standardHaushalt } from '../data/defaults';
 import { ladeRegeln } from '../rules';
@@ -43,6 +44,7 @@ function paar(): Haushalt {
     ausgaben: { ...neueAusgaben(), lebenshaltung: 70_000, faktorAb75: 1, faktorAb85: 1 },
     steuern: { ...h.steuern, kanton: 'ZH', gemeinde: 'Zürich' },
     krisen: { ...h.krisen, modus: 'automatisch' },
+    entnahme: entnahmeAusgaben(),
   };
 }
 

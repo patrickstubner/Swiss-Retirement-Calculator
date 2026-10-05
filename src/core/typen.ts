@@ -418,6 +418,70 @@ export interface Wohnsitz {
   wegzug: { abJahr: number; land: string } | null;
 }
 
+/**
+ * Stufe der Strategie «Dynamisch gestaffelt»: ab diesem realen Vorjahreswachstum gilt `satz`
+ * (die höchste passende Untergrenze gewinnt; exakt auf der Grenze zählt zur höheren Stufe).
+ */
+export interface EntnahmeStufe {
+  /** Stabile Kennung für die Oberfläche */
+  id: string;
+  /** Untergrenze des realen Vorjahreswachstums (Dezimal, z.B. 0.14 oder −0.04) */
+  abWachstum: number;
+  /** Entnahmesatz vom aktuellen freien Finanzvermögen */
+  satz: number;
+}
+
+/** Rolle eines Topfes in der Mehr-Töpfe-Strategie. */
+export type EntnahmeTopfRolle = 'aktien' | 'mittel' | 'cash';
+
+/** Ein Topf der Mehr-Töpfe-Strategie (Anlage oder Puffer). */
+export interface EntnahmeTopfVorlage {
+  rolle: EntnahmeTopfRolle;
+  /** Anzeigename, editierbar */
+  label: string;
+  /**
+   * Anteil am Betrag, der nach dem Cash-Puffer übrig bleibt (Aktien und Mittel).
+   * Beim Cash-Topf unbenutzt: dessen Grösse setzt die Pufferregel.
+   */
+  anteil: number;
+  /** Erwartete reale Rendite pro Jahr */
+  renditeReal: number;
+}
+
+/**
+ * Entnahme aus dem freien Finanzvermögen (Bargeld, Wertschriften, Sonstiges; ohne Wohneigentum
+ * und ohne noch gebundene Vorsorge). AHV, Pensionskasse und weitere Einnahmen bleiben daneben
+ * bestehen. Siehe `src/core/entnahme.ts`.
+ */
+export type Entnahme =
+  | { art: 'gestaffelt'; stufen: EntnahmeStufe[] }
+  | { art: 'statisch'; quelle: 'ausgaben' | 'satz' /** Anfangssatz, nur bei quelle «satz» */; satz: number }
+  | { art: 'dynamisch' /** Fester Satz vom jeweils aktuellen freien Vermögen */; satz: number }
+  | {
+      art: 'annuitaet';
+      /** «gewichtet»: Aktienanteil × Aktienrendite + Rest × Obligationenrendite; «satz»: ein Satz */
+      renditeModus: 'gewichtet' | 'satz';
+      aktienReal: number;
+      obligationenReal: number;
+      satz: number;
+    }
+  | {
+      art: 'toepfe';
+      anzahl: 2 | 3;
+      /** Puffer zu Beginn der Entnahmephase, in Monaten des Nettobedarfs */
+      pufferMonateStart: number;
+      /** Zielpuffer in Monaten */
+      pufferMonateZiel: number;
+      /** Jahre, über die der Puffer vom Start zum Ziel wächst */
+      aufbauJahre: number;
+      /**
+       * Keine Umschichtung aus einem Risikotopf in den Puffer, wenn dessen reale Jahresrendite
+       * darunter liegt. Ausgaben werden trotzdem bezahlt.
+       */
+      keinVerkaufUnter: number;
+      toepfe: EntnahmeTopfVorlage[];
+    };
+
 export interface Haushalt {
   zivilstand: Zivilstand;
   /** 1 oder 2 Personen; bei 'verheiratet' genau 2 */
@@ -444,6 +508,11 @@ export interface Haushalt {
   todesfall?: Todesfall;
   /** Staffelung der Kapitalbezüge (Schema 11); fehlt bei älteren Ständen = keine Staffelung */
   staffelung?: Staffelung;
+  /**
+   * Entnahmestrategie für das freie Finanzvermögen (Schema 12). Fehlt sie, gilt der Standard
+   * «Dynamisch gestaffelt» (`standardEntnahme` in core/entnahme.ts).
+   */
+  entnahme?: Entnahme;
 }
 
 /**
@@ -653,6 +722,22 @@ export interface JahresZeile {
   indexEnde: number;
   /** Jahr, in dem die Person des Todesfall-Szenarios stirbt (nur dann gesetzt) */
   todesjahr?: boolean;
+  /**
+   * Entnahme aus dem freien Finanzvermögen in diesem Jahr (Bargeld, Wertschriften, Sonstiges;
+   * ohne Wohneigentum). 0, solange Erwerbseinkommen fliesst oder ein Überschuss angelegt wird.
+   */
+  entnahmeFrei: number;
+  /** Freies Finanzvermögen unmittelbar vor dieser Entnahme (für den Satz Entnahme/Bestand) */
+  entnahmeBasis: number;
+  /** Von der Strategie gesetzter Satz; null, wenn die Ausgaben die Entnahme bestimmen */
+  entnahmeSatz: number | null;
+  /**
+   * Reales Wachstum des freien Finanzvermögens im Vorjahr (annualisiert). Null im ersten
+   * Simulationsjahr. Die gestaffelte Strategie behandelt null als 0 %.
+   */
+  entnahmeWachstum: number | null;
+  /** Bestände der Mehr-Töpfe am Jahresende; null bei jeder anderen Strategie */
+  entnahmeToepfe: { label: string; wert: number }[] | null;
 }
 
 export interface PersonInfo {

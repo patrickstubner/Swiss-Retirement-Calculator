@@ -16,6 +16,7 @@
  */
 
 import type { Regeln } from '../rules';
+import { entnahmeAusgaben } from './entnahme';
 import type { KrisenDaten, KrisenOptionen } from './krisen';
 import { type MonteCarloEinstellung, monteCarlo, type PoolKrise } from './montecarlo';
 import { referenzPerson, simuliere, startvermoegen } from './simulation';
@@ -158,7 +159,11 @@ export function phasenAbHeute(
   }));
 }
 
-/** Haushalt mit den Ausgaben der Umkehrrechnung (Phasen nach Alter der Referenzperson, ohne Altersfaktoren). */
+/**
+ * Haushalt mit den Ausgaben der Umkehrrechnung (Phasen nach Alter der Referenzperson, ohne Altersfaktoren).
+ * Die Strategie wird auf «Statisch (Ausgaben)» gestellt: die Suche bestimmt den Ausgabenbetrag, nicht einen
+ * Prozentsatz vom Depot.
+ */
 export function mitUmkehrAusgaben(
   h: Haushalt,
   basis: number,
@@ -173,7 +178,7 @@ export function mitUmkehrAusgaben(
     phasenPerson: referenzPerson(h.personen),
     phasen: ausgabenPhasen(h, basis, e),
   };
-  return { ...h, ausgaben };
+  return { ...h, ausgaben, entnahme: entnahmeAusgaben() };
 }
 
 /** Zielvermögen (heutige CHF) für `jahre` simulierte Jahre. */

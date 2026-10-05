@@ -3,6 +3,8 @@
  * Gesetzliche Werte kommen aus den Regeln; Annahmen (Rendite, Inflation usw.) sind
  * bewusst vorsichtig und gut sichtbar anpassbar.
  */
+
+import { standardEntnahme } from '../core/entnahme';
 import type {
   AhvSchaetzhilfeEingabe,
   Ausgaben,
@@ -272,6 +274,7 @@ export function standardHaushalt(regeln: Regeln): Haushalt {
     darstellung: 'real',
     todesfall: neuesTodesfall(),
     staffelung: neueStaffelung(),
+    entnahme: standardEntnahme(),
   };
 }
 

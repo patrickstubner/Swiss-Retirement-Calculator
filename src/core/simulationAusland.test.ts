@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { neueAusgaben, neuePerson, standardHaushalt } from '../data/defaults';
 import { ladeRegeln } from '../rules';
+import { entnahmeAusgaben } from './entnahme';
 import { fwBeitragNichterwerbstaetig } from './freiwilligeAhv';
 import { neBeitrag } from './neBeitrag';
 import { simuliere } from './simulation';
@@ -56,6 +57,7 @@ function haushalt(personen: Person[], o: Partial<Haushalt> = {}): Haushalt {
       steuerbarerErtrag: 0,
       neVerwaltungskosten: 0.03,
     },
+    entnahme: entnahmeAusgaben(),
     ...o,
   };
 }

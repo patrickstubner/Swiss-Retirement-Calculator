@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { neueAusgaben, neuePerson, standardHaushalt } from '../data/defaults';
 import { kantonsModellFuer } from '../data/kantone';
 import { ladeRegeln } from '../rules';
+import { entnahmeAusgaben } from './entnahme';
 import { simuliere } from './simulation';
 import { dbgEinkommen } from './steuern';
 import {
@@ -61,6 +62,7 @@ function paar(o: { rendite?: number; ausgaben?: number } = {}): Haushalt {
     annahmen: { ...h.annahmen, renditeNominal: o.rendite ?? 0.03, inflation: 0.01, steuerbarerErtrag: 0.01 },
     steuern: { ...h.steuern, kanton: 'ZH', gemeinde: 'Zürich' },
     krisen: { ...h.krisen, modus: 'keine' },
+    entnahme: entnahmeAusgaben(),
   };
 }
 
