@@ -3,6 +3,7 @@ import type { Haushalt, Posten, PostenKategorie } from '../../core/typen';
 import { neuerPosten, neuesEreignis } from '../../data/defaults';
 import { gemeindenVon, KANTON_STATUS_TEXT, KANTONE, kantonNach, kantonsModellFuer } from '../../data/kantone';
 import { AusgabenPhasen, HeutigeFrankenHinweis } from '../components/AusgabenPhasen';
+import { EntnahmeStrategie } from '../components/EntnahmeStrategie';
 import { AuswahlFeld, BetragFeld, Schalter, TextFeld, ZahlFeld } from '../components/Felder';
 import { Karte } from '../components/Karte';
 import { WohneigentumFelder, WohnkostenFelder } from '../components/Wohneigentum';
@@ -115,6 +116,7 @@ export function VermoegenAusgaben({ h, setH, regeln, heute }: SchrittProps) {
         {ehepaar ? <p className="klein">Die Faktoren ab 75/85 beziehen sich auf die jüngere Person.</p> : null}
         <AusgabenPhasen h={h} setH={setH} heute={heute} refIdx={referenzPerson(h.personen)} />
       </Karte>
+      <EntnahmeStrategie h={h} setH={setH} />
       <PostenKarte h={h} setH={setH} />
       <EreignisKarte h={h} setH={setH} />
       <SteuerKarte h={h} setH={setH} />

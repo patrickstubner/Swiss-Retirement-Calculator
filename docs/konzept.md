@@ -57,7 +57,7 @@ Version 0.1 · Stand 24.09.2026 · Titel «Ruhestandsrechner Schweiz»
 - Teilpensionierung (Pensum-Reduktion), AHV-Teilvorbezug/-aufschub, PK-Teilbezüge in bis zu 3 Schritten.
 - Wegzug ins Ausland: Zielland, Quellensteuer auf PK/3a-Kapital und -Renten (Sitzkanton der Vorsorgeeinrichtung, z.B. SZ), DBA-Rückforderbarkeit gemäss ESTV 2-217, Art. 25f FZG (EU/EFTA-Obligatorium), freiwillige AHV, Währungsrisiko.
 - Verkleinern (Kauf eines kleineren Eigenheims mit Ersatzbeschaffung), WEF. (Verkauf, Wohnkosten und Eigenmietwert-Wegfall ab 2029 sind seit Schema 7 umgesetzt.)
-- Entnahmestrategien (fester realer Betrag, Prozent vom Vermögen, Leitplanken nach Guyton-Klinger), Anlagestrategie nach Alter.
+- Leitplanken nach Guyton-Klinger und eine monatliche Umschichtung nach der RETIRE-Studie. Entnahmestrategien (gestaffelter Satz, fester realer Betrag, Prozent vom Vermögen, Annuität, Mehr-Töpfe) sind umgesetzt (Schema 12).
 - Erbschaft/Schenkung, Kinderrenten, IV/Todesfall-Szenarien, Mehrsprachigkeit (FR/IT/EN), PWA/offline.
 
 ---

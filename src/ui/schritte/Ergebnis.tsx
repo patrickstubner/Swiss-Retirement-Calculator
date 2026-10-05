@@ -13,6 +13,7 @@ import { regelEintraege } from '../../rules';
 import { Auswertung } from '../components/Auswertung';
 import { LinienChart, type Serie } from '../components/Chart';
 import { DisclaimerVoll } from '../components/Disclaimer';
+import { EntnahmeErgebnis } from '../components/EntnahmeErgebnis';
 import { Segmente } from '../components/Felder';
 import { FlussKarte, MarkerTabelle } from '../components/Fluesse';
 import { JahresUebersicht } from '../components/JahresUebersicht';
@@ -261,6 +262,8 @@ export function Ergebnis({ h, setH, berechnung, heute, suchModus, setSuchModus, 
       {wunsch ? (
         <StaffelungKarte h={h} setH={setH} effH={eff.haushalt} regeln={regeln} heute={heute} namen={namen} />
       ) : null}
+
+      {anzeige ? <EntnahmeErgebnis strategie={h.entnahme} e={anzeige} refIdx={ref} /> : null}
 
       {wunsch ? (
         <Karte titel="Mit Ihrem Wunsch-Rücktrittsalter">

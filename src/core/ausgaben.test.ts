@@ -8,6 +8,7 @@ import {
 } from '../data/defaults';
 import { ladeRegeln } from '../rules';
 import { ausgabenSkaliert, lebenshaltungImJahr, nominalImJahr } from './ausgaben';
+import { entnahmeAusgaben } from './entnahme';
 import { simuliere } from './simulation';
 import type { Ausgaben, Haushalt } from './typen';
 
@@ -85,6 +86,7 @@ describe('Simulation mit Ausgabenphasen', () => {
     personen: [{ ...person, wertschriften: 3_000_000, lohn: 0, stoppAlter: 0 }],
     planungsalter: 90,
     ausgaben: a,
+    entnahme: entnahmeAusgaben(),
   });
 
   it('Ausgaben pro Jahr folgen den Phasen (real = heutige Franken); erstes Jahr anteilig', () => {

@@ -10,7 +10,9 @@
  * Jeder Topf hat eine eigene Rendite. Ausgaben werden nur aus verfügbaren Töpfen bezahlt
  * (Bargeld → Wertschriften → Sonstiges → Wohneigentum). Reicht das nicht, entsteht ein
  * Fehlbetrag; ist dann noch gebundenes Vorsorgevermögen vorhanden, ist das eine
- * Liquiditätslücke.
+ * Liquiditätslücke. Ab dem ersten Jahr ohne Erwerbseinkommen kann eine Entnahmestrategie
+ * die Entnahme aus dem freien Finanzvermögen anders festlegen (core/entnahme.ts). Ohne
+ * Strategie oder bei «Statisch (Ausgaben)» bleibt es bei dieser Lücke.
  *
  * Konventionen:
  * - Steuertarife und Grenzbeträge gelten als an die Teuerung angepasst (real konstant).
@@ -69,6 +71,21 @@ import {
 import { lebenshaltungImJahr } from './ausgaben';
 import { auslandRenteNetto, auslandRenteRealJahr } from './auslandRenten';
 import { bvgAltersgutschrift, pkLeistung } from './bvg';
+import {
+  ausPufferEntnehmen,
+  finanzAnteile,
+  jahreswachstum,
+  lebenshaltungFuerEntnahme,
+  normalisiereEntnahme,
+  pufferAuffuellen,
+  pufferJahre,
+  schreibeFinanz,
+  type TopfStand,
+  toepfeAufteilen,
+  toepfeVerzinsen,
+  topfZufluss,
+  zielEntnahme,
+} from './entnahme';
 import {
   fwBefreitDurchEhegatte,
   fwBeitragErwerbstaetig,
@@ -801,6 +818,12 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
   let wohneigentumAngetastetJahr: number | null = null;
   const liquiditaetsluecken: number[] = [];
   const zeilen: JahresZeile[] = [];
+  const entnahmeCfg = normalisiereEntnahme(h.entnahme);
+  let vorjahresWachstum: number | null = null;
+  let statischBasis: number | null = null;
+  let entnahmeIndex = 0;
+  let bucketStaende: TopfStand[] | null = null;
+  let bucketAnteile: number[] | null = null;
   const n = plaene.length;
   const neu = () => new Array<number>(n).fill(0);
   const sum = (xs: number[]): number => xs.reduce((s, x) => s + x, 0);
@@ -1527,11 +1550,11 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
     // Lebenshaltung in heutigen Franken (real): Grundbetrag, Phase oder Einzeljahr (core/ausgaben.ts)
     // Nach dem Todesfall: Lebenshaltung × Faktor Einpersonenhaushalt (editierbare Annahme, OFFEN)
     const ausgFaktor = tf && tod ? Math.min(1.5, Math.max(0, tf.ausgabenFaktor)) : 1;
-    const lebenshaltung =
+    let lebenshaltung =
       (lebenshaltungImJahr(h.ausgaben, jahr, h.personen, refAlter).betrag *
         (nMonate - monateNachTod + monateNachTod * ausgFaktor)) /
       12;
-    const ausgaben = lebenshaltung + weitereAusgaben + wohnkosten;
+    let ausgaben = lebenshaltung + weitereAusgaben + wohnkosten;
 
     const lohnTotal = sum(lohn);
     const ahvTotal = sum(ahv) + sum(ahvHinter) + sum(ahv13Betrag) + sum(zuschlag);
@@ -1557,12 +1580,33 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
     // normalen Jahre: sonst wüchse die Schuld schneller als der Hauspreis im Durchschnitt.
     const rHypoPauschal = real(a.renditeNominal - a.kosten);
     const finanz = () => plaene.reduce((x, pl) => x + pl.t.bargeld + pl.t.wertschriften + pl.t.sonstiges, 0);
+    const strategieToepfe = entnahmeCfg.art === 'toepfe' && lohnTotal <= 0;
+    if (strategieToepfe && !bucketStaende) {
+      bucketAnteile = finanzAnteile(plaene.map((pl) => pl.t.bargeld + pl.t.wertschriften + pl.t.sonstiges));
+      bucketStaende = toepfeAufteilen(
+        finanz(),
+        Math.max(0, -saldoOhneAhvBeitraege),
+        pufferJahre(0, entnahmeCfg.pufferMonateStart / 12, entnahmeCfg.pufferMonateZiel / 12, entnahmeCfg.aufbauJahre),
+        entnahmeCfg.toepfe,
+      );
+      const verteilt = schreibeFinanz(bucketAnteile, bucketStaende);
+      plaene.forEach((pl, i) => {
+        const v = verteilt[i];
+        if (!v) return;
+        pl.t.bargeld = v.bargeld;
+        pl.t.wertschriften = v.wertschriften;
+        pl.t.sonstiges = v.sonstiges;
+      });
+    }
     const ertragsBasis = finanz();
     const wohnVorher = plaene.reduce((x, pl) => x + pl.t.wohneigentum, 0);
+    let bucketRendite: number[] = [];
     for (const pl of plaene) {
-      pl.t.bargeld *= wachstum(rBar);
-      pl.t.wertschriften *= wachstum(rWert);
-      pl.t.sonstiges *= wachstum(real(pl.p.sonstiges.rendite));
+      if (!strategieToepfe) {
+        pl.t.bargeld *= wachstum(rBar);
+        pl.t.wertschriften *= wachstum(rWert);
+        pl.t.sonstiges *= wachstum(real(pl.p.sonstiges.rendite));
+      }
       if (pl.wWert > 0 || pl.hypo > 0) {
         if (separat) {
           pl.wWert *= wachstum(rWohn);
@@ -1574,7 +1618,21 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
         pl.t.wohneigentum = pl.wWert - pl.hypo;
       } else pl.t.wohneigentum *= pl.t.wohneigentum > 0 ? wachstum(rWohn) : 1;
     }
+    if (strategieToepfe && bucketStaende && bucketAnteile) {
+      const verzinst = toepfeVerzinsen(bucketStaende, nMonate);
+      bucketStaende = verzinst.staende;
+      bucketRendite = verzinst.rendite;
+      const verteilt = schreibeFinanz(bucketAnteile, bucketStaende);
+      plaene.forEach((pl, i) => {
+        const v = verteilt[i];
+        if (!v) return;
+        pl.t.bargeld = v.bargeld;
+        pl.t.wertschriften = v.wertschriften;
+        pl.t.sonstiges = v.sonstiges;
+      });
+    }
     const ertraege = finanz() - ertragsBasis;
+    const wachstumDiesesJahr = jahreswachstum(ertragsBasis > 1 ? ertraege / ertragsBasis : 0, nMonate);
     const wohnwertaenderung = plaene.reduce((x, pl) => x + pl.t.wohneigentum, 0) - wohnVorher;
     // Verkauf der Liegenschaft (am Ende des Verkaufsjahres verbucht): Grundstückgewinnsteuer nach Tarif
     // des Kantons (nominal), Verkaufskosten, Rückzahlung der Hypothek; der Nettoerlös fliesst in die
@@ -1618,7 +1676,8 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
         pl.info.hinweise.push(
           `Grundstückgewinnsteuer: Für den Kanton ${h.steuern.kanton || '(nicht gewählt)'} ist kein Tarif hinterlegt – Näherung mit dem Tarif des Kantons Zürich (OFFEN). Besser: eigenen effektiven Satz erfassen.`,
         );
-      pl.t.wertschriften += erloes;
+      if (strategieToepfe && bucketStaende) bucketStaende = topfZufluss(bucketStaende, erloes, 'cash');
+      else pl.t.wertschriften += erloes;
       pl.wWert = 0;
       pl.hypo = 0;
       pl.t.wohneigentum = 0;
@@ -1626,10 +1685,22 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
       verkaufserloes += erloes;
       verkaufskosten += kostenNom / defl;
     });
-    // Kapitalbezüge fliessen in die Wertschriften der jeweiligen Person
+    // Kapitalbezüge fliessen in die Wertschriften der jeweiligen Person (Mehr-Töpfe: in den Aktien-Topf)
     plaene.forEach((pl, i) => {
-      pl.t.wertschriften += kapital[i] ?? 0;
+      const zu = kapital[i] ?? 0;
+      if (strategieToepfe && bucketStaende) bucketStaende = topfZufluss(bucketStaende, zu, 'aktien');
+      else pl.t.wertschriften += zu;
     });
+    if (strategieToepfe && bucketStaende && bucketAnteile) {
+      const verteilt = schreibeFinanz(bucketAnteile, bucketStaende);
+      plaene.forEach((pl, i) => {
+        const v = verteilt[i];
+        if (!v) return;
+        pl.t.bargeld = v.bargeld;
+        pl.t.wertschriften = v.wertschriften;
+        pl.t.sonstiges = v.sonstiges;
+      });
+    }
 
     // AHV-Beiträge als Nichterwerbstätige (obligatorisch bzw. freiwillig) und freiwillige
     // Beiträge Erwerbstätiger. Vermögen: Schätzung für den 31.12. – verfügbare Töpfe nach
@@ -1672,12 +1743,66 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
       neBeitraege += neI;
       fwBeitraege += fwI;
     });
-    const saldo = saldoOhneAhvBeitraege - neBeitraege - fwBeitraege;
+    let saldo = saldoOhneAhvBeitraege - neBeitraege - fwBeitraege;
 
-    // Saldo: Überschuss tilgt zuerst einen Fehlbetrag und wird dann angelegt; Defizit aus verfügbaren Töpfen
+    // Saldo: Überschuss tilgt zuerst einen Fehlbetrag und wird dann angelegt; Defizit aus verfügbaren Töpfen.
+    // In der Entnahmephase (kein Erwerbseinkommen) kann die Strategie die Entnahme aus dem freien Vermögen setzen.
     let angetastet = false;
     const toepfe = plaene.map((pl) => pl.t);
-    if (saldo >= 0) {
+    const inEntnahme = lohnTotal <= 0;
+    let entnahmeSatz: number | null = null;
+    const entnahmeBasis = finanz();
+    if (inEntnahme && entnahmeCfg.art !== 'toepfe') {
+      const ziel = zielEntnahme(entnahmeCfg, {
+        frei: entnahmeBasis,
+        vorjahresWachstum,
+        restjahre: Math.max(1, Math.floor(h.planungsalter) - refAlter + 1),
+        aktienanteil: a.aktienanteil,
+        statischBasis,
+      });
+      if (ziel) {
+        const betrag = Math.min(entnahmeBasis, ziel.betrag);
+        const angepasst = lebenshaltungFuerEntnahme(saldo, lebenshaltung, betrag);
+        saldo = angepasst.saldo;
+        lebenshaltung = angepasst.lebenshaltung;
+        ausgaben = lebenshaltung + weitereAusgaben + wohnkosten;
+        entnahmeSatz = ziel.satz;
+        if (ziel.statischBasis !== null) statischBasis = ziel.statischBasis;
+      }
+    }
+    if (strategieToepfe && bucketStaende && bucketAnteile) {
+      const cfg = entnahmeCfg.art === 'toepfe' ? entnahmeCfg : null;
+      const bedarf = Math.max(0, -saldo);
+      if (cfg) {
+        const altFehl = saldo < 0 ? fehlbetrag : 0;
+        if (saldo < 0) fehlbetrag = 0;
+        const zielCash =
+          pufferJahre(entnahmeIndex, cfg.pufferMonateStart / 12, cfg.pufferMonateZiel / 12, cfg.aufbauJahre) * bedarf;
+        bucketStaende = pufferAuffuellen(bucketStaende, zielCash, cfg.keinVerkaufUnter, bucketRendite);
+        const entnommen = ausPufferEntnehmen(bucketStaende, bedarf + altFehl);
+        bucketStaende = pufferAuffuellen(entnommen.staende, zielCash, cfg.keinVerkaufUnter, bucketRendite);
+        const ungedeckt = Math.max(0, bedarf + altFehl - entnommen.entnommen);
+        if (saldo > 0) {
+          const tilgung = Math.min(fehlbetrag, saldo);
+          fehlbetrag -= tilgung;
+          bucketStaende = topfZufluss(bucketStaende, saldo - tilgung, 'aktien');
+        }
+        const verteilt = schreibeFinanz(bucketAnteile, bucketStaende);
+        plaene.forEach((pl, i) => {
+          const v = verteilt[i];
+          if (!v) return;
+          pl.t.bargeld = v.bargeld;
+          pl.t.wertschriften = v.wertschriften;
+          pl.t.sonstiges = v.sonstiges;
+        });
+        if (ungedeckt > 0) {
+          const r = entnehme(toepfe, ungedeckt);
+          angetastet = r.wohneigentum;
+          fehlbetrag += r.rest;
+        }
+      }
+      entnahmeIndex += 1;
+    } else if (saldo >= 0) {
       const tilgung = Math.min(fehlbetrag, saldo);
       fehlbetrag -= tilgung;
       const rest = saldo - tilgung;
@@ -1688,7 +1813,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
       fehlbetrag += r.rest;
     }
     // Fehlbetrag aus nachträglich verfügbaren Mitteln (z.B. Kapitalbezug) decken
-    if (fehlbetrag > 0) {
+    if (fehlbetrag > 0 && !(strategieToepfe && bucketStaende)) {
       const r = entnehme(toepfe, fehlbetrag);
       angetastet = angetastet || r.wohneigentum;
       fehlbetrag = r.rest;
@@ -1752,8 +1877,15 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
       ausgabenWohnenPosten,
       indexBeginn: deflator,
       indexEnde: deflator * (1 + inflation),
+      entnahmeFrei: Math.max(0, entnahmeBasis - finanz()),
+      entnahmeBasis,
+      entnahmeSatz,
+      entnahmeWachstum: vorjahresWachstum,
+      entnahmeToepfe:
+        strategieToepfe && bucketStaende ? bucketStaende.map((s) => ({ label: s.label, wert: s.wert })) : null,
       ...(tod ? { todesjahr: jahr === todJahr } : {}),
     });
+    vorjahresWachstum = wachstumDiesesJahr;
     deflator *= 1 + inflation;
   }
 

@@ -8,6 +8,7 @@
  */
 import LZString from 'lz-string';
 import { ahvRenteSkala44, ahvTeilrente } from '../core/ahv';
+import { normalisiereEntnahme } from '../core/entnahme';
 import { detailwerte, SCHAETZ_FELDER } from '../core/schaetzwerte';
 import type {
   Ausgaben,
@@ -72,10 +73,13 @@ import { begrenze, MAX_HASH_LAENGE, MAX_JSON_LAENGE } from './validierung';
  *    `sitzkantonVorsorge`). Ältere Versionen erhalten '' und rechnen unverändert (ein Sitz für alles).
  * 11: Staffelung der Kapitalbezüge (`staffelung`: aktiv, jahre 1–10, pk, fz, s3a). Ältere Versionen und ungültige
  *    Werte erhalten die inaktive Standard-Staffelung; ohne aktive Staffelung ändert sich keine Rechnung.
+ * 12: Entnahmestrategie (`entnahme`). Fehlt sie, gilt «Dynamisch gestaffelt» (Standard). Das ändert die Entnahme
+ *    aus dem freien Vermögen gegenüber der reinen Ausgaben-Lücke; «Statisch (Ausgaben)» stellt das frühere
+ *    Verhalten wieder her.
  * 8: Darstellung der Ergebnisse (`darstellung`: 'real' = heutige Kaufkraft, 'nominal' = Franken des
  *    jeweiligen Jahres). Ältere Versionen und ungültige Werte erhalten 'real'; die Rechnung ändert sich nicht.
  */
-export const SCHEMA_VERSION = 11;
+export const SCHEMA_VERSION = 12;
 const HASH_PREFIX = '#s=';
 /** Einziger Schlüssel mit Daten (ganzer Zustand als JSON). */
 export const STORAGE_KEY = 'ruhestandsrechner:v1';
@@ -411,6 +415,7 @@ function normalisiereRoh(roh: unknown, regeln: Regeln): Haushalt {
     darstellung: h.darstellung === 'nominal' ? 'nominal' : 'real',
     todesfall: normalisiereTodesfall(istObj(roh) ? roh.todesfall : undefined, anzahl),
     staffelung: normalisiereStaffelung(istObj(roh) ? roh.staffelung : undefined),
+    entnahme: normalisiereEntnahme(istObj(roh) ? roh.entnahme : undefined),
   };
 }
 

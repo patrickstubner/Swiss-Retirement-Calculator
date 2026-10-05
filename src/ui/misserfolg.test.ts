@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { SimulationsErgebnis } from '../core';
 import { simuliere } from '../core';
+import { entnahmeAusgaben } from '../core/entnahme';
 import { neueAusgaben, neuePerson, standardHaushalt } from '../data/defaults';
 import { ladeRegeln } from '../rules';
 import { misserfolgErklaerung } from './misserfolg';
@@ -45,6 +46,7 @@ describe('misserfolgErklaerung (Audit 5.4)', () => {
     h.personen = [p];
     h.ausgaben = { ...neueAusgaben(), lebenshaltung: 30000 };
     h.planungsalter = 95;
+    h.entnahme = entnahmeAusgaben();
     const e = simuliere(h, regeln, { start: { jahr: 2026, monat: 1 } });
     // Voraussetzung des Testfalls: Lücke vor dem PK-Bezug, später wieder Vermögen
     expect(e.erfolg).toBe(false);
