@@ -18,6 +18,7 @@ describe('rules/2026.json', () => {
     expect(r.saeule3a.maxMitPk).toBe(7258);
     expect(r.saeule3a.maxOhnePk).toBe(36288);
     expect(r.beitraege.alvHoechstlohn).toBe(148200);
+    expect(r.beitraege.sinkendeSkalaSelbststaendig).toEqual({ untereGrenze: 10100, obereGrenze: 60500 });
     expect(r.beitraege.nichterwerbstaetige.tabelle.maximalbeitrag).toBe(26500);
     expect(r.ahv.vorbezugKuerzung).toHaveLength(24);
   });

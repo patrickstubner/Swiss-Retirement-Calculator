@@ -12,7 +12,7 @@ export function neBemessung(vermoegen: number, renteneinkommenJahr: number, verh
   return verheiratet && r.bemessung.verheirateteHaelftig ? basis / 2 : basis;
 }
 
-/** Jahresbeitrag gemäss Tabelle 2026 (ohne Verwaltungskosten). */
+/** Jahresbeitrag gemäss Beitragstabelle des Regeljahrs (ohne Verwaltungskosten). */
 export function neBeitragTabelle(bemessung: number, r: NeRegeln): number {
   return beitragAusTabelle(bemessung, r.tabelle);
 }

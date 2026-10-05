@@ -70,6 +70,43 @@ export function anzahlFortgeschrieben(jahr: number): number {
   return regelEintraege(jahr).filter((e) => e.status === 'offen' && (e.hinweis ?? '').includes(FORTGESCHRIEBEN)).length;
 }
 
+/** Sichtbarer Hinweis im Kopf der App, wenn die Regeldatei fehlt oder noch Vorjahreswerte fortführt. */
+export interface RegeljahrBanner {
+  rolle: 'alert' | 'status';
+  stark: string;
+  rest: string;
+}
+
+/**
+ * Text des Regeljahr-Banners. «teilweise» nennt, was für 2027 beschlossen ist und was offen bleibt
+ * (Stand Bundesratsentscheid 2.10.2026). Die Skala-44-Tabelle wird nur erwähnt, solange sie «offen» ist.
+ */
+export function regeljahrBanner(jahr: number): RegeljahrBanner | null {
+  const status = regelJahrStatus(jahr);
+  if (status.fehlt) {
+    return {
+      rolle: 'alert',
+      stark: `Regeln für ${status.angefragt} noch nicht erfasst.`,
+      rest: `Der Rechner rechnet mit den Werten von ${status.verwendet} (Beiträge, Renten, Steuertarife und Grenzen können sich geändert haben). Die Ergebnisse sind deshalb möglicherweise ungenau.`,
+    };
+  }
+  const n = anzahlFortgeschrieben(jahr);
+  if (n === 0) return null;
+  const rententabelleOffen = regelEintraege(jahr).some(
+    (e) => e.pfad === 'ahv.rententabelleSkala44' && e.status === 'offen',
+  );
+  const rentenSatz = rententabelleOffen
+    ? ` Die Skala-44-Rententabelle ist aus der Rentenformel gerechnet und noch nicht mit einer publizierten Rententabelle ${status.angefragt} abgeglichen.`
+    : '';
+  return {
+    rolle: 'status',
+    stark: `Regeln für ${status.angefragt} teilweise erfasst.`,
+    rest:
+      `Berücksichtigt sind AHV-Renten (Minimum und Maximum) und Beiträge, BVG-Grenzbeträge, Säule 3a sowie die Tarife der direkten Bundessteuer. Für ${n} Werte gibt es noch keinen amtlichen Beschluss (unter anderem BVG-Mindestzins, Quellensteuer auf Kapitalleistungen bis zur Amtlichen Sammlung, kantonale Tarife); dort gelten vorläufig die Werte von ${status.angefragt - 1}.` +
+      `${rentenSatz} Die Ergebnisse können deshalb abweichen.`,
+  };
+}
+
 /** Alle Regelwerte eines Jahres flach mit Quelle/Stand/Status. */
 export function regelEintraege(jahr: number): RegelEintrag[] {
   const verfuegbar = [...VERFUEGBARE_JAHRE].reverse().find((j) => j <= jahr) ?? VERFUEGBARE_JAHRE[0];

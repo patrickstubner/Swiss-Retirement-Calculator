@@ -107,7 +107,7 @@ Validierung: harte Grenzen aus `rules/2026.json` (z.B. 3a-Maximum, AHV-Vorbezug 
 - Bei Paaren laufen zwei Personen-Zeitachsen in einem Haushaltsbudget. Todesfall-Szenario (V2): Verwitwetenrente, Plafond entfällt, Ehegattenrente PK.
 
 ### c.2 Reihenfolge pro Jahr t
-1. **Indexierung:** Ausgaben mit Inflation (alle Eingaben in heutigen Franken; die Simulation rechnet real, d.h. ein Betrag heute entspricht im Jahr t nominal Betrag × Π(1 + Teuerung); Lebenshaltung pro Jahr aus `core/ausgaben.ts`: Einzeljahr → erste passende Phase → Grundbetrag × Faktor ab 75/85); AHV-Renten mit Annahme «Mischindex ≈ Inflation + x» (Default: Inflation, da die Anpassung 2027 OFFEN ist); PK-Renten nominal fix (Default 0% Teuerungsausgleich).
+1. **Indexierung:** Ausgaben mit Inflation (alle Eingaben in heutigen Franken; die Simulation rechnet real, d.h. ein Betrag heute entspricht im Jahr t nominal Betrag × Π(1 + Teuerung); Lebenshaltung pro Jahr aus `core/ausgaben.ts`: Einzeljahr → erste passende Phase → Grundbetrag × Faktor ab 75/85); AHV-Renten mit Annahme «Mischindex ≈ Inflation + x» (Default: Inflation; die einmalige Anpassung per 1.1.2027 steht in `rules/2027.json`, die laufende Annahme danach bleibt Inflation); PK-Renten nominal fix (Default 0% Teuerungsausgleich).
 2. **Einkommen:** Lohn (bis Stopp-Alter), AHV, PK-Rente, Übergangszuschlag, Kapitalbezüge (PK/FZ/3a) als Zufluss ins freie Vermögen.
 3. **Abgaben:** AHV/IV/EO 5,3% und ALV 1,1% (bis 148'200) auf dem Lohn; BVG-Sparbeitrag AN (wandert ins PK-Guthaben); NE-Beitrag ab Stopp bis RA (Tabelle MB 2.03, Bemessung Vermögen + 20× Renteneinkommen, bei Paaren hälftig; Befreiung, wenn der Ehegatte ≥ 1'060 aus Erwerb zahlt; + Verwaltungskostenzuschlag).
 4. **Steuern:**
@@ -417,16 +417,16 @@ Die Zahlen im Beispiel sind nur Platzhalter. Dazu kommt `scenarios.json` mit den
 12. **Selbständigerwerbende und Teilzeit:** im Scope (anderer AHV-Satz, 3a «gross», kein BVG)?
 13. **Wohneigentum:** erledigt mit Schema 7 (Wohnkosten, Verkauf mit Grundstückgewinnsteuer, Eigenmietwert bis 2028). Offen: Kauf eines Ersatzobjekts, Amortisation, Steuerwert unter dem Verkehrswert.
 14. **Konkubinatspaare:** abbilden (keine Plafonierung, getrennte Steuern) oder nur Ehepaare?
-15. **Jährliche Pflege:** Wer aktualisiert `rules/<Jahr>.json` (Rentenanpassung 2027 und neue Kürzungssätze sind noch OFFEN)?
+15. **Jährliche Pflege:** Wer aktualisiert `rules/<Jahr>.json` (Rentenanpassung 2027 ist beschlossen; BVG-Mindestzins 2027 und die amtliche Rententabelle 2027 sind noch OFFEN)?
 
 ---
 
 ## Anhang: Umgang mit OFFEN-Werten
 - In `rules/2026.json` hat jeder Wert `status: "verifiziert" | "offen"`. Offene Werte werden nur als Default einer Nutzereingabe mit ⚠︎-Hinweis verwendet oder weggelassen.
 - Aktuell OFFEN (Details in `quellen.md`):
-  - AHV-Rentenanpassung 2027.
-  - Neue Vorbezugs- und Aufschubsätze ab frühestens 2027.
-  - BVG-Mindestzins 2027 (Empfehlung 1,75%).
+  - BVG-Mindestzins 2027 (Empfehlung 1,75 %, Entscheid im November).
+  - Amtliche Rententabelle Skala 44 für 2027 (im Rechner aus Art. 34 abgeleitet, Publikation fehlt).
+  - Quellensteuer Bund auf Kapitalleistungen 2027 bis zur AS-Fassung.
   - Ob noch nicht bezogene PK-/FZ-/3a-Guthaben für die freiwillige AHV zum Vermögen zählen (Maximum 2026 inzwischen verifiziert: 25'250 bzw. 26'512.50 inkl. 5% VK).
   - Quellensteuersätze aller Kantone ausser SZ.
   - Offizielle LU-Quelle für den Vorsorgetarif.

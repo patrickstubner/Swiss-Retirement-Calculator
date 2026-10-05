@@ -63,7 +63,7 @@ export const VEREINFACHUNGEN: readonly string[] = [
   VEREINFACHUNG_WOHNEIGENTUM,
   'Alle Beträge in heutigen Franken (real). Steuertarife und Grenzbeträge werden als an die Teuerung angepasst angenommen.',
   'Rendite und Inflation sind konstant (deterministisch). Historische Krisenszenarien folgen.',
-  'Kantons- und Gemeindesteuern: ZH und AG exakt nach Tarif 2026 mit Gemeinde- und Kirchensteuerfuss (validiert mit dem ESTV-Steuerrechner); übrige 24 Kantone als Näherung über effektive Sätze des Hauptorts (ESTV-Steuerrechner 2026), ohne Kirchensteuer. Kantonale Abzüge nicht berücksichtigt. Direkte Bundessteuer exakt nach Tarif 2026.',
+  'Kantons- und Gemeindesteuern: ZH und AG exakt nach Tarif 2026 mit Gemeinde- und Kirchensteuerfuss (validiert mit dem ESTV-Steuerrechner); übrige 24 Kantone als Näherung über effektive Sätze des Hauptorts (ESTV-Steuerrechner 2026), ohne Kirchensteuer. Kantonale Abzüge nicht berücksichtigt. Direkte Bundessteuer exakt nach dem Tarif des Regeljahrs.',
   'Steuerbares Einkommen vereinfacht: Lohn abzüglich AHV/ALV- und Vorsorgebeiträgen, Renten zu 100%, pauschaler Vermögensertrag; keine weiteren Abzüge.',
   'Vorsorgegelder sind gesperrt: PK bis zum frühesten Bezugsalter gemäss Reglement (Standard 63), Freizügigkeit und 3a bis 5 Jahre vor dem Referenzalter. Fehlt vorher Geld, wird eine Liquiditätslücke ausgewiesen. Barauszahlung vor 58 (Wegzug, Selbstständigkeit) nicht abgebildet.',
   'AHV-Schätzhilfe: grobe Schätzung (Skala 44, Teilrente linear, ohne Aufwertungsfaktoren/Jugendjahre). Verbindlich ist nur die Rentenvorausberechnung der Ausgleichskasse.',

@@ -1,6 +1,6 @@
 # Quellen und verifizierte Werte – Ruhestandsrechner Schweiz
 
-Recherche-Stand: 24.09.2026 (freiwillige AHV/IV: 25.09.2026; Regeljahr 2027, Witwenrente, AG-Grundstückgewinnsteuer: 02.10.2026, siehe Abschnitt 21). Alle Beträge in CHF. «OFFEN» = nicht aus einer offiziellen, aktuellen Quelle verifiziert. In diesem Fall darf der Wert in der App nicht fest eingebaut werden (Nutzereingabe oder Platzhalter mit Warnung).
+Recherche-Stand: 24.09.2026 (freiwillige AHV/IV: 25.09.2026; Regeljahr 2027 DBG: 02.10.2026; AHV/BVG/3a Bundesratsentscheid: 05.10.2026, siehe Abschnitt 21). Alle Beträge in CHF. «OFFEN» = nicht aus einer offiziellen, aktuellen Quelle verifiziert. In diesem Fall darf der Wert in der App nicht fest eingebaut werden (Nutzereingabe oder Platzhalter mit Warnung).
 
 Abkürzungen: MB = Merkblatt der Informationsstelle AHV/IV (ahv-iv.ch), mdJE = massgebendes durchschnittliches Jahreseinkommen, RA = Referenzalter, NE = Nichterwerbstätige.
 
@@ -51,8 +51,8 @@ Abkürzungen: MB = Merkblatt der Informationsstelle AHV/IV (ahv-iv.ch), mdJE = m
 | Freiwillige AHV/IV: noch nicht bezogene PK-/FZ-/3a-Guthaben | für die obligatorische AHV zählen sie nicht zum Vermögen (MB 2.03 Ziff. 5); für die freiwillige AHV regelt die WFV das nicht ausdrücklich → **OFFEN**; der Rechner zählt sie wie bei MB 2.03 erst ab Bezug | MB 2.03; WFV | – |
 | Rentenzahlung ins Ausland | CH- und EU/EFTA-Staatsangehörige und Angehörige von Abkommensstaaten: weltweit; Angehörige von Nichtvertragsstaaten: keine Auszahlung ins Ausland, dafür Rückvergütung der Beiträge; keine EL im Ausland | https://www.zas.admin.ch/de/anspruch-auf-ahv-rentenzahlungen-ausserhalb-der-schweiz ; https://www.zas.admin.ch/de/abkommen-ueber-die-freizuegigkeit-eu | abgerufen 09/2026 |
 | EL: allgemeiner Lebensbedarf (nur Info) | 20'670 alleinstehend / 31'005 Ehepaar | BSV Beträge 2026 | 1.1.2026 |
-| Rentenanpassung 2027 | **OFFEN** – bis 24.09.2026 kein Bundesratsentscheid gefunden | https://www.bsv.admin.ch (Medienmitteilungen) | 24.09.2026 |
-| Neue Vorbezugs- und Aufschubsätze (Lebenserwartung) | «frühestens 2027», Sätze noch nicht bekannt → **OFFEN** | https://www.bsv.admin.ch/de/ahv-21 | 09/2026 |
+| Rentenanpassung 2027 | beschlossen: Minimalrente 1'280, Maximalrente 2'560 (siehe Abschnitt 21) | https://www.bsv.admin.ch/de/newnsb/BqB41FVYi5FB | Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026 |
+| Neue Vorbezugs- und Aufschubsätze (Lebenserwartung) | für 2027 **unverändert** (6,8 %/Jahr bzw. 5,2–31,5 %). Die BSV-Seite AHV 21 schreibt weiterhin «ab 2027 gekürzt, Sätze noch nicht bekannt» – Widerspruch, siehe Abschnitt 21 | https://sozialversicherungen.admin.ch/de/d/18438/download ; https://www.bsv.admin.ch/de/ahv-21 | abgerufen 05.10.2026 |
 | Reform AHV 2030 | Vernehmlassung 20.05.–11.09.2026, nicht in Kraft (u.a. flexiblere Bezugsregeln, PK-Mindestalter 58→63) → nur als Hinweis | https://www.bsv.admin.ch/de/ahv-2030 | 09/2026 |
 
 ## 2. BVG / Pensionskasse (2. Säule)
@@ -461,9 +461,9 @@ Die App berechnet die Tabelle aus denselben Daten (kein fest einprogrammierter W
 - Ein amtlich oder wissenschaftlich belegter **Erwartungswert** für die Zukunft: Die 7 % bleiben eine Modellannahme des Eigentümers (Auftrag vom 30.9.2026); belegt ist nur, dass sie in der historischen Spanne für 100 % Aktien liegt.
 - Eine Tabelle mit Richtwerten für Welt-Aktien in CHF nach Aktienanteil.
 
-## 21. Regeljahr 2027 (Vorbereitung) – `src/rules/2027.json`, Stand 2.10.2026
+## 21. Regeljahr 2027 – `src/rules/2027.json`, Stand 5.10.2026
 
-**Grundsatz:** `2027.json` enthält nur dort neue Werte, wo ein amtlicher Text vorliegt. Alles andere führt den Wert 2026 fort, steht auf **offen** und trägt den Hinweis «Fortgeschrieben» (die App zeigt dazu ab 1.1.2027 den Hinweis «Regeln für 2027 teilweise erfasst»). Für 2028 und später zeigt die App weiterhin «noch nicht erfasst».
+**Grundsatz:** `2027.json` enthält nur dort neue Werte, wo ein amtlicher Text vorliegt. Alles andere führt den Wert 2026 fort, steht auf **offen** und trägt den Hinweis «Fortgeschrieben» (die App zeigt dazu ab 1.1.2027 den Hinweis «Regeln für 2027 teilweise erfasst» und nennt, was berücksichtigt ist und was offen bleibt). Für 2028 und später zeigt die App weiterhin «noch nicht erfasst». Die Skala-44-Rententabelle ist aus der Rentenformel abgeleitet und «offen», aber **ohne** «Fortgeschrieben» (die Beträge sind nicht die von 2026).
 
 ### Amtlich bestätigt (Status «verifiziert»)
 
@@ -486,9 +486,47 @@ Die Tests in `src/rules/regeljahr2027.test.ts` prüfen alle Stützpunkte der bei
 
 Der EFD-Vorabdruck der QStV-Änderung per 1.1.2027 nennt für die Stufe 125'000–150'000 **1,90 %** (Alleinstehende) und **1,70 %** (Verheiratete). Die Regeldatei 2026 führt dort 1,95 % bzw. 1,75 % (Quelle: ESTV-Übersicht 2026, TG-Tarif 2026; Gegenrechnung TG: 150'000 → 11'925 Franken, passt zu 1,95 %). Alle anderen Stufen sind 2027 unverändert. Ob die Abweichung ein Tippfehler im Vorabdruck oder eine echte Änderung ist, ist nicht geklärt (Fedlex-Text per Abruf nicht lesbar). **Entscheid:** Status «offen», in der App gilt der Wert 2026 (höherer Satz, also vorsichtiger). Prüfen, sobald die AS-Veröffentlichung vorliegt.
 
-### Noch nicht amtlich beschlossen (OFFEN, Wert 2026 fortgeschrieben)
+### Bundesratsentscheid 2.10.2026 (AHV/IV/EO, BVG-Grenzen, Säule 3a)
 
-AHV/IV-Renten 2027 (Rentenanpassung: bis 2.10.2026 kein Bundesratsentscheid gefunden), Beitragsgrenzen AHV/ALV, BVG-Grenzbeträge, BVG-Mindestzins 2027 (Kommission empfiehlt 1.75 %, Bundesrat entscheidet im November), Säule-3a-Maxima 2027 (Banken sprechen von «Oktober 2026», amtlich noch nicht publiziert), neue AHV-Vorbezugs-/Aufschubsätze («frühestens 2027»), kantonale Tarife, Steuerfüsse und Kapitalleistungssteuern 2027, Hypothekarzinsdurchschnitt, Quellensteuer-Rentensätze der Kantone. Sobald der Bundesrat/BSV die Werte veröffentlicht, in `2027.json` ersetzen, auf «verifiziert» setzen und «Fortgeschrieben» entfernen; der Zähler im Banner geht dann automatisch zurück.
+Quellen, alle abgerufen 5.10.2026:
+
+- Medienmitteilung BSV «AHV/IV-Minimalrente steigt um 20 Franken», 2.10.2026: https://www.bsv.admin.ch/de/newnsb/BqB41FVYi5FB
+- Hintergrunddokument «Beträge gültig ab dem 1. Januar 2027»: https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf
+- Verordnungsbeilage (provisorische Fassung, massgebend wird die AS): https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/7c36e40d-4e66-4431-887b-d18ffc5009f3.pdf
+- Berechnungsvorschriften der AHV/IV-Renten, gültig ab 1.1.2027: https://sozialversicherungen.admin.ch/de/d/18438/download
+
+| Wert | 2027 | 2026 |
+|---|---|---|
+| Minimale volle Altersrente | 1'280 / Monat | 1'260 |
+| Maximale volle Altersrente | 2'560 / Monat | 2'520 |
+| Plafond Ehepaar (150 %) | 3'840 / Monat | 3'780 |
+| Mindestbeitrag AHV/IV/EO | 541 (AHV 444, IV 71, EO 26) | 530 (435 + 70 + 25) |
+| Freiwillige AHV/IV, Minimum | 1'030 (AHV 888, IV 142) | 1'010 |
+| Sinkende Beitragsskala Selbstständigerwerbende | 10'300 bis 61'500 | 10'100 bis 60'500 |
+| EL allgemeiner Lebensbedarf (nur Info) | 21'000 alleinstehend, 31'500 Ehepaar | 20'670 / 31'005 |
+| BVG Eintrittsschwelle (Mindestjahreslohn) | 23'040 | 22'680 |
+| BVG Koordinationsabzug | 26'880 | 26'460 |
+| BVG obere Limite Jahreslohn | 92'160 | 90'720 |
+| BVG minimaler koordinierter Lohn | 3'840 | 3'780 |
+| BVG maximaler koordinierter Lohn | 65'280 (= 92'160 − 26'880, Art. 8 BVG; nicht als eigene Zeile im Betragsdokument) | 64'260 |
+| BVG max. versicherbarer Lohn | 921'600 (= 10 × 92'160, Art. 79c BVG; nicht als eigene Zeile im Betragsdokument) | 907'200 |
+| Säule 3a mit PK | 7'373 | 7'258 |
+| Säule 3a ohne PK | 36'864 (publiziert; nicht 5 × 7'373 = 36'865) | 36'288 |
+
+**AHVV-Tabelle Nichterwerbstätige (Art. 28), nur AHV:** bis 360'000: 444; ab 360'000: 539.40 + 87 je 50'000; ab 1'760'000: 2'975.40 + 130.50 je 50'000; ab 9'160'000: Höchstbeitrag 22'200. IV (71–3'550) und EO (26–1'300) gelten sinngemäss (IVV Art. 1bis, EOV Art. 36). Die kombinierte Tabelle im Rechner ist die Summe nach den Sätzen 8,7 % / 1,4 % / 0,5 % (Faktoren 87 / 14 / 5), dieselbe Aufteilung, die die Tabelle 2026 exakt trifft: ab 360'000 zusammen 657.20 + 106 je 50'000; ab 1'760'000 zusammen 3'625.20 + 159; Höchstbeitrag 27'050 (= 22'200 + 3'550 + 1'300) ab 9'160'000. Merkblatt 2.03 mit der gedruckten Kombinationstabelle 2027 lag am 5.10.2026 nicht vor.
+
+**Freiwillige AHV/IV, Nichterwerbstätige (VFV Art. 13b, im Verordnungstext abgedruckt):** bis 610'000: 1'030; ab 610'000: 1'131.20 + 101 je 50'000; ab 1'760'000: 3'454.20 + 151.50; ab 9'160'000: 25'750. Die erste Schwelle ist 610'000, nicht die 360'000 der obligatorischen Tabelle. Befreiung des Ehegatten: doppelter Mindestbeitrag, also 2'060 (freiwillig) bzw. 1'082 (obligatorisch AHV/IV/EO).
+
+**Rententabelle Skala 44:** nicht in den Beschluss-PDFs. `rententabelleSkala44`, `rententabelleReferenz` und `rententabelleStufe` (1'536 = 1/10 von 15'360) sind nach Art. 34 AHVG aus der Minimalrente 1'280 gerechnet (auf Franken gerundet). Dieselbe Formel reproduziert die amtliche Tabelle 2025/2026 exakt. Status **offen**, ohne «Fortgeschrieben», bis Merkblatt 3.01 bzw. «Rententabellen 2027» vorliegt. Die Rentenformel selbst (Koeffizienten, mdJE 15'360 bis 92'160) ist verifiziert.
+
+**Vorbezug und Aufschub:** Sätze wie 2026 (Vorbezug 6,8 % pro Jahr, Aufschub 5,2 bis 31,5 %; reduzierte Jahressätze der Übergangsgeneration unverändert). Einkommensgrenzen 48 × und 60 × Minimalrente: 61'440 und 76'800 (Berechnungsvorschriften, Punkt 6.3.2; die Monatsstaffel darin ist feiner, der Rechner interpoliert die Jahreswerte weiterhin linear). Der offene Punkt «neue Sätze frühestens 2027» ist für 2027 als unverändert abgehakt. **Widerspruch:** https://www.bsv.admin.ch/de/ahv-21 schrieb am 5.10.2026 weiterhin, die Kürzungssätze und Aufschubszuschläge würden ab 2027 an die Lebenserwartung angepasst und die Sätze seien noch nicht bekannt. Massgebend für den Rechner sind die Berechnungsvorschriften gültig ab 1.1.2027.
+
+### Weiter offen (Wert 2026 fortgeschrieben, sofern nichts anderes steht)
+
+- **BVG-Mindestzins 2027:** Empfehlung der BVG-Kommission 1,75 % (31.08.2026), Bundesrat entscheidet erst im November. Nicht fortgeschrieben (der Wert ist die Empfehlung, nicht der Satz 2026 von 1,25 %), Status offen. Der Rechner verwendet für Schätzungen weiter `bvg.mindestzins2026`.
+- **Quellensteuer Bund auf Kapitalleistungen 2027:** bis zur AS-Fassung offen. Stufe 125'000–150'000 bleibt beim Wert 2026 (1,95 % / 1,75 %), Hinweis auf den Vorabdruck (1,90 % / 1,70 %) bleibt.
+- **Kantonale Tarife, Steuerfüsse, Kapitalleistungssteuern 2027, Hypothekarzinsdurchschnitt, Quellensteuer-Rentensätze der Kantone, ALV-Höchstlohn:** nicht im Beschluss vom 2.10.2026, fortgeschrieben.
+- **Rententabellen-Publikation 2027 und Merkblatt 2.03 (gedruckte Kombinationstabelle):** siehe oben; die abgeleiteten Werte stehen in der Datei, die Gegenprobe fehlt.
 
 ## 22. Prüfung Audit-Bericht Punkte 7/8 (2.10.2026)
 

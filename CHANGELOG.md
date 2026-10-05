@@ -3,6 +3,18 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.1.0] - 2026-10-05
+
+### Geändert
+- Regeljahr 2027: AHV/IV/EO, BVG-Grenzbeträge und Säule 3a nach dem Bundesratsentscheid vom 2.10.2026 (Minimalrente 1'280, Maximalrente 2'560, Mindestbeitrag 541, freiwillige AHV/IV 1'030, BVG-Eintrittsschwelle 23'040, Säule 3a 7'373 / 36'864). Quellen in `docs/quellen.md`, Abschnitt 21.
+- Vorbezugs- und Aufschubsätze 2027 unverändert gegenüber 2026; Einkommensgrenzen der Übergangsgeneration 61'440 und 76'800.
+- Banner ab 1.1.2027: was berücksichtigt ist und was offen bleibt.
+
+### Offen
+- BVG-Mindestzins 2027 (Empfehlung 1,75 %, Entscheid im November).
+- Quellensteuer des Bundes auf Kapitalleistungen 2027 bis zur Veröffentlichung in der Amtlichen Sammlung.
+- Kantonale Tarife 2027 und die publizierte Rententabelle Skala 44 (im Rechner aus der Rentenformel abgeleitet).
+
 ## [1.0.0] - 2026-10-02
 
 Erste stabile Version des Ruhestandsrechners Schweiz.
