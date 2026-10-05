@@ -17,7 +17,7 @@ import {
 import type { AuslandRente, Person, SchaetzFeld } from '../../core/typen';
 import { neueAuslandRente, WAEHRUNGEN } from '../../data/defaults';
 import { ladeRegeln } from '../../rules';
-import { ahvBezugAnzeigen, ahvBezugOptionLabel, fmtJahreMonate } from '../ahvBezugAnzeige';
+import { ahvBezugAnzeigen, fmtJahreMonate } from '../ahvBezugAnzeige';
 import { AhvSchaetzhilfe } from '../components/AhvSchaetzhilfe';
 import { ErwerbsstatusFeld, NichtErwerbstaetigFelder } from '../components/Erwerbsstatus';
 import { AuswahlFeld, BetragFeld, Schalter, Segmente, TextFeld, ZahlFeld } from '../components/Felder';
@@ -165,19 +165,11 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
           <AuswahlFeld
             label="AHV-Bezug"
             value={bezugArt}
+            hinweis={bezugZeit ? bezugZeit.saetze[bezugZeit.art] : undefined}
             optionen={[
-              {
-                value: 'ordentlich',
-                label: bezugZeit ? ahvBezugOptionLabel(bezugZeit.referenzalter) : 'Im Referenzalter',
-              },
-              {
-                value: 'vorbezug',
-                label: bezugZeit ? ahvBezugOptionLabel(bezugZeit.vorbezug) : 'Vorbezug',
-              },
-              {
-                value: 'aufschub',
-                label: bezugZeit ? ahvBezugOptionLabel(bezugZeit.aufschub) : 'Aufschub',
-              },
+              { value: 'ordentlich', label: 'Im Referenzalter' },
+              { value: 'vorbezug', label: 'Vorbezug' },
+              { value: 'aufschub', label: 'Aufschub' },
             ]}
             onChange={(v) =>
               set((x) => ({
@@ -192,14 +184,13 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
           />
           {bezugArt !== 'ordentlich' ? (
             <ZahlFeld
-              label={
+              label={bezugArt === 'vorbezug' ? 'Vorbezug um' : 'Aufschub um'}
+              hinweis={
                 bezugZeit
                   ? bezugArt === 'vorbezug'
-                    ? `Vorbezug um — ab 1. ${fmtMonat(bezugZeit.vorbezug.beginn)}, Alter ${fmtJahreMonate(bezugZeit.vorbezug.alterBeiBeginnMonate)}`
-                    : `Aufschub um — ab 1. ${fmtMonat(bezugZeit.aufschub.beginn)}, Alter ${fmtJahreMonate(bezugZeit.aufschub.alterBeiBeginnMonate)}`
-                  : bezugArt === 'vorbezug'
-                    ? 'Vorbezug um'
-                    : 'Aufschub um'
+                    ? `Ab 1. ${fmtMonat(bezugZeit.vorbezug.beginn)}, Alter ${fmtJahreMonate(bezugZeit.vorbezug.alterBeiBeginnMonate)}.`
+                    : `Ab 1. ${fmtMonat(bezugZeit.aufschub.beginn)}, Alter ${fmtJahreMonate(bezugZeit.aufschub.alterBeiBeginnMonate)}.`
+                  : undefined
               }
               einheit="Monate"
               value={Math.abs(verschiebung)}
