@@ -29,7 +29,7 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
 
 ## Funktionsumfang (Version 1.2)
 
-Aktuelle Version: **1.2.0** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [CONTRIBUTING](CONTRIBUTING.md)).
+Aktuelle Version: **1.2.1** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [CONTRIBUTING](CONTRIBUTING.md)).
 
 - **Neutrale Standardwerte:** Alle Beträge sind anfangs leer (0) und frei editierbar – keine Beispielvermögen.
   Gesetzliche Werte (z.B. BVG-Mindestzins) und Annahmen (Standard: 7 % Rendite nominal, 2 % Teuerung; eine Annahme, keine Garantie) sind vorbelegt und anpassbar. Der Schnellmodus rechnet mit denselben Annahmen wie «Detailliert» und zeigt sie sichtbar an.
@@ -76,7 +76,9 @@ Aktuelle Version: **1.2.0** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [
 - **Erwerbsaufgabe als Alter oder Datum:** Alter (Jahre + Monate) oder «per Ende» Monat + Jahr (z.B. November 2027);
   beim Datum zeigt die App das resultierende Alter. Der gewählte Modus wird gespeichert.
 - **Frühester AHV-Bezug** wird aus Jahrgang und Geschlecht abgeleitet und nur angezeigt (Vorbezug ab 63; Frauen der
-  Jahrgänge 1961–1969 ab 62). Das früheste PK-Bezugsalter ist ein eigenes, klar beschriftetes Feld
+  Jahrgänge 1961–1969 ab 62). Bei Referenzalter, Vorbezug und Aufschub nennt die Auswahl den Rentenbeginn
+  (1. des Monats nach dem massgebenden Alter) und das Alter dann, beim Referenzalter auch Jahre und Monate.
+  Das früheste PK-Bezugsalter ist ein eigenes, klar beschriftetes Feld
   («Pensionskasse: frühester Bezug laut Reglement (58–70)») mit kurzem Hilfetext (Vorsorgeausweis/Reglement,
   «vorzeitige Pensionierung ab …») und einer **Statuszeile pro Person**, die aus den aktuellen Eingaben sagt, welcher
   Fall eintritt: Barauszahlung beim Wegzug (vor dem Reglementsalter; EU/EFTA nur Überobligatorium), Pensionierung mit
@@ -161,7 +163,7 @@ Aktuelle Version: **1.2.0** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [
   erwerbstätige Ehegatte genug bezahlt.
 - Pensionskasse (Werte manuell aus dem Vorsorgeausweis): Altersguthaben, Sparbeiträge, Verzinsung,
   Umwandlungssatz, Kapital/Rente-Mix, frühestes Bezugsalter gemäss Reglement.
-- Säule 3a und Freizügigkeit: Guthaben, Rendite, Einzahlungen (3a-Maximum 2026).
+- Säule 3a und Freizügigkeit: Guthaben, Rendite, Einzahlungen (Maximum des geladenen Regeljahrs, 2026: mit PK 7'258, ohne PK 36'288). Der Hinweis nennt zusätzlich das gesetzliche Maximum ab 2027 (mit PK 7'373, ohne PK 36'864); die Rechnung wechselt das Jahr nicht vorzeitig.
 - Ausländische Renten pro Person (z.B. Rente aus einem Abkommensstaat; Beispiel-Felder in `docs/auslandsszenarien.md` §4): Betrag, Währung,
   Zahlungen/Jahr, Wechselkurs mit realer Auf-/Abwertung pro Jahr, Startalter, Indexierung, Steuer im Quellenstaat,
   in der Schweiz steuerbar ja/nein.

@@ -16,6 +16,8 @@ import {
 } from '../../core/schaetzwerte';
 import type { AuslandRente, Person, SchaetzFeld } from '../../core/typen';
 import { neueAuslandRente, WAEHRUNGEN } from '../../data/defaults';
+import { ladeRegeln } from '../../rules';
+import { ahvBezugAnzeigen, ahvBezugOptionLabel, fmtJahreMonate } from '../ahvBezugAnzeige';
 import { AhvSchaetzhilfe } from '../components/AhvSchaetzhilfe';
 import { ErwerbsstatusFeld, NichtErwerbstaetigFelder } from '../components/Erwerbsstatus';
 import { AuswahlFeld, BetragFeld, Schalter, Segmente, TextFeld, ZahlFeld } from '../components/Felder';
@@ -24,7 +26,7 @@ import { WegzugVorsorgeFelder, WegzugZeitpunktFelder } from '../components/Wegzu
 import { fmtChf, fmtMonat, fmtProzent } from '../format';
 import { type SchrittProps, setzeManuell, setzePerson } from '../kontext';
 import { pkWegzugAnzeige } from '../pkWegzugText';
-import { UWS_GESCHAETZT, UWS_HILFE, UWS_QUELLE, uwsSchaetzungText } from '../texte';
+import { saeule3aMaxHinweis, UWS_GESCHAETZT, UWS_HILFE, UWS_QUELLE, uwsSchaetzungText } from '../texte';
 
 export function EinkommenVorsorge(props: SchrittProps) {
   const { h } = props;
@@ -79,6 +81,9 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
   }
   const uebergang = istUebergangsFrau(p.geburtsjahr, p.geschlecht, r);
   const ahvFrueh = ahvFruehestesBezugsalter(p.geburtsjahr, p.geschlecht, r);
+  const bezugZeit = fehlerVerschiebung
+    ? null
+    : ahvBezugAnzeigen(p.geburtsjahr, p.geburtsmonat, p.geschlecht, verschiebung, r);
   const bezugsalter = regeln.bvg.bezugsalter;
   const ne = istNichtErwerbstaetig(p);
   // Statuszeile zum Reglementsalter: Fall aus der Simulation (gleiche Entscheidung wie die Rechnung)
@@ -161,9 +166,18 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
             label="AHV-Bezug"
             value={bezugArt}
             optionen={[
-              { value: 'ordentlich', label: 'Im Referenzalter' },
-              { value: 'vorbezug', label: 'Vorbezug' },
-              { value: 'aufschub', label: 'Aufschub' },
+              {
+                value: 'ordentlich',
+                label: bezugZeit ? ahvBezugOptionLabel(bezugZeit.referenzalter) : 'Im Referenzalter',
+              },
+              {
+                value: 'vorbezug',
+                label: bezugZeit ? ahvBezugOptionLabel(bezugZeit.vorbezug) : 'Vorbezug',
+              },
+              {
+                value: 'aufschub',
+                label: bezugZeit ? ahvBezugOptionLabel(bezugZeit.aufschub) : 'Aufschub',
+              },
             ]}
             onChange={(v) =>
               set((x) => ({
@@ -178,7 +192,15 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
           />
           {bezugArt !== 'ordentlich' ? (
             <ZahlFeld
-              label={bezugArt === 'vorbezug' ? 'Vorbezug um' : 'Aufschub um'}
+              label={
+                bezugZeit
+                  ? bezugArt === 'vorbezug'
+                    ? `Vorbezug um — ab 1. ${fmtMonat(bezugZeit.vorbezug.beginn)}, Alter ${fmtJahreMonate(bezugZeit.vorbezug.alterBeiBeginnMonate)}`
+                    : `Aufschub um — ab 1. ${fmtMonat(bezugZeit.aufschub.beginn)}, Alter ${fmtJahreMonate(bezugZeit.aufschub.alterBeiBeginnMonate)}`
+                  : bezugArt === 'vorbezug'
+                    ? 'Vorbezug um'
+                    : 'Aufschub um'
+              }
               einheit="Monate"
               value={Math.abs(verschiebung)}
               min={bezugArt === 'vorbezug' ? 1 : r.aufschub.minMonate}
@@ -199,6 +221,32 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
             Voreingestellt ist der maximal mögliche Vorbezug ({maxVorbezug} Monate, also ab {ahvFrueh} Jahren). Mit
             weniger Monaten sinkt die lebenslange Kürzung; die Zahl ist änderbar.
           </p>
+        ) : null}
+        {bezugZeit ? (
+          <div className="info">
+            <p>Zeitpunkt und Alter beim Rentenbeginn</p>
+            <ul className="liste ahv-bezug-zeiten">
+              {(
+                [
+                  ['referenzalter', 'ordentlich'],
+                  ['vorbezug', 'vorbezug'],
+                  ['aufschub', 'aufschub'],
+                ] as const
+              ).map(([art, wert]) => {
+                const gewaehlt = bezugArt === wert;
+                return (
+                  <li
+                    key={art}
+                    className={gewaehlt ? 'ahv-bezug-zeiten__aktiv' : undefined}
+                    aria-current={gewaehlt ? 'true' : undefined}
+                  >
+                    {gewaehlt ? <strong>Gewählt. </strong> : null}
+                    {bezugZeit.saetze[art]}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         ) : null}
         {bezugInfo ? <p className="info">{bezugInfo}</p> : null}
         {fehlerVerschiebung ? <p className="warnung">{fehlerVerschiebung}</p> : null}
@@ -411,7 +459,7 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
               min={0}
               max={regeln.saeule3a.maxOhnePk}
               onChange={(v) => set((x) => ({ ...x, saeule3a: { ...x.saeule3a, beitragJahr: v } }))}
-              hinweis={`Maximum ${regeln.meta.jahr} mit PK: ${fmtChf(regeln.saeule3a.maxMitPk)}`}
+              hinweis={saeule3aMaxHinweis(regeln, regeln.meta.jahr < 2027 ? ladeRegeln(2027) : null)}
             />
           )}
           <ZahlFeld

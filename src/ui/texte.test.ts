@@ -3,7 +3,8 @@ import { effektiverHaushalt } from '../core/schaetzwerte';
 import type { Person } from '../core/typen';
 import { neuePerson, standardHaushalt } from '../data/defaults';
 import { ladeRegeln } from '../rules';
-import { disclaimerAbsaetze, uwsKurz, uwsSchaetzungText } from './texte';
+import { fmtChf } from './format';
+import { disclaimerAbsaetze, saeule3aMaxHinweis, uwsKurz, uwsSchaetzungText } from './texte';
 
 const regeln = ladeRegeln(2026);
 const heute = { jahr: 2026, monat: 9 };
@@ -24,6 +25,30 @@ describe('Disclaimer nennt das Regeljahr der geladenen Regeln', () => {
     expect(text).not.toContain('Stand 2026');
     expect(text).toContain('Ihnen');
     expect(disclaimerAbsaetze(2026).join('\n')).toContain('Stand 2026');
+  });
+});
+
+describe('Säule 3a: Maximum 2027 nur im Hinweis', () => {
+  const r26 = ladeRegeln(2026);
+  const r27 = ladeRegeln(2027);
+
+  it('nennt bei Regeln 2026 das kommende Maximum und lässt die Rechnung bei 2026', () => {
+    expect(r27.saeule3a.maxMitPk).toBe(7373);
+    expect(r27.saeule3a.maxOhnePk).toBe(36864);
+    const t = saeule3aMaxHinweis(r26, r27);
+    expect(t).toContain(
+      `Maximum 2026: mit PK ${fmtChf(r26.saeule3a.maxMitPk)}, ohne PK ${fmtChf(r26.saeule3a.maxOhnePk)}.`,
+    );
+    expect(t).toContain(`Ab 2027 beträgt das gesetzliche Maximum mit PK ${fmtChf(7373)} und ohne PK ${fmtChf(36864)}.`);
+    expect(t).toContain('Für Ihre Rechnung gelten weiterhin die Beträge 2026.');
+    expect(t).not.toMatch(/ß/);
+  });
+
+  it('ab Regeljahr 2027 ist das Maximum das geladene, ohne Hinweis auf ein späteres Jahr', () => {
+    const t = saeule3aMaxHinweis(r27, r27);
+    expect(t).toBe(`Maximum 2027: mit PK ${fmtChf(7373)}, ohne PK ${fmtChf(36864)}.`);
+    expect(t).not.toContain('weiterhin');
+    expect(saeule3aMaxHinweis(r26, null)).not.toContain('Ab 2027');
   });
 });
 
