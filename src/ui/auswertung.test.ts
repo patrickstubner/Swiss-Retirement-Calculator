@@ -154,6 +154,35 @@ describe('Was-wäre-wenn', () => {
     expect(krisenText(a)).toContain('Finanzkrise 2046–2048');
     expect(krisenText(a)).toContain('Dotcom 2055–2057');
   });
+
+  it('Beginn im Juli verschiebt das Band und nennt den Monat', () => {
+    const h = haushalt();
+    h.planungsalter = 90;
+    h.krisen = {
+      ...h.krisen,
+      modus: 'individuell',
+      auswahl: [
+        {
+          uid: 'euro',
+          id: 'eurokrise2011',
+          land: 'CHE',
+          startArt: 'jahr',
+          jahr: 2046,
+          alter: 81,
+          person: 0,
+          jahreNach: 0,
+          monat: 7,
+          eigen: null,
+        },
+      ],
+    };
+    const a = krisenAbschnitte(rechne(h, regeln, start, 'gemeinsam').wunsch, 0);
+    expect(a).toHaveLength(1);
+    expect(a[0]).toMatchObject({ label: 'Eurokrise', jahrVon: 2046, jahrBis: 2047, monatVon: 7, monatBis: 6 });
+    expect(a[0]?.von).toBeCloseTo(80.5, 6);
+    expect(a[0]?.bis).toBeCloseTo(81.5, 6);
+    expect(krisenText(a)).toBe('Eurokrise Juli 2046–Juni 2047 (Alter 80,5–81,5)');
+  });
 });
 
 describe('Diagrammfarben', () => {

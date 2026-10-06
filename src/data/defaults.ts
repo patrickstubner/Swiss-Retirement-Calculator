@@ -314,6 +314,7 @@ export function neueKrisenAuswahl(id: string, land: KrisenReihe, jahr: number): 
     alter: 70,
     person: 0,
     jahreNach: 0,
+    monat: 1,
     eigen: null,
   };
 }

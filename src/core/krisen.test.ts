@@ -11,6 +11,8 @@ import {
 } from '../data/krisen';
 import { ladeRegeln } from '../rules';
 import {
+  AUSGLEICH_RENDITE_MAX,
+  ausgleichHorizont,
   bereinigeEigeneKrise,
   bereinigeKrisenName,
   datenVollstaendig,
@@ -18,6 +20,7 @@ import {
   eigenReal,
   jahresRenditen,
   type KrisenWahl,
+  kriseImHorizont,
   krisenAusserhalb,
   krisenKalender,
   krisenModell,
@@ -382,5 +385,147 @@ describe('Geplante Krisen (Modus Individuell)', () => {
     expect(mit.krisenJahre[3]).toMatchObject({ krise: 'dotcom2000', histJahr: 2000 });
     const ohne = simuliere({ ...h, krisen: { ...h.krisen, modus: 'keine' } }, regeln, { start });
     expect(mit.endVermoegen).not.toBe(ohne.endVermoegen);
+  });
+});
+
+describe('Krisenbeginn mit Monat (Schema 15)', () => {
+  const eigen = { name: 'Testkrise', rueckgang: -0.5, dauer: 1, erholung: 0 };
+  const krise = eigeneAlsKrise('m', eigen);
+  const plan = (monat: number) => [{ krise, land: 'CHE' as const, startJahr: 2030, startMonat: monat, eigen }];
+  const normalReal = 1.04 / 1.01;
+
+  it('Januar entspricht dem ganzen Krisenjahr', () => {
+    const ohne = krisenModell(basis, 0.5, [{ krise, land: 'CHE', startJahr: 2030, eigen }], KRISEN_DATEN, 2030);
+    const mit = krisenModell(basis, 0.5, plan(1), KRISEN_DATEN, 2030);
+    expect(mit.renditeNominal(0)).toBe(ohne.renditeNominal(0));
+    expect(mit.inflation(0)).toBe(ohne.inflation(0));
+    expect(mit.wohneigentum?.(0)).toBe(ohne.wohneigentum?.(0));
+    expect(mit.renditeNominal(1)).toBe(ohne.renditeNominal(1));
+    expect((1 + mit.renditeNominal(0)) / (1 + mit.inflation(0))).toBeCloseTo(0.5, 12);
+    expect(mit.historisch?.(0)).toMatchObject({ monatVon: 1, monatBis: 12 });
+  });
+
+  it('Juli verteilt den Gesamtrückgang geometrisch auf zwei Kalenderjahre', () => {
+    const m = krisenModell(basis, 0.5, plan(7), KRISEN_DATEN, 2030);
+    const produkt =
+      ((1 + m.renditeNominal(0)) / (1 + m.inflation(0))) * ((1 + m.renditeNominal(1)) / (1 + m.inflation(1)));
+    // zwei halbe normale Jahre und der ganze reale Rückgang von −50 %
+    expect(produkt).toBeCloseTo(normalReal * 0.5, 10);
+    expect(m.historisch?.(0)).toMatchObject({ monatVon: 7, monatBis: 12 });
+    expect(m.historisch?.(1)).toMatchObject({ monatVon: 1, monatBis: 6 });
+    expect(m.historisch?.(2)).toBeNull();
+  });
+
+  it('am Horizontende zählt nur der Bruchteil im letzten Jahr', () => {
+    const m = krisenModell(basis, 0.5, plan(12), KRISEN_DATEN, 2030);
+    expect((1 + m.renditeNominal(0)) / (1 + m.inflation(0))).toBeCloseTo(normalReal ** (11 / 12) * 0.5 ** (1 / 12), 10);
+    expect((1 + m.renditeNominal(1)) / (1 + m.inflation(1))).toBeCloseTo(normalReal ** (1 / 12) * 0.5 ** (11 / 12), 10);
+    expect(m.historisch?.(0)).toMatchObject({ monatVon: 12, monatBis: 12 });
+    expect(m.historisch?.(1)).toMatchObject({ monatVon: 1, monatBis: 11 });
+  });
+
+  it('Januar in der Simulation trifft dasselbe Ergebnis wie ein Stand ohne Monat', () => {
+    const h = haushalt();
+    h.krisen = {
+      ...h.krisen,
+      modus: 'individuell',
+      auswahl: [
+        {
+          uid: 'a',
+          id: 'finanzkrise2007',
+          land: 'CHE',
+          startArt: 'jahr',
+          jahr: 2032,
+          alter: 70,
+          person: 0,
+          jahreNach: 0,
+          eigen: null,
+        },
+      ],
+    };
+    const januar = {
+      ...h,
+      krisen: { ...h.krisen, auswahl: [{ ...(h.krisen.auswahl[0] as (typeof h.krisen.auswahl)[number]), monat: 1 }] },
+    };
+    const a = simuliere(h, regeln, { start, krisen: krisenOptionen(h) });
+    const b = simuliere(januar, regeln, { start, krisen: krisenOptionen(januar) });
+    expect(b.endVermoegen).toBe(a.endVermoegen);
+    expect(b.krisenJahre).toEqual(a.krisenJahre);
+    expect(b.krisenJahre[0]).toMatchObject({ monatVon: 1, monatBis: 12 });
+  });
+
+  it('im letzten Horizontjahr zählt nur der Dezember, der Rest entfällt', () => {
+    const h = haushalt();
+    h.planungsalter = 66;
+    const eintrag = {
+      uid: 'a',
+      id: 'eigen',
+      land: 'CHE' as const,
+      startArt: 'jahr' as const,
+      jahr: 2030,
+      alter: 66,
+      person: 0,
+      jahreNach: 0,
+      eigen: { name: 'Testkrise', rueckgang: -0.5, dauer: 1, erholung: 0 },
+    };
+    const mit = (monat: number) => {
+      const haushaltMit = {
+        ...h,
+        krisen: { ...h.krisen, modus: 'individuell' as const, auswahl: [{ ...eintrag, monat }] },
+      };
+      return simuliere(haushaltMit, regeln, { start, krisen: krisenOptionen(haushaltMit) });
+    };
+    const dezember = mit(12);
+    const januar = mit(1);
+    expect(dezember.krisenJahre.map((x) => x.jahr)).toEqual([2030]);
+    expect(dezember.krisenJahre[0]).toMatchObject({ monatVon: 12, monatBis: 12 });
+    expect(januar.krisenJahre.map((x) => x.jahr)).toEqual([2030]);
+    expect(dezember.endVermoegen).not.toBe(januar.endVermoegen);
+    expect(dezember.endVermoegen).toBeGreaterThan(januar.endVermoegen);
+    expect(kriseImHorizont(2030, { von: 1, bis: 1 }, 2026, 2030, 12)).toBe(true);
+    expect(kriseImHorizont(2031, { von: 1, bis: 1 }, 2026, 2030, 1)).toBe(false);
+    expect(kriseImHorizont(2031, { von: 1, bis: 1 }, 2026, 2030, 12)).toBe(false);
+  });
+});
+
+describe('Ausgleich bei wenig normalen Jahren', () => {
+  const eigen = { name: 'Testkrise', rueckgang: -0.75, dauer: 2, erholung: 0 };
+  const krise = eigeneAlsKrise('k', eigen);
+  const plan = [{ krise, land: 'CHE' as const, startJahr: 2027, startMonat: 1, eigen }];
+
+  it('unter 3 normalen Jahren bleibt die Annahme, auch bei −50 % pro Krisenjahr', () => {
+    const n = ausgleichHorizont(
+      basis,
+      0.5,
+      plan,
+      [
+        { jahr: 2026, gewicht: 0.25 },
+        { jahr: 2027, gewicht: 1 },
+        { jahr: 2028, gewicht: 1 },
+      ],
+      KRISEN_DATEN,
+    );
+    expect(n.hinweis).toBe('zuWenig');
+    expect(n.wertschriften).toBeCloseTo(0.04, 12);
+    expect(n.wohneigentum).toBeCloseTo(0.04, 12);
+  });
+
+  it('ab 3 normalen Jahren, aber über 30 %, wird auf die Eingabegrenze gedeckelt', () => {
+    const n = ausgleichHorizont(
+      basis,
+      0.5,
+      plan,
+      [
+        { jahr: 2026, gewicht: 1 },
+        { jahr: 2027, gewicht: 1 },
+        { jahr: 2028, gewicht: 1 },
+        { jahr: 2029, gewicht: 1 },
+        { jahr: 2030, gewicht: 1 },
+      ],
+      KRISEN_DATEN,
+    );
+    // 2027–2028 Krise, drei normale Jahre: die ungedeckelte Rendite läge über 30 %
+    expect(n.hinweis).toBe('gedeckelt');
+    expect(n.wertschriften).toBe(AUSGLEICH_RENDITE_MAX);
   });
 });

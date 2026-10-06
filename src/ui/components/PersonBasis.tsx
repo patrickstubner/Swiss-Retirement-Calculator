@@ -1,5 +1,5 @@
 /** Gemeinsame Personenfelder für die Modi «Schnell» und «Detailliert». */
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ahvVerschiebungKlemmen, vorbezugKuerzHinweis } from '../../core/ahv';
 import { ahvLueckenZuzug } from '../../core/schaetzwerte';
 import type { Monat, Person, ZeitpunktModus } from '../../core/typen';
@@ -36,13 +36,16 @@ export function personNachJahrgang(
 export function GeburtFelder({ p, set, heute, regeln }: Props & { regeln: Regeln }) {
   const ahv = regeln.ahv;
   const [kuerzung, setKuerzung] = useState<string | null>(null);
+  const verschiebung = p.ahv.bezugVerschiebungMonate;
+  const stand = useRef({ jahr: p.geburtsjahr, geschlecht: p.geschlecht, verschiebung });
+  useEffect(() => {
+    const alt = stand.current;
+    const wechsel = alt.jahr !== p.geburtsjahr || alt.geschlecht !== p.geschlecht;
+    setKuerzung(wechsel ? vorbezugKuerzHinweis(alt.verschiebung, verschiebung) : null);
+    stand.current = { jahr: p.geburtsjahr, geschlecht: p.geschlecht, verschiebung };
+  }, [p.geburtsjahr, p.geschlecht, verschiebung]);
   const setzeJahrgang = (patch: Partial<Pick<Person, 'geschlecht' | 'geburtsjahr'>>) => {
-    set((x) => {
-      const n = personNachJahrgang(x, patch, ahv);
-      const text = vorbezugKuerzHinweis(x.ahv.bezugVerschiebungMonate, n.ahv.bezugVerschiebungMonate);
-      queueMicrotask(() => setKuerzung(text));
-      return n;
-    });
+    set((x) => personNachJahrgang(x, patch, ahv));
   };
   return (
     <>

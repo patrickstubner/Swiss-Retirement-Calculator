@@ -15,7 +15,16 @@ export interface RenditeModell {
   /** Optional: nominaler Zins Bargeld (sonst `annahmen.renditeBargeld`) */
   bargeld?(t: number): number;
   /** Optional: abgespieltes historisches Jahr (Krisenszenario), für die Anzeige */
-  historisch?(t: number): { land: string; jahr: number; krise: string; name?: string; kurz?: string } | null;
+  historisch?(t: number): {
+    land: string;
+    jahr: number;
+    krise: string;
+    name?: string;
+    kurz?: string;
+    /** Erster und letzter Krisenmonat im Kalenderjahr (1–12). Fehlt = ganzes Jahr. */
+    monatVon?: number;
+    monatBis?: number;
+  } | null;
 }
 
 export function deterministisch(renditeNominal: number, inflation: number): RenditeModell {

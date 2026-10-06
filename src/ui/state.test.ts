@@ -388,6 +388,7 @@ describe('Neue Felder: Rücktrittsmodus und Wohnsitz im Ausland', () => {
           person: 0,
           jahreNach: 2,
           eigen: null,
+          monat: 1,
         },
         {
           uid: 'b',
@@ -399,6 +400,7 @@ describe('Neue Felder: Rücktrittsmodus und Wohnsitz im Ausland', () => {
           person: 0,
           jahreNach: 0,
           eigen: null,
+          monat: 1,
         },
       ],
     };
@@ -898,8 +900,8 @@ describe('Schema 12: Entnahmestrategie', () => {
 });
 
 describe('Schema 13: geplante Krisen', () => {
-  it('Schema 14; alter Stand ohne Liste bleibt leer und stürzt nicht ab', () => {
-    expect(SCHEMA_VERSION).toBe(14);
+  it('Schema 15; alter Stand ohne Liste bleibt leer und stürzt nicht ab', () => {
+    expect(SCHEMA_VERSION).toBe(15);
     const h = standardHaushalt(regeln);
     const { auswahl: _weg, ...ohneListe } = h.krisen;
     const roh = { ...h, krisen: ohneListe };
@@ -908,6 +910,38 @@ describe('Schema 13: geplante Krisen', () => {
     expect(geladen.krisen.auswahl).toEqual([]);
     const code = LZString.compressToEncodedURIComponent(JSON.stringify({ v: 12, h: roh }));
     expect(dekodiere(code, regeln)?.krisen.auswahl).toEqual([]);
+  });
+
+  it('Schema 15: fehlender Monat wird Januar, ungültige Monate werden geklemmt', () => {
+    const alt = normalisiere(
+      {
+        krisen: {
+          modus: 'individuell',
+          auswahl: [{ uid: 'a', id: 'dotcom2000', land: 'CHE', startArt: 'jahr', jahr: 2036 }],
+        },
+      },
+      regeln,
+    );
+    expect(alt.krisen.auswahl[0]?.monat).toBe(1);
+    const kaputt = normalisiere(
+      {
+        krisen: {
+          modus: 'individuell',
+          auswahl: [
+            { uid: 'a', id: 'dotcom2000', land: 'CHE', startArt: 'jahr', jahr: 2036, monat: 0 },
+            { uid: 'b', id: 'dotcom2000', land: 'CHE', startArt: 'jahr', jahr: 2037, monat: 99 },
+            { uid: 'c', id: 'dotcom2000', land: 'CHE', startArt: 'jahr', jahr: 2038, monat: 7.6 },
+            { uid: 'd', id: 'dotcom2000', land: 'CHE', startArt: 'jahr', jahr: 2039, monat: 'Juli' },
+          ],
+        },
+      },
+      regeln,
+    );
+    expect(kaputt.krisen.auswahl.map((a) => a.monat)).toEqual([1, 12, 8, 1]);
+    const h = standardHaushalt(regeln);
+    h.krisen = { ...alt.krisen, ausgleich: false };
+    const mitMonat = dekodiere(kodiere({ ...h, krisen: alt.krisen }), regeln);
+    expect(mitMonat?.krisen.auswahl[0]?.monat).toBe(1);
   });
 
   it('Katalogeintrag ohne eigen und eigene Krise überstehen Link und Speicher', () => {

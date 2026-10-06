@@ -93,10 +93,13 @@ import { begrenze, geburtsjahrKlemmen, MAX_HASH_LAENGE, MAX_JSON_LAENGE } from '
  *    «Automatisch» über den Planungshorizont ausgeglichen («Automatische Krisen übernehmen»).
  *    Fehlt oder false = bisheriger Stresstest. Höchstens 120 geplante Krisen. Rohdaten vor dem
  *    Filtern auf 240 Einträge gekürzt.
+ * 15: Monat des Krisenbeginns (`krisen.auswahl.*.monat`, 1–12). Fehlt oder ungültig = Januar.
+ *    Januar rechnet wie Schema 14 (ganzes Kalenderjahr). Ein späterer Monat verteilt die
+ *    Jahresrendite geometrisch auf die betroffenen Kalenderjahre (Annäherung).
  * 8: Darstellung der Ergebnisse (`darstellung`: 'real' = heutige Kaufkraft, 'nominal' = Franken des
  *    jeweiligen Jahres). Ältere Versionen und ungültige Werte erhalten 'real'; die Rechnung ändert sich nicht.
  */
-export const SCHEMA_VERSION = 14;
+export const SCHEMA_VERSION = 15;
 const HASH_PREFIX = '#s=';
 /** Einziger Schlüssel mit Daten (ganzer Zustand als JSON). */
 export const STORAGE_KEY = 'ruhestandsrechner:v1';
@@ -328,6 +331,7 @@ function normalisiereKrisen(k: KrisenEinstellungen, roh: unknown, personen: numb
           alter: ganzzahl(x.alter, 0, 130),
           person: ganzzahl(x.person, 0, Math.max(0, personen - 1)),
           jahreNach: ganzzahl(x.jahreNach, JAHRE_NACH_MIN, JAHRE_NACH_MAX),
+          monat: ganzzahl(x.monat ?? 1, 1, 12),
           eigen: katalog ? null : bereinigeEigeneKrise(eigenRoh),
         },
       ];

@@ -859,6 +859,9 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
         histJahr: hist.jahr,
         krise: hist.krise,
         ...(hist.name ? { name: hist.name, kurz: hist.kurz ?? hist.name } : {}),
+        ...(hist.monatVon !== undefined && hist.monatBis !== undefined
+          ? { monatVon: hist.monatVon, monatBis: hist.monatBis }
+          : {}),
       });
     }
     const ersterMonat = jahr === opt.start.jahr ? opt.start.monat : 1;

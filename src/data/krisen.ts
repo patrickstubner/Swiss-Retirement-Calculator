@@ -18,6 +18,7 @@ import {
   type KrisenPlanEintrag,
   type KrisenWahl,
   kriseImHorizont,
+  krisenMonat,
   krisenPfad,
   krisenPlan,
   MAX_GEPLANTE_KRISEN,
@@ -308,12 +309,13 @@ export function krisenOptionen(h: Haushalt): KrisenOptionen | undefined {
   if (k.modus !== 'individuell') return undefined;
   const wahl: KrisenWahl[] = [];
   for (const a of k.auswahl) {
+    const monat = krisenMonat(a.monat);
     const start =
       a.startArt === 'jahr'
-        ? { art: 'jahr' as const, jahr: a.jahr }
+        ? { art: 'jahr' as const, jahr: a.jahr, monat }
         : a.startArt === 'alter'
-          ? { art: 'alter' as const, alter: a.alter, person: a.person }
-          : { art: 'nachRuecktritt' as const, jahre: a.jahreNach };
+          ? { art: 'alter' as const, alter: a.alter, person: a.person, monat }
+          : { art: 'nachRuecktritt' as const, jahre: a.jahreNach, monat };
     if (a.id === EIGENE_KRISE_ID) {
       const eigen = bereinigeEigeneKrise(a.eigen);
       wahl.push({ krise: eigeneAlsKrise(a.uid || 'kr', eigen), land: 'CHE', start, eigen });
@@ -362,6 +364,7 @@ export function automatischeKrisenAlsAuswahl(
       alter: 70,
       person: 0,
       jahreNach: relativ ? jahreNach : 0,
+      monat: 1,
       eigen: null,
     });
     if (auswahl.length >= MAX_GEPLANTE_KRISEN) break;
@@ -371,9 +374,10 @@ export function automatischeKrisenAlsAuswahl(
 
 /** Dieselbe Krise mit demselben Beginn (Jahr, Alter oder Abstand zum Rücktritt). */
 function auswahlSchluessel(a: KrisenAuswahl): string {
-  if (a.startArt === 'nachRuecktritt') return `${a.id}@nach@${a.jahreNach}`;
-  if (a.startArt === 'alter') return `${a.id}@alter@${a.person}@${a.alter}`;
-  return `${a.id}@jahr@${a.jahr}`;
+  const monat = a.monat ?? 1;
+  if (a.startArt === 'nachRuecktritt') return `${a.id}@nach@${a.jahreNach}@${monat}`;
+  if (a.startArt === 'alter') return `${a.id}@alter@${a.person}@${a.alter}@${monat}`;
+  return `${a.id}@jahr@${a.jahr}@${monat}`;
 }
 
 /**
