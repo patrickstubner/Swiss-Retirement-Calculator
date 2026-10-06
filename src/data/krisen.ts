@@ -17,10 +17,13 @@ import {
   type KrisenOptionen,
   type KrisenPlanEintrag,
   type KrisenWahl,
+  kriseImHorizont,
   krisenPfad,
+  krisenPlan,
+  MAX_GEPLANTE_KRISEN,
   maxRealerRueckgang,
 } from '../core/krisen';
-import type { Haushalt, KrisenEinstellungen } from '../core/typen';
+import type { Haushalt, KrisenAuswahl, KrisenEinstellungen } from '../core/typen';
 
 type Zeile = [number, number | null, number | null, number | null, number | null, number | null];
 
@@ -320,7 +323,75 @@ export function krisenOptionen(h: Haushalt): KrisenOptionen | undefined {
     if (!krise) continue;
     wahl.push({ krise, land: a.land, start });
   }
-  return wahl.length > 0 ? { wahl, daten: KRISEN_DATEN, aktienanteil: h.annahmen.aktienanteil } : undefined;
+  if (wahl.length === 0) return undefined;
+  return {
+    wahl,
+    daten: KRISEN_DATEN,
+    aktienanteil: h.annahmen.aktienanteil,
+    // Schema 14: nach «Automatische Krisen übernehmen» wie «Automatisch» ausgleichen
+    ...(k.ausgleich === true ? { ausgleichHorizont: true } : {}),
+  };
+}
+
+/**
+ * Krisen, die der Modus «Automatisch» abspielen würde, als editierbare Liste.
+ * Beginn im Kalenderjahr: nur Krisen, deren Jahre den Horizont schneiden, als festes Jahr
+ * (dasselbe Jahr wie die Wunsch-Rechnung). Einträge ausserhalb ändern dort nichts.
+ * Beginn nach dem Rücktritt: die ganze Folge als Abstand (`Startjahr − Rücktrittsjahr`).
+ * Ein fester Jahr würde beim früheren oder späteren Rücktritt stehen bleiben. Die Folge
+ * ausserhalb des aktuellen Horizonts bleibt in der Liste, weil sie bei einem anderen
+ * Rücktrittsalter in den Horizont rutschen kann – gleich wie im Modus «Automatisch».
+ */
+export function automatischeKrisenAlsAuswahl(
+  k: KrisenEinstellungen,
+  ruecktrittJahr: number,
+  horizont: { von: number; bis: number },
+): KrisenAuswahl[] {
+  const relativ = k.autoStartArt === 'nachRuecktritt';
+  const plan = krisenPlan(autoKrisenWahl(k), ruecktrittJahr);
+  const auswahl: KrisenAuswahl[] = [];
+  for (const e of plan) {
+    if (!relativ && !kriseImHorizont(e.startJahr, e.krise, horizont.von, horizont.bis)) continue;
+    const jahreNach = Math.round(e.startJahr - ruecktrittJahr);
+    auswahl.push({
+      uid: `auto-${auswahl.length}-${e.krise.id}-${relativ ? `n${jahreNach}` : e.startJahr}`,
+      id: e.krise.id,
+      land: e.land,
+      startArt: relativ ? 'nachRuecktritt' : 'jahr',
+      jahr: e.startJahr,
+      alter: 70,
+      person: 0,
+      jahreNach: relativ ? jahreNach : 0,
+      eigen: null,
+    });
+    if (auswahl.length >= MAX_GEPLANTE_KRISEN) break;
+  }
+  return auswahl;
+}
+
+/** Dieselbe Krise mit demselben Beginn (Jahr, Alter oder Abstand zum Rücktritt). */
+function auswahlSchluessel(a: KrisenAuswahl): string {
+  if (a.startArt === 'nachRuecktritt') return `${a.id}@nach@${a.jahreNach}`;
+  if (a.startArt === 'alter') return `${a.id}@alter@${a.person}@${a.alter}`;
+  return `${a.id}@jahr@${a.jahr}`;
+}
+
+/**
+ * Hängt übernommene Krisen an eine bestehende Liste. Dieselbe Krise mit demselben Beginn
+ * wird nicht doppelt gesetzt. Was über die Grenze hinausgeht, wird gezählt und weggelassen.
+ */
+export function krisenListeZusammenfuehren(
+  bestehend: readonly KrisenAuswahl[],
+  neu: readonly KrisenAuswahl[],
+  max = MAX_GEPLANTE_KRISEN,
+): { auswahl: KrisenAuswahl[]; ausgelassen: number } {
+  const hat = new Set(bestehend.map(auswahlSchluessel));
+  const extra = neu.filter((a) => !hat.has(auswahlSchluessel(a)));
+  const platz = Math.max(0, max - bestehend.length);
+  return {
+    auswahl: [...bestehend, ...extra.slice(0, platz)],
+    ausgelassen: Math.max(0, extra.length - platz),
+  };
 }
 
 /**

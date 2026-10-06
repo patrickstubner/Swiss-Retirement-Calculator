@@ -9,8 +9,17 @@
 import LZString from 'lz-string';
 import { ahvRenteSkala44, ahvTeilrente, ahvVerschiebungKlemmen } from '../core/ahv';
 import { normalisiereEntnahme } from '../core/entnahme';
-import { bereinigeEigeneKrise, bereinigeKrisenUid, EIGENE_KRISE_ID, MAX_GEPLANTE_KRISEN } from '../core/krisen';
+import {
+  bereinigeEigeneKrise,
+  bereinigeKrisenUid,
+  EIGENE_KRISE_ID,
+  JAHRE_NACH_MAX,
+  JAHRE_NACH_MIN,
+  MAX_GEPLANTE_KRISEN,
+  MAX_KRISEN_ROHDATEN,
+} from '../core/krisen';
 import { detailwerte, SCHAETZ_FELDER } from '../core/schaetzwerte';
+import { filterAnzeigename } from '../core/text';
 import type {
   Ausgaben,
   AuslandRente,
@@ -79,11 +88,15 @@ import { begrenze, geburtsjahrKlemmen, MAX_HASH_LAENGE, MAX_JSON_LAENGE } from '
  *    Verhalten wieder her.
  * 13: Geplante Krisen im Modus «Individuell» (`krisen.auswahl`, optional `eigen` für eine eigene Krise).
  *    Fehlt die Liste, bleibt sie leer (Modus unverändert, keine neue Standardkrise). Einträge ohne `eigen`
- *    sind Katalogkrisen. Höchstens 8 Einträge. Unbekannte Katalog-Ids werden verworfen.
+ *    sind Katalogkrisen. Unbekannte Katalog-Ids werden verworfen.
+ * 14: `krisen.ausgleich` (boolean). true = im Modus «Individuell» werden normale Jahre wie bei
+ *    «Automatisch» über den Planungshorizont ausgeglichen («Automatische Krisen übernehmen»).
+ *    Fehlt oder false = bisheriger Stresstest. Höchstens 120 geplante Krisen. Rohdaten vor dem
+ *    Filtern auf 240 Einträge gekürzt.
  * 8: Darstellung der Ergebnisse (`darstellung`: 'real' = heutige Kaufkraft, 'nominal' = Franken des
  *    jeweiligen Jahres). Ältere Versionen und ungültige Werte erhalten 'real'; die Rechnung ändert sich nicht.
  */
-export const SCHEMA_VERSION = 13;
+export const SCHEMA_VERSION = 14;
 const HASH_PREFIX = '#s=';
 /** Einziger Schlüssel mit Daten (ganzer Zustand als JSON). */
 export const STORAGE_KEY = 'ruhestandsrechner:v1';
@@ -165,6 +178,7 @@ function person(roh: unknown, regeln: Regeln, i: number): Person {
   const w = p.wohnsitzAusland;
   return {
     ...p,
+    name: filterAnzeigename(typeof p.name === 'string' ? p.name : '', 100),
     geschlecht: p.geschlecht === 'w' ? 'w' : 'm',
     erwerbsstatus: p.erwerbsstatus === 'nichtErwerbstaetig' ? 'nichtErwerbstaetig' : 'erwerbstaetig',
     frueherErwerb: {
@@ -292,10 +306,10 @@ const KRISEN_REIHEN: readonly KrisenReihe[] = ['CHE', 'USA', 'JPN'];
 
 const KRISEN_MODI: readonly KrisenModus[] = ['keine', 'automatisch', 'individuell'];
 
-/** Krisenszenarien (Schema 5/6/13): unbekannte Krisen und Reihen werden verworfen, eigene Krisen bereinigt. */
+/** Krisenszenarien (Schema 5/6/13/14): unbekannte Krisen und Reihen werden verworfen, eigene Krisen bereinigt. */
 function normalisiereKrisen(k: KrisenEinstellungen, roh: unknown, personen: number): KrisenEinstellungen {
   const r = istObj(roh) ? roh : {};
-  const rohListe = (Array.isArray(r.auswahl) ? r.auswahl : []).slice(0, 32);
+  const rohListe = (Array.isArray(r.auswahl) ? r.auswahl : []).slice(0, MAX_KRISEN_ROHDATEN);
   const auswahl = rohListe
     .flatMap((rohEintrag) => {
       const x = mische(neueKrisenAuswahl('', 'CHE', 2030), rohEintrag);
@@ -313,7 +327,7 @@ function normalisiereKrisen(k: KrisenEinstellungen, roh: unknown, personen: numb
           jahr: ganzzahl(x.jahr, 1900, 2200),
           alter: ganzzahl(x.alter, 0, 130),
           person: ganzzahl(x.person, 0, Math.max(0, personen - 1)),
-          jahreNach: ganzzahl(x.jahreNach, -30, 60),
+          jahreNach: ganzzahl(x.jahreNach, JAHRE_NACH_MIN, JAHRE_NACH_MAX),
           eigen: katalog ? null : bereinigeEigeneKrise(eigenRoh),
         },
       ];
@@ -336,6 +350,7 @@ function normalisiereKrisen(k: KrisenEinstellungen, roh: unknown, personen: numb
     mcKrisenProDekade: k.mcKrisenProDekade === null ? null : Math.min(10, Math.max(0, k.mcKrisenProDekade)),
     mcLaeufe: ganzzahl(k.mcLaeufe, 50, 2000),
     mcBlockLaenge: ganzzahl(k.mcBlockLaenge, 1, 20),
+    ausgleich: r.ausgleich === true,
   };
 }
 
@@ -500,7 +515,7 @@ export const MAX_NAME = 40;
 /** Name bereinigen: Leerraum vereinheitlicht, höchstens MAX_NAME Zeichen, leer oder kein Text → Standardname. */
 export function bereinigeName(roh: unknown, standard: string): string {
   if (typeof roh !== 'string') return standard;
-  const n = roh.replace(/\s+/g, ' ').trim().slice(0, MAX_NAME);
+  const n = filterAnzeigename(roh, 10_000).replace(/\s+/g, ' ').trim().slice(0, MAX_NAME);
   return n === '' ? standard : n;
 }
 

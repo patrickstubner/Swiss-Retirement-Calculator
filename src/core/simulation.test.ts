@@ -440,7 +440,7 @@ describe('AHV-Vorbezug in der Simulation (K-05)', () => {
     expect(info?.ahvFaktor).toBeLessThan(1);
     expect(info?.ahvFaktor).not.toBeCloseTo(ordentlich.personen[0]?.ahvFaktor ?? 1, 6);
     expect(info?.ahvStart).not.toEqual(ordentlich.personen[0]?.ahvStart);
-    expect(info?.hinweise.some((x) => x.includes('24 Monate'))).toBe(true);
+    expect(info?.hinweise.some((x) => x.includes('Vorbezug auf 24 Monate gekürzt'))).toBe(true);
   });
 
   it('Frau Jahrgang 1965 mit −36 Monaten behält den Übergangsvorbezug', () => {

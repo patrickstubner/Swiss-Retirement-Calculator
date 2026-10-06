@@ -295,6 +295,7 @@ export function neueKrisenEinstellungen(): KrisenEinstellungen {
     autoStartArt: 'jahr',
     autoStartJahr: null,
     autoJahreNach: 0,
+    ausgleich: false,
     mcAktiv: false,
     mcArt: 'wiederkehrend',
     mcKrisenProDekade: null,

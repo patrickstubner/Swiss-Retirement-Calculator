@@ -8,6 +8,7 @@ import {
 } from '../../core/ahv';
 import { pruefeFreiwilligeAhv } from '../../core/freiwilligeAhv';
 import { istNichtErwerbstaetig } from '../../core/schaetzwerte';
+import { filterAnzeigename } from '../../core/text';
 import type { Nationalitaet, Person, PersonInfo, WohnsitzAusland } from '../../core/typen';
 import { MAX_PLANUNGSALTER, neuePerson } from '../../data/defaults';
 import { wegzugsLand } from '../../data/laender';
@@ -101,7 +102,12 @@ function PersonKarte({
 
   return (
     <Karte titel={p.name || `Person ${i + 1}`} untertitel={`heute ${fmtAlter(Math.max(0, heuteM))}`}>
-      <TextFeld label="Name (optional)" value={p.name} onChange={(v) => set((x) => ({ ...x, name: v }))} />
+      <TextFeld
+        label="Name (optional)"
+        value={p.name}
+        maxLength={100}
+        onChange={(v) => set((x) => ({ ...x, name: filterAnzeigename(v, 100) }))}
+      />
       <GeburtFelder p={p} set={set} heute={heute} regeln={regeln} />
       <InChSeitFeld p={p} set={set} heute={heute} regeln={regeln} />
       <ErwerbsstatusFeld p={p} set={set} />

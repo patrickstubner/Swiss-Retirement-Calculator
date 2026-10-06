@@ -8,6 +8,7 @@
  * ±ALLGEMEIN_MAX geklemmt (Notnetz); ein Test verlangt für alle Felder der Standardwerte einen Eintrag.
  */
 import { ahvWeitesterVorbezugMonate } from '../core/ahv';
+import { JAHRE_NACH_MAX, JAHRE_NACH_MIN } from '../core/krisen';
 import { ladeRegeln, VERFUEGBARE_JAHRE } from '../rules';
 
 /** Höchstlänge eines Links (`#s=…`), Zeichen. Ein Link mit vollem Haushalt umfasst rund 3'000 Zeichen. */
@@ -64,7 +65,7 @@ export const GRENZEN: Readonly<Record<string, Bereich>> = {
   'krisen.auswahl.*.jahr': [1900, 2200, true],
   'krisen.auswahl.*.alter': [0, 130, true],
   'krisen.auswahl.*.person': [0, 1, true],
-  'krisen.auswahl.*.jahreNach': [-30, 60, true],
+  'krisen.auswahl.*.jahreNach': [JAHRE_NACH_MIN, JAHRE_NACH_MAX, true],
   'krisen.auswahl.*.eigen.rueckgang': [-0.8, -0.05],
   'krisen.auswahl.*.eigen.dauer': [1, 8, true],
   'krisen.auswahl.*.eigen.erholung': [0, 15, true],

@@ -11,6 +11,7 @@ import {
   tiefereStufe,
   tiefereStufeEntfernen,
 } from '../../core/entnahme';
+import { filterAnzeigename } from '../../core/text';
 import type { Entnahme, EntnahmeTopfVorlage, Haushalt } from '../../core/typen';
 import type { Setzer } from '../kontext';
 import { AuswahlFeld, TextFeld, ZahlFeld } from './Felder';
@@ -333,7 +334,12 @@ function Toepfe({ e, setH }: { e: Extract<Entnahme, { art: 'toepfe' }>; setH: Se
       </div>
       {e.toepfe.map((t, i) => (
         <div className="raster" key={t.rolle}>
-          <TextFeld label="Bezeichnung" maxLength={40} value={t.label} onChange={(label) => setTopf(i, { label })} />
+          <TextFeld
+            label="Bezeichnung"
+            maxLength={40}
+            value={t.label}
+            onChange={(label) => setTopf(i, { label: filterAnzeigename(label, 40) })}
+          />
           {t.rolle === 'cash' ? (
             <p className="klein">
               Die Grösse setzt die Pufferregel, nicht ein fester Anteil. Realrendite standardmässig 0,5 % (Spanne etwa 0

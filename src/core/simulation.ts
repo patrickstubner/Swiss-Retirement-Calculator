@@ -68,6 +68,7 @@ import {
   inMonaten,
   monatIndex,
   pruefeAhvVerschiebung,
+  vorbezugKuerzHinweis,
 } from './ahv';
 import { lebenshaltungImJahr } from './ausgaben';
 import { auslandRenteNetto, auslandRenteRealJahr } from './auslandRenten';
@@ -426,9 +427,9 @@ function planePerson(p: Person, regeln: Regeln, stoppMonate: number, startIdx: n
   if (verschiebung !== verschiebungGanz) {
     const fehler = pruefeAhvVerschiebung(verschiebungGanz, p.geburtsjahr, p.geschlecht, regeln.ahv);
     if (verschiebungGanz < 0 && verschiebung < 0) {
-      hinweise.push(
-        `AHV: ${fehler ?? 'Vorbezug zu weit.'} Gerechnet wird mit dem höchsten zulässigen Vorbezug (${-verschiebung} Monate).`,
-      );
+      const kurz =
+        vorbezugKuerzHinweis(verschiebungGanz, verschiebung) ?? `Vorbezug auf ${-verschiebung} Monate gekürzt`;
+      hinweise.push(`AHV: ${fehler ?? 'Vorbezug zu weit.'} ${kurz}.`);
     } else {
       hinweise.push(`AHV: ${fehler ?? 'Unzulässiger Bezug.'} Es wird mit ordentlichem Bezug gerechnet.`);
     }

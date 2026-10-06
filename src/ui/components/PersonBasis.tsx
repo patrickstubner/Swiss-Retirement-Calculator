@@ -1,5 +1,6 @@
 /** Gemeinsame Personenfelder für die Modi «Schnell» und «Detailliert». */
-import { ahvVerschiebungKlemmen } from '../../core/ahv';
+import { useState } from 'react';
+import { ahvVerschiebungKlemmen, vorbezugKuerzHinweis } from '../../core/ahv';
 import { ahvLueckenZuzug } from '../../core/schaetzwerte';
 import type { Monat, Person, ZeitpunktModus } from '../../core/typen';
 import { letzterArbeitsmonat, stoppAlterMonate } from '../../core/zeitpunkt';
@@ -34,6 +35,15 @@ export function personNachJahrgang(
 
 export function GeburtFelder({ p, set, heute, regeln }: Props & { regeln: Regeln }) {
   const ahv = regeln.ahv;
+  const [kuerzung, setKuerzung] = useState<string | null>(null);
+  const setzeJahrgang = (patch: Partial<Pick<Person, 'geschlecht' | 'geburtsjahr'>>) => {
+    set((x) => {
+      const n = personNachJahrgang(x, patch, ahv);
+      const text = vorbezugKuerzHinweis(x.ahv.bezugVerschiebungMonate, n.ahv.bezugVerschiebungMonate);
+      queueMicrotask(() => setKuerzung(text));
+      return n;
+    });
+  };
   return (
     <>
       <Segmente
@@ -43,7 +53,7 @@ export function GeburtFelder({ p, set, heute, regeln }: Props & { regeln: Regeln
           { value: 'w', label: 'Frau' },
           { value: 'm', label: 'Mann' },
         ]}
-        onChange={(g) => set((x) => personNachJahrgang(x, { geschlecht: g }, ahv))}
+        onChange={(g) => setzeJahrgang({ geschlecht: g })}
       />
       <div className="raster">
         <ZahlFeld
@@ -53,7 +63,7 @@ export function GeburtFelder({ p, set, heute, regeln }: Props & { regeln: Regeln
           max={heute.jahr}
           nachkomma={0}
           gruppieren={false}
-          onChange={(v) => set((x) => personNachJahrgang(x, { geburtsjahr: Math.round(v) }, ahv))}
+          onChange={(v) => setzeJahrgang({ geburtsjahr: Math.round(v) })}
         />
         <AuswahlFeld
           label="Geburtsmonat"
@@ -62,6 +72,11 @@ export function GeburtFelder({ p, set, heute, regeln }: Props & { regeln: Regeln
           onChange={(v) => set((x) => ({ ...x, geburtsmonat: v }))}
         />
       </div>
+      {kuerzung ? (
+        <p className="warnung" role="status">
+          {kuerzung}
+        </p>
+      ) : null}
     </>
   );
 }

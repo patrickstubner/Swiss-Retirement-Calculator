@@ -636,6 +636,12 @@ export interface KrisenEinstellungen {
   /** Kalenderjahr der ersten Krise; null = Standard (letzte Krise 2022 + mittlerer Abstand) */
   autoStartJahr: number | null;
   autoJahreNach: number;
+  /**
+   * Modus «Individuell» (Schema 14): normale Jahre wie «Automatisch» über den Planungshorizont
+   * ausgleichen. true nach «Automatische Krisen übernehmen». Fehlt oder false = Stresstest
+   * (übrige Jahre bleiben die Annahme).
+   */
+  ausgleich?: boolean;
   /** Monte Carlo (wiederkehrende Krisen bzw. Block-Bootstrap) anzeigen */
   mcAktiv: boolean;
   mcArt: 'wiederkehrend' | 'bootstrap';

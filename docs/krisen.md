@@ -38,7 +38,7 @@ Immobilien 2021–2024: keine Daten (es gilt die Annahme des Nutzers).
 | Inflations- und Zinsschock | 2022 | Schweiz (SNB/BFS) | Aktien −16 %, Obligationen −14 % (Näherung) |
 
 Die Datenreihe ist je Krise wählbar (nur Reihen mit vollständigen Daten). Mehrere Krisen sind kombinierbar
-(Modus «Individuell», höchstens 8; bei Überschneidung gilt die später beginnende).
+(Modus «Individuell», höchstens 120; bei Überschneidung gilt die später beginnende).
 
 ## 2a. Krisenmodus in drei Stufen (Schema 6)
 
@@ -91,22 +91,32 @@ weil `normalisiere` den Modus aus den Rohdaten ableitet statt aus dem Standard (
 - Geprüft in `src/core/krisenAuto.test.ts`: Platzierung (2036, 2050, 2063 …), Rotation, einstellbare Häufigkeit und
   erste Krise, Krisenjahre = historische Werte, Durchschnitt über den Planungszeitraum = Annahme (auch mit
   angebrochenem erstem Jahr und am Ende abgeschnittener Krise), Umlauf-Ausgleich weiterhin als Referenz, bei
-  «Individuell» kein Ausgleich.
+  «Individuell» kein Ausgleich, ausser der Schalter «Normale Jahre ausgleichen» ist ein (Schema 14, nach der
+  Übernahme der automatischen Krisen).
 
 ### Individuell
 
-Ersetzt die frühere Auswahl «Krise testen» (inklusive Datenreihe CH/USA/JP). Beginn als **Kalenderjahr** (nur
-innerhalb des Planungshorizonts, vom Startjahr bis zum Jahr, in dem die jüngste Person das Planungsalter erreicht;
+Ersetzt die frühere Auswahl «Krise testen» (inklusive Datenreihe CH/USA/JP). Beginn als **Kalenderjahr** (vom
+Startjahr bis zum Jahr, in dem die jüngste Person das Planungsalter erreicht; ein Beginn bis zu 30 Jahre davor
+bleibt editierbar, damit eine Krise, die vor dem Horizont anfängt und noch hineinreicht, nicht verschoben wird;
 das Alter am Jahresende steht als Hilfe daneben), **im Alter** einer Person oder **X Jahre nach dem Rücktritt**.
-Liegt der aufgelöste Beginn ausserhalb des Horizonts, weist die App darauf hin; diese Jahre fliessen nicht in die
-Rechnung ein. Kein Ausgleich der übrigen Jahre: Die Liste ist ein Stresstest («was, wenn zusätzlich zu meinen
-Annahmen diese Krise kommt?»). Bisherige Links/Speicherstände (Schema 5) mit eingeschalteter Krise werden als
+Liegt kein Jahr der Krise im Horizont, weist die App darauf hin; diese Jahre fliessen nicht in die Rechnung ein.
+Ohne Ausgleich ist die Liste ein Stresstest («was, wenn zusätzlich zu meinen Annahmen diese Krise kommt?»).
+Der Schalter «Normale Jahre ausgleichen (wie Automatisch)» setzt denselben Ausgleich über den Planungshorizont
+(`ausgleichHorizont`, Schema 14). Bisherige Links/Speicherstände (Schema 5) mit eingeschalteter Krise werden als
 «Individuell» mit derselben Liste übernommen, sonst «Keine Krise». Schema 13: Fehlt die Liste, bleibt sie leer
-(kein Absturz, keine neue Standardkrise). Einträge ohne `eigen` sind Katalogkrisen.
+(kein Absturz, keine neue Standardkrise). Einträge ohne `eigen` sind Katalogkrisen. Fehlt `ausgleich`, bleibt der
+Stresstest.
 
-- **Liste:** Hinzufügen, Bearbeiten, Entfernen. Höchstens 8 Einträge (Oberfläche und Speicher; aus einem
-  manipulierten Stand werden höchstens 8 gültige Einträge übernommen). Wechsel auf «Individuell» bei leerer Liste
-  setzt eine Finanzkrise mit Startjahr 2036, sofern das im Horizont liegt.
+- **Liste:** Hinzufügen, Bearbeiten, Entfernen. Höchstens 120 Einträge (Oberfläche und Speicher; Rohdaten vorher
+  auf 240 gekürzt, danach höchstens 120 gültige Einträge). Die Grenze 8 hätte die automatische Folge bei hoher
+  Häufigkeit abgeschnitten (höchstens 101 Beginne: 5 pro Dekade über 200 Jahre). «Automatische Krisen übernehmen»
+  schreibt bei Beginn im Kalenderjahr die Krisen, deren Jahre den Horizont schneiden, als Kalenderjahr in die
+  Liste und schaltet den Ausgleich ein. Beginnt «Automatisch» nach dem Rücktritt, übernimmt die App die ganze Folge
+  als Abstand zum Rücktritt (auch Beginne, die beim aktuellen Rücktritt ausserhalb des Horizonts liegen). Die Krisen
+  wandern damit mit, auch in der Suche nach dem frühesten Rücktrittsalter. Ist die Liste gefüllt, fragt die App nach
+  Ersetzen oder Anhängen. Wechsel von «Automatisch» auf eine leere Liste bietet die Übernahme an. Wechsel von
+  «Keine Krise» auf eine leere Liste setzt weiterhin eine Finanzkrise mit Startjahr 2036, sofern das im Horizont liegt.
 - **Überschneidung:** Jedes Kalenderjahr hat genau eine Rendite. Es gilt die später beginnende Krise, bei gleichem
   Beginn der Eintrag weiter unten. Die App nennt die verdrängte Krise. Die Jahre werden nicht addiert.
 - **Kennzahlen** am Eintrag (Aktien real, 100 %, gewählte Datenreihe): Stand 1 am Jahresende vor `von`, Tiefpunkt
@@ -119,8 +129,10 @@ Annahmen diese Krise kommt?»). Bisherige Links/Speicherstände (Schema 5) mit e
   Wertschriftenportfolios (−80 % bis −5 %, Standard −30 %) gleichmässig über 1–8 Jahre, danach reale Erholung auf
   den Stand vor der Krise über 0–15 Jahre (0 = der Stand bleibt unten). Aktien und Obligationen erhalten dieselbe
   nominale Rendite, damit der Aktienanteil das Ergebnis nicht verschiebt. Teuerung, Bargeld und Hauspreise bleiben
-  die Annahmen; Anlagekosten werden wie sonst abgezogen. Bezeichnung höchstens 40 Zeichen, ohne Steuerzeichen und
-  ohne spitze Klammern. Am Band steht diese Bezeichnung.
+  die Annahmen; Anlagekosten werden wie sonst abgezogen. Ist «Normale Jahre ausgleichen» ein, zählt die synthetische
+  reale Wertschriftenrendite im Ausgleich mit (Hauspreise bleiben die Annahme, diese Jahre sind dafür keine
+  Krisenjahre). Bezeichnung höchstens 40 Zeichen, ohne Steuerzeichen und
+  ohne spitze Klammern und ohne unsichtbare Zeichen (Format-, Privat- und Nichtzeichen, U+2028/U+2029). Am Band steht diese Bezeichnung.
 
 ### Darstellung
 

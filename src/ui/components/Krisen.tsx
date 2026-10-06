@@ -2,12 +2,15 @@
  * Krisenszenarien im Ergebnis: historische Krisen abspielen, Monte Carlo mit wiederkehrenden
  * Krisen und die historische Krisenhäufigkeit pro Dekade (JST R6).
  */
-import { useDeferredValue, useId, useMemo } from 'react';
+import { useDeferredValue, useId, useMemo, useState } from 'react';
 import {
   bereinigeEigeneKrise,
   datenVollstaendig,
   EIGENE_KRISE_ID,
   filterKrisenName,
+  JAHRE_NACH_MAX,
+  JAHRE_NACH_MIN,
+  KRISEN_START_VORLAUF,
   type KrisenLand,
   type KrisenPlanEintrag,
   krisenAusserhalb,
@@ -36,6 +39,7 @@ import {
   AUTO_KRISEN,
   aktienKennzahl,
   autoHaeufigkeit,
+  automatischeKrisenAlsAuswahl,
   autoNormal,
   autoVersatz,
   HAEUFIGKEIT,
@@ -44,6 +48,7 @@ import {
   KRISEN_DATEN_STAND,
   kriseNach,
   krisenAbstand,
+  krisenListeZusammenfuehren,
   krisenOptionen,
   LAND_NAMEN,
   STANDARD_KRISEN_PRO_DEKADE,
@@ -120,6 +125,9 @@ interface Props {
 
 export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, namen }: Props) {
   const k = h.krisen;
+  const [angebot, setAngebot] = useState(false);
+  const [rueckfrage, setRueckfrage] = useState(false);
+  const [uebernahmeHinweis, setUebernahmeHinweis] = useState<string | null>(null);
   const aktiv = krisenOptionen(effH) !== undefined;
   // Vergleich ohne Krise (gleiche Eingaben)
   const ohne = useMemo(
@@ -143,7 +151,10 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
   const rate = autoHaeufigkeit(k);
   const standardJahr = standardErsteKrise(rate);
   // Ausgleich über den eigenen Planungshorizont (aus der Simulation mit Wunsch-Rücktritt)
-  const normal = k.modus === 'automatisch' ? (wunsch?.krisenNormal ?? null) : null;
+  const normal =
+    k.modus === 'automatisch' || (k.modus === 'individuell' && k.ausgleich === true)
+      ? (wunsch?.krisenNormal ?? null)
+      : null;
   const umlauf = k.modus === 'automatisch' ? autoNormal(effH) : null;
   const horizont = wunsch ? `${wunsch.zeilen[0]?.jahr ?? heute.jahr}–${wunsch.zeilen.at(-1)?.jahr ?? ''}` : '';
   const erwName =
@@ -156,6 +167,32 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
 
   const setzeAuswahl = (i: number, fn: (a: KrisenAuswahl) => KrisenAuswahl) =>
     setzeKrisen(setH, (kr) => ({ ...kr, auswahl: kr.auswahl.map((a, j) => (j === i ? fn(a) : a)) }));
+
+  const uebernahme = useMemo(
+    () => automatischeKrisenAlsAuswahl(k, ruecktrittJahr(h, heute.jahr), fenster),
+    [k, h, heute.jahr, fenster],
+  );
+
+  const uebernimm = (art: 'ersetzen' | 'anhaengen') => {
+    setRueckfrage(false);
+    setAngebot(false);
+    if (uebernahme.length === 0) {
+      setUebernahmeHinweis('Im Planungshorizont liegt keine automatische Krise.');
+      return;
+    }
+    if (art === 'ersetzen') {
+      setzeKrisen(setH, (kr) => ({ ...kr, auswahl: uebernahme, ausgleich: true }));
+      setUebernahmeHinweis(null);
+      return;
+    }
+    const zusammen = krisenListeZusammenfuehren(k.auswahl, uebernahme);
+    setzeKrisen(setH, (kr) => ({ ...kr, auswahl: zusammen.auswahl, ausgleich: true }));
+    setUebernahmeHinweis(
+      zusammen.ausgelassen > 0
+        ? `${zusammen.ausgelassen} ${zusammen.ausgelassen === 1 ? 'Krise passt' : 'Krisen passen'} nicht mehr in die Liste (höchstens ${MAX_GEPLANTE_KRISEN}).`
+        : null,
+    );
+  };
 
   return (
     <Karte
@@ -170,16 +207,20 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
           { value: 'automatisch', label: 'Auto\u00admatisch' },
           { value: 'individuell', label: 'Indi\u00adviduell' },
         ]}
-        onChange={(modus) =>
+        onChange={(modus) => {
+          const vonAutomatischLeer = k.modus === 'automatisch' && modus === 'individuell' && k.auswahl.length === 0;
+          setAngebot(vonAutomatischLeer);
+          setRueckfrage(false);
+          setUebernahmeHinweis(null);
           setzeKrisen(setH, (kr) => ({
             ...kr,
             modus,
             auswahl:
-              modus === 'individuell' && kr.auswahl.length === 0
+              modus === 'individuell' && kr.auswahl.length === 0 && !vonAutomatischLeer
                 ? [neueGeplanteKrise('finanzkrise2007', 'CHE', krisenStartVorschlag(fenster.von, fenster.bis))]
                 : kr.auswahl,
-          }))
-        }
+          }));
+        }}
       />
       {k.modus === 'keine' ? (
         <p className="klein">
@@ -259,10 +300,73 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
       {k.modus === 'individuell' ? (
         <>
           <p className="klein">
-            Legen Sie fest, welche historische Krise in welchem zukünftigen Jahr wiederkehrt. Das ist ein Stresstest:
-            Die Krisenjahre ersetzen die Renditeannahme, die übrigen Jahre bleiben unverändert. Höchstens{' '}
-            {MAX_GEPLANTE_KRISEN} Einträge. Der Beginn liegt im Planungshorizont {fenster.von}–{fenster.bis}.
+            {k.ausgleich === true
+              ? 'Die Krisenjahre ersetzen die Renditeannahme. Normale Jahre werden ausgeglichen, wie im Modus Automatisch: der reale Durchschnitt über den Planungshorizont entspricht Ihrer Annahme.'
+              : 'Legen Sie fest, welche historische Krise in welchem zukünftigen Jahr wiederkehrt. Das ist ein Stresstest: Die Krisenjahre ersetzen die Renditeannahme, die übrigen Jahre bleiben unverändert.'}{' '}
+            Höchstens {MAX_GEPLANTE_KRISEN} Einträge. Ein Beginn kurz vor {fenster.von} zählt mit, sobald ein Krisenjahr
+            im Horizont {fenster.von}–{fenster.bis} liegt.
           </p>
+          <Schalter
+            label="Normale Jahre ausgleichen (wie Automatisch)"
+            checked={k.ausgleich === true}
+            hinweis="Ein: derselbe Ausgleich wie im Modus Automatisch. Aus: Stresstest. «Automatische Krisen übernehmen» schaltet den Ausgleich ein. Spätere Änderungen an der Liste lassen ihn, wie er steht."
+            onChange={(ausgleich) => setzeKrisen(setH, (kr) => ({ ...kr, ausgleich }))}
+          />
+          {angebot && k.auswahl.length === 0 ? (
+            <p className="klein" role="status">
+              Die Liste ist leer. «Automatische Krisen übernehmen» füllt sie mit denselben Krisenarten und Startjahren,
+              die der Modus Automatisch für diesen Haushalt und diesen Planungshorizont rechnen würde.
+            </p>
+          ) : null}
+          {k.autoStartArt === 'nachRuecktritt' ? (
+            <p className="klein">
+              Automatisch beginnt nach dem Rücktritt. Die Übernahme behält den Abstand, damit die Krisen mit dem
+              Rücktritt mitwandern.
+            </p>
+          ) : null}
+          <button
+            type="button"
+            className="knopf"
+            onClick={() => {
+              if (k.auswahl.length === 0) uebernimm('ersetzen');
+              else setRueckfrage(true);
+            }}
+          >
+            Automatische Krisen übernehmen
+          </button>
+          {rueckfrage ? (
+            <fieldset className="unterkarte">
+              <legend>Liste ist schon gefüllt</legend>
+              <p>
+                Die Liste enthält bereits {k.auswahl.length} {k.auswahl.length === 1 ? 'Eintrag' : 'Einträge'}. Ersetzen
+                überschreibt sie. Anhängen ergänzt nur Krisen, die noch fehlen.
+              </p>
+              <div className="knopf-reihe">
+                <button type="button" className="knopf" onClick={() => uebernimm('ersetzen')}>
+                  Ersetzen
+                </button>
+                <button type="button" className="knopf knopf--sekundaer" onClick={() => uebernimm('anhaengen')}>
+                  Anhängen
+                </button>
+                <button type="button" className="knopf knopf--sekundaer" onClick={() => setRueckfrage(false)}>
+                  Abbrechen
+                </button>
+              </div>
+            </fieldset>
+          ) : null}
+          {uebernahmeHinweis ? (
+            <p className="warnung" role="status">
+              {uebernahmeHinweis}
+            </p>
+          ) : null}
+          {normal && k.ausgleich === true ? (
+            <p className="klein">
+              In normalen Jahren rechnet die App mit <strong>{fmtProzent(normal.wertschriften, 2)}</strong> statt{' '}
+              {fmtProzent(effH.annahmen.renditeNominal, 2)} (Wertschriften) und mit{' '}
+              <strong>{fmtProzent(normal.wohneigentum, 2)}</strong> (Hauspreise), über{' '}
+              {horizont || 'den Planungshorizont'}.
+            </p>
+          ) : null}
           {k.auswahl.map((a, i) => (
             <GeplanteKrise
               key={a.uid}
@@ -286,8 +390,8 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
           ))}
           {ausserhalb.map((e) => (
             <p key={`aussen-${e.krise.id}-${e.startJahr}`} className="warnung">
-              {e.krise.kurz} beginnt {e.startJahr}, ausserhalb des Planungshorizonts {fenster.von}–{fenster.bis}. Diese
-              Krise fliesst so nicht in die Rechnung ein.
+              {e.krise.kurz} (Beginn {e.startJahr}): kein Jahr dieser Krise liegt im Planungshorizont {fenster.von}–
+              {fenster.bis}. Sie fliesst so nicht in die Rechnung ein.
             </p>
           ))}
           {k.auswahl.length < MAX_GEPLANTE_KRISEN ? (
@@ -366,7 +470,8 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
             Die Krisenrenditen ersetzen in den Krisenjahren Ihre Annahme. «Automatisch»: Die normalen Jahre werden so
             erhöht, dass der reale Durchschnitt von heute bis zum Planungsalter Ihrer Annahme entspricht (Wertschriften
             und Hauspreise je separat) – Krisen werden also nicht doppelt gezählt, wenn Ihre Annahme ein langfristiger
-            Durchschnitt ist. «Individuell» ist ein Stresstest: Die übrigen Jahre bleiben unverändert.
+            Durchschnitt ist. «Individuell» ist ohne Ausgleich ein Stresstest. Mit «Normale Jahre ausgleichen» gilt
+            derselbe Ausgleich wie bei «Automatisch».
           </li>
           <li>
             Teuerung des Krisenjahres: Ausgaben steigen mit, PK-Renten nicht (sie verlieren real an Wert). AHV-Renten
@@ -514,16 +619,16 @@ function GeplanteKrise({
       {a.startArt === 'jahr' ? (
         <ZahlFeld
           label="Startjahr"
-          hinweis={`Nur ${fenster.von}–${fenster.bis}. ${alterAmJahresende(Math.min(fenster.bis, Math.max(fenster.von, a.jahr)), h.personen, namen)}`}
+          hinweis={`Zulässig ${Math.max(1900, fenster.von - KRISEN_START_VORLAUF)}–${fenster.bis}. Ein Beginn vor ${fenster.von} zählt mit, sobald ein Krisenjahr im Horizont liegt. ${alterAmJahresende(a.jahr, h.personen, namen)}`}
           value={a.jahr}
-          min={fenster.von}
+          min={Math.max(1900, fenster.von - KRISEN_START_VORLAUF)}
           max={fenster.bis}
           nachkomma={0}
           gruppieren={false}
           onChange={(jahr) =>
             setze((x) => ({
               ...x,
-              jahr: Math.min(fenster.bis, Math.max(fenster.von, Math.round(jahr))),
+              jahr: Math.min(fenster.bis, Math.max(1900, fenster.von - KRISEN_START_VORLAUF, Math.round(jahr))),
             }))
           }
         />
@@ -553,8 +658,8 @@ function GeplanteKrise({
           label="Jahre nach dem Rücktritt"
           hinweis={`0 = im Jahr des Rücktritts von ${erwName ?? 'der erwerbstätigen Person'}${startJahr ? ` (${startJahr})` : ''}.`}
           value={a.jahreNach}
-          min={-30}
-          max={60}
+          min={JAHRE_NACH_MIN}
+          max={JAHRE_NACH_MAX}
           nachkomma={0}
           einheit="Jahre"
           onChange={(j) => setze((x) => ({ ...x, jahreNach: Math.round(j) }))}

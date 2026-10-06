@@ -5,12 +5,34 @@
  * Eine eigene Krise (`EigeneKrise`) ist ein Stresstest ohne historische Reihe.
  */
 import type { RenditeModell } from './renditen';
+import { filterAnzeigename } from './text';
 import type { EigeneKrise } from './typen';
 
 /** Id einer eigenen Krise in `KrisenAuswahl` */
 export const EIGENE_KRISE_ID = 'eigen';
-/** Höchstens so viele geplante Krisen im Modus «Individuell» (Oberfläche und Speicher) */
-export const MAX_GEPLANTE_KRISEN = 8;
+/**
+ * Höchstens so viele geplante Krisen im Modus «Individuell» (Oberfläche und Speicher).
+ * «Automatische Krisen übernehmen» muss die ganze Folge fassen: bei 5 Krisen pro Dekade
+ * über 200 Jahre entstehen höchstens 101 Beginne (Abstand 2 Jahre, Versatz 0 bis 200).
+ * 120 deckt diese Folge und lässt danach noch einige Einträge von Hand zu.
+ */
+export const MAX_GEPLANTE_KRISEN = 120;
+/** Rohdaten aus Link oder Speicher, bevor unbekannte Ids verworfen werden. */
+export const MAX_KRISEN_ROHDATEN = MAX_GEPLANTE_KRISEN * 2;
+/**
+ * Jahre vor dem Planungshorizont, die ein Startjahr noch haben darf.
+ * Die längste Katalogkrise dauert 14 Jahre, eine eigene Krise höchstens 23.
+ * Ein früherer Beginn zählt mit, sobald ein Krisenjahr im Horizont liegt.
+ */
+export const KRISEN_START_VORLAUF = 30;
+/**
+ * Abstand «Jahre nach dem Rücktritt» eines Listeneintrags.
+ * Die erste automatische Krise liegt zwischen −30 und 60 Jahren, die Folge reicht
+ * danach 200 Jahre (Versatz 0…200). Die Übernahme speichert diesen Abstand. Eine
+ * engere Grenze würde ihn beim Speichern klemmen, die Krisen würden nicht mehr mitwandern.
+ */
+export const JAHRE_NACH_MIN = -30;
+export const JAHRE_NACH_MAX = 260;
 export const EIGENE_NAME_MAX = 40;
 
 const EIGEN_RUECKGANG: readonly [number, number] = [-0.8, -0.05];
@@ -436,6 +458,8 @@ export function ausgleichErwartet(
  * (inklusive der Krisenjahre, die in diesen Zeitraum fallen, abgeschnitten am Horizontende) genau
  * der Annahme entspricht – für Wertschriften und Wohneigentum getrennt. `jahre` = Kalenderjahre mit
  * Gewicht (erstes Jahr: Anteil der simulierten Monate).
+ * Eine eigene Krise hat kein historisches Jahr. Ihre synthetische reale Wertschriftenrendite
+ * (`eigenReal`) zählt mit; Hauspreise, Teuerung und Bargeld bleiben die Annahme.
  */
 export function ausgleichHorizont(
   basis: BasisAnnahmen,
@@ -450,6 +474,13 @@ export function ausgleichHorizont(
   for (const j of jahre) {
     const k = kal.get(j.jahr);
     if (!k) continue;
+    if (k.eigenReal !== undefined) {
+      if (1 + k.eigenReal > 0) {
+        s.wsSumme += Math.log(1 + k.eigenReal) * j.gewicht;
+        s.wsJahre += j.gewicht;
+      }
+      continue;
+    }
     const e = krisenLog([k], aktienanteil, daten, basis.inflation);
     s.wsSumme += e.wsSumme * j.gewicht;
     s.wsJahre += e.wsJahre * j.gewicht;
@@ -538,16 +569,9 @@ export function standardEigeneKrise(): EigeneKrise {
   return { name: 'Eigene Krise', rueckgang: -0.3, dauer: 2, erholung: 4 };
 }
 
-/** Steuerzeichen, DEL und spitze Klammern entfernen. Leerzeichen bleiben (Eingabe). */
+/** Steuerzeichen, unsichtbare Unicode-Zeichen, DEL und spitze Klammern entfernen. Leerzeichen bleiben (Eingabe). */
 export function filterKrisenName(roh: string): string {
-  let out = '';
-  for (const ch of roh) {
-    const c = ch.codePointAt(0) ?? 0;
-    if (c <= 31 || c === 127 || ch === '<' || ch === '>') continue;
-    out += ch;
-    if (out.length >= EIGENE_NAME_MAX) break;
-  }
-  return out;
+  return filterAnzeigename(roh, EIGENE_NAME_MAX, true);
 }
 
 /** Anzeigename: Steuerzeichen und spitze Klammern weg, höchstens 40 Zeichen. */
@@ -662,9 +686,20 @@ export function krisenUeberlappungen(plan: readonly KrisenPlanEintrag[]): Krisen
   return out;
 }
 
-/** Einträge, deren Beginn ausserhalb des Planungshorizonts liegt. */
+/** true, wenn mindestens ein Jahr der Krise im Planungshorizont liegt. */
+export function kriseImHorizont(
+  startJahr: number,
+  krise: Pick<Krise, 'von' | 'bis'>,
+  von: number,
+  bis: number,
+): boolean {
+  const ende = startJahr + (krise.bis - krise.von);
+  return ende >= von && startJahr <= bis;
+}
+
+/** Einträge, von denen kein Jahr im Planungshorizont liegt. */
 export function krisenAusserhalb(plan: readonly KrisenPlanEintrag[], von: number, bis: number): KrisenPlanEintrag[] {
-  return plan.filter((e) => e.startJahr < von || e.startJahr > bis);
+  return plan.filter((e) => !kriseImHorizont(e.startJahr, e.krise, von, bis));
 }
 
 /**
