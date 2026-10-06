@@ -3,6 +3,15 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.3.3] - 2026-10-06
+
+### Geändert
+- Krisenkalender: Pläne, die im Januar beginnen, rechnen wieder jahrweise. Der Kalender entsteht pro Simulation einmal und nur für Jahre im Horizont. Die Ergebnisse bleiben gleich.
+- Suche, Sensitivität, «Was wäre, wenn» und der Variantenvergleich laufen in einem Web-Worker. Die Seite bleibt bedienbar, zeigt «Rechnet …» und bricht eine überholte Rechnung ab. Der Laufzeittest misst diese ganze Neuberechnung, für Januar und für Juli.
+- Überlappung: Beginnt eine kürzere Krise mitten in einer laufenden, nennt der Hinweis die Reihenfolge (z.B. «Covid bis März, danach Finanzkrise») und nicht dieselbe Krise als verdrängt.
+- Der Hinweis, dass der Ausgleich entfällt oder auf −20 % bis 30 % begrenzt ist, steht auch beim frühesten Rücktrittsalter.
+- «Vorbezug auf X Monate gekürzt» erscheint nur nach einer Änderung von Jahrgang oder Geschlecht, nicht nach dem Laden eines Haushalts.
+
 ## [1.3.2] - 2026-10-06
 
 ### Geändert

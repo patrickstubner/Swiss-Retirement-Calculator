@@ -3,7 +3,7 @@ import { ereignisse as flussEreignisse, markerGruppen, rentenUmwandlungen } from
 import { eingabeHinweise } from '../../core/hinweise';
 import { type Darstellung, inDarstellung } from '../../core/nominal';
 import { ahvLueckenZuzug, umwandlungssatzGeschaetztMitGuthaben } from '../../core/schaetzwerte';
-import { sensitivitaet } from '../../core/sensitivitaet';
+import type { SensitivitaetErgebnis } from '../../core/sensitivitaet';
 import { referenzPerson, startvermoegen } from '../../core/simulation';
 import type { Haushalt, PersonInfo, SimulationsErgebnis, Toepfe } from '../../core/typen';
 import { stoppAlterMonate } from '../../core/zeitpunkt';
@@ -19,7 +19,7 @@ import { FlussKarte, MarkerTabelle } from '../components/Fluesse';
 import { JahresUebersicht } from '../components/JahresUebersicht';
 import { KantoneKarte } from '../components/Kantone';
 import { Karte } from '../components/Karte';
-import { KrisenKarte, MonteCarloKarte } from '../components/Krisen';
+import { ausgleichHinweisText, KrisenKarte, MonteCarloKarte } from '../components/Krisen';
 import { StaffelungKarte } from '../components/Staffelung';
 import { TodesfallKarte } from '../components/Todesfall';
 import { UmkehrKarte } from '../components/Umkehr';
@@ -30,6 +30,7 @@ import { fmtAlter, fmtChf, fmtMonat, fmtProzent } from '../format';
 import type { SchrittProps } from '../kontext';
 import { krisenAbschnitte, krisenText } from '../krisenGrafik';
 import { misserfolgErklaerung } from '../misserfolg';
+import { useRechnung } from '../rechnungLauf';
 import { UWS_GESCHAETZT, uwsKurz, VEREINFACHUNGEN } from '../texte';
 import { VorlesenKnoepfe } from '../vorlesen/Vorlesen';
 
@@ -42,7 +43,18 @@ interface Props extends SchrittProps {
   zuDetail: () => void;
 }
 
-export function Ergebnis({ h, setH, berechnung, heute, suchModus, setSuchModus, eff, regeln, zuDetail }: Props) {
+export function Ergebnis({
+  h,
+  setH,
+  berechnung,
+  heute,
+  suchModus,
+  setSuchModus,
+  eff,
+  regeln,
+  zuDetail,
+  rechnet = false,
+}: Props) {
   const [szenario, setSzenario] = useState<'wunsch' | 'frueh'>('wunsch');
   const { wunsch, solver, fehler } = berechnung;
   const ref = referenzPerson(h.personen);
@@ -176,7 +188,11 @@ export function Ergebnis({ h, setH, berechnung, heute, suchModus, setSuchModus, 
             onChange={setSuchModus}
           />
         ) : null}
-        {solver?.gefunden && solver.alterMonate !== null ? (
+        {rechnet && !solver ? (
+          <p className="gross" role="status">
+            Rechnet …
+          </p>
+        ) : solver?.gefunden && solver.alterMonate !== null ? (
           <>
             <p className="gross">{solver.sofort ? 'Sofort möglich' : fmtAlter(solver.alterMonate)}</p>
             <p>
@@ -192,7 +208,19 @@ export function Ergebnis({ h, setH, berechnung, heute, suchModus, setSuchModus, 
         ) : (
           <p className="gross gross--negativ">Nicht bis 70</p>
         )}
-        {!solver?.gefunden ? (
+        {rechnet && solver ? (
+          <p className="info" role="status">
+            Wird neu gerechnet …
+          </p>
+        ) : null}
+        {solver?.ausgleichHinweis ? <p className="klein">{ausgleichHinweisText(solver.ausgleichHinweis)}</p> : null}
+        {solver?.ausgleichFrueher ? (
+          <p className="klein">
+            Bei einem früheren geprüften Rücktrittsalter entfällt der Ausgleich oder er ist begrenzt. Das kann das
+            gefundene Alter verschieben.
+          </p>
+        ) : null}
+        {!rechnet && !solver?.gefunden ? (
           <p>
             Selbst mit Erwerbsaufgabe mit 70 reicht das Vermögen mit diesen Annahmen nicht bis zum Planungsalter{' '}
             {h.planungsalter}. Prüfen Sie Ausgaben, Planungshorizont oder Annahmen.
@@ -226,18 +254,16 @@ export function Ergebnis({ h, setH, berechnung, heute, suchModus, setSuchModus, 
         </p>
       ))}
 
-      {wunsch ? (
-        <Auswertung
-          h={h}
-          setH={setH}
-          effH={eff.haushalt}
-          regeln={regeln}
-          heute={heute}
-          suchModus={suchModus}
-          namen={namen}
-          refIdx={ref}
-        />
-      ) : null}
+      <Auswertung
+        h={h}
+        setH={setH}
+        effH={eff.haushalt}
+        regeln={regeln}
+        heute={heute}
+        suchModus={suchModus}
+        namen={namen}
+        refIdx={ref}
+      />
 
       {wunsch ? (
         <UmkehrKarte h={h} setH={setH} effH={eff.haushalt} regeln={regeln} heute={heute} namen={namen} />
@@ -283,17 +309,15 @@ export function Ergebnis({ h, setH, berechnung, heute, suchModus, setSuchModus, 
         </Karte>
       ) : null}
 
-      {wunsch ? (
-        <GenauigkeitKarte
-          h={h}
-          eff={eff}
-          regeln={regeln}
-          heute={heute}
-          suchModus={suchModus}
-          namen={namen}
-          zuDetail={zuDetail}
-        />
-      ) : null}
+      <GenauigkeitKarte
+        h={h}
+        eff={eff}
+        regeln={regeln}
+        heute={heute}
+        suchModus={suchModus}
+        namen={namen}
+        zuDetail={zuDetail}
+      />
 
       {chart && anzeige ? (
         <Karte
@@ -661,17 +685,24 @@ function GenauigkeitKarte({
   zuDetail,
 }: Pick<Props, 'h' | 'eff' | 'regeln' | 'heute' | 'suchModus' | 'zuDetail'> & { namen: string[] }) {
   const effD = useDeferredValue(eff);
-  const sens = useMemo(() => {
-    try {
-      return sensitivitaet(effD.haushalt, effD.schaetzungen, regeln, {
-        start: heute,
-        modus: suchModus === 'gemeinsam' ? 'gemeinsam' : 'person',
-        person: suchModus === 'p1' && effD.haushalt.personen.length > 1 ? 1 : 0,
-      });
-    } catch {
-      return null;
-    }
-  }, [effD, regeln, heute, suchModus]);
+  const vorlage = useMemo(
+    () => ({
+      art: 'genauigkeit' as const,
+      id: 0,
+      jahr: heute.jahr,
+      monat: heute.monat,
+      haushalt: effD.haushalt,
+      schaetzungen: effD.schaetzungen,
+      suchModus,
+    }),
+    [effD, heute, suchModus],
+  );
+  const stand = useRechnung(vorlage, (m): SensitivitaetErgebnis | undefined => {
+    if (m.art === 'genauigkeit') return m.ergebnis;
+    return undefined;
+  });
+  const sens = stand.wert;
+  const sensLaeuft = stand.laeuft || (sens === null && stand.fehler === null);
   const mehrere = h.personen.length > 1;
   const zuzug = h.personen.map((p) => ahvLueckenZuzug(p, regeln));
   const uwsGeschaetzt = namen.filter((_, i) => {
@@ -731,6 +762,11 @@ function GenauigkeitKarte({
           </p>
         ) : null,
       )}
+      {sensLaeuft ? (
+        <p className="info" role="status">
+          {sens ? 'Sensitivität wird neu gerechnet …' : 'Sensitivität wird gerechnet …'}
+        </p>
+      ) : null}
       {sens ? (
         <>
           <h3>Wo sich Genauigkeit lohnt</h3>

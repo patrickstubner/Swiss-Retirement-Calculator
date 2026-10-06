@@ -1,17 +1,16 @@
 /**
- * Interaktive Auswertung: Regler für Rücktrittsalter, Ausgaben, Rendite, Teuerung und Krise mit
- * sofortiger Neuberechnung (ohne die Eingaben zu verändern, bis «Übernehmen»), Kennzahlen,
+ * Interaktive Auswertung: Regler für Rücktrittsalter, Ausgaben, Rendite, Teuerung und Krise.
+ * Die Neuberechnung läuft im Web-Worker (ohne die Eingaben zu verändern, bis «Übernehmen»), Kennzahlen,
  * Vermögensverlauf mit Bandbreite (Monte Carlo) und Szenarien nebeneinander.
  * Gerechnet wird mit denselben Funktionen wie im übrigen Ergebnis (simuliere, Solver, Monte Carlo).
  */
 import { useDeferredValue, useId, useMemo, useState } from 'react';
 import type { Darstellung } from '../../core/nominal';
-import { simuliere } from '../../core/simulation';
-import { fruehestesRuecktrittsalter, type SolverErgebnis } from '../../core/solver';
+import type { SolverErgebnis } from '../../core/solver';
 import type { Haushalt, KrisenModus, Monat, Person, SimulationsErgebnis } from '../../core/typen';
 import { letzterArbeitsmonat } from '../../core/zeitpunkt';
 import { neueKrisenAuswahl } from '../../data/defaults';
-import { krisenOptionen, STANDARD_KRISEN_PRO_DEKADE } from '../../data/krisen';
+import { STANDARD_KRISEN_PRO_DEKADE } from '../../data/krisen';
 import type { Regeln } from '../../rules';
 import { chfKurz, darstellungVon, endBetrag, inFranken, vermoegenReihe } from '../darstellung';
 import { chartFarbe } from '../farben';
@@ -20,6 +19,8 @@ import type { Setzer } from '../kontext';
 import { krisenAbschnitte, krisenText } from '../krisenGrafik';
 import type { McEinstellung } from '../mcKern';
 import { useVollMc } from '../mcVergleich';
+import { auswertungRechnung, type SzenarioZeile, szenarioEingaben } from '../rechnungKern';
+import { useRechnung } from '../rechnungLauf';
 import { type Bereich, gemeinsamerBereich, planungsBereich, ruecktrittBereich, verschoben } from '../regler';
 import { VorlesenKnoepfe } from '../vorlesen/Vorlesen';
 import { LinienChart, type Serie } from './Chart';
@@ -89,18 +90,9 @@ export interface Kennzahlen {
   solver: SolverErgebnis;
 }
 
-/** Rechnet Wunsch-Rücktritt und frühestes Alter (gleich wie App.berechne). */
+/** Rechnet Wunsch-Rücktritt und frühestes Alter (gleich wie die Suche der Seite). */
 export function rechne(h: Haushalt, regeln: Regeln, start: Monat, modus: SuchModusA): Kennzahlen {
-  const krisen = krisenOptionen(h);
-  const wunsch = simuliere(h, regeln, { start, krisen });
-  const solver = fruehestesRuecktrittsalter(h, regeln, {
-    start,
-    krisen,
-    modus: modus === 'gemeinsam' ? 'gemeinsam' : 'person',
-    person: modus === 'p1' && h.personen.length > 1 ? 1 : 0,
-    maxAlter: 70,
-  });
-  return { wunsch, solver };
+  return auswertungRechnung(h, regeln, start, modus);
 }
 
 function reichtBis(e: SimulationsErgebnis, planungsalter: number): string {
@@ -221,13 +213,20 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
     w.krise !== null;
   const hw = useMemo(() => mitWasWaere(effH, w, heute.jahr), [effH, w, heute.jahr]);
   const hwVerz = useDeferredValue(hw);
-  const k = useMemo(() => {
-    try {
-      return rechne(hwVerz, regeln, heute, suchModus);
-    } catch {
-      return null;
-    }
-  }, [hwVerz, regeln, heute, suchModus]);
+  const ausVorlage = useMemo(
+    () => ({
+      art: 'auswertung' as const,
+      id: 0,
+      jahr: heute.jahr,
+      monat: heute.monat,
+      haushalt: hwVerz,
+      suchModus,
+    }),
+    [hwVerz, heute, suchModus],
+  );
+  const ausStand = useRechnung(ausVorlage, (m) => (m.art === 'auswertung' ? m.kennzahlen : undefined));
+  const k = ausStand.wert;
+  const ausLaeuft = ausStand.laeuft || (k === null && ausStand.fehler === null);
   // Monte Carlo (wiederkehrende Krisen) für Erfolgswahrscheinlichkeit und Bandbreite – etwas verzögert
   const mcEingabe = useDeferredValue(hwVerz);
   const mcEinstellung = useMemo<McEinstellung>(
@@ -302,9 +301,14 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
         <VorlesenKnoepfe titel="Was wäre, wenn" />
       </div>
       <p className="karte__untertitel">
-        Schieben Sie die Regler – das Ergebnis wird sofort neu gerechnet. Ihre Eingaben bleiben unverändert, bis Sie
+        Schieben Sie die Regler – das Ergebnis wird neu gerechnet. Ihre Eingaben bleiben unverändert, bis Sie
         «Übernehmen» wählen.
       </p>
+      {ausLaeuft ? (
+        <p className="info" role="status">
+          {k ? 'Wird neu gerechnet …' : 'Rechnet …'}
+        </p>
+      ) : null}
       {k ? (
         <div className="kennzahlen kennzahlen--vier" role="status" aria-live="polite">
           <div>
@@ -330,7 +334,7 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
             <span className="kennzahl__text">Vermögen am Ende ({chfKurz(dar)})</span>
           </div>
         </div>
-      ) : (
+      ) : ausLaeuft ? null : (
         <p className="warnung">Berechnung nicht möglich – bitte Eingaben prüfen.</p>
       )}
 
@@ -525,7 +529,6 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
       <SzenarioVergleich
         hw={hwVerz}
         darstellung={dar}
-        regeln={regeln}
         heute={heute}
         suchModus={suchModus}
         refIdx={refIdx}
@@ -540,7 +543,6 @@ const SZENARIO_FARBEN = ['haupt', 'negativ', 'band', 'pk'] as const;
 /** Szenarien nebeneinander: Ihr Szenario, Krise ja/nein, alles Kapital, alles Rente. */
 export function SzenarioVergleich({
   hw,
-  regeln,
   heute,
   suchModus,
   refIdx,
@@ -549,43 +551,27 @@ export function SzenarioVergleich({
 }: {
   hw: Haushalt;
   darstellung?: Darstellung;
-  regeln: Regeln;
   heute: Monat;
   suchModus: SuchModusA;
   refIdx: number;
   xLabel: string;
 }) {
-  const szenarien = useMemo(() => {
-    const mitKrise = krisenOptionen(hw) !== undefined;
-    const krisenVariante: Haushalt = mitKrise
-      ? { ...hw, krisen: { ...hw.krisen, modus: 'keine' } }
-      : {
-          ...hw,
-          krisen: {
-            ...hw.krisen,
-            modus: 'individuell',
-            auswahl: [neueKrisenAuswahl(STANDARD_KRISE, 'CHE', heute.jahr + 1)],
-          },
-        };
-    const pkMix = (anteil: number): Haushalt => ({
-      ...hw,
-      personen: hw.personen.map((p) => ({ ...p, pk: { ...p.pk, kapitalanteil: anteil } })),
-    });
-    const liste: { name: string; h: Haushalt }[] = [
-      { name: 'Ihr Szenario', h: hw },
-      { name: mitKrise ? 'Ohne Krise' : 'Finanzkrise beim Rücktritt', h: krisenVariante },
-    ];
-    if (hw.personen.some((p) => p.pk.guthaben > 0 || p.pk.sparbeitragJahr > 0)) {
-      liste.push({ name: 'PK ganz als Kapital', h: pkMix(1) }, { name: 'PK ganz als Rente', h: pkMix(0) });
-    }
-    return liste.map((s) => {
-      try {
-        return { name: s.name, k: rechne(s.h, regeln, heute, suchModus), planungsalter: s.h.planungsalter };
-      } catch {
-        return { name: s.name, k: null, planungsalter: s.h.planungsalter };
-      }
-    });
-  }, [hw, regeln, heute, suchModus]);
+  const szenarioVorlage = useMemo(
+    () => ({
+      art: 'szenarien' as const,
+      id: 0,
+      jahr: heute.jahr,
+      monat: heute.monat,
+      eingaben: szenarioEingaben(hw, heute.jahr),
+      suchModus,
+    }),
+    [hw, heute, suchModus],
+  );
+  const szenarioStand = useRechnung(szenarioVorlage, (m): SzenarioZeile[] | undefined =>
+    m.art === 'szenarien' ? m.zeilen : undefined,
+  );
+  const szenarien = szenarioStand.wert ?? [];
+  const szenarioLaeuft = szenarioStand.laeuft || (szenarioStand.wert === null && szenarioStand.fehler === null);
 
   const grafik = useMemo(() => {
     const erste = szenarien[0]?.k;
@@ -609,8 +595,21 @@ export function SzenarioVergleich({
   const anzahl = szenarien.length;
   const titel = `${anzahl === 4 ? 'Vier' : anzahl === 3 ? 'Drei' : 'Zwei'} Varianten Ihres Plans im Vergleich`;
 
+  if (szenarien.length === 0) {
+    return szenarioLaeuft ? (
+      <p className="info" role="status">
+        Varianten werden gerechnet …
+      </p>
+    ) : null;
+  }
+
   return (
     <>
+      {szenarioLaeuft ? (
+        <p className="info" role="status">
+          Varianten werden neu gerechnet …
+        </p>
+      ) : null}
       <h3 className="unter-titel">{titel}</h3>
       <p className="klein">
         Jede Linie ist Ihr Plan mit genau einer Änderung, ohne Zufall gerechnet: So sehen Sie, wie stark{' '}

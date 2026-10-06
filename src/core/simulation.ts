@@ -96,7 +96,7 @@ import {
 } from './freiwilligeAhv';
 import { grundstueckgewinnsteuer } from './grundstueckgewinn';
 import { realerBetrag } from './indexierung';
-import { ausgleichHorizont, type KrisenOptionen, krisenModell, krisenPlan } from './krisen';
+import { ausgleichHorizont, type KrisenOptionen, krisenKalender, krisenModell, krisenPlan } from './krisen';
 import { neBefreitDurchEhegatte, neBeitrag } from './neBeitrag';
 import { quellensteuerKapital, quellensteuerRenteSatz } from './quellensteuer';
 import { deterministisch, type RenditeModell } from './renditen';
@@ -769,6 +769,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
       ruecktrittJahr,
       h.personen.map((p) => p.geburtsjahr),
     );
+    const kalender = krisenKalender(plan, { von: opt.start.jahr, bis: endJahr });
     let normal = opt.krisen.normal;
     if (opt.krisen.ausgleichHorizont) {
       // Ausgleich über den eigenen Planungshorizont (erstes Jahr anteilig nach Monaten)
@@ -781,6 +782,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
         plan,
         jahre,
         opt.krisen.daten,
+        kalender,
       );
     }
     krisenNormal = normal ?? null;
@@ -795,6 +797,7 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
       plan,
       opt.krisen.daten,
       opt.start.jahr,
+      kalender,
     );
   }
   const krisenJahre: { jahr: number; land: string; histJahr: number; krise: string; name?: string; kurz?: string }[] =

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { vorbezugKuerzHinweis } from '../../core/ahv';
+import { kuerzungNachNutzer } from '../../core/ahv';
 import { AHV_LINKS, ahvSchaetzung } from '../../core/ahvSchaetzung';
 import type { AhvSchaetzhilfeEingabe, Person } from '../../core/typen';
 import type { Regeln } from '../../rules';
@@ -22,14 +22,17 @@ export function AhvSchaetzhilfe({ p, partner, verheiratet, regeln, set }: Props)
   const [uebernommen, setUebernommen] = useState(false);
   const [kuerzung, setKuerzung] = useState<string | null>(null);
   const verschiebung = p.ahv.bezugVerschiebungMonate;
-  const stand = useRef({ jahr: p.geburtsjahr, geschlecht: p.geschlecht, verschiebung });
+  const stand = useRef({ jahr: p.geburtsjahr, geschlecht: p.geschlecht, verschiebung, nutzer: false });
   useEffect(() => {
     const alt = stand.current;
-    const wechsel = alt.jahr !== p.geburtsjahr || alt.geschlecht !== p.geschlecht;
-    setKuerzung(wechsel ? vorbezugKuerzHinweis(alt.verschiebung, verschiebung) : null);
-    stand.current = { jahr: p.geburtsjahr, geschlecht: p.geschlecht, verschiebung };
+    setKuerzung(kuerzungNachNutzer(alt.nutzer, alt, { jahr: p.geburtsjahr, geschlecht: p.geschlecht, verschiebung }));
+    stand.current = { jahr: p.geburtsjahr, geschlecht: p.geschlecht, verschiebung, nutzer: false };
   }, [p.geburtsjahr, p.geschlecht, verschiebung]);
   const setzeJahrgang = (patch: Partial<Pick<Person, 'geschlecht' | 'geburtsjahr'>>) => {
+    const aendert =
+      (patch.geburtsjahr !== undefined && patch.geburtsjahr !== p.geburtsjahr) ||
+      (patch.geschlecht !== undefined && patch.geschlecht !== p.geschlecht);
+    if (aendert) stand.current.nutzer = true;
     set((x) => personNachJahrgang(x, patch, regeln.ahv));
   };
   const e = p.ahvSchaetzhilfe;

@@ -19,6 +19,7 @@ import {
   ahvVerschiebungKlemmen,
   ahvVorbezugKuerzung,
   ahvWeitesterVorbezugMonate,
+  kuerzungNachNutzer,
   pruefeAhvVerschiebung,
   vorbezugKuerzHinweis,
 } from './ahv';
@@ -215,6 +216,27 @@ describe('Rentenzuschlag Übergangsgeneration', () => {
 
 describe('Hinweis bei gekürztem Vorbezug (K-05)', () => {
   it('nennt die Monate nur, wenn der Vorbezug wirklich gekürzt wird', () => {
+    expect(
+      kuerzungNachNutzer(
+        false,
+        { jahr: 1960, geschlecht: 'm', verschiebung: -36 },
+        { jahr: 1965, geschlecht: 'm', verschiebung: -24 },
+      ),
+    ).toBeNull();
+    expect(
+      kuerzungNachNutzer(
+        true,
+        { jahr: 1960, geschlecht: 'm', verschiebung: -36 },
+        { jahr: 1960, geschlecht: 'm', verschiebung: -24 },
+      ),
+    ).toBeNull();
+    expect(
+      kuerzungNachNutzer(
+        true,
+        { jahr: 1960, geschlecht: 'm', verschiebung: -36 },
+        { jahr: 1965, geschlecht: 'm', verschiebung: -24 },
+      ),
+    ).toBe('Vorbezug auf 24 Monate gekürzt');
     expect(vorbezugKuerzHinweis(-36, -24)).toBe('Vorbezug auf 24 Monate gekürzt');
     expect(vorbezugKuerzHinweis(-24, -24)).toBeNull();
     expect(vorbezugKuerzHinweis(-36, 0)).toBeNull();

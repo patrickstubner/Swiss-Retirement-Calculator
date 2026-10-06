@@ -69,7 +69,7 @@ import { ScrollTabelle } from './ScrollTabelle';
 const LAENDER: readonly KrisenLand[] = ['CHE', 'USA', 'JPN'];
 const MONATE = MONATSNAMEN.map((n, i) => ({ value: i + 1, label: n }));
 
-function ausgleichHinweisText(hinweis: 'zuWenig' | 'gedeckelt' | undefined): string | null {
+export function ausgleichHinweisText(hinweis: 'zuWenig' | 'gedeckelt' | undefined): string | null {
   if (hinweis === 'zuWenig')
     return 'Weniger als 3 normale Jahre im Horizont. Der Ausgleich entfällt, die normalen Jahre bleiben Ihre Annahme.';
   if (hinweis === 'gedeckelt')
@@ -397,8 +397,10 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
           ))}
           {ueberlappung.map((u) => (
             <p key={`ueber-${u.jahrVon}-${u.gilt}-${u.verdraengt}`} className="warnung">
-              {u.verdraengt} und {u.gilt} überschneiden sich {jahrSpanne(u.jahrVon, u.jahrBis)}. Es gilt {u.gilt}{' '}
-              (späterer Beginn, bei gleichem Jahr der Eintrag weiter unten). Die Jahre werden nicht doppelt gezählt.
+              {u.verdraengt
+                ? `${u.verdraengt} und ${u.gilt} überschneiden sich ${jahrSpanne(u.jahrVon, u.jahrBis)}. Es gilt ${u.gilt} (späterer Beginn, bei gleichem Jahr der Eintrag weiter unten). `
+                : `${u.gilt} (${jahrSpanne(u.jahrVon, u.jahrBis)}). Die kürzere Krise gilt nur in ihrem Abschnitt, danach läuft die frühere weiter. `}
+              Die Jahre werden nicht doppelt gezählt.
             </p>
           ))}
           {ausserhalb.map((e) => (

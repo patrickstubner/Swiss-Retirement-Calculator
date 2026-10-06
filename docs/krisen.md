@@ -129,8 +129,10 @@ Stresstest.
   wandern damit mit, auch in der Suche nach dem frühesten Rücktrittsalter. Ist die Liste gefüllt, fragt die App nach
   Ersetzen oder Anhängen. Wechsel von «Automatisch» auf eine leere Liste bietet die Übernahme an. Wechsel von
   «Keine Krise» auf eine leere Liste setzt weiterhin eine Finanzkrise mit Startjahr 2036, sofern das im Horizont liegt.
-- **Überschneidung:** Jedes Kalenderjahr hat genau eine Rendite. Es gilt die später beginnende Krise, bei gleichem
-  Beginn der Eintrag weiter unten. Die App nennt die verdrängte Krise. Die Jahre werden nicht addiert.
+- **Überschneidung:** Pro Monat gilt die später beginnende Krise, bei gleichem Beginn der Eintrag weiter unten.
+  Ein Kalenderjahr hat genau eine Rendite (bei einem Monatsbeginn geometrisch gemischt). Läuft die frühere Krise
+  danach weiter, nennt die App die Reihenfolge (z.B. «Covid bis März, danach Finanzkrise») und nicht dieselbe Krise
+  als verdrängt. Die Jahre werden nicht addiert.
 - **Kennzahlen** am Eintrag (Aktien real, 100 %, gewählte Datenreihe): Stand 1 am Jahresende vor `von`, Tiefpunkt
   nur in den Katalogjahren `von`…`bis`, Dauer = Jahre bis dorthin, Erholung = Jahre vom Tiefpunkt bis der Index
   wieder mindestens 1 ist (die Reihe darf dafür über `bis` hinausgehen, höchstens 80 Jahre ab `von`; sonst «nicht

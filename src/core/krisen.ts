@@ -191,44 +191,108 @@ interface MonatSlot {
   key: string;
 }
 
+/** Jahre, die eine Rechnung braucht. Ausserhalb wird der Kalender nicht belegt. */
+export interface KrisenFenster {
+  von: number;
+  bis: number;
+}
+
 /** Späterer Beginn gewinnt. Bei gleichem Beginn bleibt die Listenreihenfolge (stabil sortiert). */
 function planNachBeginn(plan: readonly KrisenPlanEintrag[]): KrisenPlanEintrag[] {
   return [...plan].sort((a, b) => a.startJahr - b.startJahr || krisenMonat(a.startMonat) - krisenMonat(b.startMonat));
 }
 
+function zelleJahr(e: KrisenPlanEintrag, offset: number): KrisenKalenderZelle {
+  const real = e.eigen ? eigenReal(e.eigen, offset) : undefined;
+  return {
+    land: e.land,
+    jahr: e.krise.von + offset,
+    krise: e.krise.id,
+    ...(e.eigen ? { name: e.krise.name, kurz: e.krise.kurz, eigenReal: real } : {}),
+    monatVon: 1,
+    monatBis: 12,
+  };
+}
+
 /**
- * Monat für Monat, welche Krise gilt. `null` = normale Annahme.
- * Ein Beginn im Januar füllt zwölf gleiche Monate und rechnet damit wie bisher jahrweise.
+ * Januar-Beginn: jedes Krisenjahr liegt in genau einem Kalenderjahr. Dieselbe Zelle wie die
+ * Monatszerlegung (zwölf gleiche Monate, keine Scheiben), ohne Monatsschleife.
  */
-function monatsPlan(plan: readonly KrisenPlanEintrag[]): Map<number, (MonatSlot | null)[]> {
-  const belegt = new Map<number, (MonatSlot | null)[]>();
+function jahresKalender(plan: readonly KrisenPlanEintrag[], fenster?: KrisenFenster): Map<number, KrisenKalenderZelle> {
+  const m = new Map<number, KrisenKalenderZelle>();
+  for (const e of planNachBeginn(plan)) {
+    const laenge = e.krise.bis - e.krise.von + 1;
+    if (laenge <= 0) continue;
+    let von = e.startJahr;
+    let bis = e.startJahr + laenge - 1;
+    if (fenster) {
+      if (bis < fenster.von || von > fenster.bis) continue;
+      von = Math.max(von, fenster.von);
+      bis = Math.min(bis, fenster.bis);
+    }
+    for (let jahr = von; jahr <= bis; jahr++) m.set(jahr, zelleJahr(e, jahr - e.startJahr));
+  }
+  return m;
+}
+
+/**
+ * Monat für Monat, welche Krise gilt. Index statt Objekt: gleiche Krisenjahre teilen sich einen Eintrag.
+ * `0` = normale Annahme. Nur Kalenderjahre im Fenster werden angefasst.
+ */
+function monatsKalender(plan: readonly KrisenPlanEintrag[], fenster?: KrisenFenster): Map<number, KrisenKalenderZelle> {
+  const refs: MonatSlot[] = [];
+  const nachKey = new Map<string, number>();
+  const belegt = new Map<number, Uint16Array>();
+  const fensterVon = fenster ? fenster.von * 12 : Number.NEGATIVE_INFINITY;
+  const fensterBis = fenster ? (fenster.bis + 1) * 12 : Number.POSITIVE_INFINITY;
   for (const e of planNachBeginn(plan)) {
     const m0 = krisenMonat(e.startMonat) - 1;
     const laenge = e.krise.bis - e.krise.von + 1;
     if (laenge <= 0) continue;
     const startAbs = e.startJahr * 12 + m0;
-    for (let i = 0; i < laenge * 12; i++) {
-      const abs = startAbs + i;
+    const endeAbs = startAbs + laenge * 12;
+    if (endeAbs <= fensterVon || startAbs >= fensterBis) continue;
+    for (let abs = startAbs; abs < endeAbs; ) {
       const jahr = Math.floor(abs / 12);
       const monat = abs - jahr * 12;
-      let slots = belegt.get(jahr);
-      if (!slots) {
-        slots = Array.from({ length: 12 }, () => null);
-        belegt.set(jahr, slots);
+      const offset = Math.floor((abs - startAbs) / 12);
+      const grenze = Math.min(endeAbs, (jahr + 1) * 12, startAbs + (offset + 1) * 12);
+      if (jahr >= (fenster?.von ?? Number.NEGATIVE_INFINITY) && jahr <= (fenster?.bis ?? Number.POSITIVE_INFINITY)) {
+        const key = e.eigen ? `e:${e.krise.id}:${offset}` : `${e.land}:${e.krise.von + offset}:${e.krise.id}`;
+        let id = nachKey.get(key);
+        if (id === undefined) {
+          const real = e.eigen ? eigenReal(e.eigen, offset) : undefined;
+          id = refs.length;
+          refs.push({
+            land: e.land,
+            jahr: e.krise.von + offset,
+            krise: e.krise.id,
+            ...(e.eigen ? { name: e.krise.name, kurz: e.krise.kurz, eigenReal: real } : {}),
+            key,
+          });
+          nachKey.set(key, id);
+        }
+        let slots = belegt.get(jahr);
+        if (!slots) {
+          slots = new Uint16Array(12);
+          belegt.set(jahr, slots);
+        }
+        slots.fill(id + 1, monat, monat + (grenze - abs));
       }
-      const offset = Math.floor(i / 12);
-      const histJahr = e.krise.von + offset;
-      const real = e.eigen ? eigenReal(e.eigen, offset) : undefined;
-      slots[monat] = {
-        land: e.land,
-        jahr: histJahr,
-        krise: e.krise.id,
-        ...(e.eigen ? { name: e.krise.name, kurz: e.krise.kurz, eigenReal: real } : {}),
-        key: e.eigen ? `e:${e.krise.id}:${offset}` : `${e.land}:${histJahr}:${e.krise.id}`,
-      };
+      abs = grenze;
     }
   }
-  return belegt;
+  const m = new Map<number, KrisenKalenderZelle>();
+  for (const [jahr, slots] of belegt) {
+    const monate: (MonatSlot | null)[] = [];
+    for (let i = 0; i < 12; i++) {
+      const id = slots[i] ?? 0;
+      monate.push(id === 0 ? null : (refs[id - 1] ?? null));
+    }
+    const zelle = zelleAusMonaten(monate);
+    if (zelle) m.set(jahr, zelle);
+  }
+  return m;
 }
 
 function zelleAusMonaten(slots: readonly (MonatSlot | null)[]): KrisenKalenderZelle | null {
@@ -293,13 +357,12 @@ function zelleAusMonaten(slots: readonly (MonatSlot | null)[]): KrisenKalenderZe
  * (bei gleichem Beginn der spätere Eintrag der Liste). Jedes Kalenderjahr hat genau einen
  * Wert: Krisen werden nicht addiert. Ein Beginn nach Januar mischt die Monate geometrisch.
  */
-export function krisenKalender(plan: readonly KrisenPlanEintrag[]): Map<number, KrisenKalenderZelle> {
-  const m = new Map<number, KrisenKalenderZelle>();
-  for (const [jahr, slots] of monatsPlan(plan)) {
-    const zelle = zelleAusMonaten(slots);
-    if (zelle) m.set(jahr, zelle);
-  }
-  return m;
+export function krisenKalender(
+  plan: readonly KrisenPlanEintrag[],
+  fenster?: KrisenFenster,
+): Map<number, KrisenKalenderZelle> {
+  if (plan.every((e) => krisenMonat(e.startMonat) === 1)) return jahresKalender(plan, fenster);
+  return monatsKalender(plan, fenster);
 }
 
 function faktor(x: number, gewicht: number): number {
@@ -361,8 +424,9 @@ export function krisenModell(
   plan: readonly KrisenPlanEintrag[],
   daten: KrisenDaten,
   startKalenderjahr: number,
+  kalender?: Map<number, KrisenKalenderZelle>,
 ): KrisenModell {
-  const kal = krisenKalender(plan);
+  const kal = kalender ?? krisenKalender(plan);
   const cache = new Map<number, JahresRenditen>();
   const jr = (t: number): JahresRenditen => {
     let r = cache.get(t);
@@ -723,14 +787,27 @@ function scheibenLog(
   return s;
 }
 
+function fensterVonJahren(jahre: readonly { jahr: number }[]): KrisenFenster | undefined {
+  const erstes = jahre[0];
+  if (!erstes) return undefined;
+  let von = erstes.jahr;
+  let bis = erstes.jahr;
+  for (const j of jahre) {
+    if (j.jahr < von) von = j.jahr;
+    if (j.jahr > bis) bis = j.jahr;
+  }
+  return { von, bis };
+}
+
 export function ausgleichHorizont(
   basis: BasisAnnahmen,
   aktienanteil: number,
   plan: readonly KrisenPlanEintrag[],
   jahre: readonly { jahr: number; gewicht: number }[],
   daten: KrisenDaten,
+  kalender?: Map<number, KrisenKalenderZelle>,
 ): { wertschriften: number; wohneigentum: number; hinweis?: AusgleichHinweis } {
-  const kal = krisenKalender(plan);
+  const kal = kalender ?? krisenKalender(plan, fensterVonJahren(jahre));
   const total = jahre.reduce((s, j) => s + j.gewicht, 0);
   const s = leer();
   for (const j of jahre) {
@@ -922,9 +999,59 @@ export interface KrisenUeberlappung {
   verdraengt: string;
 }
 
+const MONATSNAMEN_KRISE = [
+  'Januar',
+  'Februar',
+  'März',
+  'April',
+  'Mai',
+  'Juni',
+  'Juli',
+  'August',
+  'September',
+  'Oktober',
+  'November',
+  'Dezember',
+] as const;
+
 /**
- * Jahre, in denen sich mindestens zwei Krisen überschneiden. Es gilt die später beginnende
- * (bei gleichem Beginn der spätere Listeneintrag). Dieselben Jahre wie `krisenKalender`.
+ * Reihenfolge der Krisen, die in einem Kalenderjahr wirklich gelten.
+ * Eine Krise, die nach einem kürzeren Einschub weiterläuft, steht nicht bei den verdrängten.
+ */
+function jahrUeberlappung(slots: readonly { name: string; verdraengt: readonly string[] }[]): {
+  gilt: string;
+  verdraengt: string;
+} | null {
+  const runs: { name: string; bis: number }[] = [];
+  const verdr = new Set<string>();
+  for (let i = 0; i < slots.length; i++) {
+    const s = slots[i];
+    if (!s || s.name === '') continue;
+    for (const v of s.verdraengt) verdr.add(v);
+    const letzte = runs[runs.length - 1];
+    if (letzte && letzte.name === s.name) letzte.bis = i;
+    else runs.push({ name: s.name, bis: i });
+  }
+  if (runs.length === 0) return null;
+  for (const r of runs) verdr.delete(r.name);
+  if (runs.length < 2 && verdr.size === 0) return null;
+  const gilt =
+    runs.length === 1
+      ? (runs[0]?.name ?? '')
+      : runs
+          .map((r, i) => {
+            const bis = MONATSNAMEN_KRISE[r.bis] ?? '';
+            if (i === 0) return `${r.name} bis ${bis}`;
+            return r.bis < 11 ? `danach ${r.name} bis ${bis}` : `danach ${r.name}`;
+          })
+          .join(', ');
+  return { gilt, verdraengt: [...verdr].join(', ') };
+}
+
+/**
+ * Jahre, in denen sich mindestens zwei Krisen überschneiden. Pro Monat gilt die später beginnende
+ * (bei gleichem Beginn der spätere Listeneintrag). Läuft die frühere danach weiter, nennt `gilt`
+ * die Reihenfolge, z.B. «Covid bis März, danach Finanzkrise».
  */
 export function krisenUeberlappungen(plan: readonly KrisenPlanEintrag[]): KrisenUeberlappung[] {
   const monate = new Map<number, { name: string; verdraengt: string[] }[]>();
@@ -947,25 +1074,19 @@ export function krisenUeberlappungen(plan: readonly KrisenPlanEintrag[]): Krisen
       else if (alt.name !== name) slots[monat] = { name, verdraengt: [...alt.verdraengt, alt.name] };
     }
   }
-  const belegt = new Map<number, { gilt: string; verdraengt: string[] }>();
+  const belegt = new Map<number, { gilt: string; verdraengt: string }>();
   for (const [jahr, slots] of monate) {
-    const mitKrise = slots.filter((s) => s.name !== '');
-    if (mitKrise.length === 0) continue;
-    const namen = new Set(mitKrise.map((s) => s.name));
-    const verdraengt = [...new Set(mitKrise.flatMap((s) => s.verdraengt))];
-    if (namen.size < 2 && verdraengt.length === 0) continue;
-    const gilt = mitKrise[mitKrise.length - 1]?.name ?? '';
-    belegt.set(jahr, { gilt, verdraengt });
+    const z = jahrUeberlappung(slots);
+    if (z) belegt.set(jahr, z);
   }
   const out: KrisenUeberlappung[] = [];
   for (const jahr of [...belegt.keys()].sort((a, b) => a - b)) {
     const z = belegt.get(jahr);
-    if (!z || z.verdraengt.length === 0) continue;
-    const verdraengt = [...new Set(z.verdraengt)].join(', ');
+    if (!z) continue;
     const letzte = out[out.length - 1];
-    if (letzte && letzte.jahrBis === jahr - 1 && letzte.gilt === z.gilt && letzte.verdraengt === verdraengt) {
+    if (letzte && letzte.jahrBis === jahr - 1 && letzte.gilt === z.gilt && letzte.verdraengt === z.verdraengt) {
       letzte.jahrBis = jahr;
-    } else out.push({ jahrVon: jahr, jahrBis: jahr, gilt: z.gilt, verdraengt });
+    } else out.push({ jahrVon: jahr, jahrBis: jahr, gilt: z.gilt, verdraengt: z.verdraengt });
   }
   return out;
 }

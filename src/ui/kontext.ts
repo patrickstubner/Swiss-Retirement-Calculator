@@ -21,6 +21,8 @@ export interface SchrittProps {
   /** Haushalt mit Schätzwerten für Felder ohne eigene Eingabe */
   eff: EffektiverHaushalt;
   eingabeModus: EingabeModus;
+  /** Suche läuft noch; die angezeigte Rechnung kann die vorherige sein. */
+  rechnet?: boolean;
 }
 
 export function setzePerson(setH: Setzer, i: number, fn: (p: Person) => Person): void {

@@ -1,10 +1,7 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { effektiverHaushalt } from '../core/schaetzwerte';
-import { simuliere } from '../core/simulation';
-import { fruehestesRuecktrittsalter } from '../core/solver';
 import type { EingabeModus, Haushalt, Monat } from '../core/typen';
 import { standardHaushalt } from '../data/defaults';
-import { krisenOptionen } from '../data/krisen';
 import { ladeRegeln, type Regeln, regeljahrBanner } from '../rules';
 import { APP_VERSION } from '../version';
 import { DisclaimerBanner } from './components/Disclaimer';
@@ -14,6 +11,7 @@ import { VersionenLeiste } from './components/Versionen';
 import { darstellungVon } from './darstellung';
 import { fmtAlter } from './format';
 import type { Berechnung, Setzer } from './kontext';
+import { useRechnung } from './rechnungLauf';
 import { SchrittInhalt } from './SchrittInhalt';
 import type { SuchModus } from './schritte/Ergebnis';
 import {
@@ -58,29 +56,7 @@ const SCHRITTE_DETAIL = ['Personen', 'Einkommen & Vorsorge', 'Vermögen & Ausgab
 const KURZ_DETAIL = ['Personen', 'Vorsorge', 'Vermögen', 'Annahmen', 'Ergebnis'] as const;
 const SCHRITTE_SCHNELL = ['Eingaben', 'Ergebnis'] as const;
 
-function berechne(h: Haushalt, regeln: Regeln, heute: Monat, suchModus: SuchModus): Berechnung {
-  const t0 = performance.now();
-  try {
-    const krisen = krisenOptionen(h);
-    const wunsch = simuliere(h, regeln, { start: heute, krisen });
-    const person = suchModus === 'p1' && h.personen.length > 1 ? 1 : 0;
-    const solver = fruehestesRuecktrittsalter(h, regeln, {
-      start: heute,
-      krisen,
-      modus: suchModus === 'gemeinsam' ? 'gemeinsam' : 'person',
-      person,
-      maxAlter: 70,
-    });
-    return { wunsch, solver, fehler: null, dauerMs: performance.now() - t0 };
-  } catch (e) {
-    return {
-      wunsch: null,
-      solver: null,
-      fehler: e instanceof Error ? e.message : String(e),
-      dauerMs: performance.now() - t0,
-    };
-  }
-}
+const LEERE_BERECHNUNG: Berechnung = { wunsch: null, solver: null, fehler: null, dauerMs: 0 };
 
 /** Schätzwerte und Berechnung für EINE Version (verzögert, damit die Eingabe flüssig bleibt). Ohne Haushalt: nichts. */
 function useVersion(h: Haushalt | null, regeln: Regeln, heute: Monat, suchModus: SuchModus) {
@@ -91,14 +67,30 @@ function useVersion(h: Haushalt | null, regeln: Regeln, heute: Monat, suchModus:
     [verzoegert, regeln, heute],
   );
   const modus: SuchModus = h ? suchModusFuer(h, suchModus) : suchModus;
-  const berechnung = useMemo(
-    () => (effVerzoegert ? berechne(effVerzoegert.haushalt, regeln, heute, modus) : null),
-    [effVerzoegert, regeln, heute, modus],
+  const vorlage = useMemo(
+    () =>
+      effVerzoegert
+        ? {
+            art: 'suche' as const,
+            id: 0,
+            jahr: heute.jahr,
+            monat: heute.monat,
+            haushalt: effVerzoegert.haushalt,
+            suchModus: modus,
+          }
+        : null,
+    [effVerzoegert, heute, modus],
   );
-  return { eff, effVerzoegert, berechnung, modus };
+  const stand = useRechnung(vorlage, (m) => {
+    if (m.art === 'suche') return m.berechnung;
+    if (m.art === 'fehler') return { wunsch: null, solver: null, fehler: m.fehler, dauerMs: 0 };
+    return undefined;
+  });
+  return { eff, effVerzoegert, berechnung: stand.wert, laeuft: stand.laeuft, modus };
 }
 
-function kurzErgebnisText(berechnung: Berechnung, kurz = false): string {
+function kurzErgebnisText(berechnung: Berechnung | null, laeuft: boolean, kurz = false): string {
+  if (!berechnung || (laeuft && !berechnung.solver && !berechnung.wunsch)) return kurz ? '…' : 'Rechnet …';
   const solver = berechnung.solver;
   if (berechnung.fehler) return kurz ? 'prüfen' : 'Eingaben prüfen';
   if (solver?.gefunden && solver.alterMonate !== null) {
@@ -200,7 +192,8 @@ export function App() {
   const vB = useVersion(haushaltB, regeln, heute, suchModus);
   const modus = vA.modus;
   const eff = vA.eff as NonNullable<typeof vA.eff>;
-  const berechnung = vA.berechnung as Berechnung;
+  const berechnung = vA.berechnung ?? LEERE_BERECHNUNG;
+  const rechnet = vA.laeuft || (haushalt !== null && vA.berechnung === null);
   const vergleich = haushaltB !== null;
 
   const schnell = eingabeModus === 'schnell';
@@ -223,15 +216,25 @@ export function App() {
     window.scrollTo({ top: 0 });
   };
 
-  const props = { h: haushalt, setH, regeln, heute, berechnung, eff, eingabeModus };
+  const props = { h: haushalt, setH, regeln, heute, berechnung, eff, eingabeModus, rechnet };
+  const rechnetB = vB.laeuft || (haushaltB !== null && vB.berechnung === null);
   const propsB =
-    haushaltB && vB.eff && vB.berechnung
-      ? { h: haushaltB, setH: setHB, regeln, heute, berechnung: vB.berechnung, eff: vB.eff, eingabeModus }
+    haushaltB && vB.eff
+      ? {
+          h: haushaltB,
+          setH: setHB,
+          regeln,
+          heute,
+          berechnung: vB.berechnung ?? LEERE_BERECHNUNG,
+          eff: vB.eff,
+          eingabeModus,
+          rechnet: rechnetB,
+        }
       : null;
   const kurzErgebnis =
-    vergleich && vB.berechnung
-      ? `A: ${kurzErgebnisText(berechnung, true)} · B: ${kurzErgebnisText(vB.berechnung, true)}`
-      : kurzErgebnisText(berechnung);
+    vergleich && propsB
+      ? `A: ${kurzErgebnisText(vA.berechnung, rechnet, true)} · B: ${kurzErgebnisText(vB.berechnung, rechnetB, true)}`
+      : kurzErgebnisText(vA.berechnung, rechnet);
 
   // Version B anlegen (Kopie von A), Versionen verwalten
   const legeB = () => {

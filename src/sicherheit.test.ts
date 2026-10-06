@@ -37,6 +37,18 @@ describe('Content-Security-Policy (Meta)', () => {
     }
   });
 
+  it('Suche und Sensitivität nur aus der eigenen Worker-Datei (kein blob:/data:), nicht im Hauptthread der Seite', () => {
+    expect(direktiven.get('worker-src')).toBe("'self'");
+    expect(direktiven.get('script-src')).toBe("'self'");
+    expect(direktiven.get('worker-src')).not.toMatch(/blob:|data:/);
+    const lauf = lies('src/ui/rechnungLauf.ts');
+    expect(lauf).toMatch(/new Worker\(new URL\('\.\/rechnung\.worker\.ts', import\.meta\.url\)/);
+    expect(lauf).not.toMatch(/blob:|data:|createObjectURL/);
+    expect(lies('src/ui/App.tsx')).not.toMatch(/fruehestesRuecktrittsalter|sensitivitaet\(/);
+    expect(lies('src/ui/schritte/Ergebnis.tsx')).not.toMatch(/\bsensitivitaet\(/);
+    expect(lies('src/ui/components/Auswertung.tsx')).not.toMatch(/fruehestesRuecktrittsalter\(/);
+  });
+
   it('erlaubt weder unsafe-eval noch unsafe-inline für Skripte noch Fremdquellen', () => {
     expect(csp).not.toMatch(/unsafe-eval/);
     expect(direktiven.get('script-src')).not.toMatch(/unsafe-inline/);
