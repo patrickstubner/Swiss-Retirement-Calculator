@@ -294,6 +294,7 @@ export function App() {
     schnell,
     schritt: aktSchritt,
     ergebnisSchritt,
+    vergleich,
     suchModus: istB ? vB.modus : modus,
     setSuchModus,
     zuDetail: () => {

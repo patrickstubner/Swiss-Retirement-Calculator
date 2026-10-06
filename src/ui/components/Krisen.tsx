@@ -131,10 +131,12 @@ interface Props {
   wunsch: SimulationsErgebnis | null;
   refIdx: number;
   namen: string[];
+  /** true: einziges Eingabefeld (Modus Schnell). false: nur Anzeige, das Feld steht im Schritt Annahmen. */
+  aktienanteilHier: boolean;
 }
 
 /** Krisenmodus und Editor. Eine Stelle, im Block «Was wäre, wenn …?», schreibt direkt in den Haushalt. */
-export function KrisenSteuerung({ h, setH, effH, regeln, heute, wunsch, refIdx, namen }: Props) {
+export function KrisenSteuerung({ h, setH, effH, regeln, heute, wunsch, refIdx, namen, aktienanteilHier }: Props) {
   const k = h.krisen;
   const [rueckfrage, setRueckfrage] = useState(false);
   const [uebernahmeHinweis, setUebernahmeHinweis] = useState<string | null>(null);
@@ -249,7 +251,7 @@ export function KrisenSteuerung({ h, setH, effH, regeln, heute, wunsch, refIdx, 
           </p>
           <ZahlFeld
             label="Krisen pro 10 Jahre"
-            hinweis={`Standard ${fmtDek(STANDARD_KRISEN_PRO_DEKADE)}: so oft fielen Schweizer Aktien real um 20 % oder mehr (1900–2020, JST). Das heisst im Schnitt alle ${fmtJahre(krisenAbstand(STANDARD_KRISEN_PRO_DEKADE))} Jahre eine Krise.`}
+            hinweis={`Standard ${fmtDek(STANDARD_KRISEN_PRO_DEKADE)}: so oft fielen Schweizer Aktien real um 20 % oder mehr (1900–2020, JST). Das heisst im Schnitt alle ${fmtJahre(krisenAbstand(STANDARD_KRISEN_PRO_DEKADE))} Jahre eine Krise. Gilt für diese feste Abfolge, nicht für die Zufallsrechnung unter «Wiederkehrende Krisen».`}
             value={rate}
             min={0.1}
             max={5}
@@ -430,9 +432,16 @@ export function KrisenSteuerung({ h, setH, effH, regeln, heute, wunsch, refIdx, 
         </>
       ) : null}
 
+      {aktienanteilHier ? (
+        <AktienanteilFeld h={h} setH={setH} />
+      ) : (
+        <p className="klein">
+          Aktienanteil Ihrer Wertschriften: {fmtProzent(h.annahmen.aktienanteil, 0)}. Ändern im Schritt «Annahmen».
+        </p>
+      )}
+
       {k.modus !== 'keine' ? (
         <>
-          <AktienanteilFeld h={h} setH={setH} />
           {wunsch && ohne ? (
             <div className="vergleich" role="status">
               <div>
@@ -818,9 +827,11 @@ interface McProps {
   heute: Monat;
   refIdx: number;
   namen: string[];
+  /** true: der Aktienanteil steht oben bei den Krisen. false: im Schritt Annahmen. */
+  aktienanteilHier: boolean;
 }
 
-export function MonteCarloKarte({ h, setH, effH, heute, refIdx, namen }: McProps) {
+export function MonteCarloKarte({ h, setH, effH, heute, refIdx, namen, aktienanteilHier }: McProps) {
   const k = h.krisen;
   const rate = k.mcKrisenProDekade ?? STANDARD_KRISEN_PRO_DEKADE;
   // Objekt nur bei echter Änderung neu bilden, sonst würde die Rechnung bei jeder Darstellung neu starten
@@ -875,8 +886,8 @@ export function MonteCarloKarte({ h, setH, effH, heute, refIdx, namen }: McProps
           />
           {k.mcArt === 'wiederkehrend' ? (
             <ZahlFeld
-              label="Krisen pro 10 Jahre"
-              hinweis={`Standard ${fmtDek(STANDARD_KRISEN_PRO_DEKADE)}: so oft fielen Schweizer Aktien real um 20 % oder mehr (1900–2020, JST). Gezogen wird zufällig eine der «normalen» Krisen (wie bei «Automatisch»).`}
+              label="Zufällige Krisen pro 10 Jahre"
+              hinweis={`Standard ${fmtDek(STANDARD_KRISEN_PRO_DEKADE)}: so oft fielen Schweizer Aktien real um 20 % oder mehr (1900–2020, JST). Gezogen wird zufällig eine der «normalen» Krisen. Eigene Häufigkeit, unabhängig von «Krisen pro 10 Jahre» bei Automatisch.`}
               value={rate}
               min={0}
               max={10}
@@ -895,7 +906,12 @@ export function MonteCarloKarte({ h, setH, effH, heute, refIdx, namen }: McProps
               onChange={(v) => setzeKrisen(setH, (kr) => ({ ...kr, mcBlockLaenge: Math.round(v) }))}
             />
           )}
-          <AktienanteilFeld h={h} setH={setH} />
+          <p className="klein">
+            Aktienanteil {fmtProzent(h.annahmen.aktienanteil, 0)}.{' '}
+            {aktienanteilHier
+              ? 'Ändern Sie ihn oben bei den Krisen in «Was wäre, wenn».'
+              : 'Ändern Sie ihn im Schritt «Annahmen».'}
+          </p>
           {mcStand.laeuft ? (
             <div className="mc-fortschritt" role="status">
               <label htmlFor={fortschrittId}>Monte Carlo rechnet … {Math.round(mcStand.fortschritt * 100)} %</label>

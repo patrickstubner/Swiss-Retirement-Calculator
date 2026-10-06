@@ -41,6 +41,8 @@ interface Props extends SchrittProps {
   setSuchModus: (m: SuchModus) => void;
   /** Zum Modus «Detailliert» wechseln (Vorsorge-Schritt) */
   zuDetail: () => void;
+  /** Versionen A/B: die Darstellung steht nur oben im Vergleich, nicht noch einmal je Spalte. */
+  vergleich?: boolean;
 }
 
 export function Ergebnis({
@@ -54,6 +56,8 @@ export function Ergebnis({
   regeln,
   zuDetail,
   rechnet = false,
+  eingabeModus,
+  vergleich = false,
 }: Props) {
   const [szenario, setSzenario] = useState<'wunsch' | 'frueh'>('wunsch');
   const { wunsch, solver, fehler } = berechnung;
@@ -227,17 +231,26 @@ export function Ergebnis({
           </p>
         ) : null}
         <div className="darstellung-umschalter">
-          <Segmente<Darstellung>
-            label="Beträge anzeigen"
-            value={dar}
-            optionen={DARSTELLUNG_OPTIONEN}
-            onChange={(d) => setH((x) => ({ ...x, darstellung: d }))}
-          />
-          <p className="klein">
-            {dar === 'nominal'
-              ? 'Alle Beträge, Grafiken und Tabellen in Franken des jeweiligen Jahres – so, wie sie später auf dem Konto stehen (mit Teuerung, in Krisenjahren der historischen).'
-              : 'Alle Beträge, Grafiken und Tabellen in heutigen Franken: was man sich heute dafür kaufen kann.'}
-          </p>
+          {vergleich ? (
+            <p className="klein">
+              Beträge {dar === 'nominal' ? 'in Franken des jeweiligen Jahres' : 'in heutigen Franken'}. Die Darstellung
+              gilt für beide Versionen und steht oben im Vergleich.
+            </p>
+          ) : (
+            <>
+              <Segmente<Darstellung>
+                label="Beträge anzeigen"
+                value={dar}
+                optionen={DARSTELLUNG_OPTIONEN}
+                onChange={(d) => setH((x) => ({ ...x, darstellung: d }))}
+              />
+              <p className="klein">
+                {dar === 'nominal'
+                  ? 'Alle Beträge, Grafiken und Tabellen in Franken des jeweiligen Jahres – so, wie sie später auf dem Konto stehen (mit Teuerung, in Krisenjahren der historischen).'
+                  : 'Alle Beträge, Grafiken und Tabellen in heutigen Franken: was man sich heute dafür kaufen kann.'}
+              </p>
+            </>
+          )}
         </div>
       </section>
 
@@ -263,6 +276,7 @@ export function Ergebnis({
         suchModus={suchModus}
         namen={namen}
         refIdx={ref}
+        aktienanteilHier={eingabeModus === 'schnell'}
       />
 
       {wunsch ? (
@@ -289,7 +303,9 @@ export function Ergebnis({
         <StaffelungKarte h={h} setH={setH} effH={eff.haushalt} regeln={regeln} heute={heute} namen={namen} />
       ) : null}
 
-      {anzeige ? <EntnahmeErgebnis strategie={h.entnahme} e={anzeige} refIdx={ref} /> : null}
+      {anzeige ? (
+        <EntnahmeErgebnis strategie={h.entnahme} e={anzeige} refIdx={ref} schnell={eingabeModus === 'schnell'} />
+      ) : null}
 
       {wunsch ? (
         <Karte titel="Mit Ihrem Wunsch-Rücktrittsalter">
@@ -390,7 +406,16 @@ export function Ergebnis({
         />
       ) : null}
 
-      <MonteCarloKarte h={h} setH={setH} effH={eff.haushalt} regeln={regeln} heute={heute} refIdx={ref} namen={namen} />
+      <MonteCarloKarte
+        h={h}
+        setH={setH}
+        effH={eff.haushalt}
+        regeln={regeln}
+        heute={heute}
+        refIdx={ref}
+        namen={namen}
+        aktienanteilHier={eingabeModus === 'schnell'}
+      />
 
       {anzeige ? (
         <Karte

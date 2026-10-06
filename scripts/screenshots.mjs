@@ -179,21 +179,26 @@ await p2.getByLabel('Erwerbsaufgabe per Ende (Monat)').selectOption('11');
 await fuelle2('Jahr', 2027);
 await karteP1.screenshot({ path: `${out}16-ruecktritt-datum-360.png` });
 
-// Wohnsitz im Ausland: Thailand mit freiwilliger AHV
-await karteP1.getByText('Wohnsitz im Ausland (Wegzug)').click();
-await karteP1.getByRole('checkbox', { name: /^Endgültiger Wegzug aus der Schweiz geplant/ }).check();
-// Der Wegzug übernimmt beim Einschalten den Rücktritts-Modus (hier «Datum»); für das Beispiel auf «Alter» umstellen.
-await karteP1
+// Wohnsitz im Ausland: Thailand mit freiwilliger AHV.
+// Zeitpunkt und Land nur im Schritt Vorsorge; die AHV-Angaben bleiben bei der Person.
+await schritt2(/Vorsorge/);
+const wegKarte2 = p2.locator('.karte', { hasText: 'Wegzug ins Ausland' }).first();
+await wegKarte2.getByRole('checkbox', { name: /^Endgültiger Wegzug aus der Schweiz geplant/ }).check();
+await wegKarte2
   .locator('fieldset', { hasText: 'Wohnsitz im Ausland ab' })
   .locator('label.segment', { hasText: 'Alter' })
   .click();
 await fuelle2('Wegzug mit', 59);
-await p2.getByLabel('Zielland', { exact: true }).selectOption('TH');
+await wegKarte2.getByLabel('Zielland', { exact: true }).selectOption('TH');
+await schritt2(/Personen/);
 await karteP1.getByRole('checkbox', { name: /^Freiwillige AHV\/IV/ }).check();
 await karteP1.locator('.wegzug').screenshot({ path: `${out}17-wohnsitz-ausland-freiwillige-ahv-360.png` });
-await p2.getByLabel('Zielland', { exact: true }).selectOption('PT');
+await schritt2(/Vorsorge/);
+await wegKarte2.getByLabel('Zielland', { exact: true }).selectOption('PT');
+await schritt2(/Personen/);
 await karteP1.locator('.wegzug').screenshot({ path: `${out}18-wohnsitz-eu-nicht-moeglich-360.png` });
-await p2.getByLabel('Zielland', { exact: true }).selectOption('TH');
+await schritt2(/Vorsorge/);
+await wegKarte2.getByLabel('Zielland', { exact: true }).selectOption('TH');
 
 // AHV: frühester Bezug abgeleitet; PK-Feld klar getrennt (mit Warnung bei 62)
 await schritt2(/Vorsorge/);

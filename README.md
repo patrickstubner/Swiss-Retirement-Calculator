@@ -87,8 +87,8 @@ Aktuelle Version: **1.3.4** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [
   Rente/Kapital nach Reglement (Wegzug ab dem Reglementsalter, Art. 2 Abs. 1bis FZG) oder ordentlicher Bezug ohne
   Wegzug. Spielt das Feld nachweislich keine Rolle (Wegzug mit Barauszahlung vor 58 bzw. vor der Erwerbsaufgabe), wird
   es ausgegraut und nur lesbar angezeigt statt versteckt. Bei «Nicht erwerbstätig» ist die ganze PK-Karte ausgeblendet.
-- **Wohnsitz im Ausland und freiwillige AHV/IV** pro Person: Wegzug ab Alter oder Datum, Land (EU/EFTA oder nicht,
-  aus `data/laender-2026.json`), Staatsangehörigkeit, Prüfung der Beitrittsvoraussetzungen (Art. 2 AHVG, VFV).
+- **Wohnsitz im Ausland und freiwillige AHV/IV** pro Person: Wegzug ab Alter oder Datum und Land (EU/EFTA oder nicht,
+  aus `data/laender-2026.json`) im Modus Detailliert nur im Schritt «Einkommen & Vorsorge», im Modus Schnell bei der Person. Staatsangehörigkeit und die Prüfung der Beitrittsvoraussetzungen (Art. 2 AHVG, VFV) stehen im Schritt «Personen».
   Mit freiwilliger AHV: Jahresbeitrag aus Vermögen am 31.12. + 20× Renteneinkommen (Tabelle 1'010–25'250 plus 5%
   Verwaltungskosten), bis zum Referenzalter als Ausgabe; die Jahre zählen als Beitragsjahre. Ohne: keine
   NE-Beiträge mehr, dafür Beitragslücken (AHV-Rente vereinfacht linear gekürzt).
@@ -101,8 +101,8 @@ Aktuelle Version: **1.3.4** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [
   lit. c FZG). Liegt der Wegzug nach dem PK-Bezugsalter, gilt der ordentliche Bezug.
   Besteuerung ab dem Wegzug mit der **Schweizer Quellensteuer** (Bund nach QStV-Tarif + Sitzkanton der
   Vorsorgeeinrichtung; AG, BL, GE, JU, NE, SO, VS, VD mit den exakten ESTV-Tariftabellen 2026) statt der
-  Kapitalleistungssteuer des Wohnkantons; DBA-Rückforderung optional (Schalter). Die Wegzug-Angaben stehen im Schritt «Einkommen & Vorsorge» in einer eigenen Karte **vor** der
-  Pensionskasse (gleicher Zustand wie im Schritt «Personen») und im Modus «Schnell» direkt bei jeder Person.
+  Kapitalleistungssteuer des Wohnkantons; DBA-Rückforderung optional (Schalter). Die Wegzug-Angaben (Zeitpunkt, Land, Barauszahlung) stehen im Schritt «Einkommen & Vorsorge» in einer eigenen Karte **vor** der
+  Pensionskasse und im Modus «Schnell» direkt bei jeder Person. Im Schritt «Personen» sieht man den Zeitpunkt nur noch, plus Staatsangehörigkeit und freiwillige AHV.
 - **Steuern nach dem Wegzug:** Schweizer Einkommens- und Vermögenssteuer nur bis zum Wegzug (anteilig), danach das
   vereinfachte Steuermodell des Ziellandes aus `data/laender-2026.json` (Renten, Kapitalerträge, Vermögen; Regime wie
   Italien 7 %, Zypern 5 %, Azoren −30 % wählbar) oder ein eigener effektiver Satz. Schweizer Quellensteuer auf
@@ -253,7 +253,7 @@ Steuermodelle der Zielländer sind Näherungen (bei Ländern ohne Modell wird we
   Steuern (Einkommen, Kapital, Vermögen, Grundstückgewinn, total). Mobil horizontal scrollbar mit fixer erster Spalte,
   leere Spalten ausgeblendet, **CSV-Export** (Semikolon, ganze Franken, UTF-8 mit BOM, alle Spalten). Folgt dem
   Umschalter heutige Kaufkraft / nominal. Screenshots `screenshots/92-…` bis `95-…`.
-- **Heutige Kaufkraft / Nominal** (Umschalter oben im Ergebnis, im Link und im Speicher, Schema 8): alle Beträge,
+- **Heutige Kaufkraft / Nominal** (ein Umschalter oben im Ergebnis, im Link und im Speicher, Schema 8; beim Vergleich der Versionen nur oben im Vergleich): alle Beträge,
   Grafiken, Tabellen und Kennzahlen wahlweise «in heutigen Franken» (Standard) oder «in Franken des jeweiligen
   Jahres». Nominal = real × kumulierte Teuerung des tatsächlich gerechneten Pfads (in Krisenjahren die historische
   Teuerung, im Monte Carlo die jedes Laufs; die Perzentile werden pro Lauf umgerechnet und erst dann gebildet).

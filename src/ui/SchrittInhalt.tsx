@@ -16,6 +16,8 @@ interface Props {
   setSuchModus: (m: SuchModus) => void;
   zuDetail: () => void;
   onZuruecksetzen: () => void;
+  /** Versionen A/B sind an: die Darstellung hat oben im Vergleich schon einen Umschalter. */
+  vergleich?: boolean;
 }
 
 /** Inhalt des aktiven Schritts für EINE Version (die Hauptversion oder eine Spalte im Vergleich). */
@@ -28,6 +30,7 @@ export function SchrittInhalt({
   setSuchModus,
   zuDetail,
   onZuruecksetzen,
+  vergleich = false,
 }: Props) {
   return (
     <>
@@ -37,7 +40,13 @@ export function SchrittInhalt({
       {!schnell && schritt === 2 ? <VermoegenAusgaben {...props} /> : null}
       {!schnell && schritt === 3 ? <Annahmen {...props} onZuruecksetzen={onZuruecksetzen} /> : null}
       {schritt === ergebnisSchritt ? (
-        <Ergebnis {...props} suchModus={suchModus} setSuchModus={setSuchModus} zuDetail={zuDetail} />
+        <Ergebnis
+          {...props}
+          suchModus={suchModus}
+          setSuchModus={setSuchModus}
+          zuDetail={zuDetail}
+          vergleich={vergleich}
+        />
       ) : null}
     </>
   );

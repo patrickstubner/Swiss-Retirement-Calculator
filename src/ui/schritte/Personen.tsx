@@ -16,7 +16,7 @@ import { ErwerbsstatusFeld } from '../components/Erwerbsstatus';
 import { Schalter, Segmente, TextFeld, ZahlFeld } from '../components/Felder';
 import { Karte } from '../components/Karte';
 import { ErwerbsaufgabeFelder, GeburtFelder, InChSeitFeld } from '../components/PersonBasis';
-import { WegzugZeitpunktFelder } from '../components/Wegzug';
+import { WegzugZeitpunktText } from '../components/Wegzug';
 import { fmtAlter, fmtChf, fmtMonat } from '../format';
 import { alterMonate, type SchrittProps, setzePerson } from '../kontext';
 
@@ -161,13 +161,9 @@ function WohnsitzAuslandTeil({
   return (
     <details className="aufklapp wegzug" open={w.aktiv}>
       <summary>Wohnsitz im Ausland (Wegzug){w.aktiv && land ? ` · ${land.name}` : ''}</summary>
-      <WegzugZeitpunktFelder p={p} set={set} />
+      <WegzugZeitpunktText p={p} />
       {w.aktiv ? (
         <>
-          <p className="klein">
-            Barauszahlung von Pensionskasse, Freizügigkeit und 3a beim Wegzug: im Schritt «Einkommen &amp; Vorsorge»
-            (Karte «Wegzug ins Ausland», gleiche Angaben).
-          </p>
           <Segmente<Nationalitaet>
             label="Staatsangehörigkeit"
             value={w.nationalitaet}

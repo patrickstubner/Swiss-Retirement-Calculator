@@ -1,6 +1,6 @@
 /**
- * Wegzug ins Ausland: gemeinsame Felder für «Personen», «Einkommen & Vorsorge» und den Modus
- * «Schnell» (derselbe Zustand `Person.wohnsitzAusland`). Die Vorsorgefelder steuern die
+ * Wegzug ins Ausland: ein Editor pro Modus (Schnell bei der Person, Detailliert in «Einkommen &
+ * Vorsorge»). Im Schritt «Personen» steht nur die Anzeige plus die AHV-Angaben. Die Vorsorgefelder steuern die
  * Barauszahlung von PK, Freizügigkeit und 3a (Art. 5 Abs. 1 lit. a FZG, Art. 25f FZG,
  * Art. 3 Abs. 2 lit. d BVV 3), siehe core/simulation.ts.
  */
@@ -45,6 +45,28 @@ export function mitRuecktritt(p: Person): Person {
     wohnsitzAusland:
       p.stoppModus === 'datum' ? { ...w, modus: 'datum', datum } : { ...w, modus: 'alter', alter: stopp / 12, datum },
   };
+}
+
+/** Zeitpunkt und Land, ohne Eingabe. Der Editor steht im Modus Schnell bei der Person, im Detail bei der Vorsorge. */
+export function WegzugZeitpunktText({ p }: { p: Person }) {
+  const w = p.wohnsitzAusland;
+  if (!w.aktiv) {
+    return (
+      <p className="klein">
+        Zeitpunkt, Zielland und Barauszahlung stellen Sie im Schritt «Einkommen &amp; Vorsorge» ein.
+      </p>
+    );
+  }
+  const weg = wegzugIndex(p);
+  const wegMonat: Monat | null = weg === null ? null : { jahr: Math.floor(weg / 12), monat: (weg % 12) + 1 };
+  const land = wegzugsLand(w.land);
+  return (
+    <p className="klein">
+      Wegzug{land ? ` nach ${land.name}` : ''}
+      {wegMonat ? ` ab ${fmtMonat(wegMonat)}` : ''}. Zeitpunkt, Zielland und Barauszahlung ändern Sie im Schritt
+      «Einkommen &amp; Vorsorge».
+    </p>
+  );
 }
 
 /** Schalter «Wegzug geplant», Zeitpunkt (Alter oder Datum) und Zielland. */

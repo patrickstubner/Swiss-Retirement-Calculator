@@ -255,7 +255,7 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
           <WegzugZeitpunktFelder
             p={p}
             set={set}
-            hinweis="Gleiche Angabe wie im Schritt «Personen». Bei endgültigem Wegzug werden Pensionskasse, Freizügigkeit und 3a ab dem Wegzug frei – in jedem Alter (ausserhalb EU/EFTA ganz, in der EU/EFTA ohne das Obligatorium)."
+            hinweis="Einzige Stelle im Modus Detailliert. Bei endgültigem Wegzug werden Pensionskasse, Freizügigkeit und 3a ab dem Wegzug frei – in jedem Alter (ausserhalb EU/EFTA ganz, in der EU/EFTA ohne das Obligatorium). Staatsangehörigkeit und freiwillige AHV stehen im Schritt «Personen»."
           />
           <WegzugVorsorgeFelder
             p={p}

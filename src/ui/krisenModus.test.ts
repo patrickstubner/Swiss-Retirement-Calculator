@@ -51,6 +51,14 @@ describe('Wechsel auf Individuell', () => {
     expect(krisen).toMatch(/export function KrisenSteuerung/);
     expect(krisen).not.toMatch(/KrisenKarte|id="krisen"|titel="Krisen"/);
     expect(umkehr).not.toMatch(/#krisen|KrisenKarte|GeplanteKrise|Krise hinzufügen/);
+    const mc = krisen.slice(krisen.indexOf('export function MonteCarloKarte'));
+    expect(mc).not.toMatch(/<AktienanteilFeld/);
+    expect(krisen.match(/<AktienanteilFeld/g)?.length).toBe(1);
+    const personen = lies('schritte/Personen.tsx');
+    const vorsorge = lies('schritte/EinkommenVorsorge.tsx');
+    expect(personen).not.toMatch(/WegzugZeitpunktFelder/);
+    expect(vorsorge).toMatch(/WegzugZeitpunktFelder/);
+    expect(lies('schritte/Ergebnis.tsx')).toMatch(/vergleich \?/);
   });
 
   it('Wechsel auf einen anderen Modus lässt die Liste stehen', () => {

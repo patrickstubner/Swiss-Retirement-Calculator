@@ -200,9 +200,11 @@ interface Props {
   suchModus: SuchModusA;
   namen: string[];
   refIdx: number;
+  /** Aktienanteil hier eingeben (Schnell) oder nur anzeigen (Detailliert, Feld im Schritt Annahmen). */
+  aktienanteilHier: boolean;
 }
 
-export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, refIdx }: Props) {
+export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, refIdx, aktienanteilHier }: Props) {
   const [w, setW] = useState<WasWaere>(KEIN_WAS_WAERE);
   const [gemeinsam, setGemeinsam] = useState(true);
   const geaendert =
@@ -348,6 +350,7 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
         wunsch={k?.wunsch ?? null}
         refIdx={refIdx}
         namen={namen}
+        aktienanteilHier={aktienanteilHier}
       />
 
       <div className="regler-gruppe">
@@ -512,7 +515,8 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
                 ? ' mit Ihren Krisen'
                 : ''}
             . Fächer: {mc?.laeufe ?? 150} Monte-Carlo-Läufe mit zufällig verteilten historischen Krisen (
-            {(h.krisen.mcKrisenProDekade ?? STANDARD_KRISEN_PRO_DEKADE).toLocaleString('de-CH')} pro Dekade).
+            {(h.krisen.mcKrisenProDekade ?? STANDARD_KRISEN_PRO_DEKADE).toLocaleString('de-CH')} zufällige Krisen pro
+            Dekade, eigene Häufigkeit unter «Wiederkehrende Krisen»).
           </p>
         </>
       ) : null}
