@@ -845,10 +845,7 @@ for (const schema of ['light', 'dark']) {
     // Regler: Rücktritt 62 (in Monaten), Ausgaben 60'000, Krisen automatisch
     await aw.getByLabel('Rücktrittsalter', { exact: true }).fill(String(62 * 12));
     await aw.getByLabel('Ausgaben pro Jahr (heute)', { exact: true }).fill('60000');
-    await aw
-      .locator('.regler-krise')
-      .getByText(/^Auto\u00ad?matisch$/)
-      .click();
+    await aw.getByLabel('Teuerung', { exact: true }).fill('0.03');
     await pg.waitForTimeout(2500);
     await aw.screenshot({ path: `${out}60-auswertung-regler-geaendert-krise-360.png` });
     if (!/Übernehmen/.test(await aw.innerText())) fehler.push('Auswertung: Übernehmen fehlt');
@@ -970,7 +967,10 @@ for (const schema of ['light', 'dark']) {
       .first()
       .click();
     await pg.waitForTimeout(400);
-    await kk.getByLabel('Krise', { exact: true }).selectOption('japan1990');
+    await kk
+      .getByLabel(/^Krise/)
+      .first()
+      .selectOption('japan1990');
     await kk.getByText('Alter', { exact: true }).click();
     await f('Alter bei Krisenbeginn', 68);
     await pg.waitForTimeout(1200);

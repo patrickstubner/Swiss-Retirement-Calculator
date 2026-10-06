@@ -127,8 +127,12 @@ Stresstest.
   Liste und schaltet den Ausgleich ein. Beginnt «Automatisch» nach dem Rücktritt, übernimmt die App die ganze Folge
   als Abstand zum Rücktritt (auch Beginne, die beim aktuellen Rücktritt ausserhalb des Horizonts liegen). Die Krisen
   wandern damit mit, auch in der Suche nach dem frühesten Rücktrittsalter. Ist die Liste gefüllt, fragt die App nach
-  Ersetzen oder Anhängen. Wechsel von «Automatisch» auf eine leere Liste bietet die Übernahme an. Wechsel von
-  «Keine Krise» auf eine leere Liste setzt weiterhin eine Finanzkrise mit Startjahr 2036, sofern das im Horizont liegt.
+  Ersetzen oder Anhängen. Wechsel auf «Individuell» bei leerer Liste übernimmt die automatischen Krisen sofort
+  (Ausgleich ein). Ist die Liste schon gefüllt, bleibt sie. Eine leere Liste zeigt «Krise hinzufügen» und
+  «Automatische Krisen übernehmen», nicht nur einen Hinweis. Die Karte «Krisen» steht direkt über «Was wäre, wenn …?».
+  Dort ist der einzige Krisenmodus; «Was wäre, wenn» verweist auf die Karte. Ist in der Umkehrrechnung «Individuell»
+  gewählt und die Liste leer, verweist die App ebenfalls dorthin (gerechnet wird dann weiterhin die Finanzkrise
+  ab nächstem Jahr, bis die Liste Einträge hat).
 - **Überschneidung:** Pro Monat gilt die später beginnende Krise, bei gleichem Beginn der Eintrag weiter unten.
   Ein Kalenderjahr hat genau eine Rendite (bei einem Monatsbeginn geometrisch gemischt). Läuft die frühere Krise
   danach weiter, nennt die App die Reihenfolge (z.B. «Covid bis März, danach Finanzkrise») und nicht dieselbe Krise

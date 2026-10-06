@@ -239,7 +239,11 @@ export function UmkehrKarte({ h, setH, effH, regeln, heute, namen }: Props) {
           onChange={setQuote}
         />
       ) : rechnung === 'individuell' && h.krisen.auswahl.length === 0 ? (
-        <p className="klein">Ihre Krisenliste ist leer: gerechnet wird die Finanzkrise 2007–2009 ab nächstem Jahr.</p>
+        <p className="krisen-sprung warnung" role="status">
+          Die Liste in der Karte <a href="#krisen">Krisen</a> ist leer. Diese Umkehrrechnung setzt deshalb die
+          Finanzkrise 2007–2009 ab nächstem Jahr. Krise hinzufügen oder die automatischen Krisen übernehmen Sie in der
+          Karte «Krisen».
+        </p>
       ) : null}
       <div className="knopf-reihe">
         <button type="button" className="knopf" onClick={berechnen} disabled={laeuft}>

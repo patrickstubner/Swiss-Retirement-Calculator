@@ -443,27 +443,17 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
           geaendert={w.teuerung !== null}
           onChange={(v) => setW((x) => ({ ...x, teuerung: v }))}
         />
-        <div className={`regler-krise${w.krise !== null ? ' regler-krise--geaendert' : ''}`}>
-          <Segmente<KrisenModus>
-            label="Krisen"
-            value={krisenModus}
-            optionen={[
-              { value: 'keine', label: 'Keine' },
-              { value: 'automatisch', label: 'Auto\u00admatisch' },
-              { value: 'individuell', label: 'Indi\u00adviduell' },
-            ]}
-            onChange={(v) => setW((x) => ({ ...x, krise: v === h.krisen.modus ? null : v }))}
-          />
-          <small className="feld__hinweis">
-            {krisenModus === 'keine'
-              ? 'Ohne Krisen: jedes Jahr gilt Ihre Renditeannahme (Standard wäre «Automatisch»).'
-              : krisenModus === 'automatisch'
-                ? 'Standard: normale historische Krisen im Abstand gemäss Häufigkeit; die Krisenjahre ersetzen die Annahme (Einstellungen unten bei «Krisen»).'
-                : h.krisen.auswahl.length === 0
-                  ? 'Ihre Liste ist leer: gerechnet wird die Finanzkrise 2007–2009 im Jahr des Rücktritts (Liste unten bei «Krisen»).'
-                  : 'Ihre eigene Liste unten bei «Krisen».'}
-          </small>
-        </div>
+        <p className="krisen-sprung">
+          <a href="#krisen">Krisen einstellen</a>
+          {'. '}
+          {krisenModus === 'keine'
+            ? 'Derzeit keine Krise: jedes Jahr gilt Ihre Renditeannahme (Standard wäre «Automatisch»).'
+            : krisenModus === 'automatisch'
+              ? 'Derzeit automatisch: normale historische Krisen im Abstand gemäss Häufigkeit. Häufigkeit und Beginn stehen in der Karte «Krisen».'
+              : h.krisen.auswahl.length === 0
+                ? 'Derzeit individuell, die Liste ist leer. In der Karte «Krisen» eine Krise hinzufügen oder die automatischen Krisen übernehmen.'
+                : `Derzeit individuell mit ${h.krisen.auswahl.length} ${h.krisen.auswahl.length === 1 ? 'Eintrag' : 'Einträgen'} in der Karte «Krisen».`}
+        </p>
       </div>
       {geaendert ? (
         <div className="knopf-reihe">

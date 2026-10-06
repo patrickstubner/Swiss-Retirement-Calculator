@@ -254,6 +254,17 @@ export function Ergebnis({
         </p>
       ))}
 
+      <KrisenKarte
+        h={h}
+        setH={setH}
+        effH={eff.haushalt}
+        regeln={regeln}
+        heute={heute}
+        wunsch={wunsch}
+        refIdx={ref}
+        namen={namen}
+      />
+
       <Auswertung
         h={h}
         setH={setH}
@@ -390,16 +401,6 @@ export function Ergebnis({
         />
       ) : null}
 
-      <KrisenKarte
-        h={h}
-        setH={setH}
-        effH={eff.haushalt}
-        regeln={regeln}
-        heute={heute}
-        wunsch={wunsch}
-        refIdx={ref}
-        namen={namen}
-      />
       <MonteCarloKarte h={h} setH={setH} effH={eff.haushalt} regeln={regeln} heute={heute} refIdx={ref} namen={namen} />
 
       {anzeige ? (

@@ -29,7 +29,7 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
 
 ## Funktionsumfang (Version 1.3)
 
-Aktuelle Version: **1.3.3** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [CONTRIBUTING](CONTRIBUTING.md)).
+Aktuelle Version: **1.3.4** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [CONTRIBUTING](CONTRIBUTING.md)).
 
 - **Neutrale Standardwerte:** Alle Beträge sind anfangs leer (0) und frei editierbar – keine Beispielvermögen.
   Gesetzliche Werte (z.B. BVG-Mindestzins) und Annahmen (Standard: 7 % Rendite nominal, 2 % Teuerung; eine Annahme, keine Garantie) sind vorbelegt und anpassbar. Der Schnellmodus rechnet mit denselben Annahmen wie «Detailliert» und zeigt sie sichtbar an.
@@ -199,9 +199,9 @@ Vereinfachungen: Ohne «Wohnkosten separat» kein Eigenmietwert, Zins und Unterh
 am Ende des Verkaufsjahres; Hypothek ohne Amortisation; Vermögenssteuer auf dem Verkehrswert (effektiver Satz). Barauszahlung wegen Selbstständigkeit ist nicht abgebildet;
 Steuermodelle der Zielländer sind Näherungen (bei Ländern ohne Modell wird weiter mit Schweizer Steuern gerechnet oder ein eigener Satz verwendet).
 
-- **Was wäre, wenn …?** (oben im Ergebnis): Regler für Rücktrittsalter (Mitte = Eingabe, ±10 Jahre, frühestens heute,
-  spätestens 70; bei Paaren gemeinsam oder pro Person), Planungsalter (±20 Jahre), Ausgaben, Rendite, Teuerung und
-  Krisenmodus mit sofortiger Neuberechnung (Eingaben bleiben unverändert bis «Übernehmen»); Kennzahlen «Geld reicht bis Alter»,
+- **Was wäre, wenn …?** (oben im Ergebnis, direkt unter der Karte «Krisen»): Regler für Rücktrittsalter (Mitte = Eingabe, ±10 Jahre, frühestens heute,
+  spätestens 70; bei Paaren gemeinsam oder pro Person), Planungsalter (±20 Jahre), Ausgaben, Rendite und Teuerung
+  mit sofortiger Neuberechnung (Eingaben bleiben unverändert bis «Übernehmen»). Den Krisenmodus stellt die Karte «Krisen» ein; «Was wäre, wenn» verweist dorthin. Kennzahlen «Geld reicht bis Alter»,
   Erfolgswahrscheinlichkeit mit wiederkehrenden Krisen, frühestes Rücktrittsalter, Vermögen am Ende;
   Vermögensverlauf als Monte-Carlo-Fächer (10., 25., 50., 75., 90. Perzentil) mit Erfolgsquote und «Mit 90 % / 75 % /
   50 % Wahrscheinlichkeit reicht das Geld bis Alter …»; «Varianten Ihres Plans im Vergleich» (Grafik 2: Ihr Plan mit
@@ -261,7 +261,7 @@ Steuermodelle der Zielländer sind Näherungen (bei Ländern ohne Modell wird we
   als ganzes Teuerungsjahr. Screenshots `screenshots/84-…` bis `88-…`.
 - Erscheinungsbild: ruhigeres Design mit Karten, klarer Typografie, Diagrammfarben aus CSS-Variablen und **dunklem
   Modus** gemäss Systemeinstellung; Kontraste nach WCAG AA (Text ≥ 4.5:1).
-- **Krisen** (im Ergebnis), drei Stufen (beim ersten Start ist *Automatisch* voreingestellt; gespeicherte Stände und
+- **Krisen** (Karte direkt über «Was wäre, wenn …?»), drei Stufen (beim ersten Start ist *Automatisch* voreingestellt; gespeicherte Stände und
   Links behalten ihren Modus): *Keine Krise*; *Automatisch* – die «normalen» historischen Krisen (Ölkrise
   1973/74, Schwarzer Montag 1987, Schweizer Immobilienkrise, Dotcom, Finanzkrise 2008, Eurokrise 2011, Covid 2020,
   Zinsschock 2022) rotierend im Abstand gemäss Häufigkeit (Standard 0,74 pro Dekade, etwa alle 13,5 Jahre), erste
@@ -269,7 +269,10 @@ Steuermodelle der Zielländer sind Näherungen (bei Ländern ohne Modell wird we
   normalen Jahre werden so ausgeglichen, dass der reale Durchschnitt über den   eigenen Planungszeitraum (heute bis
   Planungsalter, Wertschriften und Hauspreise getrennt) der Annahme entspricht; *Individuell* –
   eigene Liste (hinzufügen, entfernen, höchstens 120) mit allen Krisen inkl. der extremen (Grosse Depression,
-  Stagflation 1973–81, Japan ab 1990) oder einer eigenen Annahme (Rückgang, Dauer, Erholung). «Automatische
+  Stagflation 1973–81, Japan ab 1990) oder einer eigenen Annahme (Rückgang, Dauer, Erholung). Wechsel auf
+  *Individuell* bei leerer Liste übernimmt die automatischen Krisen sofort (Ausgleich ein); eine gefüllte Liste
+  bleibt. Ist die Liste leer, stehen «Krise hinzufügen» und «Automatische Krisen übernehmen» direkt unter dem
+  Modus. «Automatische
   Krisen übernehmen» füllt die Liste mit denselben Krisen wie «Automatisch» und gleicht
   die normalen Jahre aus; der Ausgleich lässt sich abschalten (Stresstest). Unter 3 normalen Jahren
   entfällt der Ausgleich, über 30 % oder unter −20 % wird er begrenzt. Beginnt «Automatisch» nach dem

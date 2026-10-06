@@ -59,6 +59,7 @@ import { darstellungVon, endBetrag, inFranken } from '../darstellung';
 import { fmtChf, fmtProzent, MONATSNAMEN } from '../format';
 import type { Setzer } from '../kontext';
 import { krisenAbschnitte, krisenText } from '../krisenGrafik';
+import { krisenNachModuswechsel } from '../krisenModus';
 import type { McEinstellung } from '../mcKern';
 import { useVollMc } from '../mcVergleich';
 import { Faecher } from './Faecher';
@@ -134,7 +135,6 @@ interface Props {
 
 export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, namen }: Props) {
   const k = h.krisen;
-  const [angebot, setAngebot] = useState(false);
   const [rueckfrage, setRueckfrage] = useState(false);
   const [uebernahmeHinweis, setUebernahmeHinweis] = useState<string | null>(null);
   const aktiv = krisenOptionen(effH) !== undefined;
@@ -184,7 +184,6 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
 
   const uebernimm = (art: 'ersetzen' | 'anhaengen') => {
     setRueckfrage(false);
-    setAngebot(false);
     if (uebernahme.length === 0) {
       setUebernahmeHinweis('Im Planungshorizont liegt keine automatische Krise.');
       return;
@@ -203,8 +202,22 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
     );
   };
 
+  const kriseHinzufuegen = () =>
+    setzeKrisen(setH, (kr) => {
+      if (kr.auswahl.length >= MAX_GEPLANTE_KRISEN) return kr;
+      const letzte = plan.at(-1)?.startJahr ?? fenster.von;
+      const jahr = krisenStartVorschlag(fenster.von, fenster.bis, Math.max(0, letzte + 14 - 2036));
+      const benutzt = new Set(kr.auswahl.map((x) => x.id));
+      const naechste = KRISEN.find((x) => !benutzt.has(x.id)) ?? KRISEN[0];
+      return {
+        ...kr,
+        auswahl: [...kr.auswahl, neueGeplanteKrise(naechste?.id ?? 'dotcom2000', naechste?.land ?? 'CHE', jahr)],
+      };
+    });
+
   return (
     <Karte
+      id="krisen"
       titel="Krisen"
       untertitel="Wie wirken Börsenkrisen auf Ihr Vermögen? Die App spielt die echten Jahresrenditen und die Teuerung historischer Krisenjahre ab. Die Wahl gilt für das ganze Ergebnis."
     >
@@ -217,18 +230,10 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
           { value: 'individuell', label: 'Indi\u00adviduell' },
         ]}
         onChange={(modus) => {
-          const vonAutomatischLeer = k.modus === 'automatisch' && modus === 'individuell' && k.auswahl.length === 0;
-          setAngebot(vonAutomatischLeer);
           setRueckfrage(false);
-          setUebernahmeHinweis(null);
-          setzeKrisen(setH, (kr) => ({
-            ...kr,
-            modus,
-            auswahl:
-              modus === 'individuell' && kr.auswahl.length === 0 && !vonAutomatischLeer
-                ? [neueGeplanteKrise('finanzkrise2007', 'CHE', krisenStartVorschlag(fenster.von, fenster.bis))]
-                : kr.auswahl,
-          }));
+          const wechsel = krisenNachModuswechsel(k, modus, uebernahme);
+          setUebernahmeHinweis(wechsel.hinweis);
+          setzeKrisen(setH, () => wechsel.krisen);
         }}
       />
       {k.modus === 'keine' ? (
@@ -309,6 +314,23 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
 
       {k.modus === 'individuell' ? (
         <>
+          {k.auswahl.length === 0 ? (
+            <div className="krisen-leer" role="status">
+              <p>
+                Noch keine Krise in der Liste. Fügen Sie eine hinzu oder übernehmen Sie die automatischen Krisen.
+                Solange die Liste leer ist, wird ohne Krise gerechnet.
+              </p>
+              {uebernahmeHinweis ? <p className="warnung">{uebernahmeHinweis}</p> : null}
+              <div className="knopf-reihe">
+                <button type="button" className="knopf" onClick={() => uebernimm('ersetzen')}>
+                  Automatische Krisen übernehmen
+                </button>
+                <button type="button" className="knopf knopf--sekundaer" onClick={kriseHinzufuegen}>
+                  Krise hinzufügen
+                </button>
+              </div>
+            </div>
+          ) : null}
           <p className="klein">
             {k.ausgleich === true
               ? normal?.hinweis
@@ -325,29 +347,18 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
             hinweis="Ein: derselbe Ausgleich wie im Modus Automatisch. Aus: Stresstest. «Automatische Krisen übernehmen» schaltet den Ausgleich ein. Spätere Änderungen an der Liste lassen ihn, wie er steht."
             onChange={(ausgleich) => setzeKrisen(setH, (kr) => ({ ...kr, ausgleich }))}
           />
-          {angebot && k.auswahl.length === 0 ? (
-            <p className="klein" role="status">
-              Die Liste ist leer. «Automatische Krisen übernehmen» füllt sie mit denselben Krisenarten und Startjahren,
-              die der Modus Automatisch für diesen Haushalt und diesen Planungshorizont rechnen würde.
-            </p>
-          ) : null}
           {k.autoStartArt === 'nachRuecktritt' ? (
             <p className="klein">
               Automatisch beginnt nach dem Rücktritt. Die Übernahme behält den Abstand, damit die Krisen mit dem
               Rücktritt mitwandern.
             </p>
           ) : null}
-          <button
-            type="button"
-            className="knopf"
-            onClick={() => {
-              if (k.auswahl.length === 0) uebernimm('ersetzen');
-              else setRueckfrage(true);
-            }}
-          >
-            Automatische Krisen übernehmen
-          </button>
-          {rueckfrage ? (
+          {k.auswahl.length > 0 ? (
+            <button type="button" className="knopf" onClick={() => setRueckfrage(true)}>
+              Automatische Krisen übernehmen
+            </button>
+          ) : null}
+          {k.auswahl.length > 0 && rueckfrage ? (
             <fieldset className="unterkarte">
               <legend>Liste ist schon gefüllt</legend>
               <p>
@@ -367,7 +378,7 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
               </div>
             </fieldset>
           ) : null}
-          {uebernahmeHinweis ? (
+          {k.auswahl.length > 0 && uebernahmeHinweis ? (
             <p className="warnung" role="status">
               {uebernahmeHinweis}
             </p>
@@ -409,35 +420,15 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
               {fenster.bis}. Sie fliesst so nicht in die Rechnung ein.
             </p>
           ))}
-          {k.auswahl.length < MAX_GEPLANTE_KRISEN ? (
-            <button
-              type="button"
-              className="knopf knopf--sekundaer"
-              onClick={() =>
-                setzeKrisen(setH, (kr) => {
-                  const letzte = plan.at(-1)?.startJahr ?? fenster.von;
-                  const jahr = krisenStartVorschlag(fenster.von, fenster.bis, Math.max(0, letzte + 14 - 2036));
-                  const benutzt = new Set(kr.auswahl.map((x) => x.id));
-                  const naechste = KRISEN.find((x) => !benutzt.has(x.id)) ?? KRISEN[0];
-                  return {
-                    ...kr,
-                    auswahl: [
-                      ...kr.auswahl,
-                      neueGeplanteKrise(naechste?.id ?? 'dotcom2000', naechste?.land ?? 'CHE', jahr),
-                    ],
-                  };
-                })
-              }
-            >
+          {k.auswahl.length > 0 && k.auswahl.length < MAX_GEPLANTE_KRISEN ? (
+            <button type="button" className="knopf knopf--sekundaer" onClick={kriseHinzufuegen}>
               Krise hinzufügen
             </button>
-          ) : (
+          ) : null}
+          {k.auswahl.length >= MAX_GEPLANTE_KRISEN ? (
             <p className="klein">
               Höchstens {MAX_GEPLANTE_KRISEN} Krisen. Entfernen Sie einen Eintrag, um einen neuen zu setzen.
             </p>
-          )}
-          {k.auswahl.length === 0 ? (
-            <p className="warnung">Die Liste ist leer – es wird ohne Krise gerechnet.</p>
           ) : null}
         </>
       ) : null}

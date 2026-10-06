@@ -1006,6 +1006,37 @@ tr.negativ td {
 }
 
 /* Krisenszenarien und Monte Carlo */
+#krisen {
+  scroll-margin-top: 12px;
+}
+#krisen:focus {
+  outline: none;
+}
+#krisen:focus-visible {
+  outline: 3px solid var(--farbe-fokus);
+  outline-offset: 4px;
+}
+.krisen-leer {
+  border: 1px solid var(--farbe-rand);
+  border-left: 4px solid var(--farbe-primaer);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin: 0 0 12px;
+}
+.krisen-leer > p {
+  margin: 0 0 8px;
+}
+.krisen-sprung {
+  margin: 8px 0 4px;
+  grid-column: 1 / -1;
+}
+.krisen-sprung a {
+  font-weight: 700;
+}
+.krisen-sprung a:focus-visible {
+  outline: 3px solid var(--farbe-fokus);
+  outline-offset: 2px;
+}
 .krisen-hinweis {
   display: inline-block;
   background: var(--farbe-hinweis-bg);
@@ -1182,11 +1213,8 @@ tr.negativ td {
   opacity: 0.5;
 }
 .regler-umschalter,
-.regler-krise {
+.krisen-sprung {
   grid-column: 1 / -1;
-}
-.regler-krise--geaendert legend {
-  color: var(--farbe-akzent-text);
 }
 .krisen-legende {
   display: flex;
