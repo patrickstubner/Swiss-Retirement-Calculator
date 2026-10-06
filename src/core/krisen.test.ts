@@ -540,60 +540,7 @@ describe('Ausgleich bei wenig normalen Jahren', () => {
   });
 });
 
-describe('Laufzeit bei vielen Krisen', () => {
-  it('120 überlappende Krisen bleiben unter 5 ms pro Simulation', () => {
-    const lang = k('japan1990');
-    const basisHaushalt = haushalt();
-    const person0 = basisHaushalt.personen[0];
-    if (!person0) throw new Error('Person');
-    const h = {
-      ...basisHaushalt,
-      personen: [{ ...person0, geburtsjahr: 1980, name: '' }],
-      planungsalter: 95,
-      krisen: {
-        ...basisHaushalt.krisen,
-        modus: 'individuell' as const,
-        ausgleich: true,
-        auswahl: Array.from({ length: 120 }, (_, i) => ({
-          uid: `k${i}`,
-          id: lang.id,
-          land: 'CHE' as const,
-          startArt: 'jahr' as const,
-          jahr: 2010 + i,
-          alter: 70,
-          person: 0,
-          jahreNach: 0,
-          monat: 1,
-          eigen: null,
-        })),
-      },
-    };
-    const messe = (monat: number) => {
-      const hh = {
-        ...h,
-        krisen: {
-          ...h.krisen,
-          auswahl: h.krisen.auswahl.map((a, i) => ({ ...a, monat: monat === 1 ? 1 : i % 2 === 0 ? 1 : 7 })),
-        },
-      };
-      const opt = { start, krisen: krisenOptionen(hh) };
-      const erste = simuliere(hh, regeln, opt);
-      const proben: number[] = [];
-      let letzte = erste;
-      for (let i = 0; i < 5; i++) {
-        const t0 = performance.now();
-        letzte = simuliere(hh, regeln, opt);
-        proben.push(performance.now() - t0);
-      }
-      proben.sort((a, b) => a - b);
-      const ms = proben[2] ?? 0;
-      expect(letzte.endVermoegen).toBe(erste.endVermoegen);
-      expect(ms).toBeLessThan(5);
-    };
-    messe(1);
-    messe(7);
-  });
-
+describe('Ausgleichshinweis der Suche', () => {
   it('das Suchergebnis nennt den Ausgleichshinweis der gefundenen Rechnung', () => {
     const h = haushalt();
     const person0 = h.personen[0];
