@@ -94,10 +94,17 @@ describe('Validierungsschema: Abdeckung', () => {
     if (!bereich) throw new Error('Bereich fehlt');
     expect(klemme(-36, bereich)).toBe(-36);
     expect(klemme(-48, bereich)).toBe(-36);
+    // Standardperson ist männlich, Jahrgang 1970: höchstens 24 Monate. −36 und −100 werden darauf gekürzt.
     const n = normalisiere({ personen: [{ ahv: { bezugVerschiebungMonate: -36 } }] }, regeln);
-    expect(n.personen[0]?.ahv.bezugVerschiebungMonate).toBe(-36);
+    expect(n.personen[0]?.ahv.bezugVerschiebungMonate).toBe(-24);
     const geklemmt = normalisiere({ personen: [{ ahv: { bezugVerschiebungMonate: -100 } }] }, regeln);
-    expect(geklemmt.personen[0]?.ahv.bezugVerschiebungMonate).toBe(-36);
+    expect(geklemmt.personen[0]?.ahv.bezugVerschiebungMonate).toBe(-24);
+    // Frau der Übergangsgeneration, Kohorte 1965: −36 bleibt zulässig.
+    const frau = normalisiere(
+      { personen: [{ geburtsjahr: 1965, geschlecht: 'w', ahv: { bezugVerschiebungMonate: -36 } }] },
+      regeln,
+    );
+    expect(frau.personen[0]?.ahv.bezugVerschiebungMonate).toBe(-36);
   });
 
   it('klemme: NaN/Infinity → im Bereich, Ganzzahlen werden gerundet', () => {

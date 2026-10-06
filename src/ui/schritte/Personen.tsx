@@ -102,7 +102,7 @@ function PersonKarte({
   return (
     <Karte titel={p.name || `Person ${i + 1}`} untertitel={`heute ${fmtAlter(Math.max(0, heuteM))}`}>
       <TextFeld label="Name (optional)" value={p.name} onChange={(v) => set((x) => ({ ...x, name: v }))} />
-      <GeburtFelder p={p} set={set} heute={heute} />
+      <GeburtFelder p={p} set={set} heute={heute} regeln={regeln} />
       <InChSeitFeld p={p} set={set} heute={heute} regeln={regeln} />
       <ErwerbsstatusFeld p={p} set={set} />
       {istNichtErwerbstaetig(p) ? (

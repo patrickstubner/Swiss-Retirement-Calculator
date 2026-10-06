@@ -137,7 +137,7 @@ function SchnellPerson({ p, i, props }: { p: Person; i: number; props: SchrittPr
   const ne = istNichtErwerbstaetig(p);
   return (
     <Karte titel={p.name || `Person ${i + 1}`} untertitel={`heute ${fmtAlter(Math.max(0, alterMonate(p, heute)))}`}>
-      <GeburtFelder p={p} set={set} heute={heute} />
+      <GeburtFelder p={p} set={set} heute={heute} regeln={regeln} />
       <InChSeitFeld p={p} set={set} heute={heute} regeln={regeln} />
       <ErwerbsstatusFeld p={p} set={set} />
       {ne ? (

@@ -2,8 +2,20 @@
  * Krisenszenarien: reale historische Jahresrenditen und Teuerung auf das Portfolio abspielen.
  * Daten: data/krisen-historisch.json (JST R6 1871–2020, Schweiz 2021–2024 aus SNB/BFS; Quellen und
  * Lizenzen in docs/krisen.md). Ausserhalb der Krisenjahre gelten die normalen Annahmen.
+ * Eine eigene Krise (`EigeneKrise`) ist ein Stresstest ohne historische Reihe.
  */
 import type { RenditeModell } from './renditen';
+import type { EigeneKrise } from './typen';
+
+/** Id einer eigenen Krise in `KrisenAuswahl` */
+export const EIGENE_KRISE_ID = 'eigen';
+/** Höchstens so viele geplante Krisen im Modus «Individuell» (Oberfläche und Speicher) */
+export const MAX_GEPLANTE_KRISEN = 8;
+export const EIGENE_NAME_MAX = 40;
+
+const EIGEN_RUECKGANG: readonly [number, number] = [-0.8, -0.05];
+const EIGEN_DAUER: readonly [number, number] = [1, 8];
+const EIGEN_ERHOLUNG: readonly [number, number] = [0, 15];
 
 export type KrisenLand = 'CHE' | 'USA' | 'JPN';
 
@@ -37,6 +49,20 @@ export interface KrisenPlanEintrag {
   krise: Krise;
   land: KrisenLand;
   startJahr: number;
+  /** Gesetzte eigene Krise: die Jahresrendite kommt nicht aus der Historie */
+  eigen?: EigeneKrise;
+}
+
+/** Was in einem Kalenderjahr abgespielt wird. Bei Überschneidung bleibt die später beginnende Krise. */
+export interface KrisenKalenderZelle {
+  land: KrisenLand;
+  /** Historisches Jahr bzw. bei einer eigenen Krise der Index innerhalb der Krise (ab `von`) */
+  jahr: number;
+  krise: string;
+  name?: string;
+  kurz?: string;
+  /** Reale Wertschriftenrendite einer eigenen Krise in diesem Jahr */
+  eigenReal?: number;
 }
 
 /** Normale Annahmen (nominal) ausserhalb der Krisenjahre */
@@ -97,15 +123,24 @@ export function jahresRenditen(
   };
 }
 
-/** Kalenderjahr → abgespieltes historisches Jahr. Bei Überschneidung gilt die später beginnende Krise. */
-export function krisenKalender(
-  plan: readonly KrisenPlanEintrag[],
-): Map<number, { land: KrisenLand; jahr: number; krise: string }> {
-  const m = new Map<number, { land: KrisenLand; jahr: number; krise: string }>();
+/**
+ * Kalenderjahr → abgespieltes Jahr. Bei Überschneidung gilt die später beginnende Krise
+ * (bei gleichem Beginn der spätere Eintrag der Liste). Jedes Kalenderjahr hat genau einen
+ * Wert: Krisen werden nicht addiert.
+ */
+export function krisenKalender(plan: readonly KrisenPlanEintrag[]): Map<number, KrisenKalenderZelle> {
+  const m = new Map<number, KrisenKalenderZelle>();
   const sortiert = [...plan].sort((a, b) => a.startJahr - b.startJahr);
   for (const e of sortiert) {
     for (let j = e.krise.von; j <= e.krise.bis; j++) {
-      m.set(e.startJahr + (j - e.krise.von), { land: e.land, jahr: j, krise: e.krise.id });
+      const offset = j - e.krise.von;
+      const zelle: KrisenKalenderZelle = { land: e.land, jahr: j, krise: e.krise.id };
+      if (e.eigen) {
+        zelle.eigenReal = eigenReal(e.eigen, offset);
+        zelle.name = e.krise.name;
+        zelle.kurz = e.krise.kurz;
+      }
+      m.set(e.startJahr + offset, zelle);
     }
   }
   return m;
@@ -131,7 +166,15 @@ export function krisenModell(
     let r = cache.get(t);
     if (!r) {
       const k = kal.get(startKalenderjahr + t) ?? null;
-      r = jahresRenditen(basis, aktienanteil, k ? historischesJahr(daten, k.land, k.jahr) : null, k);
+      const info = k
+        ? { land: k.land, jahr: k.jahr, krise: k.krise, ...(k.name ? { name: k.name, kurz: k.kurz } : {}) }
+        : null;
+      const h = !k
+        ? null
+        : k.eigenReal !== undefined
+          ? synthetischesJahr(k, basis.inflation)
+          : historischesJahr(daten, k.land, k.jahr);
+      r = jahresRenditen(basis, aktienanteil, h, info);
       cache.set(t, r);
     }
     return r;
@@ -195,6 +238,7 @@ export interface KrisenWahl {
   krise: Krise;
   land: KrisenLand;
   start: KrisenStart;
+  eigen?: EigeneKrise;
 }
 
 export interface KrisenOptionen {
@@ -223,6 +267,7 @@ export function krisenPlan(
   return wahl.map((w) => ({
     krise: w.krise,
     land: w.land,
+    ...(w.eigen ? { eigen: w.eigen } : {}),
     startJahr:
       w.start.art === 'jahr'
         ? w.start.jahr
@@ -486,4 +531,148 @@ export function ausgleichErwartetHorizont(
       s.wohnInflKorrektur,
     ),
   };
+}
+
+/** Standard einer neuen eigenen Krise (Modellannahme, keine historische Zahl). */
+export function standardEigeneKrise(): EigeneKrise {
+  return { name: 'Eigene Krise', rueckgang: -0.3, dauer: 2, erholung: 4 };
+}
+
+/** Steuerzeichen, DEL und spitze Klammern entfernen. Leerzeichen bleiben (Eingabe). */
+export function filterKrisenName(roh: string): string {
+  let out = '';
+  for (const ch of roh) {
+    const c = ch.codePointAt(0) ?? 0;
+    if (c <= 31 || c === 127 || ch === '<' || ch === '>') continue;
+    out += ch;
+    if (out.length >= EIGENE_NAME_MAX) break;
+  }
+  return out;
+}
+
+/** Anzeigename: Steuerzeichen und spitze Klammern weg, höchstens 40 Zeichen. */
+export function bereinigeKrisenName(roh: unknown): string {
+  const s = typeof roh === 'string' ? roh : '';
+  const sauber = filterKrisenName(s).replace(/\s+/g, ' ').trim();
+  return sauber || 'Eigene Krise';
+}
+
+/** Kennung eines Listeneintrags: nur harmlose Zeichen, sonst ein Ersatz. */
+export function bereinigeKrisenUid(roh: unknown, index: number): string {
+  const s = typeof roh === 'string' ? roh.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 40) : '';
+  return s || `kr-${index}`;
+}
+
+function klemmeZahl(x: unknown, sonst: number, min: number, max: number): number {
+  const n = typeof x === 'number' && Number.isFinite(x) ? x : sonst;
+  return Math.min(max, Math.max(min, n));
+}
+
+/** Macht eine eigene Krise gültig. Fehlende oder ungültige Felder werden ersetzt, nicht verworfen. */
+export function bereinigeEigeneKrise(roh: unknown): EigeneKrise {
+  const o = roh !== null && typeof roh === 'object' ? (roh as Record<string, unknown>) : {};
+  const std = standardEigeneKrise();
+  return {
+    name: bereinigeKrisenName(o.name),
+    rueckgang: klemmeZahl(o.rueckgang, std.rueckgang, EIGEN_RUECKGANG[0], EIGEN_RUECKGANG[1]),
+    dauer: Math.round(klemmeZahl(o.dauer, std.dauer, EIGEN_DAUER[0], EIGEN_DAUER[1])),
+    erholung: Math.round(klemmeZahl(o.erholung, std.erholung, EIGEN_ERHOLUNG[0], EIGEN_ERHOLUNG[1])),
+  };
+}
+
+/**
+ * Reale Jahresrendite der Wertschriften in einer eigenen Krise.
+ * Rückgang: jedes Jahr derselbe Satz, sodass nach `dauer` Jahren genau `rueckgang` erreicht ist.
+ * Erholung: jedes Jahr derselbe Satz, sodass der reale Stand danach wieder 1 ist.
+ */
+export function eigenReal(e: EigeneKrise, offset: number): number {
+  const dauer = Math.max(1, Math.round(e.dauer));
+  const erholung = Math.max(0, Math.round(e.erholung));
+  const rueckgang = Math.min(EIGEN_RUECKGANG[1], Math.max(EIGEN_RUECKGANG[0], e.rueckgang));
+  if (offset < 0 || offset >= dauer + erholung) return 0;
+  if (offset < dauer) return (1 + rueckgang) ** (1 / dauer) - 1;
+  if (erholung === 0) return 0;
+  return (1 / (1 + rueckgang)) ** (1 / erholung) - 1;
+}
+
+/** Krise für den Plan: die Jahre 1…Dauer+Erholung stehen für die synthetischen Jahre. */
+export function eigeneAlsKrise(uid: string, e: EigeneKrise): Krise {
+  const name = bereinigeKrisenName(e.name);
+  const jahre = Math.max(1, Math.round(e.dauer) + Math.round(e.erholung));
+  const kurz = name.length > 22 ? `${name.slice(0, 21)}…` : name;
+  return {
+    id: `${EIGENE_KRISE_ID}:${uid}`,
+    kurz,
+    name,
+    von: 1,
+    bis: jahre,
+    land: 'CHE',
+    beschreibung: 'Eigene Annahme, keine historische Krise.',
+  };
+}
+
+function synthetischesJahr(k: KrisenKalenderZelle, inflation: number): HistJahr {
+  const real = k.eigenReal ?? 0;
+  const nominal = (1 + real) * (1 + inflation) - 1;
+  return {
+    jahr: k.jahr,
+    aktien: nominal,
+    obligationen: nominal,
+    geldmarkt: null,
+    teuerung: inflation,
+    immobilien: null,
+  };
+}
+
+export interface KrisenUeberlappung {
+  jahrVon: number;
+  jahrBis: number;
+  /** Name der Krise, die in diesen Jahren gilt */
+  gilt: string;
+  /** Namen der verdrängten Krisen */
+  verdraengt: string;
+}
+
+/**
+ * Jahre, in denen sich mindestens zwei Krisen überschneiden. Es gilt die später beginnende
+ * (bei gleichem Beginn der spätere Listeneintrag). Dieselben Jahre wie `krisenKalender`.
+ */
+export function krisenUeberlappungen(plan: readonly KrisenPlanEintrag[]): KrisenUeberlappung[] {
+  const belegt = new Map<number, { gilt: string; verdraengt: string[] }>();
+  const sortiert = [...plan].sort((a, b) => a.startJahr - b.startJahr);
+  for (const e of sortiert) {
+    const name = e.krise.kurz || e.krise.name;
+    for (let j = e.krise.von; j <= e.krise.bis; j++) {
+      const jahr = e.startJahr + (j - e.krise.von);
+      const alt = belegt.get(jahr);
+      if (!alt) belegt.set(jahr, { gilt: name, verdraengt: [] });
+      else belegt.set(jahr, { gilt: name, verdraengt: [...alt.verdraengt, alt.gilt] });
+    }
+  }
+  const out: KrisenUeberlappung[] = [];
+  for (const jahr of [...belegt.keys()].sort((a, b) => a - b)) {
+    const z = belegt.get(jahr);
+    if (!z || z.verdraengt.length === 0) continue;
+    const verdraengt = [...new Set(z.verdraengt)].join(', ');
+    const letzte = out[out.length - 1];
+    if (letzte && letzte.jahrBis === jahr - 1 && letzte.gilt === z.gilt && letzte.verdraengt === verdraengt) {
+      letzte.jahrBis = jahr;
+    } else out.push({ jahrVon: jahr, jahrBis: jahr, gilt: z.gilt, verdraengt });
+  }
+  return out;
+}
+
+/** Einträge, deren Beginn ausserhalb des Planungshorizonts liegt. */
+export function krisenAusserhalb(plan: readonly KrisenPlanEintrag[], von: number, bis: number): KrisenPlanEintrag[] {
+  return plan.filter((e) => e.startJahr < von || e.startJahr > bis);
+}
+
+/**
+ * Vorschlag für ein Startjahr im Planungshorizont. Liegt 2036 darin, ist das der Vorschlag
+ * (dieselbe erste Krise wie im Modus «Automatisch»); sonst das nächstliegende Jahr im Fenster.
+ */
+export function krisenStartVorschlag(von: number, bis: number, versatz = 0): number {
+  const fensterBis = Math.max(von, bis);
+  const ziel = Math.max(von, 2036 + versatz);
+  return Math.min(fensterBis, Math.max(von, ziel));
 }

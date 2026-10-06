@@ -22,7 +22,6 @@ import {
   AHV_HINWEIS_VERGANGENHEIT,
   ahvBeginnInVergangenheit,
   ahvBezugAnzeigen,
-  fmtJahreMonate,
 } from '../ahvBezugAnzeige';
 import { AhvSchaetzhilfe } from '../components/AhvSchaetzhilfe';
 import { ErwerbsstatusFeld, NichtErwerbstaetigFelder } from '../components/Erwerbsstatus';
@@ -191,13 +190,6 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
           {bezugArt !== 'ordentlich' ? (
             <ZahlFeld
               label={bezugArt === 'vorbezug' ? 'Vorbezug um' : 'Aufschub um'}
-              hinweis={
-                bezugZeit
-                  ? bezugArt === 'vorbezug'
-                    ? `Ab 1. ${fmtMonat(bezugZeit.vorbezug.beginn)}, Alter ${fmtJahreMonate(bezugZeit.vorbezug.alterBeiBeginnMonate)}.`
-                    : `Ab 1. ${fmtMonat(bezugZeit.aufschub.beginn)}, Alter ${fmtJahreMonate(bezugZeit.aufschub.alterBeiBeginnMonate)}.`
-                  : undefined
-              }
               einheit="Monate"
               value={Math.abs(verschiebung)}
               min={bezugArt === 'vorbezug' ? 1 : r.aufschub.minMonate}

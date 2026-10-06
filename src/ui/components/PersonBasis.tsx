@@ -1,4 +1,5 @@
 /** Gemeinsame Personenfelder für die Modi «Schnell» und «Detailliert». */
+import { ahvVerschiebungKlemmen } from '../../core/ahv';
 import { ahvLueckenZuzug } from '../../core/schaetzwerte';
 import type { Monat, Person, ZeitpunktModus } from '../../core/typen';
 import { letzterArbeitsmonat, stoppAlterMonate } from '../../core/zeitpunkt';
@@ -20,7 +21,19 @@ interface Props {
   heute: Monat;
 }
 
-export function GeburtFelder({ p, set, heute }: Props) {
+/** Nach Wechsel von Geschlecht oder Jahrgang: Vorbezug auf das zulässige Maximum kürzen. */
+export function personNachJahrgang(
+  p: Person,
+  patch: Partial<Pick<Person, 'geschlecht' | 'geburtsjahr' | 'geburtsmonat'>>,
+  ahv: Regeln['ahv'],
+): Person {
+  const n = { ...p, ...patch };
+  const v = ahvVerschiebungKlemmen(n.ahv.bezugVerschiebungMonate, n.geburtsjahr, n.geschlecht, ahv);
+  return v === n.ahv.bezugVerschiebungMonate ? n : { ...n, ahv: { ...n.ahv, bezugVerschiebungMonate: v } };
+}
+
+export function GeburtFelder({ p, set, heute, regeln }: Props & { regeln: Regeln }) {
+  const ahv = regeln.ahv;
   return (
     <>
       <Segmente
@@ -30,7 +43,7 @@ export function GeburtFelder({ p, set, heute }: Props) {
           { value: 'w', label: 'Frau' },
           { value: 'm', label: 'Mann' },
         ]}
-        onChange={(g) => set((x) => ({ ...x, geschlecht: g }))}
+        onChange={(g) => set((x) => personNachJahrgang(x, { geschlecht: g }, ahv))}
       />
       <div className="raster">
         <ZahlFeld
@@ -40,7 +53,7 @@ export function GeburtFelder({ p, set, heute }: Props) {
           max={heute.jahr}
           nachkomma={0}
           gruppieren={false}
-          onChange={(v) => set((x) => ({ ...x, geburtsjahr: Math.round(v) }))}
+          onChange={(v) => set((x) => personNachJahrgang(x, { geburtsjahr: Math.round(v) }, ahv))}
         />
         <AuswahlFeld
           label="Geburtsmonat"

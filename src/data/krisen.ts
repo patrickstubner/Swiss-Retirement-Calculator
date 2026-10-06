@@ -7,6 +7,9 @@ import haeufigkeitJson from '../../data/krisen-haeufigkeit.json';
 import historischJson from '../../data/krisen-historisch.json';
 import {
   ausgleichZyklus,
+  bereinigeEigeneKrise,
+  EIGENE_KRISE_ID,
+  eigeneAlsKrise,
   type HistJahr,
   type Krise,
   type KrisenDaten,
@@ -302,20 +305,84 @@ export function krisenOptionen(h: Haushalt): KrisenOptionen | undefined {
   if (k.modus !== 'individuell') return undefined;
   const wahl: KrisenWahl[] = [];
   for (const a of k.auswahl) {
+    const start =
+      a.startArt === 'jahr'
+        ? { art: 'jahr' as const, jahr: a.jahr }
+        : a.startArt === 'alter'
+          ? { art: 'alter' as const, alter: a.alter, person: a.person }
+          : { art: 'nachRuecktritt' as const, jahre: a.jahreNach };
+    if (a.id === EIGENE_KRISE_ID) {
+      const eigen = bereinigeEigeneKrise(a.eigen);
+      wahl.push({ krise: eigeneAlsKrise(a.uid || 'kr', eigen), land: 'CHE', start, eigen });
+      continue;
+    }
     const krise = kriseNach(a.id);
     if (!krise) continue;
-    wahl.push({
-      krise,
-      land: a.land,
-      start:
-        a.startArt === 'jahr'
-          ? { art: 'jahr', jahr: a.jahr }
-          : a.startArt === 'alter'
-            ? { art: 'alter', alter: a.alter, person: a.person }
-            : { art: 'nachRuecktritt', jahre: a.jahreNach },
-    });
+    wahl.push({ krise, land: a.land, start });
   }
   return wahl.length > 0 ? { wahl, daten: KRISEN_DATEN, aktienanteil: h.annahmen.aktienanteil } : undefined;
+}
+
+/**
+ * Aktien real (100 %) einer Katalogkrise, aus der gewählten Datenreihe.
+ * Stand = 1 am Jahresende vor `krise.von`. Der Tiefpunkt wird nur in den Katalogjahren
+ * `von`…`bis` gesucht (eine spätere, andere Krise zählt nicht mit). Dauer = Jahre bis
+ * zu diesem Tiefpunkt. Erholung = Jahre vom Tiefpunkt, bis der Index wieder mindestens 1
+ * ist; dafür darf die Reihe über `bis` hinausgehen (höchstens 80 Jahre ab `von`).
+ * null, wenn die Reihe das nicht zeigt. Teuerung = Produkt der Katalogjahre `von`…`bis`.
+ * Quelle: dieselben Reihen wie der Katalog (JST R6, Schweiz 2021–2024 SNB/BFS),
+ * siehe docs/krisen.md. Keine gerundete Ersatztabelle.
+ */
+export function aktienKennzahl(
+  krise: Krise,
+  land: KrisenLand,
+): { rueckgang: number; dauer: number; erholung: number | null; tiefpunkt: number; teuerung: number } | null {
+  const erstes = KRISEN_DATEN[land].get(krise.von);
+  if (!erstes || erstes.aktien === null || erstes.teuerung === null) return null;
+  let index = 1;
+  let tief = 1;
+  let tiefJahr = krise.von - 1;
+  const imFenster: { jahr: number; index: number }[] = [];
+  for (let j = krise.von; j <= krise.bis; j++) {
+    const h = KRISEN_DATEN[land].get(j);
+    if (!h || h.aktien === null || h.teuerung === null) break;
+    index *= (1 + h.aktien) / (1 + h.teuerung);
+    imFenster.push({ jahr: j, index });
+    if (index < tief - 1e-12) {
+      tief = index;
+      tiefJahr = j;
+    }
+  }
+  let erholt: number | null = null;
+  if (tief < 1 - 1e-9) {
+    for (const p of imFenster) {
+      if (p.jahr > tiefJahr && p.index >= 1 - 1e-9) {
+        erholt = p.jahr;
+        break;
+      }
+    }
+    for (let j = krise.bis + 1; erholt === null && j <= krise.von + 80; j++) {
+      const h = KRISEN_DATEN[land].get(j);
+      if (!h || h.aktien === null || h.teuerung === null) break;
+      index *= (1 + h.aktien) / (1 + h.teuerung);
+      if (index >= 1 - 1e-9) erholt = j;
+    }
+  }
+  let teuerung = 1;
+  let hat = false;
+  for (let j = krise.von; j <= krise.bis; j++) {
+    const h = KRISEN_DATEN[land].get(j);
+    if (!h || h.teuerung === null) continue;
+    teuerung *= 1 + h.teuerung;
+    hat = true;
+  }
+  return {
+    rueckgang: tief - 1,
+    dauer: Math.max(0, tiefJahr - (krise.von - 1)),
+    erholung: erholt === null ? null : erholt - tiefJahr,
+    tiefpunkt: tiefJahr,
+    teuerung: hat ? teuerung - 1 : 0,
+  };
 }
 
 /** Pool für «wiederkehrende Krisen» (Monte Carlo): dieselben «normalen» Krisen wie im Modus «Automatisch» */

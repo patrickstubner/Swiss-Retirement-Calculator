@@ -95,10 +95,32 @@ weil `normalisiere` den Modus aus den Rohdaten ableitet statt aus dem Standard (
 
 ### Individuell
 
-Ersetzt die frühere Auswahl «Krise testen» (inklusive Datenreihe CH/USA/JP). Beginn neu auch **im Alter** einer
-Person (Kalenderjahr, in dem sie dieses Alter erreicht). Kein Ausgleich der übrigen Jahre: Die Liste ist ein
-Stresstest («was, wenn zusätzlich zu meinen Annahmen diese Krise kommt?»). Bisherige Links/Speicherstände (Schema 5)
-mit eingeschalteter Krise werden als «Individuell» mit derselben Liste übernommen, sonst «Keine Krise».
+Ersetzt die frühere Auswahl «Krise testen» (inklusive Datenreihe CH/USA/JP). Beginn als **Kalenderjahr** (nur
+innerhalb des Planungshorizonts, vom Startjahr bis zum Jahr, in dem die jüngste Person das Planungsalter erreicht;
+das Alter am Jahresende steht als Hilfe daneben), **im Alter** einer Person oder **X Jahre nach dem Rücktritt**.
+Liegt der aufgelöste Beginn ausserhalb des Horizonts, weist die App darauf hin; diese Jahre fliessen nicht in die
+Rechnung ein. Kein Ausgleich der übrigen Jahre: Die Liste ist ein Stresstest («was, wenn zusätzlich zu meinen
+Annahmen diese Krise kommt?»). Bisherige Links/Speicherstände (Schema 5) mit eingeschalteter Krise werden als
+«Individuell» mit derselben Liste übernommen, sonst «Keine Krise». Schema 13: Fehlt die Liste, bleibt sie leer
+(kein Absturz, keine neue Standardkrise). Einträge ohne `eigen` sind Katalogkrisen.
+
+- **Liste:** Hinzufügen, Bearbeiten, Entfernen. Höchstens 8 Einträge (Oberfläche und Speicher; aus einem
+  manipulierten Stand werden höchstens 8 gültige Einträge übernommen). Wechsel auf «Individuell» bei leerer Liste
+  setzt eine Finanzkrise mit Startjahr 2036, sofern das im Horizont liegt.
+- **Überschneidung:** Jedes Kalenderjahr hat genau eine Rendite. Es gilt die später beginnende Krise, bei gleichem
+  Beginn der Eintrag weiter unten. Die App nennt die verdrängte Krise. Die Jahre werden nicht addiert.
+- **Kennzahlen** am Eintrag (Aktien real, 100 %, gewählte Datenreihe): Stand 1 am Jahresende vor `von`, Tiefpunkt
+  nur in den Katalogjahren `von`…`bis`, Dauer = Jahre bis dorthin, Erholung = Jahre vom Tiefpunkt bis der Index
+  wieder mindestens 1 ist (die Reihe darf dafür über `bis` hinausgehen, höchstens 80 Jahre ab `von`; sonst «nicht
+  erreicht»). Teuerung = Produkt über `von`…`bis`. Gerechnet aus `data/krisen-historisch.json` (`aktienKennzahl`),
+  nicht aus einer gerundeten Ersatztabelle. Zusätzlich der reale Rückgang des eigenen Aktienmix über dieselben
+  Katalogjahre.
+- **Eigene Krise** (`id` `eigen`): Modellannahme, keine historische Reihe. Realer Rückgang des ganzen
+  Wertschriftenportfolios (−80 % bis −5 %, Standard −30 %) gleichmässig über 1–8 Jahre, danach reale Erholung auf
+  den Stand vor der Krise über 0–15 Jahre (0 = der Stand bleibt unten). Aktien und Obligationen erhalten dieselbe
+  nominale Rendite, damit der Aktienanteil das Ergebnis nicht verschiebt. Teuerung, Bargeld und Hauspreise bleiben
+  die Annahmen; Anlagekosten werden wie sonst abgezogen. Bezeichnung höchstens 40 Zeichen, ohne Steuerzeichen und
+  ohne spitze Klammern. Am Band steht diese Bezeichnung.
 
 ### Darstellung
 

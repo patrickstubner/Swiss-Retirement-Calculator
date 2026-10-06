@@ -27,9 +27,9 @@ Die Berechnungen beruhen auf vereinfachten Modellen, auf Ihren Eingaben und auf 
 Gesetze, Renten, Steuertarife und Zinsen können sich ändern. Für die Richtigkeit, Vollständigkeit und Aktualität der
 Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
 
-## Funktionsumfang (Version 1.2)
+## Funktionsumfang (Version 1.3)
 
-Aktuelle Version: **1.2.2** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [CONTRIBUTING](CONTRIBUTING.md)).
+Aktuelle Version: **1.3.0** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [CONTRIBUTING](CONTRIBUTING.md)).
 
 - **Neutrale Standardwerte:** Alle Beträge sind anfangs leer (0) und frei editierbar – keine Beispielvermögen.
   Gesetzliche Werte (z.B. BVG-Mindestzins) und Annahmen (Standard: 7 % Rendite nominal, 2 % Teuerung; eine Annahme, keine Garantie) sind vorbelegt und anpassbar. Der Schnellmodus rechnet mit denselben Annahmen wie «Detailliert» und zeigt sie sichtbar an.
@@ -268,8 +268,10 @@ Steuermodelle der Zielländer sind Näherungen (bei Ländern ohne Modell wird we
   Krise standardmässig 2036 (Zinsschock 2022 + mittlerer Abstand); die Krisenjahre ersetzen die Annahme und die
   normalen Jahre werden so ausgeglichen, dass der reale Durchschnitt über den eigenen Planungszeitraum (heute bis
   Planungsalter, Wertschriften und Hauspreise getrennt) der Annahme entspricht; *Individuell* –
-  eigene Liste mit allen Krisen inkl. der extremen (Grosse Depression, Stagflation 1973–81, Japan ab 1990), Beginn im
-  Kalenderjahr, im Alter oder X Jahre nach dem Rücktritt, Datenreihe CH/USA/JP (Stresstest ohne Ausgleich). Echte
+  eigene Liste (hinzufügen, entfernen, höchstens 8) mit allen Krisen inkl. der extremen (Grosse Depression,
+  Stagflation 1973–81, Japan ab 1990) oder einer eigenen Annahme (Rückgang, Dauer, Erholung). Beginn im
+  Kalenderjahr innerhalb des Planungshorizonts, im Alter oder X Jahre nach dem Rücktritt, Datenreihe CH/USA/JP
+  (Stresstest ohne Ausgleich; bei Überschneidung gilt die später beginnende Krise). Echte
   Jahresrenditen von Aktien und Obligationen (gemäss Aktienanteil), Geldmarkt, Hauspreise und Teuerung. Krisenjahre
   farbig hinterlegt und beschriftet im Vermögensverlauf, in «Was wäre, wenn …?» und in «Varianten Ihres Plans im Vergleich».
   Daten: JST Macrohistory R6, SNB, BFS (`docs/krisen.md`).

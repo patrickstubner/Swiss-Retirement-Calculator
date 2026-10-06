@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { simuliere } from '../core/simulation';
+import type { Haushalt } from '../core/typen';
 import { neuePerson, standardHaushalt } from '../data/defaults';
 import { ladeRegeln } from '../rules';
 import { KEIN_WAS_WAERE, mitWasWaere, rechne } from './components/Auswertung';
@@ -10,7 +11,7 @@ const regeln = ladeRegeln(2026);
 const start = { jahr: 2026, monat: 1 };
 
 /** Erfundenes Beispiel */
-function haushalt() {
+function haushalt(): Haushalt {
   const h = standardHaushalt(regeln);
   const p = neuePerson(regeln, {
     name: 'Muster',
@@ -108,6 +109,50 @@ describe('Was-wäre-wenn', () => {
     expect(a[0]).toMatchObject({ label: 'Ölkrise', jahrVon: 2036, jahrBis: 2037, von: 70, bis: 72 });
     expect(a[1]).toMatchObject({ label: 'Schwarzer Montag', jahrVon: 2050, jahrBis: 2050 });
     expect(krisenText(a.slice(0, 2))).toBe('Ölkrise 2036–2037 (Alter 71–72), Schwarzer Montag 2050 (Alter 85)');
+  });
+
+  it('zwei geplante Krisen: Bänder mit Namen am gewählten Startjahr', () => {
+    const h = haushalt();
+    h.personen[0] = { ...(h.personen[0] as (typeof h.personen)[number]), geburtsjahr: 1980 };
+    h.planungsalter = 90;
+    h.krisen = {
+      ...h.krisen,
+      modus: 'individuell',
+      auswahl: [
+        {
+          uid: 'fin',
+          id: 'finanzkrise2007',
+          land: 'CHE',
+          startArt: 'jahr',
+          jahr: 2046,
+          alter: 66,
+          person: 0,
+          jahreNach: 0,
+          eigen: null,
+        },
+        {
+          uid: 'dot',
+          id: 'dotcom2000',
+          land: 'CHE',
+          startArt: 'jahr',
+          jahr: 2055,
+          alter: 75,
+          person: 0,
+          jahreNach: 0,
+          eigen: null,
+        },
+      ],
+    };
+    const a = krisenAbschnitte(rechne(h, regeln, start, 'gemeinsam').wunsch, 0);
+    expect(a[0]).toMatchObject({
+      label: 'Finanzkrise',
+      name: 'Finanz- und Immobilienkrise 2007–2009',
+      jahrVon: 2046,
+      jahrBis: 2048,
+    });
+    expect(a[1]).toMatchObject({ label: 'Dotcom', jahrVon: 2055, jahrBis: 2057 });
+    expect(krisenText(a)).toContain('Finanzkrise 2046–2048');
+    expect(krisenText(a)).toContain('Dotcom 2055–2057');
   });
 });
 

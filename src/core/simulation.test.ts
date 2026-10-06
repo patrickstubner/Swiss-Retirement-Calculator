@@ -9,6 +9,7 @@ import {
   standardHaushalt,
 } from '../data/defaults';
 import { ladeRegeln } from '../rules';
+import { ahvReferenzalter, ahvRentenbeginn, inMonaten } from './ahv';
 import { entnahmeAusgaben } from './entnahme';
 import { entnehme, simuliere, startvermoegen, vorsorgeBezugMonate, wohneigentumNetto } from './simulation';
 import { fruehestesRuecktrittsalter } from './solver';
@@ -410,5 +411,48 @@ describe('Ausländische Renten: Wechselkursszenario und Quellensteuer', () => {
     const e = simuliere(einfach({ personen: [p] }), regeln, { start });
     expect(e.zeilen[0]?.auslandRenten).toBeCloseTo(12000 * 0.8, 6);
     expect(e.zeilen[1]?.auslandRenten).toBeCloseTo(12000 * 0.9 * 0.8, 6);
+  });
+});
+
+describe('AHV-Vorbezug in der Simulation (K-05)', () => {
+  it('Mann Jahrgang 1965 mit −36 Monaten wird mit −24 gerechnet, nicht mit ordentlichem Bezug', () => {
+    const basis = person({ geburtsjahr: 1965, geburtsmonat: 6, geschlecht: 'm', name: 'Person 1' });
+    const zuWeit = simuliere(
+      einfach({ personen: [{ ...basis, ahv: { ...basis.ahv, bezugVerschiebungMonate: -36 } }] }),
+      regeln,
+      { start },
+    );
+    const erlaubt = simuliere(
+      einfach({ personen: [{ ...basis, ahv: { ...basis.ahv, bezugVerschiebungMonate: -24 } }] }),
+      regeln,
+      { start },
+    );
+    const ordentlich = simuliere(
+      einfach({ personen: [{ ...basis, ahv: { ...basis.ahv, bezugVerschiebungMonate: 0 } }] }),
+      regeln,
+      { start },
+    );
+    const info = zuWeit.personen[0];
+    const ra = inMonaten(ahvReferenzalter(1965, 'm', regeln.ahv));
+    expect(info?.ahvStart).toEqual(ahvRentenbeginn(1965, 6, ra, -24));
+    expect(info?.ahvStart).toEqual(erlaubt.personen[0]?.ahvStart);
+    expect(info?.ahvFaktor).toBeCloseTo(erlaubt.personen[0]?.ahvFaktor ?? 0, 10);
+    expect(info?.ahvFaktor).toBeLessThan(1);
+    expect(info?.ahvFaktor).not.toBeCloseTo(ordentlich.personen[0]?.ahvFaktor ?? 1, 6);
+    expect(info?.ahvStart).not.toEqual(ordentlich.personen[0]?.ahvStart);
+    expect(info?.hinweise.some((x) => x.includes('24 Monate'))).toBe(true);
+  });
+
+  it('Frau Jahrgang 1965 mit −36 Monaten behält den Übergangsvorbezug', () => {
+    const basis = person({ geburtsjahr: 1965, geburtsmonat: 6, geschlecht: 'w', name: 'Person 1' });
+    const e = simuliere(
+      einfach({ personen: [{ ...basis, ahv: { ...basis.ahv, bezugVerschiebungMonate: -36 } }] }),
+      regeln,
+      { start },
+    );
+    const info = e.personen[0];
+    const ra = inMonaten(ahvReferenzalter(1965, 'w', regeln.ahv));
+    expect(info?.ahvStart).toEqual(ahvRentenbeginn(1965, 6, ra, -36));
+    expect(info?.hinweise.some((x) => x.includes('höchsten zulässigen Vorbezug'))).toBe(false);
   });
 });

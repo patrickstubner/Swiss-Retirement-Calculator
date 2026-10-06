@@ -1,15 +1,32 @@
 import { describe, expect, it } from 'vitest';
 import { neuePerson, standardHaushalt } from '../data/defaults';
-import { HAEUFIGKEIT, KRISEN, KRISEN_DATEN, kriseNach, STANDARD_KRISEN_PRO_DEKADE } from '../data/krisen';
+import {
+  aktienKennzahl,
+  HAEUFIGKEIT,
+  KRISEN,
+  KRISEN_DATEN,
+  kriseNach,
+  krisenOptionen,
+  STANDARD_KRISEN_PRO_DEKADE,
+} from '../data/krisen';
 import { ladeRegeln } from '../rules';
 import {
+  bereinigeEigeneKrise,
+  bereinigeKrisenName,
   datenVollstaendig,
+  eigeneAlsKrise,
+  eigenReal,
   jahresRenditen,
   type KrisenWahl,
+  krisenAusserhalb,
   krisenKalender,
   krisenModell,
   krisenPfad,
+  krisenStartVorschlag,
+  krisenUeberlappungen,
+  MAX_GEPLANTE_KRISEN,
   maxRealerRueckgang,
+  standardEigeneKrise,
 } from './krisen';
 import { monteCarlo, perzentil, vollstaendigeJahre, wiederkehrendeKrisenPfad, zufall } from './montecarlo';
 import { simuliere } from './simulation';
@@ -179,5 +196,184 @@ describe('Monte Carlo', () => {
     });
     const b = monteCarlo(h, regeln, start, { ...e, art: 'bootstrap' }, KRISEN_DATEN, pool);
     expect(b.laeufe).toBe(40);
+  });
+});
+
+describe('Geplante Krisen (Modus Individuell)', () => {
+  it('Kennzahlen folgen der Datenreihe der Katalogjahre, nicht einer Ersatztabelle', () => {
+    for (const kr of KRISEN) {
+      const kennzahl = aktienKennzahl(kr, kr.land);
+      expect(kennzahl, kr.id).not.toBeNull();
+      if (!kennzahl) continue;
+      let index = 1;
+      let tief = 1;
+      let tiefJahr = kr.von - 1;
+      let teuerung = 1;
+      const imFenster: { jahr: number; index: number }[] = [];
+      for (let j = kr.von; j <= kr.bis; j++) {
+        const h = KRISEN_DATEN[kr.land].get(j);
+        expect(h?.aktien, `${kr.id} ${j}`).not.toBeNull();
+        expect(h?.teuerung, `${kr.id} ${j}`).not.toBeNull();
+        if (!h || h.aktien === null || h.teuerung === null) continue;
+        index *= (1 + h.aktien) / (1 + h.teuerung);
+        teuerung *= 1 + h.teuerung;
+        imFenster.push({ jahr: j, index });
+        if (index < tief) {
+          tief = index;
+          tiefJahr = j;
+        }
+      }
+      expect(kennzahl.rueckgang, kr.id).toBeCloseTo(tief - 1, 12);
+      expect(kennzahl.tiefpunkt, kr.id).toBe(tiefJahr);
+      expect(kennzahl.dauer, kr.id).toBe(Math.max(0, tiefJahr - (kr.von - 1)));
+      expect(kennzahl.teuerung, kr.id).toBeCloseTo(teuerung - 1, 12);
+      let erholt: number | null = null;
+      if (tief < 1 - 1e-9) {
+        for (const p of imFenster) {
+          if (p.jahr > tiefJahr && p.index >= 1 - 1e-9) {
+            erholt = p.jahr;
+            break;
+          }
+        }
+        for (let j = kr.bis + 1; erholt === null && j <= kr.von + 80; j++) {
+          const h = KRISEN_DATEN[kr.land].get(j);
+          if (!h || h.aktien === null || h.teuerung === null) break;
+          index *= (1 + h.aktien) / (1 + h.teuerung);
+          if (index >= 1 - 1e-9) erholt = j;
+        }
+      }
+      expect(kennzahl.erholung, kr.id).toBe(erholt === null ? null : erholt - tiefJahr);
+    }
+  });
+
+  it('eigene Krise: Rückgang und Erholung treffen den realen Stand, ohne Doppelzählung', () => {
+    const eigen = standardEigeneKrise();
+    expect(eigen).toEqual({ name: 'Eigene Krise', rueckgang: -0.3, dauer: 2, erholung: 4 });
+    let stand = 1;
+    for (let i = 0; i < eigen.dauer; i++) stand *= 1 + eigenReal(eigen, i);
+    expect(stand).toBeCloseTo(1 + eigen.rueckgang, 12);
+    for (let i = 0; i < eigen.erholung; i++) stand *= 1 + eigenReal(eigen, eigen.dauer + i);
+    expect(stand).toBeCloseTo(1, 12);
+    expect(eigenReal(eigen, 99)).toBe(0);
+
+    const krise = eigeneAlsKrise('abc', eigen);
+    const plan = [{ krise, land: 'CHE' as const, startJahr: 2040, eigen }];
+    const kal = krisenKalender(plan);
+    expect(kal.size).toBe(eigen.dauer + eigen.erholung);
+    expect([...kal.keys()]).toEqual([2040, 2041, 2042, 2043, 2044, 2045]);
+    const m = krisenModell(basis, 0.2, plan, KRISEN_DATEN, 2040);
+    const mAktien = krisenModell(basis, 1, plan, KRISEN_DATEN, 2040);
+    for (let t = 0; t < 6; t++) {
+      const real = eigenReal(eigen, t);
+      const nominal = (1 + real) * (1 + basis.inflation) - 1;
+      expect(m.renditeNominal(t)).toBeCloseTo(nominal, 12);
+      expect(mAktien.renditeNominal(t)).toBeCloseTo(nominal, 12);
+      expect(m.inflation(t)).toBe(basis.inflation);
+      expect(m.bargeld?.(t)).toBe(basis.renditeBargeld);
+      expect(m.historisch?.(t)?.krise).toBe('eigen:abc');
+      expect(m.historisch?.(t)?.name).toBe('Eigene Krise');
+    }
+    expect(m.renditeNominal(6)).toBe(basis.renditeNominal);
+    expect(m.historisch?.(6)).toBeNull();
+  });
+
+  it('Überschneidung: späterer Beginn gewinnt, jedes Jahr genau eine Rendite', () => {
+    const dotcom = k('dotcom2000');
+    const finanz = k('finanzkrise2007');
+    const plan = [
+      { krise: dotcom, land: 'CHE' as const, startJahr: 2040 },
+      { krise: finanz, land: 'CHE' as const, startJahr: 2041 },
+    ];
+    const kal = krisenKalender(plan);
+    expect(kal.get(2040)?.krise).toBe('dotcom2000');
+    expect(kal.get(2041)?.jahr).toBe(2007);
+    expect(kal.get(2042)?.jahr).toBe(2008);
+    expect(kal.get(2043)?.jahr).toBe(2009);
+    expect(kal.has(2044)).toBe(false);
+    const ueber = krisenUeberlappungen(plan);
+    expect(ueber).toEqual([{ jahrVon: 2041, jahrBis: 2042, gilt: 'Finanzkrise', verdraengt: 'Dotcom' }]);
+    const m = krisenModell(basis, 1, plan, KRISEN_DATEN, 2040);
+    expect(m.renditeNominal(1)).toBeCloseTo(KRISEN_DATEN.CHE.get(2007)?.aktien ?? 0, 6);
+    expect(m.renditeNominal(1)).not.toBeCloseTo(
+      (KRISEN_DATEN.CHE.get(2001)?.aktien ?? 0) + (KRISEN_DATEN.CHE.get(2007)?.aktien ?? 0),
+      2,
+    );
+    const gleich = krisenKalender([
+      { krise: dotcom, land: 'CHE', startJahr: 2050 },
+      { krise: finanz, land: 'CHE', startJahr: 2050 },
+    ]);
+    expect(gleich.get(2050)?.krise).toBe('finanzkrise2007');
+  });
+
+  it('Startjahr: Vorschlag im Horizont, ausserhalb wird gemeldet', () => {
+    expect(krisenStartVorschlag(2026, 2080)).toBe(2036);
+    expect(krisenStartVorschlag(2040, 2050)).toBe(2040);
+    expect(krisenStartVorschlag(2026, 2030)).toBe(2030);
+    expect(krisenStartVorschlag(2026, 2080, 14)).toBe(2050);
+    expect(krisenStartVorschlag(2026, 2040, 50)).toBe(2040);
+    const plan = [{ krise: k('covid2020'), land: 'CHE' as const, startJahr: 2099 }];
+    expect(krisenAusserhalb(plan, 2026, 2080).map((e) => e.startJahr)).toEqual([2099]);
+    expect(krisenAusserhalb([{ krise: k('covid2020'), land: 'CHE', startJahr: 2040 }], 2026, 2080)).toEqual([]);
+  });
+
+  it('Namen und Zahlen einer manipulierten eigenen Krise werden bereinigt', () => {
+    expect(bereinigeKrisenName('  Meine <Krise>\u0000 ')).toBe('Meine Krise');
+    expect(bereinigeKrisenName('')).toBe('Eigene Krise');
+    expect(bereinigeKrisenName('x'.repeat(80)).length).toBe(40);
+    const e = bereinigeEigeneKrise({
+      name: '<script>alert(1)</script>',
+      rueckgang: -5,
+      dauer: 99,
+      erholung: -3,
+    });
+    expect(e.name).toBe('scriptalert(1)/script');
+    expect(e.name).not.toMatch(/[<>]/);
+    expect(e.rueckgang).toBe(-0.8);
+    expect(e.dauer).toBe(8);
+    expect(e.erholung).toBe(0);
+    expect(MAX_GEPLANTE_KRISEN).toBe(8);
+  });
+
+  it('zwei geplante Krisen erscheinen in den gewählten Jahren, ohne Ausgleich', () => {
+    const h = haushalt();
+    h.personen[0] = { ...(h.personen[0] as (typeof h.personen)[number]), geburtsjahr: 1980, stoppAlter: 65 };
+    h.planungsalter = 90;
+    h.krisen = {
+      ...h.krisen,
+      modus: 'individuell',
+      auswahl: [
+        {
+          uid: 'a',
+          id: 'finanzkrise2007',
+          land: 'CHE',
+          startArt: 'jahr',
+          jahr: 2046,
+          alter: 70,
+          person: 0,
+          jahreNach: 0,
+          eigen: null,
+        },
+        {
+          uid: 'b',
+          id: 'dotcom2000',
+          land: 'CHE',
+          startArt: 'jahr',
+          jahr: 2055,
+          alter: 70,
+          person: 0,
+          jahreNach: 0,
+          eigen: null,
+        },
+      ],
+    };
+    const opt = krisenOptionen(h);
+    expect(opt?.ausgleichHorizont).toBeUndefined();
+    const mit = simuliere(h, regeln, { start, krisen: opt });
+    expect(mit.krisenNormal).toBeNull();
+    expect(mit.krisenJahre.map((x) => x.jahr)).toEqual([2046, 2047, 2048, 2055, 2056, 2057]);
+    expect(mit.krisenJahre[0]).toMatchObject({ krise: 'finanzkrise2007', histJahr: 2007 });
+    expect(mit.krisenJahre[3]).toMatchObject({ krise: 'dotcom2000', histJahr: 2000 });
+    const ohne = simuliere({ ...h, krisen: { ...h.krisen, modus: 'keine' } }, regeln, { start });
+    expect(mit.endVermoegen).not.toBe(ohne.endVermoegen);
   });
 });

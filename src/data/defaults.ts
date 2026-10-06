@@ -11,6 +11,7 @@ import type {
   AusgabenEinzeljahr,
   AusgabenPhase,
   AuslandRente,
+  EigeneKrise,
   Einmalereignis,
   Haushalt,
   KrisenAuswahl,
@@ -303,5 +304,25 @@ export function neueKrisenEinstellungen(): KrisenEinstellungen {
 }
 
 export function neueKrisenAuswahl(id: string, land: KrisenReihe, jahr: number): KrisenAuswahl {
-  return { uid: neueId('kr'), id, land, startArt: 'nachRuecktritt', jahr, alter: 70, person: 0, jahreNach: 0 };
+  return {
+    uid: neueId('kr'),
+    id,
+    land,
+    startArt: 'nachRuecktritt',
+    jahr,
+    alter: 70,
+    person: 0,
+    jahreNach: 0,
+    eigen: null,
+  };
+}
+
+/** Geplante Krise im Modus «Individuell»: Beginn als Kalenderjahr (nicht «nach dem Rücktritt»). */
+export function neueGeplanteKrise(
+  id: string,
+  land: KrisenReihe,
+  jahr: number,
+  eigen: EigeneKrise | null = null,
+): KrisenAuswahl {
+  return { ...neueKrisenAuswahl(id, land, jahr), startArt: 'jahr', jahr, eigen };
 }

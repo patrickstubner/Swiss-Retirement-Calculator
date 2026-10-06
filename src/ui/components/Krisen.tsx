@@ -3,19 +3,38 @@
  * Krisen und die historische Krisenhäufigkeit pro Dekade (JST R6).
  */
 import { useDeferredValue, useId, useMemo } from 'react';
-import { datenVollstaendig, type KrisenLand, krisenPfad, maxRealerRueckgang } from '../../core/krisen';
-import { simuliere } from '../../core/simulation';
+import {
+  bereinigeEigeneKrise,
+  datenVollstaendig,
+  EIGENE_KRISE_ID,
+  filterKrisenName,
+  type KrisenLand,
+  type KrisenPlanEintrag,
+  krisenAusserhalb,
+  krisenPfad,
+  krisenPlan,
+  krisenStartVorschlag,
+  krisenUeberlappungen,
+  MAX_GEPLANTE_KRISEN,
+  maxRealerRueckgang,
+  standardEigeneKrise,
+} from '../../core/krisen';
+import { referenzPerson, simuliere } from '../../core/simulation';
 import type {
+  EigeneKrise,
   Haushalt,
   KrisenAuswahl,
   KrisenEinstellungen,
   KrisenModus,
   Monat,
+  Person,
   SimulationsErgebnis,
 } from '../../core/typen';
-import { neueKrisenAuswahl } from '../../data/defaults';
+import { geburtIndex, stoppAlterMonate } from '../../core/zeitpunkt';
+import { neueGeplanteKrise } from '../../data/defaults';
 import {
   AUTO_KRISEN,
+  aktienKennzahl,
   autoHaeufigkeit,
   autoNormal,
   autoVersatz,
@@ -38,7 +57,7 @@ import { krisenAbschnitte, krisenText } from '../krisenGrafik';
 import type { McEinstellung } from '../mcKern';
 import { useVollMc } from '../mcVergleich';
 import { Faecher } from './Faecher';
-import { AuswahlFeld, Schalter, Segmente, ZahlFeld } from './Felder';
+import { AuswahlFeld, Schalter, Segmente, TextFeld, ZahlFeld } from './Felder';
 import { Karte } from './Karte';
 import { ScrollTabelle } from './ScrollTabelle';
 
@@ -56,6 +75,35 @@ const fmtStand = (iso: string) => {
   const [j, m, t] = iso.split('-');
   return `${Number(t)}.${Number(m)}.${j}`;
 };
+
+function ruecktrittJahr(h: Haushalt, heuteJahr: number): number {
+  const i = Math.max(
+    0,
+    h.personen.findIndex((p) => p.erwerbsstatus !== 'nichtErwerbstaetig'),
+  );
+  const p = h.personen[i] ?? h.personen[0];
+  if (!p) return heuteJahr;
+  return Math.floor((geburtIndex(p) + Math.max(0, stoppAlterMonate(p))) / 12);
+}
+
+function horizontVon(h: Haushalt, heuteJahr: number): { von: number; bis: number } {
+  const p = h.personen[referenzPerson(h.personen)];
+  const bis = (p?.geburtsjahr ?? heuteJahr) + Math.floor(h.planungsalter);
+  return { von: heuteJahr, bis: Math.max(heuteJahr, bis) };
+}
+
+function alterAmJahresende(jahr: number, personen: readonly Person[], namen: readonly string[]): string {
+  if (personen.length <= 1) {
+    const p = personen[0];
+    return `Sie sind am Jahresende ${p ? jahr - p.geburtsjahr : 0} Jahre alt.`;
+  }
+  const teile = personen.map((p, i) => `${namen[i] || `Person ${i + 1}`} ${jahr - p.geburtsjahr}`);
+  return `Alter am Jahresende: ${teile.join(', ')}.`;
+}
+
+function jahrSpanne(von: number, bis: number): string {
+  return von === bis ? String(von) : `${von}–${bis}`;
+}
 
 interface Props {
   h: Haushalt;
@@ -79,6 +127,19 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
     [aktiv, effH, regeln, heute],
   );
   const abschnitte = useMemo(() => (wunsch ? krisenAbschnitte(wunsch, refIdx) : []), [wunsch, refIdx]);
+  const fenster = useMemo(() => horizontVon(h, heute.jahr), [h, heute.jahr]);
+  const plan = useMemo(() => {
+    if (k.modus !== 'individuell') return [] as KrisenPlanEintrag[];
+    const opt = krisenOptionen(h);
+    if (!opt) return [] as KrisenPlanEintrag[];
+    return krisenPlan(
+      opt.wahl,
+      ruecktrittJahr(h, heute.jahr),
+      h.personen.map((p) => p.geburtsjahr),
+    );
+  }, [k.modus, h, heute.jahr]);
+  const ueberlappung = useMemo(() => krisenUeberlappungen(plan), [plan]);
+  const ausserhalb = useMemo(() => krisenAusserhalb(plan, fenster.von, fenster.bis), [plan, fenster]);
   const rate = autoHaeufigkeit(k);
   const standardJahr = standardErsteKrise(rate);
   // Ausgleich über den eigenen Planungshorizont (aus der Simulation mit Wunsch-Rücktritt)
@@ -115,7 +176,7 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
             modus,
             auswahl:
               modus === 'individuell' && kr.auswahl.length === 0
-                ? [neueKrisenAuswahl('finanzkrise2007', 'CHE', heute.jahr + 1)]
+                ? [neueGeplanteKrise('finanzkrise2007', 'CHE', krisenStartVorschlag(fenster.von, fenster.bis))]
                 : kr.auswahl,
           }))
         }
@@ -198,118 +259,64 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
       {k.modus === 'individuell' ? (
         <>
           <p className="klein">
-            Legen Sie selbst fest, welche Krise wann beginnt – auch die extremen. Das ist ein Stresstest: Die Krisen
-            ersetzen die Renditeannahme in diesen Jahren, die übrigen Jahre bleiben unverändert.
+            Legen Sie fest, welche historische Krise in welchem zukünftigen Jahr wiederkehrt. Das ist ein Stresstest:
+            Die Krisenjahre ersetzen die Renditeannahme, die übrigen Jahre bleiben unverändert. Höchstens{' '}
+            {MAX_GEPLANTE_KRISEN} Einträge. Der Beginn liegt im Planungshorizont {fenster.von}–{fenster.bis}.
           </p>
-          {k.auswahl.map((a, i) => {
-            const krise = kriseNach(a.id);
-            if (!krise) return null;
-            const pfad = krisenPfad(krise, a.land, h.annahmen.aktienanteil, KRISEN_DATEN, BASIS0);
-            const dd = maxRealerRueckgang(pfad);
-            const lander = LAENDER.filter((l) => datenVollstaendig(krise, l, KRISEN_DATEN));
-            const teuerung = pfad.reduce((s, p) => s * (1 + p.teuerung), 1) - 1;
-            return (
-              <div key={a.uid} className="unterkarte krise">
-                <AuswahlFeld
-                  label={k.auswahl.length > 1 ? `Krise ${i + 1}` : 'Krise'}
-                  value={a.id}
-                  optionen={KRISEN.map((x) => ({
-                    value: x.id,
-                    label: AUTO_KRISEN.includes(x) ? x.name : `${x.name} (extrem)`,
-                  }))}
-                  onChange={(id) => setzeAuswahl(i, (x) => ({ ...x, id, land: kriseNach(id)?.land ?? x.land }))}
-                />
-                <p className="klein">{krise.beschreibung}</p>
-                <AuswahlFeld<KrisenLand>
-                  label="Daten aus"
-                  value={lander.includes(a.land) ? a.land : krise.land}
-                  optionen={lander.map((l) => ({ value: l, label: LAND_NAMEN[l] }))}
-                  onChange={(land) => setzeAuswahl(i, (x) => ({ ...x, land }))}
-                />
-                <Segmente<KrisenAuswahl['startArt']>
-                  label="Beginn"
-                  value={a.startArt}
-                  optionen={[
-                    { value: 'jahr', label: 'Kalender\u00adjahr' },
-                    { value: 'alter', label: 'Alter' },
-                    { value: 'nachRuecktritt', label: 'Nach Rücktritt' },
-                  ]}
-                  onChange={(startArt) => setzeAuswahl(i, (x) => ({ ...x, startArt }))}
-                />
-                {a.startArt === 'jahr' ? (
-                  <ZahlFeld
-                    label="Kalenderjahr des Krisenbeginns"
-                    value={a.jahr}
-                    min={1900}
-                    max={2200}
-                    nachkomma={0}
-                    onChange={(jahr) => setzeAuswahl(i, (x) => ({ ...x, jahr: Math.round(jahr) }))}
-                  />
-                ) : a.startArt === 'alter' ? (
-                  <>
-                    {h.personen.length > 1 ? (
-                      <AuswahlFeld<string>
-                        label="Alter von"
-                        value={String(a.person)}
-                        optionen={h.personen.map((_p, j) => ({ value: String(j), label: namen[j] ?? '' }))}
-                        onChange={(v) => setzeAuswahl(i, (x) => ({ ...x, person: Number(v) }))}
-                      />
-                    ) : null}
-                    <ZahlFeld
-                      label="Alter bei Krisenbeginn"
-                      hinweis={`Die Krise beginnt im Kalenderjahr, in dem ${namen[a.person] ?? namen[0]} dieses Alter erreicht.`}
-                      value={a.alter}
-                      min={0}
-                      max={130}
-                      nachkomma={0}
-                      einheit="Jahre"
-                      onChange={(v) => setzeAuswahl(i, (x) => ({ ...x, alter: Math.round(v) }))}
-                    />
-                  </>
-                ) : (
-                  <ZahlFeld
-                    label="Jahre nach dem Rücktritt"
-                    hinweis={`0 = im Jahr des Rücktritts von ${erwName}.`}
-                    value={a.jahreNach}
-                    min={-30}
-                    max={60}
-                    nachkomma={0}
-                    einheit="Jahre"
-                    onChange={(j) => setzeAuswahl(i, (x) => ({ ...x, jahreNach: Math.round(j) }))}
-                  />
-                )}
-                <p className="klein">
-                  {krise.von === krise.bis ? krise.von : `${krise.von}–${krise.bis}`}, Daten {LAND_NAMEN[a.land]}: Ihr
-                  Mix ({fmtProzent(h.annahmen.aktienanteil, 0)} Aktien) verliert real bis zu{' '}
-                  <strong>{fmtProzent(-dd, 0)}</strong>; Teuerung total {fmtProzent(teuerung, 0)}.
-                </p>
-                <button
-                  type="button"
-                  className="knopf knopf--sekundaer"
-                  onClick={() => setzeKrisen(setH, (kr) => ({ ...kr, auswahl: kr.auswahl.filter((_, j) => j !== i) }))}
-                >
-                  Krise entfernen
-                </button>
-              </div>
-            );
-          })}
-          {k.auswahl.length < 8 ? (
+          {k.auswahl.map((a, i) => (
+            <GeplanteKrise
+              key={a.uid}
+              a={a}
+              i={i}
+              anzahl={k.auswahl.length}
+              startJahr={plan[i]?.startJahr}
+              h={h}
+              namen={namen}
+              fenster={fenster}
+              erwName={erwName}
+              setze={(fn) => setzeAuswahl(i, fn)}
+              entfernen={() => setzeKrisen(setH, (kr) => ({ ...kr, auswahl: kr.auswahl.filter((_, j) => j !== i) }))}
+            />
+          ))}
+          {ueberlappung.map((u) => (
+            <p key={`ueber-${u.jahrVon}-${u.gilt}-${u.verdraengt}`} className="warnung">
+              {u.verdraengt} und {u.gilt} überschneiden sich {jahrSpanne(u.jahrVon, u.jahrBis)}. Es gilt {u.gilt}{' '}
+              (späterer Beginn, bei gleichem Jahr der Eintrag weiter unten). Die Jahre werden nicht doppelt gezählt.
+            </p>
+          ))}
+          {ausserhalb.map((e) => (
+            <p key={`aussen-${e.krise.id}-${e.startJahr}`} className="warnung">
+              {e.krise.kurz} beginnt {e.startJahr}, ausserhalb des Planungshorizonts {fenster.von}–{fenster.bis}. Diese
+              Krise fliesst so nicht in die Rechnung ein.
+            </p>
+          ))}
+          {k.auswahl.length < MAX_GEPLANTE_KRISEN ? (
             <button
               type="button"
               className="knopf knopf--sekundaer"
               onClick={() =>
-                setzeKrisen(setH, (kr) => ({
-                  ...kr,
-                  auswahl: [
-                    ...kr.auswahl,
-                    { ...neueKrisenAuswahl('dotcom2000', 'CHE', heute.jahr + 1), jahreNach: 10 },
-                  ],
-                }))
+                setzeKrisen(setH, (kr) => {
+                  const letzte = plan.at(-1)?.startJahr ?? fenster.von;
+                  const jahr = krisenStartVorschlag(fenster.von, fenster.bis, Math.max(0, letzte + 14 - 2036));
+                  const benutzt = new Set(kr.auswahl.map((x) => x.id));
+                  const naechste = KRISEN.find((x) => !benutzt.has(x.id)) ?? KRISEN[0];
+                  return {
+                    ...kr,
+                    auswahl: [
+                      ...kr.auswahl,
+                      neueGeplanteKrise(naechste?.id ?? 'dotcom2000', naechste?.land ?? 'CHE', jahr),
+                    ],
+                  };
+                })
               }
             >
-              Weitere Krise hinzufügen
+              Krise hinzufügen
             </button>
-          ) : null}
+          ) : (
+            <p className="klein">
+              Höchstens {MAX_GEPLANTE_KRISEN} Krisen. Entfernen Sie einen Eintrag, um einen neuen zu setzen.
+            </p>
+          )}
           {k.auswahl.length === 0 ? (
             <p className="warnung">Die Liste ist leer – es wird ohne Krise gerechnet.</p>
           ) : null}
@@ -365,7 +372,11 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
             Teuerung des Krisenjahres: Ausgaben steigen mit, PK-Renten nicht (sie verlieren real an Wert). AHV-Renten
             werden vereinfacht voll an die Teuerung angepasst.
           </li>
-          <li>Anlagekosten werden wie sonst abgezogen. Überschneiden sich zwei Krisen, gilt die später beginnende.</li>
+          <li>
+            Anlagekosten werden wie sonst abgezogen. Überschneiden sich zwei Krisen, gilt die später beginnende (bei
+            gleichem Beginn der Eintrag weiter unten). Die Jahre werden nicht addiert. «Eigene Krise» ist eine Annahme
+            (Rückgang, Dauer, Erholung), keine historische Reihe.
+          </li>
           <li>
             Jahresdaten: Einbrüche innerhalb eines Jahres (z.B. März 2020) sind nicht sichtbar. Quelle:
             Jordà-Schularick-Taylor Macrohistory Database R6 (CC BY-NC-SA 4.0), Schweiz 2021–2024 SNB-Datenportal und
@@ -375,6 +386,206 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
       </details>
       <HaeufigkeitTabelle />
     </Karte>
+  );
+}
+
+function GeplanteKrise({
+  a,
+  i,
+  anzahl,
+  startJahr,
+  h,
+  namen,
+  fenster,
+  erwName,
+  setze,
+  entfernen,
+}: {
+  a: KrisenAuswahl;
+  i: number;
+  anzahl: number;
+  startJahr: number | undefined;
+  h: Haushalt;
+  namen: string[];
+  fenster: { von: number; bis: number };
+  erwName: string | undefined;
+  setze: (fn: (a: KrisenAuswahl) => KrisenAuswahl) => void;
+  entfernen: () => void;
+}) {
+  const eigen = a.id === EIGENE_KRISE_ID;
+  const krise = eigen ? undefined : kriseNach(a.id);
+  const land = krise && LAENDER.includes(a.land) ? a.land : (krise?.land ?? 'CHE');
+  const kennzahl = krise ? aktienKennzahl(krise, land) : null;
+  const pfad = krise ? krisenPfad(krise, land, h.annahmen.aktienanteil, KRISEN_DATEN, BASIS0) : null;
+  const dd = pfad ? maxRealerRueckgang(pfad) : null;
+  const teuerungMix = pfad ? pfad.reduce((s, p) => s * (1 + p.teuerung), 1) - 1 : null;
+  const lander = krise ? LAENDER.filter((l) => datenVollstaendig(krise, l, KRISEN_DATEN)) : [];
+  const beginn = startJahr ?? a.jahr;
+  const eigene = eigen ? bereinigeEigeneKrise(a.eigen) : null;
+  const setEigen = (patch: Partial<EigeneKrise>) =>
+    setze((x) => ({ ...x, id: EIGENE_KRISE_ID, eigen: { ...bereinigeEigeneKrise(x.eigen), ...patch } }));
+
+  return (
+    <div className="unterkarte krise">
+      <AuswahlFeld
+        label={anzahl > 1 ? `Krise ${i + 1}` : 'Krise'}
+        value={eigen ? EIGENE_KRISE_ID : a.id}
+        optionen={[
+          ...KRISEN.map((x) => ({
+            value: x.id,
+            label: AUTO_KRISEN.includes(x) ? x.name : `${x.name} (extrem)`,
+          })),
+          { value: EIGENE_KRISE_ID, label: 'Eigene Krise (Annahme)' },
+        ]}
+        onChange={(id) =>
+          setze((x) =>
+            id === EIGENE_KRISE_ID
+              ? { ...x, id, land: 'CHE', eigen: x.eigen ?? standardEigeneKrise() }
+              : { ...x, id, land: kriseNach(id)?.land ?? x.land, eigen: null },
+          )
+        }
+      />
+      {krise ? <p className="klein">{krise.beschreibung}</p> : null}
+      {eigene ? (
+        <>
+          <TextFeld
+            label="Bezeichnung"
+            maxLength={40}
+            value={typeof a.eigen?.name === 'string' ? a.eigen.name : eigene.name}
+            onChange={(name) => setEigen({ name: filterKrisenName(name) })}
+            hinweis="Erscheint an den Krisenbändern. Höchstens 40 Zeichen."
+          />
+          <ZahlFeld
+            label="Realer Rückgang"
+            prozent
+            nachkomma={0}
+            value={-eigene.rueckgang}
+            min={0.05}
+            max={0.8}
+            onChange={(v) => setEigen({ rueckgang: -v })}
+            hinweis="Rückgang des ganzen Wertschriftenportfolios, real. Keine historische Zahl, sondern Ihre Annahme."
+          />
+          <div className="raster">
+            <ZahlFeld
+              label="Dauer des Rückgangs"
+              value={eigene.dauer}
+              min={1}
+              max={8}
+              nachkomma={0}
+              einheit="Jahre"
+              onChange={(dauer) => setEigen({ dauer: Math.round(dauer) })}
+            />
+            <ZahlFeld
+              label="Erholung"
+              value={eigene.erholung}
+              min={0}
+              max={15}
+              nachkomma={0}
+              einheit="Jahre"
+              onChange={(erholung) => setEigen({ erholung: Math.round(erholung) })}
+              hinweis="Jahre, bis der reale Stand vor der Krise wieder erreicht ist. 0 = der Stand bleibt unten."
+            />
+          </div>
+          <p className="klein">
+            Modell, nicht Geschichte: der Rückgang verteilt sich gleichmässig auf die Dauer, die Erholung holt den
+            realen Stand wieder auf. Teuerung, Bargeld und Hauspreise bleiben Ihre Annahmen. Anlagekosten werden wie
+            sonst abgezogen.
+          </p>
+        </>
+      ) : null}
+      {krise ? (
+        <AuswahlFeld<KrisenLand>
+          label="Daten aus"
+          value={lander.includes(land) ? land : krise.land}
+          optionen={lander.map((l) => ({ value: l, label: LAND_NAMEN[l] }))}
+          onChange={(neu) => setze((x) => ({ ...x, land: neu }))}
+        />
+      ) : null}
+      <Segmente<KrisenAuswahl['startArt']>
+        label="Beginn"
+        value={a.startArt}
+        optionen={[
+          { value: 'jahr', label: 'Kalender\u00adjahr' },
+          { value: 'alter', label: 'Alter' },
+          { value: 'nachRuecktritt', label: 'Nach Rücktritt' },
+        ]}
+        onChange={(startArt) => setze((x) => ({ ...x, startArt }))}
+      />
+      {a.startArt === 'jahr' ? (
+        <ZahlFeld
+          label="Startjahr"
+          hinweis={`Nur ${fenster.von}–${fenster.bis}. ${alterAmJahresende(Math.min(fenster.bis, Math.max(fenster.von, a.jahr)), h.personen, namen)}`}
+          value={a.jahr}
+          min={fenster.von}
+          max={fenster.bis}
+          nachkomma={0}
+          gruppieren={false}
+          onChange={(jahr) =>
+            setze((x) => ({
+              ...x,
+              jahr: Math.min(fenster.bis, Math.max(fenster.von, Math.round(jahr))),
+            }))
+          }
+        />
+      ) : a.startArt === 'alter' ? (
+        <>
+          {h.personen.length > 1 ? (
+            <AuswahlFeld<string>
+              label="Alter von"
+              value={String(a.person)}
+              optionen={h.personen.map((_p, j) => ({ value: String(j), label: namen[j] ?? '' }))}
+              onChange={(v) => setze((x) => ({ ...x, person: Number(v) }))}
+            />
+          ) : null}
+          <ZahlFeld
+            label="Alter bei Krisenbeginn"
+            hinweis={`Die Krise beginnt im Kalenderjahr, in dem ${namen[a.person] ?? namen[0]} dieses Alter erreicht${startJahr ? ` (${startJahr})` : ''}.`}
+            value={a.alter}
+            min={0}
+            max={130}
+            nachkomma={0}
+            einheit="Jahre"
+            onChange={(v) => setze((x) => ({ ...x, alter: Math.round(v) }))}
+          />
+        </>
+      ) : (
+        <ZahlFeld
+          label="Jahre nach dem Rücktritt"
+          hinweis={`0 = im Jahr des Rücktritts von ${erwName ?? 'der erwerbstätigen Person'}${startJahr ? ` (${startJahr})` : ''}.`}
+          value={a.jahreNach}
+          min={-30}
+          max={60}
+          nachkomma={0}
+          einheit="Jahre"
+          onChange={(j) => setze((x) => ({ ...x, jahreNach: Math.round(j) }))}
+        />
+      )}
+      {krise && dd !== null && teuerungMix !== null ? (
+        <p className="klein">
+          {krise.kurz} beginnt {beginn}
+          {startJahr ? ` (${alterAmJahresende(startJahr, h.personen, namen).replace(/\.$/, '')})` : ''}. Ihr Mix (
+          {fmtProzent(h.annahmen.aktienanteil, 0)} Aktien) verliert in den Katalogjahren real bis zu{' '}
+          <strong>{fmtProzent(-dd, 0)}</strong>, Teuerung total {fmtProzent(teuerungMix, 0)}.
+          {kennzahl && kennzahl.rueckgang < -0.001
+            ? ` Aktien real (100 %, ${LAND_NAMEN[land]}): Rückgang ${fmtProzent(-kennzahl.rueckgang, 0)}, Dauer bis zum Tiefpunkt ${kennzahl.dauer} ${kennzahl.dauer === 1 ? 'Jahr' : 'Jahre'}${kennzahl.erholung === null ? ', Erholung in der Datenreihe nicht erreicht' : `, Erholung ${kennzahl.erholung} ${kennzahl.erholung === 1 ? 'Jahr' : 'Jahre'}`}.`
+            : ' In den Jahresdaten kein realer Aktieneinbruch (z.B. Covid im Kalenderjahr).'}{' '}
+          Quelle: JST Macrohistory R6, Schweiz ab 2021 SNB und BFS.
+        </p>
+      ) : eigene ? (
+        <p className="klein">
+          {eigene.name} beginnt {beginn}
+          {startJahr ? ` (${alterAmJahresende(startJahr, h.personen, namen).replace(/\.$/, '')})` : ''}. Realer Rückgang{' '}
+          {fmtProzent(-eigene.rueckgang, 0)} über {eigene.dauer} {eigene.dauer === 1 ? 'Jahr' : 'Jahre'}
+          {eigene.erholung > 0
+            ? `, Erholung ${eigene.erholung} ${eigene.erholung === 1 ? 'Jahr' : 'Jahre'}`
+            : ', ohne Erholung'}
+          .
+        </p>
+      ) : null}
+      <button type="button" className="knopf knopf--sekundaer" onClick={entfernen}>
+        Krise entfernen
+      </button>
+    </div>
   );
 }
 

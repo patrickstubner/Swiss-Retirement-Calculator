@@ -185,6 +185,28 @@ export function ahvAufschubZuschlag(monate: number, r: AhvRegeln): number {
   return satz;
 }
 
+/**
+ * Kürzt einen unzulässigen Vorbezug auf den höchsten zulässigen Wert
+ * (`-ahvMaxVorbezugMonate`). Ein Aufschub ausserhalb von 12–60 Monaten fällt auf den
+ * ordentlichen Bezug (0). Nicht endliche Werte werden 0.
+ */
+export function ahvVerschiebungKlemmen(
+  verschiebungMonate: number,
+  geburtsjahr: number,
+  geschlecht: Geschlecht,
+  r: AhvRegeln,
+): number {
+  if (!Number.isFinite(verschiebungMonate)) return 0;
+  const v = Math.round(verschiebungMonate);
+  if (v < 0) return Math.max(v, -ahvMaxVorbezugMonate(geburtsjahr, geschlecht, r));
+  if (v > 0) {
+    const { minMonate, maxMonate } = r.aufschub;
+    if (v < minMonate || v > maxMonate) return 0;
+    return Math.min(v, maxMonate);
+  }
+  return 0;
+}
+
 /** Prüft eine Bezugsverschiebung; gibt eine Fehlermeldung oder null zurück. */
 export function pruefeAhvVerschiebung(
   verschiebungMonate: number,

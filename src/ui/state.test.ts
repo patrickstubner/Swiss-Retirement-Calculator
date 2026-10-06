@@ -11,6 +11,7 @@ import {
   standardHaushalt,
 } from '../data/defaults';
 import { ladeRegeln } from '../rules';
+import { personNachJahrgang } from './components/PersonBasis';
 import {
   ALTE_KEYS,
   AUS_KEY,
@@ -386,6 +387,7 @@ describe('Neue Felder: Rücktrittsmodus und Wohnsitz im Ausland', () => {
           alter: 70,
           person: 0,
           jahreNach: 2,
+          eigen: null,
         },
         {
           uid: 'b',
@@ -396,6 +398,7 @@ describe('Neue Felder: Rücktrittsmodus und Wohnsitz im Ausland', () => {
           alter: 72,
           person: 0,
           jahreNach: 0,
+          eigen: null,
         },
       ],
     };
@@ -445,7 +448,14 @@ describe('Neue Felder: Rücktrittsmodus und Wohnsitz im Ausland', () => {
     const eintrag = { uid: 'x', id: 'dotcom2000', land: 'CHE', startArt: 'jahr', jahr: 2031, jahreNach: 0 };
     const a = normalisiere(v5(true, [eintrag]), regeln).krisen;
     expect(a.modus).toBe('individuell');
-    expect(a.auswahl[0]).toMatchObject({ id: 'dotcom2000', startArt: 'jahr', jahr: 2031, alter: 70, person: 0 });
+    expect(a.auswahl[0]).toMatchObject({
+      id: 'dotcom2000',
+      startArt: 'jahr',
+      jahr: 2031,
+      alter: 70,
+      person: 0,
+      eigen: null,
+    });
     expect('aktiv' in a).toBe(false);
     expect(normalisiere(v5(false, [eintrag]), regeln).krisen.modus).toBe('keine');
     expect(normalisiere(v5(true, []), regeln).krisen.modus).toBe('keine');
@@ -865,7 +875,7 @@ describe('Standard für Rendite und Teuerung (30.9.2026)', () => {
 
 describe('Schema 12: Entnahmestrategie', () => {
   it('Standard ist dynamisch gestaffelt; ohne Feld gilt derselbe Standard', () => {
-    expect(SCHEMA_VERSION).toBe(12);
+    expect(SCHEMA_VERSION).toBeGreaterThanOrEqual(12);
     const h = standardHaushalt(regeln);
     expect(h.entnahme?.art).toBe('gestaffelt');
     const { entnahme: _weg, ...alt } = h;
@@ -884,5 +894,102 @@ describe('Schema 12: Entnahmestrategie', () => {
       art: 'dynamisch',
       satz: 0.2,
     });
+  });
+});
+
+describe('Schema 13: geplante Krisen', () => {
+  it('Schema 13; alter Stand ohne Liste bleibt leer und stürzt nicht ab', () => {
+    expect(SCHEMA_VERSION).toBe(13);
+    const h = standardHaushalt(regeln);
+    const { auswahl: _weg, ...ohneListe } = h.krisen;
+    const roh = { ...h, krisen: ohneListe };
+    const geladen = normalisiere(roh, regeln);
+    expect(geladen.krisen.modus).toBe(h.krisen.modus);
+    expect(geladen.krisen.auswahl).toEqual([]);
+    const code = LZString.compressToEncodedURIComponent(JSON.stringify({ v: 12, h: roh }));
+    expect(dekodiere(code, regeln)?.krisen.auswahl).toEqual([]);
+  });
+
+  it('Katalogeintrag ohne eigen und eigene Krise überstehen Link und Speicher', () => {
+    const h = standardHaushalt(regeln);
+    h.krisen = {
+      ...h.krisen,
+      modus: 'individuell',
+      auswahl: [
+        {
+          uid: 'alt',
+          id: 'finanzkrise2007',
+          land: 'CHE',
+          startArt: 'jahr',
+          jahr: 2046,
+          alter: 66,
+          person: 0,
+          jahreNach: 0,
+        },
+        {
+          uid: 'eigen/<>',
+          id: 'eigen',
+          land: 'USA',
+          startArt: 'jahr',
+          jahr: 2055,
+          alter: 75,
+          person: 0,
+          jahreNach: 0,
+          eigen: { name: '  Meine <Krise>  ', rueckgang: -9, dauer: 2.2, erholung: 4 },
+        },
+      ],
+    };
+    const aus = dekodiere(kodiere(h), regeln);
+    expect(aus?.krisen.auswahl[0]).toMatchObject({ id: 'finanzkrise2007', eigen: null, jahr: 2046 });
+    expect(aus?.krisen.auswahl[1]).toMatchObject({
+      id: 'eigen',
+      uid: 'eigen',
+      land: 'CHE',
+      eigen: { name: 'Meine Krise', rueckgang: -0.8, dauer: 2, erholung: 4 },
+    });
+    const s = new TestSpeicher();
+    if (!aus) throw new Error('Dekodieren fehlgeschlagen');
+    speichereLokal(s, { haushalt: aus, ui: STANDARD_UI });
+    expect(ladeLokal(s, regeln)?.haushalt.krisen.auswahl).toEqual(aus.krisen.auswahl);
+  });
+
+  it('höchstens 8 Einträge, unbekannte Ids und kaputte eigene Krise werden verworfen oder geklemmt', () => {
+    const eintrag = (i: number) => ({
+      uid: `k${i}`,
+      id: i === 3 ? 'gibt-es-nicht' : i % 2 === 0 ? 'dotcom2000' : 'eigen',
+      land: 'CHE',
+      startArt: 'jahr',
+      jahr: 2030 + i,
+      eigen: { name: `Krise ${i}\u0000<img>`, rueckgang: 2, dauer: -1, erholung: 100 },
+    });
+    const n = normalisiere(
+      { krisen: { modus: 'individuell', auswahl: Array.from({ length: 12 }, (_, i) => eintrag(i)) } },
+      regeln,
+    );
+    expect(n.krisen.auswahl.length).toBe(8);
+    expect(n.krisen.auswahl.every((a) => a.id === 'dotcom2000' || a.id === 'eigen')).toBe(true);
+    expect(n.krisen.auswahl.some((a) => a.id === 'gibt-es-nicht')).toBe(false);
+    const eigene = n.krisen.auswahl.find((a) => a.id === 'eigen');
+    expect(eigene?.eigen).toMatchObject({ rueckgang: -0.05, dauer: 1, erholung: 15 });
+    const name = eigene?.eigen?.name ?? '';
+    expect([...name].some((ch) => (ch.codePointAt(0) ?? 0) < 32 || ch === '<' || ch === '>')).toBe(false);
+    expect(eigene?.eigen?.name.length).toBeLessThanOrEqual(40);
+  });
+});
+
+describe('AHV-Vorbezug beim Wechsel von Geschlecht oder Jahrgang', () => {
+  it('Mann Jahrgang 1965 mit −36 Monaten wird −24, Frau derselben Kohorte bleibt −36', () => {
+    const p = neuePerson(regeln, {
+      geburtsjahr: 1965,
+      geschlecht: 'm',
+      ahv: { modus: 'eingabe', renteMonat: 0, mdje: 0, beitragsjahre: 44, bezugVerschiebungMonate: -36 },
+    });
+    expect(normalisiere({ personen: [p] }, regeln).personen[0]?.ahv.bezugVerschiebungMonate).toBe(-24);
+    const frau = personNachJahrgang(p, { geschlecht: 'w' }, regeln.ahv);
+    expect(frau.ahv.bezugVerschiebungMonate).toBe(-36);
+    const zurueck = personNachJahrgang(frau, { geschlecht: 'm' }, regeln.ahv);
+    expect(zurueck.ahv.bezugVerschiebungMonate).toBe(-24);
+    const juenger = personNachJahrgang({ ...frau, geschlecht: 'w' }, { geburtsjahr: 1970 }, regeln.ahv);
+    expect(juenger.ahv.bezugVerschiebungMonate).toBe(-24);
   });
 });
