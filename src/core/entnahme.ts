@@ -30,6 +30,7 @@
  * (Konto, Geldmarkt, sehr kurze Staatsanleihen); reale Rendite standardmässig 0,5 %.
  */
 
+import { filterAnzeigename } from './text';
 import type { Entnahme, EntnahmeStufe, EntnahmeTopfRolle, EntnahmeTopfVorlage, Toepfe } from './typen';
 
 /** Studie als Ausgangspunkt der Annuität: reale Aktienrendite. Eine Annahme, kein Versprechen. */
@@ -447,7 +448,7 @@ function zahl(x: unknown, sonst: number, min: number, max: number): number {
 }
 
 function label(x: unknown, sonst: string): string {
-  const s = typeof x === 'string' ? x.replace(/\s+/g, ' ').trim() : '';
+  const s = typeof x === 'string' ? filterAnzeigename(x, 10_000).replace(/\s+/g, ' ').trim() : '';
   return (s || sonst).slice(0, 40);
 }
 

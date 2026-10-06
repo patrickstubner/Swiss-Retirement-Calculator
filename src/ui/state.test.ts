@@ -898,8 +898,8 @@ describe('Schema 12: Entnahmestrategie', () => {
 });
 
 describe('Schema 13: geplante Krisen', () => {
-  it('Schema 13; alter Stand ohne Liste bleibt leer und stürzt nicht ab', () => {
-    expect(SCHEMA_VERSION).toBe(13);
+  it('Schema 14; alter Stand ohne Liste bleibt leer und stürzt nicht ab', () => {
+    expect(SCHEMA_VERSION).toBe(14);
     const h = standardHaushalt(regeln);
     const { auswahl: _weg, ...ohneListe } = h.krisen;
     const roh = { ...h, krisen: ohneListe };
@@ -953,7 +953,7 @@ describe('Schema 13: geplante Krisen', () => {
     expect(ladeLokal(s, regeln)?.haushalt.krisen.auswahl).toEqual(aus.krisen.auswahl);
   });
 
-  it('höchstens 8 Einträge, unbekannte Ids und kaputte eigene Krise werden verworfen oder geklemmt', () => {
+  it('unbekannte Ids und kaputte eigene Krise werden verworfen oder geklemmt, höchstens 120 Einträge', () => {
     const eintrag = (i: number) => ({
       uid: `k${i}`,
       id: i === 3 ? 'gibt-es-nicht' : i % 2 === 0 ? 'dotcom2000' : 'eigen',
@@ -966,7 +966,21 @@ describe('Schema 13: geplante Krisen', () => {
       { krisen: { modus: 'individuell', auswahl: Array.from({ length: 12 }, (_, i) => eintrag(i)) } },
       regeln,
     );
-    expect(n.krisen.auswahl.length).toBe(8);
+    expect(n.krisen.auswahl.length).toBe(11);
+    const viele = normalisiere(
+      {
+        krisen: {
+          modus: 'individuell',
+          ausgleich: true,
+          auswahl: Array.from({ length: 200 }, (_, i) => eintrag(i + 20)),
+        },
+      },
+      regeln,
+    );
+    expect(viele.krisen.auswahl.length).toBe(120);
+    expect(viele.krisen.ausgleich).toBe(true);
+    expect(normalisiere({ krisen: { modus: 'individuell' } }, regeln).krisen.ausgleich).toBe(false);
+    expect(normalisiere({ krisen: { ausgleich: 'ja' } }, regeln).krisen.ausgleich).toBe(false);
     expect(n.krisen.auswahl.every((a) => a.id === 'dotcom2000' || a.id === 'eigen')).toBe(true);
     expect(n.krisen.auswahl.some((a) => a.id === 'gibt-es-nicht')).toBe(false);
     const eigene = n.krisen.auswahl.find((a) => a.id === 'eigen');
@@ -974,6 +988,11 @@ describe('Schema 13: geplante Krisen', () => {
     const name = eigene?.eigen?.name ?? '';
     expect([...name].some((ch) => (ch.codePointAt(0) ?? 0) < 32 || ch === '<' || ch === '>')).toBe(false);
     expect(eigene?.eigen?.name.length).toBeLessThanOrEqual(40);
+  });
+
+  it('Personenname verliert unsichtbare Zeichen', () => {
+    const h = normalisiere({ personen: [{ name: 'A\u202E\u200B\uFEFF\u2028B\u2029' }] }, regeln);
+    expect(h.personen[0]?.name).toBe('AB');
   });
 });
 

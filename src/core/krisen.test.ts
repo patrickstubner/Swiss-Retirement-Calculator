@@ -314,12 +314,19 @@ describe('Geplante Krisen (Modus Individuell)', () => {
     const plan = [{ krise: k('covid2020'), land: 'CHE' as const, startJahr: 2099 }];
     expect(krisenAusserhalb(plan, 2026, 2080).map((e) => e.startJahr)).toEqual([2099]);
     expect(krisenAusserhalb([{ krise: k('covid2020'), land: 'CHE', startJahr: 2040 }], 2026, 2080)).toEqual([]);
+    // Beginn vor dem Horizont, aber die Krise reicht hinein (Immobilienkrise: 8 Jahre)
+    const hinein = [{ krise: k('immobilienCh1990'), land: 'CHE' as const, startJahr: 2020 }];
+    expect(krisenAusserhalb(hinein, 2026, 2080)).toEqual([]);
+    expect(krisenAusserhalb([{ krise: k('covid2020'), land: 'CHE', startJahr: 2020 }], 2026, 2080)).toHaveLength(1);
   });
 
   it('Namen und Zahlen einer manipulierten eigenen Krise werden bereinigt', () => {
     expect(bereinigeKrisenName('  Meine <Krise>\u0000 ')).toBe('Meine Krise');
     expect(bereinigeKrisenName('')).toBe('Eigene Krise');
     expect(bereinigeKrisenName('x'.repeat(80)).length).toBe(40);
+    expect(bereinigeKrisenName('Öl\u202Ekrise\u200B\uFEFF')).toBe('Ölkrise');
+    expect(bereinigeKrisenName('A\u2028B\u2029C')).toBe('ABC');
+    expect(bereinigeKrisenName('X\uE000Y\uFFFFZ')).toBe('XYZ');
     const e = bereinigeEigeneKrise({
       name: '<script>alert(1)</script>',
       rueckgang: -5,
@@ -331,7 +338,7 @@ describe('Geplante Krisen (Modus Individuell)', () => {
     expect(e.rueckgang).toBe(-0.8);
     expect(e.dauer).toBe(8);
     expect(e.erholung).toBe(0);
-    expect(MAX_GEPLANTE_KRISEN).toBe(8);
+    expect(MAX_GEPLANTE_KRISEN).toBe(120);
   });
 
   it('zwei geplante Krisen erscheinen in den gewählten Jahren, ohne Ausgleich', () => {

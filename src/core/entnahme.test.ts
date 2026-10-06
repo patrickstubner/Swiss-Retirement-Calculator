@@ -200,6 +200,16 @@ describe('Texte', () => {
     }
   });
 
+  it('Topf-Bezeichnung verliert unsichtbare Zeichen', () => {
+    const e = normalisiereEntnahme({
+      art: 'toepfe',
+      toepfe: [{ id: 'cash', label: 'Cash\u202E\u200B\uFEFF\u2028Markt', rolle: 'puffer', anteil: 1, renditeReal: 0 }],
+    });
+    if (e.art !== 'toepfe') throw new Error('keine Töpfe');
+    expect(e.toepfe[0]?.label).toBe('CashMarkt');
+    expect(e.toepfe[0]?.label).not.toMatch(/[\u202E\u200B\uFEFF\u2028]/u);
+  });
+
   it('unbekannte Strategie wird zum gestaffelten Standard', () => {
     expect(normalisiereEntnahme(undefined).art).toBe('gestaffelt');
     expect(normalisiereEntnahme({ art: 'irgendwas' }).art).toBe('gestaffelt');

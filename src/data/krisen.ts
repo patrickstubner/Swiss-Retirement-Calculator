@@ -17,10 +17,13 @@ import {
   type KrisenOptionen,
   type KrisenPlanEintrag,
   type KrisenWahl,
+  kriseImHorizont,
   krisenPfad,
+  krisenPlan,
+  MAX_GEPLANTE_KRISEN,
   maxRealerRueckgang,
 } from '../core/krisen';
-import type { Haushalt, KrisenEinstellungen } from '../core/typen';
+import type { Haushalt, KrisenAuswahl, KrisenEinstellungen } from '../core/typen';
 
 type Zeile = [number, number | null, number | null, number | null, number | null, number | null];
 
@@ -320,7 +323,63 @@ export function krisenOptionen(h: Haushalt): KrisenOptionen | undefined {
     if (!krise) continue;
     wahl.push({ krise, land: a.land, start });
   }
-  return wahl.length > 0 ? { wahl, daten: KRISEN_DATEN, aktienanteil: h.annahmen.aktienanteil } : undefined;
+  if (wahl.length === 0) return undefined;
+  return {
+    wahl,
+    daten: KRISEN_DATEN,
+    aktienanteil: h.annahmen.aktienanteil,
+    // Schema 14: nach «Automatische Krisen übernehmen» wie «Automatisch» ausgleichen
+    ...(k.ausgleich === true ? { ausgleichHorizont: true } : {}),
+  };
+}
+
+/**
+ * Krisen, die der Modus «Automatisch» im Planungshorizont abspielen würde, als editierbare
+ * Liste. Start «nach dem Rücktritt» wird zum Kalenderjahr des übergebenen Rücktrittsjahrs
+ * (dasselbe Jahr wie die Wunsch-Rechnung). Einträge ausserhalb des Horizonts entfallen:
+ * sie ändern weder die Krisenjahre noch den Ausgleich.
+ */
+export function automatischeKrisenAlsAuswahl(
+  k: KrisenEinstellungen,
+  ruecktrittJahr: number,
+  horizont: { von: number; bis: number },
+): KrisenAuswahl[] {
+  const plan = krisenPlan(autoKrisenWahl(k), ruecktrittJahr);
+  const auswahl: KrisenAuswahl[] = [];
+  for (const e of plan) {
+    if (!kriseImHorizont(e.startJahr, e.krise, horizont.von, horizont.bis)) continue;
+    auswahl.push({
+      uid: `auto-${auswahl.length}-${e.krise.id}-${e.startJahr}`,
+      id: e.krise.id,
+      land: e.land,
+      startArt: 'jahr',
+      jahr: e.startJahr,
+      alter: 70,
+      person: 0,
+      jahreNach: 0,
+      eigen: null,
+    });
+    if (auswahl.length >= MAX_GEPLANTE_KRISEN) break;
+  }
+  return auswahl;
+}
+
+/**
+ * Hängt übernommene Krisen an eine bestehende Liste. Dieselbe Krise im selben Startjahr
+ * wird nicht doppelt gesetzt. Was über die Grenze hinausgeht, wird gezählt und weggelassen.
+ */
+export function krisenListeZusammenfuehren(
+  bestehend: readonly KrisenAuswahl[],
+  neu: readonly KrisenAuswahl[],
+  max = MAX_GEPLANTE_KRISEN,
+): { auswahl: KrisenAuswahl[]; ausgelassen: number } {
+  const hat = new Set(bestehend.filter((a) => a.startArt === 'jahr').map((a) => `${a.id}@${a.jahr}`));
+  const extra = neu.filter((a) => !hat.has(`${a.id}@${a.jahr}`));
+  const platz = Math.max(0, max - bestehend.length);
+  return {
+    auswahl: [...bestehend, ...extra.slice(0, platz)],
+    ausgelassen: Math.max(0, extra.length - platz),
+  };
 }
 
 /**

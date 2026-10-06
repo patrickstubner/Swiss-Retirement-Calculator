@@ -20,6 +20,7 @@ import {
   ahvVorbezugKuerzung,
   ahvWeitesterVorbezugMonate,
   pruefeAhvVerschiebung,
+  vorbezugKuerzHinweis,
 } from './ahv';
 
 const r = ladeRegeln(2026).ahv;
@@ -209,6 +210,15 @@ describe('Rentenzuschlag Übergangsgeneration', () => {
     expect(ahvRentenzuschlag(1965, 'w', 50000, 0, 1, r)).toBe(4); // 3.64 → 4
     expect(ahvRentenzuschlag(1965, 'w', 50000, 0, 0, r)).toBe(0);
     expect(ahvRentenzuschlag(1967, 'w', 50000, 0, 44, r)).toBeCloseTo(100.8, 10); // volle Dauer: keine Rundung belegt
+  });
+});
+
+describe('Hinweis bei gekürztem Vorbezug (K-05)', () => {
+  it('nennt die Monate nur, wenn der Vorbezug wirklich gekürzt wird', () => {
+    expect(vorbezugKuerzHinweis(-36, -24)).toBe('Vorbezug auf 24 Monate gekürzt');
+    expect(vorbezugKuerzHinweis(-24, -24)).toBeNull();
+    expect(vorbezugKuerzHinweis(-36, 0)).toBeNull();
+    expect(vorbezugKuerzHinweis(0, -24)).toBeNull();
   });
 });
 

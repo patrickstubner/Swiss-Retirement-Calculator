@@ -8,15 +8,18 @@ import {
   AUTO_KRISEN,
   AUTO_KRISEN_IDS,
   autoKrisenWahl,
+  automatischeKrisenAlsAuswahl,
   autoNormal,
   autoZyklus,
   KRISEN_DATEN,
+  krisenListeZusammenfuehren,
   krisenOptionen,
   mcKrisenPool,
   STANDARD_KRISEN_PRO_DEKADE,
   standardErsteKrise,
 } from '../data/krisen';
 import { ladeRegeln } from '../rules';
+import { dekodiere, kodiere } from '../ui/state';
 import {
   ausgleichErwartet,
   ausgleichErwartetHorizont,
@@ -26,8 +29,9 @@ import {
   wertschriftenHist,
 } from './krisen';
 import { wiederkehrendeKrisenPfad, zufall } from './montecarlo';
-import { simuliere } from './simulation';
+import { referenzPerson, simuliere } from './simulation';
 import type { Haushalt, KrisenEinstellungen } from './typen';
+import { geburtIndex, stoppAlterMonate } from './zeitpunkt';
 
 const regeln = ladeRegeln(2026);
 const start = { jahr: 2026, monat: 1 };
@@ -306,5 +310,113 @@ describe('Ausgleich über den eigenen Planungshorizont (Schema 7)', () => {
     expect(summe / laeufe / jahre).toBeCloseTo(g, 3);
     // der Ausgleich für einen unendlichen Horizont liegt bei 40 Jahren messbar daneben
     expect(Math.abs(summeUnendlich / laeufe / jahre - g)).toBeGreaterThan(Math.abs(summe / laeufe / jahre - g));
+  });
+});
+
+function ruecktrittVon(h: Haushalt): number {
+  const i = Math.max(
+    0,
+    h.personen.findIndex((p) => p.erwerbsstatus !== 'nichtErwerbstaetig'),
+  );
+  const p = h.personen[i] ?? h.personen[0];
+  if (!p) return start.jahr;
+  return Math.floor((geburtIndex(p) + Math.max(0, stoppAlterMonate(p))) / 12);
+}
+
+function horizontVon(h: Haushalt): { von: number; bis: number } {
+  const p = h.personen[referenzPerson(h.personen)];
+  const bis = (p?.geburtsjahr ?? start.jahr) + Math.floor(h.planungsalter);
+  return { von: start.jahr, bis: Math.max(start.jahr, bis) };
+}
+
+function nachUebernahme(h: Haushalt): Haushalt {
+  const liste = automatischeKrisenAlsAuswahl(h.krisen, ruecktrittVon(h), horizontVon(h));
+  return { ...h, krisen: { ...h.krisen, modus: 'individuell', auswahl: liste, ausgleich: true } };
+}
+
+function erwarteGleich(auto: Haushalt, individuell: Haushalt, st = start) {
+  const a = simuliere(auto, regeln, { start: st, krisen: krisenOptionen(auto) });
+  const b = simuliere(individuell, regeln, { start: st, krisen: krisenOptionen(individuell) });
+  expect(b.endVermoegen).toBe(a.endVermoegen);
+  expect(b.krisenJahre).toEqual(a.krisenJahre);
+  expect(b.krisenNormal).toEqual(a.krisenNormal);
+  expect(b.ruinJahr).toBe(a.ruinJahr);
+  return a;
+}
+
+describe('Automatische Krisen übernehmen', () => {
+  it('Standard: dieselben Krisen und dasselbe Ergebnis wie «Automatisch»', () => {
+    const h = haushalt();
+    const ind = nachUebernahme(h);
+    expect(ind.krisen.auswahl.map((a) => [a.id, a.jahr, a.startArt])).toEqual([
+      ['oelkrise1973', 2036, 'jahr'],
+      ['schwarzerMontag1987', 2050, 'jahr'],
+      ['immobilienCh1990', 2063, 'jahr'],
+    ]);
+    expect(ind.krisen.ausgleich).toBe(true);
+    const e = erwarteGleich(h, ind);
+    expect(e.krisenJahre.filter((x, i, a) => i === 0 || a[i - 1]?.krise !== x.krise).map((x) => x.jahr)).toEqual([
+      2036, 2050, 2063,
+    ]);
+  });
+
+  it('«nach dem Rücktritt» wird zum Kalenderjahr des aktuellen Rücktritts', () => {
+    const h = haushalt({ autoStartArt: 'nachRuecktritt', autoJahreNach: 2 });
+    const ind = nachUebernahme(h);
+    expect(ind.krisen.auswahl[0]).toMatchObject({ id: 'oelkrise1973', jahr: 2032, startArt: 'jahr' });
+    erwarteGleich(h, ind);
+  });
+
+  it('angebrochenes erstes Jahr bleibt gleich', () => {
+    const h = haushalt();
+    erwarteGleich(h, nachUebernahme(h), { jahr: 2026, monat: 10 });
+  });
+
+  it('mehr als 8 Krisen im Horizont: die angehobene Grenze hält das Ergebnis gleich', () => {
+    const h = haushalt({ autoProDekade: 5 });
+    const ind = nachUebernahme(h);
+    expect(ind.krisen.auswahl.length).toBeGreaterThan(8);
+    expect(ind.krisen.auswahl.length).toBeLessThanOrEqual(120);
+    erwarteGleich(h, ind);
+  });
+
+  it('ohne Ausgleich bleiben die Krisenjahre, das Vermögen weicht ab', () => {
+    const h = haushalt();
+    const ind = nachUebernahme(h);
+    const stress = { ...ind, krisen: { ...ind.krisen, ausgleich: false } };
+    const a = simuliere(h, regeln, { start, krisen: krisenOptionen(h) });
+    const b = simuliere(stress, regeln, { start, krisen: krisenOptionen(stress) });
+    expect(krisenOptionen(stress)?.ausgleichHorizont).toBeUndefined();
+    expect(b.krisenJahre).toEqual(a.krisenJahre);
+    expect(b.krisenNormal).toBeNull();
+    expect(b.endVermoegen).not.toBe(a.endVermoegen);
+  });
+
+  it('Speicher und Link behalten die übernommene Liste und das gleiche Ergebnis', () => {
+    const h = haushalt();
+    const ind = nachUebernahme(h);
+    const geladen = dekodiere(kodiere(ind), regeln);
+    if (!geladen) throw new Error('Dekodieren fehlgeschlagen');
+    expect(geladen.krisen.ausgleich).toBe(true);
+    expect(geladen.krisen.auswahl.map((a) => [a.id, a.jahr, a.startArt])).toEqual(
+      ind.krisen.auswahl.map((a) => [a.id, a.jahr, a.startArt]),
+    );
+    erwarteGleich(h, geladen);
+  });
+
+  it('Anhängen setzt dieselbe Krise im selben Jahr nicht doppelt und achtet auf die Grenze', () => {
+    const h = haushalt();
+    const neu = automatischeKrisenAlsAuswahl(h.krisen, ruecktrittVon(h), horizontVon(h));
+    const erst = krisenListeZusammenfuehren([], neu);
+    expect(erst.ausgelassen).toBe(0);
+    const nochmal = krisenListeZusammenfuehren(erst.auswahl, neu);
+    expect(nochmal.auswahl).toHaveLength(erst.auswahl.length);
+    expect(nochmal.ausgelassen).toBe(0);
+    const voll = krisenListeZusammenfuehren(erst.auswahl, neu, erst.auswahl.length);
+    expect(voll.auswahl).toHaveLength(erst.auswahl.length);
+    expect(voll.ausgelassen).toBe(0);
+    const eng = krisenListeZusammenfuehren(erst.auswahl.slice(0, 1), neu, 2);
+    expect(eng.auswahl).toHaveLength(2);
+    expect(eng.ausgelassen).toBe(neu.length - 2);
   });
 });

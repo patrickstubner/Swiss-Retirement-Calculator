@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { vorbezugKuerzHinweis } from '../../core/ahv';
 import { AHV_LINKS, ahvSchaetzung } from '../../core/ahvSchaetzung';
 import type { AhvSchaetzhilfeEingabe, Person } from '../../core/typen';
 import type { Regeln } from '../../rules';
@@ -19,6 +20,12 @@ interface Props {
 export function AhvSchaetzhilfe({ p, partner, verheiratet, regeln, set }: Props) {
   const [offen, setOffen] = useState(false);
   const [uebernommen, setUebernommen] = useState(false);
+  const [kuerzung, setKuerzung] = useState<string | null>(null);
+  const setzeJahrgang = (patch: Partial<Pick<Person, 'geschlecht' | 'geburtsjahr'>>) => {
+    const n = personNachJahrgang(p, patch, regeln.ahv);
+    setKuerzung(vorbezugKuerzHinweis(p.ahv.bezugVerschiebungMonate, n.ahv.bezugVerschiebungMonate));
+    set(() => n);
+  };
   const e = p.ahvSchaetzhilfe;
   const setE = (fn: (x: AhvSchaetzhilfeEingabe) => AhvSchaetzhilfeEingabe) => {
     setUebernommen(false);
@@ -61,7 +68,7 @@ export function AhvSchaetzhilfe({ p, partner, verheiratet, regeln, set }: Props)
               max={2015}
               nachkomma={0}
               gruppieren={false}
-              onChange={(v) => set((x) => personNachJahrgang(x, { geburtsjahr: Math.round(v) }, regeln.ahv))}
+              onChange={(v) => setzeJahrgang({ geburtsjahr: Math.round(v) })}
             />
             <Segmente
               label="Geschlecht"
@@ -70,9 +77,14 @@ export function AhvSchaetzhilfe({ p, partner, verheiratet, regeln, set }: Props)
                 { value: 'w', label: 'Frau' },
                 { value: 'm', label: 'Mann' },
               ]}
-              onChange={(v) => set((x) => personNachJahrgang(x, { geschlecht: v }, regeln.ahv))}
+              onChange={(v) => setzeJahrgang({ geschlecht: v })}
             />
           </div>
+          {kuerzung ? (
+            <p className="warnung" role="status">
+              {kuerzung}
+            </p>
+          ) : null}
           <Segmente
             label="Beitragsdauer angeben als"
             value={e.beitragsModus}

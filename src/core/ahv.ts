@@ -207,6 +207,15 @@ export function ahvVerschiebungKlemmen(
   return 0;
 }
 
+/**
+ * Hinweis, wenn ein zu weiter Vorbezug auf das zulässige Maximum gekürzt wird (K-05).
+ * `nachher` ist der geklemmte Wert, weiterhin negativ.
+ */
+export function vorbezugKuerzHinweis(vorher: number, nachher: number): string | null {
+  if (vorher < nachher && nachher < 0) return `Vorbezug auf ${-nachher} Monate gekürzt`;
+  return null;
+}
+
 /** Prüft eine Bezugsverschiebung; gibt eine Fehlermeldung oder null zurück. */
 export function pruefeAhvVerschiebung(
   verschiebungMonate: number,
