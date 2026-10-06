@@ -59,6 +59,7 @@ import { darstellungVon, endBetrag, inFranken } from '../darstellung';
 import { fmtChf, fmtProzent, MONATSNAMEN } from '../format';
 import type { Setzer } from '../kontext';
 import { krisenAbschnitte, krisenText } from '../krisenGrafik';
+import { krisenNachModuswechsel } from '../krisenModus';
 import type { McEinstellung } from '../mcKern';
 import { useVollMc } from '../mcVergleich';
 import { Faecher } from './Faecher';
@@ -130,11 +131,13 @@ interface Props {
   wunsch: SimulationsErgebnis | null;
   refIdx: number;
   namen: string[];
+  /** true: einziges Eingabefeld (Modus Schnell). false: nur Anzeige, das Feld steht im Schritt Annahmen. */
+  aktienanteilHier: boolean;
 }
 
-export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, namen }: Props) {
+/** Krisenmodus und Editor. Eine Stelle, im Block «Was wäre, wenn …?», schreibt direkt in den Haushalt. */
+export function KrisenSteuerung({ h, setH, effH, regeln, heute, wunsch, refIdx, namen, aktienanteilHier }: Props) {
   const k = h.krisen;
-  const [angebot, setAngebot] = useState(false);
   const [rueckfrage, setRueckfrage] = useState(false);
   const [uebernahmeHinweis, setUebernahmeHinweis] = useState<string | null>(null);
   const aktiv = krisenOptionen(effH) !== undefined;
@@ -184,7 +187,6 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
 
   const uebernimm = (art: 'ersetzen' | 'anhaengen') => {
     setRueckfrage(false);
-    setAngebot(false);
     if (uebernahme.length === 0) {
       setUebernahmeHinweis('Im Planungshorizont liegt keine automatische Krise.');
       return;
@@ -203,32 +205,34 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
     );
   };
 
+  const kriseHinzufuegen = () =>
+    setzeKrisen(setH, (kr) => {
+      if (kr.auswahl.length >= MAX_GEPLANTE_KRISEN) return kr;
+      const letzte = plan.at(-1)?.startJahr ?? fenster.von;
+      const jahr = krisenStartVorschlag(fenster.von, fenster.bis, Math.max(0, letzte + 14 - 2036));
+      const benutzt = new Set(kr.auswahl.map((x) => x.id));
+      const naechste = KRISEN.find((x) => !benutzt.has(x.id)) ?? KRISEN[0];
+      return {
+        ...kr,
+        auswahl: [...kr.auswahl, neueGeplanteKrise(naechste?.id ?? 'dotcom2000', naechste?.land ?? 'CHE', jahr)],
+      };
+    });
+
   return (
-    <Karte
-      titel="Krisen"
-      untertitel="Wie wirken Börsenkrisen auf Ihr Vermögen? Die App spielt die echten Jahresrenditen und die Teuerung historischer Krisenjahre ab. Die Wahl gilt für das ganze Ergebnis."
-    >
+    <div className="krisen-steuerung">
       <Segmente<KrisenModus>
-        label="Krisenmodus"
+        label="Krisen"
         value={k.modus}
         optionen={[
-          { value: 'keine', label: 'Keine Krise' },
+          { value: 'keine', label: 'Keine' },
           { value: 'automatisch', label: 'Auto\u00admatisch' },
           { value: 'individuell', label: 'Indi\u00adviduell' },
         ]}
         onChange={(modus) => {
-          const vonAutomatischLeer = k.modus === 'automatisch' && modus === 'individuell' && k.auswahl.length === 0;
-          setAngebot(vonAutomatischLeer);
           setRueckfrage(false);
-          setUebernahmeHinweis(null);
-          setzeKrisen(setH, (kr) => ({
-            ...kr,
-            modus,
-            auswahl:
-              modus === 'individuell' && kr.auswahl.length === 0 && !vonAutomatischLeer
-                ? [neueGeplanteKrise('finanzkrise2007', 'CHE', krisenStartVorschlag(fenster.von, fenster.bis))]
-                : kr.auswahl,
-          }));
+          const wechsel = krisenNachModuswechsel(k, modus, uebernahme);
+          setUebernahmeHinweis(wechsel.hinweis);
+          setzeKrisen(setH, () => wechsel.krisen);
         }}
       />
       {k.modus === 'keine' ? (
@@ -247,7 +251,7 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
           </p>
           <ZahlFeld
             label="Krisen pro 10 Jahre"
-            hinweis={`Standard ${fmtDek(STANDARD_KRISEN_PRO_DEKADE)}: so oft fielen Schweizer Aktien real um 20 % oder mehr (1900–2020, JST). Das heisst im Schnitt alle ${fmtJahre(krisenAbstand(STANDARD_KRISEN_PRO_DEKADE))} Jahre eine Krise.`}
+            hinweis={`Standard ${fmtDek(STANDARD_KRISEN_PRO_DEKADE)}: so oft fielen Schweizer Aktien real um 20 % oder mehr (1900–2020, JST). Das heisst im Schnitt alle ${fmtJahre(krisenAbstand(STANDARD_KRISEN_PRO_DEKADE))} Jahre eine Krise. Gilt für diese feste Abfolge, nicht für die Zufallsrechnung unter «Wiederkehrende Krisen».`}
             value={rate}
             min={0.1}
             max={5}
@@ -309,6 +313,23 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
 
       {k.modus === 'individuell' ? (
         <>
+          {k.auswahl.length === 0 ? (
+            <div className="krisen-leer" role="status">
+              <p>
+                Noch keine Krise in der Liste. Fügen Sie eine hinzu oder übernehmen Sie die automatischen Krisen.
+                Solange die Liste leer ist, setzt diese Auswertung die Finanzkrise 2007–2009 ab nächstem Jahr.
+              </p>
+              {uebernahmeHinweis ? <p className="warnung">{uebernahmeHinweis}</p> : null}
+              <div className="knopf-reihe">
+                <button type="button" className="knopf" onClick={() => uebernimm('ersetzen')}>
+                  Automatische Krisen übernehmen
+                </button>
+                <button type="button" className="knopf knopf--sekundaer" onClick={kriseHinzufuegen}>
+                  Krise hinzufügen
+                </button>
+              </div>
+            </div>
+          ) : null}
           <p className="klein">
             {k.ausgleich === true
               ? normal?.hinweis
@@ -325,29 +346,18 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
             hinweis="Ein: derselbe Ausgleich wie im Modus Automatisch. Aus: Stresstest. «Automatische Krisen übernehmen» schaltet den Ausgleich ein. Spätere Änderungen an der Liste lassen ihn, wie er steht."
             onChange={(ausgleich) => setzeKrisen(setH, (kr) => ({ ...kr, ausgleich }))}
           />
-          {angebot && k.auswahl.length === 0 ? (
-            <p className="klein" role="status">
-              Die Liste ist leer. «Automatische Krisen übernehmen» füllt sie mit denselben Krisenarten und Startjahren,
-              die der Modus Automatisch für diesen Haushalt und diesen Planungshorizont rechnen würde.
-            </p>
-          ) : null}
           {k.autoStartArt === 'nachRuecktritt' ? (
             <p className="klein">
               Automatisch beginnt nach dem Rücktritt. Die Übernahme behält den Abstand, damit die Krisen mit dem
               Rücktritt mitwandern.
             </p>
           ) : null}
-          <button
-            type="button"
-            className="knopf"
-            onClick={() => {
-              if (k.auswahl.length === 0) uebernimm('ersetzen');
-              else setRueckfrage(true);
-            }}
-          >
-            Automatische Krisen übernehmen
-          </button>
-          {rueckfrage ? (
+          {k.auswahl.length > 0 ? (
+            <button type="button" className="knopf" onClick={() => setRueckfrage(true)}>
+              Automatische Krisen übernehmen
+            </button>
+          ) : null}
+          {k.auswahl.length > 0 && rueckfrage ? (
             <fieldset className="unterkarte">
               <legend>Liste ist schon gefüllt</legend>
               <p>
@@ -367,7 +377,7 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
               </div>
             </fieldset>
           ) : null}
-          {uebernahmeHinweis ? (
+          {k.auswahl.length > 0 && uebernahmeHinweis ? (
             <p className="warnung" role="status">
               {uebernahmeHinweis}
             </p>
@@ -409,42 +419,29 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
               {fenster.bis}. Sie fliesst so nicht in die Rechnung ein.
             </p>
           ))}
-          {k.auswahl.length < MAX_GEPLANTE_KRISEN ? (
-            <button
-              type="button"
-              className="knopf knopf--sekundaer"
-              onClick={() =>
-                setzeKrisen(setH, (kr) => {
-                  const letzte = plan.at(-1)?.startJahr ?? fenster.von;
-                  const jahr = krisenStartVorschlag(fenster.von, fenster.bis, Math.max(0, letzte + 14 - 2036));
-                  const benutzt = new Set(kr.auswahl.map((x) => x.id));
-                  const naechste = KRISEN.find((x) => !benutzt.has(x.id)) ?? KRISEN[0];
-                  return {
-                    ...kr,
-                    auswahl: [
-                      ...kr.auswahl,
-                      neueGeplanteKrise(naechste?.id ?? 'dotcom2000', naechste?.land ?? 'CHE', jahr),
-                    ],
-                  };
-                })
-              }
-            >
+          {k.auswahl.length > 0 && k.auswahl.length < MAX_GEPLANTE_KRISEN ? (
+            <button type="button" className="knopf knopf--sekundaer" onClick={kriseHinzufuegen}>
               Krise hinzufügen
             </button>
-          ) : (
+          ) : null}
+          {k.auswahl.length >= MAX_GEPLANTE_KRISEN ? (
             <p className="klein">
               Höchstens {MAX_GEPLANTE_KRISEN} Krisen. Entfernen Sie einen Eintrag, um einen neuen zu setzen.
             </p>
-          )}
-          {k.auswahl.length === 0 ? (
-            <p className="warnung">Die Liste ist leer – es wird ohne Krise gerechnet.</p>
           ) : null}
         </>
       ) : null}
 
+      {aktienanteilHier ? (
+        <AktienanteilFeld h={h} setH={setH} />
+      ) : (
+        <p className="klein">
+          Aktienanteil Ihrer Wertschriften: {fmtProzent(h.annahmen.aktienanteil, 0)}. Ändern im Schritt «Annahmen».
+        </p>
+      )}
+
       {k.modus !== 'keine' ? (
         <>
-          <AktienanteilFeld h={h} setH={setH} />
           {wunsch && ohne ? (
             <div className="vergleich" role="status">
               <div>
@@ -505,7 +502,7 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
         </ul>
       </details>
       <HaeufigkeitTabelle />
-    </Karte>
+    </div>
   );
 }
 
@@ -830,9 +827,11 @@ interface McProps {
   heute: Monat;
   refIdx: number;
   namen: string[];
+  /** true: der Aktienanteil steht oben bei den Krisen. false: im Schritt Annahmen. */
+  aktienanteilHier: boolean;
 }
 
-export function MonteCarloKarte({ h, setH, effH, heute, refIdx, namen }: McProps) {
+export function MonteCarloKarte({ h, setH, effH, heute, refIdx, namen, aktienanteilHier }: McProps) {
   const k = h.krisen;
   const rate = k.mcKrisenProDekade ?? STANDARD_KRISEN_PRO_DEKADE;
   // Objekt nur bei echter Änderung neu bilden, sonst würde die Rechnung bei jeder Darstellung neu starten
@@ -887,8 +886,8 @@ export function MonteCarloKarte({ h, setH, effH, heute, refIdx, namen }: McProps
           />
           {k.mcArt === 'wiederkehrend' ? (
             <ZahlFeld
-              label="Krisen pro 10 Jahre"
-              hinweis={`Standard ${fmtDek(STANDARD_KRISEN_PRO_DEKADE)}: so oft fielen Schweizer Aktien real um 20 % oder mehr (1900–2020, JST). Gezogen wird zufällig eine der «normalen» Krisen (wie bei «Automatisch»).`}
+              label="Zufällige Krisen pro 10 Jahre"
+              hinweis={`Standard ${fmtDek(STANDARD_KRISEN_PRO_DEKADE)}: so oft fielen Schweizer Aktien real um 20 % oder mehr (1900–2020, JST). Gezogen wird zufällig eine der «normalen» Krisen. Eigene Häufigkeit, unabhängig von «Krisen pro 10 Jahre» bei Automatisch.`}
               value={rate}
               min={0}
               max={10}
@@ -907,7 +906,12 @@ export function MonteCarloKarte({ h, setH, effH, heute, refIdx, namen }: McProps
               onChange={(v) => setzeKrisen(setH, (kr) => ({ ...kr, mcBlockLaenge: Math.round(v) }))}
             />
           )}
-          <AktienanteilFeld h={h} setH={setH} />
+          <p className="klein">
+            Aktienanteil {fmtProzent(h.annahmen.aktienanteil, 0)}.{' '}
+            {aktienanteilHier
+              ? 'Ändern Sie ihn oben bei den Krisen in «Was wäre, wenn».'
+              : 'Ändern Sie ihn im Schritt «Annahmen».'}
+          </p>
           {mcStand.laeuft ? (
             <div className="mc-fortschritt" role="status">
               <label htmlFor={fortschrittId}>Monte Carlo rechnet … {Math.round(mcStand.fortschritt * 100)} %</label>

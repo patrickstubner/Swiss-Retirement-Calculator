@@ -11,10 +11,12 @@ export function EntnahmeErgebnis({
   strategie,
   e,
   refIdx,
+  schnell,
 }: {
   strategie: Entnahme | undefined;
   e: SimulationsErgebnis;
   refIdx: number;
+  schnell: boolean;
 }) {
   const s = normalisiereEntnahme(strategie);
   const jahre = e.zeilen.filter((z) => z.lohn <= 0);
@@ -28,6 +30,11 @@ export function EntnahmeErgebnis({
   return (
     <Karte titel="Entnahmestrategie" untertitel={ENTNAHME_NAME[s.art]}>
       <p>{entnahmeKurztext(s)}</p>
+      <p className="klein">
+        {schnell
+          ? 'Die Strategie ändern Sie bei den Eingaben im Modus Schnell.'
+          : 'Die Strategie ändern Sie im Schritt «Vermögen & Ausgaben».'}
+      </p>
       {s.art === 'statisch' && s.quelle === 'ausgaben' && erstes ? (
         <p className="klein">
           Im ersten Jahr ohne Erwerbseinkommen mit freiem Vermögen ({erstes.jahr}) entspricht die Entnahme{' '}

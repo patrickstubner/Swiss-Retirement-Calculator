@@ -1,6 +1,6 @@
 {
   "name": "ch-rentenrechner",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "private": true,
   "description": "Ruhestandsrechner Schweiz: Ruhestands- und Vermögensrechner für die Schweiz (statische Web-App)",
   "license": "MIT",

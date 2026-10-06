@@ -26,6 +26,7 @@ import { VorlesenKnoepfe } from '../vorlesen/Vorlesen';
 import { LinienChart, type Serie } from './Chart';
 import { Faecher } from './Faecher';
 import { Segmente } from './Felder';
+import { KrisenSteuerung } from './Krisen';
 
 export type SuchModusA = 'gemeinsam' | 'p0' | 'p1';
 
@@ -199,9 +200,11 @@ interface Props {
   suchModus: SuchModusA;
   namen: string[];
   refIdx: number;
+  /** Aktienanteil hier eingeben (Schnell) oder nur anzeigen (Detailliert, Feld im Schritt Annahmen). */
+  aktienanteilHier: boolean;
 }
 
-export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, refIdx }: Props) {
+export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, refIdx, aktienanteilHier }: Props) {
   const [w, setW] = useState<WasWaere>(KEIN_WAS_WAERE);
   const [gemeinsam, setGemeinsam] = useState(true);
   const geaendert =
@@ -301,8 +304,8 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
         <VorlesenKnoepfe titel="Was wäre, wenn" />
       </div>
       <p className="karte__untertitel">
-        Schieben Sie die Regler – das Ergebnis wird neu gerechnet. Ihre Eingaben bleiben unverändert, bis Sie
-        «Übernehmen» wählen.
+        Krisen stellen Sie hier ein; sie gelten sofort. Die übrigen Regler rechnen neu, ohne die Eingaben zu ändern, bis
+        Sie «Übernehmen» wählen.
       </p>
       {ausLaeuft ? (
         <p className="info" role="status">
@@ -337,6 +340,18 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
       ) : ausLaeuft ? null : (
         <p className="warnung">Berechnung nicht möglich – bitte Eingaben prüfen.</p>
       )}
+
+      <KrisenSteuerung
+        h={h}
+        setH={setH}
+        effH={effH}
+        regeln={regeln}
+        heute={heute}
+        wunsch={k?.wunsch ?? null}
+        refIdx={refIdx}
+        namen={namen}
+        aktienanteilHier={aktienanteilHier}
+      />
 
       <div className="regler-gruppe">
         {zweiRegler ? (
@@ -443,27 +458,6 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
           geaendert={w.teuerung !== null}
           onChange={(v) => setW((x) => ({ ...x, teuerung: v }))}
         />
-        <div className={`regler-krise${w.krise !== null ? ' regler-krise--geaendert' : ''}`}>
-          <Segmente<KrisenModus>
-            label="Krisen"
-            value={krisenModus}
-            optionen={[
-              { value: 'keine', label: 'Keine' },
-              { value: 'automatisch', label: 'Auto\u00admatisch' },
-              { value: 'individuell', label: 'Indi\u00adviduell' },
-            ]}
-            onChange={(v) => setW((x) => ({ ...x, krise: v === h.krisen.modus ? null : v }))}
-          />
-          <small className="feld__hinweis">
-            {krisenModus === 'keine'
-              ? 'Ohne Krisen: jedes Jahr gilt Ihre Renditeannahme (Standard wäre «Automatisch»).'
-              : krisenModus === 'automatisch'
-                ? 'Standard: normale historische Krisen im Abstand gemäss Häufigkeit; die Krisenjahre ersetzen die Annahme (Einstellungen unten bei «Krisen»).'
-                : h.krisen.auswahl.length === 0
-                  ? 'Ihre Liste ist leer: gerechnet wird die Finanzkrise 2007–2009 im Jahr des Rücktritts (Liste unten bei «Krisen»).'
-                  : 'Ihre eigene Liste unten bei «Krisen».'}
-          </small>
-        </div>
       </div>
       {geaendert ? (
         <div className="knopf-reihe">
@@ -521,7 +515,8 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
                 ? ' mit Ihren Krisen'
                 : ''}
             . Fächer: {mc?.laeufe ?? 150} Monte-Carlo-Läufe mit zufällig verteilten historischen Krisen (
-            {(h.krisen.mcKrisenProDekade ?? STANDARD_KRISEN_PRO_DEKADE).toLocaleString('de-CH')} pro Dekade).
+            {(h.krisen.mcKrisenProDekade ?? STANDARD_KRISEN_PRO_DEKADE).toLocaleString('de-CH')} zufällige Krisen pro
+            Dekade, eigene Häufigkeit unter «Wiederkehrende Krisen»).
           </p>
         </>
       ) : null}

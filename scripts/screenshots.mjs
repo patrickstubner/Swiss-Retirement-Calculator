@@ -179,21 +179,26 @@ await p2.getByLabel('Erwerbsaufgabe per Ende (Monat)').selectOption('11');
 await fuelle2('Jahr', 2027);
 await karteP1.screenshot({ path: `${out}16-ruecktritt-datum-360.png` });
 
-// Wohnsitz im Ausland: Thailand mit freiwilliger AHV
-await karteP1.getByText('Wohnsitz im Ausland (Wegzug)').click();
-await karteP1.getByRole('checkbox', { name: /^Endgültiger Wegzug aus der Schweiz geplant/ }).check();
-// Der Wegzug übernimmt beim Einschalten den Rücktritts-Modus (hier «Datum»); für das Beispiel auf «Alter» umstellen.
-await karteP1
+// Wohnsitz im Ausland: Thailand mit freiwilliger AHV.
+// Zeitpunkt und Land nur im Schritt Vorsorge; die AHV-Angaben bleiben bei der Person.
+await schritt2(/Vorsorge/);
+const wegKarte2 = p2.locator('.karte', { hasText: 'Wegzug ins Ausland' }).first();
+await wegKarte2.getByRole('checkbox', { name: /^Endgültiger Wegzug aus der Schweiz geplant/ }).check();
+await wegKarte2
   .locator('fieldset', { hasText: 'Wohnsitz im Ausland ab' })
   .locator('label.segment', { hasText: 'Alter' })
   .click();
 await fuelle2('Wegzug mit', 59);
-await p2.getByLabel('Zielland', { exact: true }).selectOption('TH');
+await wegKarte2.getByLabel('Zielland', { exact: true }).selectOption('TH');
+await schritt2(/Personen/);
 await karteP1.getByRole('checkbox', { name: /^Freiwillige AHV\/IV/ }).check();
 await karteP1.locator('.wegzug').screenshot({ path: `${out}17-wohnsitz-ausland-freiwillige-ahv-360.png` });
-await p2.getByLabel('Zielland', { exact: true }).selectOption('PT');
+await schritt2(/Vorsorge/);
+await wegKarte2.getByLabel('Zielland', { exact: true }).selectOption('PT');
+await schritt2(/Personen/);
 await karteP1.locator('.wegzug').screenshot({ path: `${out}18-wohnsitz-eu-nicht-moeglich-360.png` });
-await p2.getByLabel('Zielland', { exact: true }).selectOption('TH');
+await schritt2(/Vorsorge/);
+await wegKarte2.getByLabel('Zielland', { exact: true }).selectOption('TH');
 
 // AHV: frühester Bezug abgeleitet; PK-Feld klar getrennt (mit Warnung bei 62)
 await schritt2(/Vorsorge/);
@@ -758,7 +763,7 @@ await p10.goto(url, { waitUntil: 'networkidle' });
     .first()
     .click();
   await p10.waitForTimeout(500);
-  const kk = p10.locator('.karte', { hasText: 'Krisenmodus' }).first();
+  const kk = p10.locator('.krisen-steuerung').first();
   await kk.getByText(/^Indi\u00ad?viduell$/).click();
   await p10.waitForTimeout(600);
   await kk.scrollIntoViewIfNeeded();
@@ -767,9 +772,12 @@ await p10.goto(url, { waitUntil: 'networkidle' });
   if (!/Mit Ihren Krisen/.test(kt) || !/Krisen in Ihrer Rechnung/.test(kt))
     fehler.push(`Krise: Vergleich fehlt: ${kt}`);
   // Grosse Depression im Kalenderjahr 2030, Daten USA
-  await kk.getByLabel('Krise', { exact: true }).selectOption('depression1929');
+  await kk
+    .getByLabel(/^Krise/)
+    .first()
+    .selectOption('depression1929');
   await kk.getByText(/^Kalender\u00ad?jahr$/).click();
-  await fuelle10('Kalenderjahr des Krisenbeginns', 2030);
+  await fuelle10('Startjahr', 2030);
   await p10.waitForTimeout(600);
   await kk.screenshot({ path: `${out}54-krise-depression-kalenderjahr-360.png` });
   const top = p10.locator('.karte--ergebnis');
@@ -845,10 +853,7 @@ for (const schema of ['light', 'dark']) {
     // Regler: Rücktritt 62 (in Monaten), Ausgaben 60'000, Krisen automatisch
     await aw.getByLabel('Rücktrittsalter', { exact: true }).fill(String(62 * 12));
     await aw.getByLabel('Ausgaben pro Jahr (heute)', { exact: true }).fill('60000');
-    await aw
-      .locator('.regler-krise')
-      .getByText(/^Auto\u00ad?matisch$/)
-      .click();
+    await aw.getByLabel('Teuerung', { exact: true }).fill('0.03');
     await pg.waitForTimeout(2500);
     await aw.screenshot({ path: `${out}60-auswertung-regler-geaendert-krise-360.png` });
     if (!/Übernehmen/.test(await aw.innerText())) fehler.push('Auswertung: Übernehmen fehlt');
@@ -926,7 +931,7 @@ for (const schema of ['light', 'dark']) {
     if (!/Eingabe: 65 J\./.test(await rg.innerText())) fehler.push('Regler: Eingabe-Hinweis fehlt');
     // b) Krisenmodus Automatisch in der Krisen-Karte
     await aw.getByText('Zurücksetzen', { exact: true }).click();
-    const kk = pg.locator('.karte', { hasText: 'Krisenmodus' }).first();
+    const kk = pg.locator('.krisen-steuerung').first();
     await kk
       .getByText(/^Auto\u00ad?matisch$/)
       .first()
@@ -970,7 +975,10 @@ for (const schema of ['light', 'dark']) {
       .first()
       .click();
     await pg.waitForTimeout(400);
-    await kk.getByLabel('Krise', { exact: true }).selectOption('japan1990');
+    await kk
+      .getByLabel(/^Krise/)
+      .first()
+      .selectOption('japan1990');
     await kk.getByText('Alter', { exact: true }).click();
     await f('Alter bei Krisenbeginn', 68);
     await pg.waitForTimeout(1200);
@@ -1004,7 +1012,7 @@ for (const schema of ['light', 'dark']) {
     await pg.waitForTimeout(800);
     if ((await aw.getByLabel(/^Rücktritt Person/).count()) !== 2) fehler.push('Pro Person: zwei Regler erwartet');
     await rg.screenshot({ path: `${out}72-dunkel-paar-regler-pro-person-360.png` });
-    const kk = pg.locator('.karte', { hasText: 'Krisenmodus' }).first();
+    const kk = pg.locator('.krisen-steuerung').first();
     await kk
       .getByText(/^Auto\u00ad?matisch$/)
       .first()
@@ -1060,7 +1068,7 @@ for (const schema of ['light', 'dark']) {
   await top.scrollIntoViewIfNeeded();
   await top.screenshot({ path: `${out}75-erster-start-krisen-automatisch-ergebnis-360.png` });
   if (!/Mit Krisen \(automatisch\)/.test(await top.innerText())) fehler.push('Erster Start: Hinweis Automatisch fehlt');
-  const kk = pg.locator('.karte', { hasText: 'Krisenmodus' }).first();
+  const kk = pg.locator('.krisen-steuerung').first();
   await kk.scrollIntoViewIfNeeded();
   await kk.screenshot({ path: `${out}76-erster-start-krisenkarte-automatisch-360.png` });
   if (!/Standard für neue Berechnungen/.test(await kk.innerText()))
@@ -1147,7 +1155,7 @@ for (const schema of ['light', 'dark']) {
   await info.scrollIntoViewIfNeeded();
   await info.screenshot({ path: `${out}80-ergebnis-verkauf-nach-wegzug-360.png` });
   if (!/Grundstückgewinnsteuer CHF/.test(await info.innerText())) fehler.push('Ergebnis: Verkauf fehlt');
-  const kk = pg.locator('.karte', { hasText: 'Krisenmodus' }).first();
+  const kk = pg.locator('.krisen-steuerung').first();
   await kk.scrollIntoViewIfNeeded();
   await kk.screenshot({ path: `${out}81-krisen-ausgleich-planungszeitraum-360.png` });
   if (!/Planungszeitraum/.test(await kk.innerText())) fehler.push('Krisen: Ausgleich über den Planungszeitraum fehlt');

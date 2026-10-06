@@ -3,6 +3,13 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.3.4] - 2026-10-06
+
+### Geändert
+- Krisen nur noch in «Was wäre, wenn …?»: Der Umschalter Keine / Automatisch / Individuell sitzt dort. Bei Individuell folgen Liste, Krise, Beginn (Jahr und Monat), Hinzufügen, Entfernen, «Automatische Krisen übernehmen», Ausgleich und Hinweise direkt darunter. Bei Automatisch stehen dort Häufigkeit, erste Krise und Aktienanteil. Eine eigene Karte «Krisen» gibt es nicht mehr.
+- Wechsel auf «Individuell» bei leerer Liste übernimmt sofort die automatischen Krisen (Ausgleich ein). Eine schon gefüllte Liste bleibt. Die Umkehrrechnung nutzt dieselbe Liste, ohne zweiten Editor. Monte Carlo bleibt eine eigene Karte und zeigt die Liste nicht noch einmal.
+- Doppelte Bedienung: Der Aktienanteil hat ein Feld (Schritt «Annahmen»; im Modus Schnell bei den Krisen). Monte Carlo zeigt ihn nur an. Die Darstellung heutige Franken / nominal hat einen Umschalter (im Vergleich der Versionen nur oben). Zeitpunkt und Land des Wegzugs gibt es im Detail nur bei der Vorsorge, im Schnellmodus bei der Person. Die Entnahmestrategie im Ergebnis ist eine Anzeige. «Krisen pro 10 Jahre» (feste Abfolge) und «Zufällige Krisen pro 10 Jahre» (Monte Carlo) bleiben zwei Werte, weil sie verschiedene Rechnungen steuern.
+
 ## [1.3.3] - 2026-10-06
 
 ### Geändert

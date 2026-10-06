@@ -68,7 +68,7 @@ export function WegzugVergleichKarte({ h, effH, regeln, heute, namen }: Props) {
     >
       <Schalter
         label="Wegzug-Vergleich rechnen"
-        hinweis="Rechnet Ihren Plan dreimal: Wohnsitz bleibt in der Schweiz, Wegzug in ein Nicht-EU/EFTA-Land, Wegzug in ein zweites Land (Standard Spanien, EU)."
+        hinweis="Rechnet Ihren Plan dreimal: Wohnsitz bleibt in der Schweiz, Wegzug in ein Nicht-EU/EFTA-Land, Wegzug in ein zweites Land (Standard Spanien, EU). Diese Angaben gelten nur für diesen Vergleich und ändern den Wegzug in den Eingaben nicht."
         checked={aktiv}
         onChange={setAktiv}
       />

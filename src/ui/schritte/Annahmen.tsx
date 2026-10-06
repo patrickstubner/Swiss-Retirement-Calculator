@@ -35,7 +35,7 @@ export function Annahmen({ h, setH, regeln, onZuruecksetzen }: Props) {
             min={-0.2}
             max={0.3}
             onChange={(v) => setA({ renditeNominal: v })}
-            hinweis={`Gilt für alle Wertschriften. Der Aktienanteil unten wirkt nur im Krisenmodus und bei Monte Carlo (dort mischt er Aktien und Obligationen), nicht auf diese Rendite. Standard für neue Eingaben: ${fmtProzent(ANNAHMEN_STANDARD.renditeNominal)} nominal, eine Annahme und keine Garantie.`}
+            hinweis={`Gilt für alle Wertschriften. Der Aktienanteil unten wirkt nur im Krisenmodus und bei Monte Carlo (dort mischt er Aktien und Obligationen), nicht auf diese Rendite. Im Ergebnis wird er nur angezeigt. Standard für neue Eingaben: ${fmtProzent(ANNAHMEN_STANDARD.renditeNominal)} nominal, eine Annahme und keine Garantie.`}
           />
           <ZahlFeld
             label="Anlagekosten (TER)"

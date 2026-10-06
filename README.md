@@ -29,7 +29,7 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
 
 ## Funktionsumfang (Version 1.3)
 
-Aktuelle Version: **1.3.3** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [CONTRIBUTING](CONTRIBUTING.md)).
+Aktuelle Version: **1.3.4** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [CONTRIBUTING](CONTRIBUTING.md)).
 
 - **Neutrale Standardwerte:** Alle Beträge sind anfangs leer (0) und frei editierbar – keine Beispielvermögen.
   Gesetzliche Werte (z.B. BVG-Mindestzins) und Annahmen (Standard: 7 % Rendite nominal, 2 % Teuerung; eine Annahme, keine Garantie) sind vorbelegt und anpassbar. Der Schnellmodus rechnet mit denselben Annahmen wie «Detailliert» und zeigt sie sichtbar an.
@@ -87,8 +87,8 @@ Aktuelle Version: **1.3.3** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [
   Rente/Kapital nach Reglement (Wegzug ab dem Reglementsalter, Art. 2 Abs. 1bis FZG) oder ordentlicher Bezug ohne
   Wegzug. Spielt das Feld nachweislich keine Rolle (Wegzug mit Barauszahlung vor 58 bzw. vor der Erwerbsaufgabe), wird
   es ausgegraut und nur lesbar angezeigt statt versteckt. Bei «Nicht erwerbstätig» ist die ganze PK-Karte ausgeblendet.
-- **Wohnsitz im Ausland und freiwillige AHV/IV** pro Person: Wegzug ab Alter oder Datum, Land (EU/EFTA oder nicht,
-  aus `data/laender-2026.json`), Staatsangehörigkeit, Prüfung der Beitrittsvoraussetzungen (Art. 2 AHVG, VFV).
+- **Wohnsitz im Ausland und freiwillige AHV/IV** pro Person: Wegzug ab Alter oder Datum und Land (EU/EFTA oder nicht,
+  aus `data/laender-2026.json`) im Modus Detailliert nur im Schritt «Einkommen & Vorsorge», im Modus Schnell bei der Person. Staatsangehörigkeit und die Prüfung der Beitrittsvoraussetzungen (Art. 2 AHVG, VFV) stehen im Schritt «Personen».
   Mit freiwilliger AHV: Jahresbeitrag aus Vermögen am 31.12. + 20× Renteneinkommen (Tabelle 1'010–25'250 plus 5%
   Verwaltungskosten), bis zum Referenzalter als Ausgabe; die Jahre zählen als Beitragsjahre. Ohne: keine
   NE-Beiträge mehr, dafür Beitragslücken (AHV-Rente vereinfacht linear gekürzt).
@@ -101,8 +101,8 @@ Aktuelle Version: **1.3.3** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [
   lit. c FZG). Liegt der Wegzug nach dem PK-Bezugsalter, gilt der ordentliche Bezug.
   Besteuerung ab dem Wegzug mit der **Schweizer Quellensteuer** (Bund nach QStV-Tarif + Sitzkanton der
   Vorsorgeeinrichtung; AG, BL, GE, JU, NE, SO, VS, VD mit den exakten ESTV-Tariftabellen 2026) statt der
-  Kapitalleistungssteuer des Wohnkantons; DBA-Rückforderung optional (Schalter). Die Wegzug-Angaben stehen im Schritt «Einkommen & Vorsorge» in einer eigenen Karte **vor** der
-  Pensionskasse (gleicher Zustand wie im Schritt «Personen») und im Modus «Schnell» direkt bei jeder Person.
+  Kapitalleistungssteuer des Wohnkantons; DBA-Rückforderung optional (Schalter). Die Wegzug-Angaben (Zeitpunkt, Land, Barauszahlung) stehen im Schritt «Einkommen & Vorsorge» in einer eigenen Karte **vor** der
+  Pensionskasse und im Modus «Schnell» direkt bei jeder Person. Im Schritt «Personen» sieht man den Zeitpunkt nur noch, plus Staatsangehörigkeit und freiwillige AHV.
 - **Steuern nach dem Wegzug:** Schweizer Einkommens- und Vermögenssteuer nur bis zum Wegzug (anteilig), danach das
   vereinfachte Steuermodell des Ziellandes aus `data/laender-2026.json` (Renten, Kapitalerträge, Vermögen; Regime wie
   Italien 7 %, Zypern 5 %, Azoren −30 % wählbar) oder ein eigener effektiver Satz. Schweizer Quellensteuer auf
@@ -199,9 +199,9 @@ Vereinfachungen: Ohne «Wohnkosten separat» kein Eigenmietwert, Zins und Unterh
 am Ende des Verkaufsjahres; Hypothek ohne Amortisation; Vermögenssteuer auf dem Verkehrswert (effektiver Satz). Barauszahlung wegen Selbstständigkeit ist nicht abgebildet;
 Steuermodelle der Zielländer sind Näherungen (bei Ländern ohne Modell wird weiter mit Schweizer Steuern gerechnet oder ein eigener Satz verwendet).
 
-- **Was wäre, wenn …?** (oben im Ergebnis): Regler für Rücktrittsalter (Mitte = Eingabe, ±10 Jahre, frühestens heute,
-  spätestens 70; bei Paaren gemeinsam oder pro Person), Planungsalter (±20 Jahre), Ausgaben, Rendite, Teuerung und
-  Krisenmodus mit sofortiger Neuberechnung (Eingaben bleiben unverändert bis «Übernehmen»); Kennzahlen «Geld reicht bis Alter»,
+- **Was wäre, wenn …?** (oben im Ergebnis): Umschalter Keine / Automatisch / Individuell. Bei Individuell liegen Liste, Beginn, Hinzufügen, Entfernen, «Automatische Krisen übernehmen» und der Ausgleich direkt unter dem Umschalter; bei Automatisch Häufigkeit, erste Krise und Aktienanteil. Diese Krisen gelten sofort. Regler für Rücktrittsalter (Mitte = Eingabe, ±10 Jahre, frühestens heute,
+  spätestens 70; bei Paaren gemeinsam oder pro Person), Planungsalter (±20 Jahre), Ausgaben, Rendite und Teuerung
+  rechnen neu, ohne die übrigen Eingaben zu ändern, bis «Übernehmen». Kennzahlen «Geld reicht bis Alter»,
   Erfolgswahrscheinlichkeit mit wiederkehrenden Krisen, frühestes Rücktrittsalter, Vermögen am Ende;
   Vermögensverlauf als Monte-Carlo-Fächer (10., 25., 50., 75., 90. Perzentil) mit Erfolgsquote und «Mit 90 % / 75 % /
   50 % Wahrscheinlichkeit reicht das Geld bis Alter …»; «Varianten Ihres Plans im Vergleich» (Grafik 2: Ihr Plan mit
@@ -253,7 +253,7 @@ Steuermodelle der Zielländer sind Näherungen (bei Ländern ohne Modell wird we
   Steuern (Einkommen, Kapital, Vermögen, Grundstückgewinn, total). Mobil horizontal scrollbar mit fixer erster Spalte,
   leere Spalten ausgeblendet, **CSV-Export** (Semikolon, ganze Franken, UTF-8 mit BOM, alle Spalten). Folgt dem
   Umschalter heutige Kaufkraft / nominal. Screenshots `screenshots/92-…` bis `95-…`.
-- **Heutige Kaufkraft / Nominal** (Umschalter oben im Ergebnis, im Link und im Speicher, Schema 8): alle Beträge,
+- **Heutige Kaufkraft / Nominal** (ein Umschalter oben im Ergebnis, im Link und im Speicher, Schema 8; beim Vergleich der Versionen nur oben im Vergleich): alle Beträge,
   Grafiken, Tabellen und Kennzahlen wahlweise «in heutigen Franken» (Standard) oder «in Franken des jeweiligen
   Jahres». Nominal = real × kumulierte Teuerung des tatsächlich gerechneten Pfads (in Krisenjahren die historische
   Teuerung, im Monte Carlo die jedes Laufs; die Perzentile werden pro Lauf umgerechnet und erst dann gebildet).
@@ -261,7 +261,7 @@ Steuermodelle der Zielländer sind Näherungen (bei Ländern ohne Modell wird we
   als ganzes Teuerungsjahr. Screenshots `screenshots/84-…` bis `88-…`.
 - Erscheinungsbild: ruhigeres Design mit Karten, klarer Typografie, Diagrammfarben aus CSS-Variablen und **dunklem
   Modus** gemäss Systemeinstellung; Kontraste nach WCAG AA (Text ≥ 4.5:1).
-- **Krisen** (im Ergebnis), drei Stufen (beim ersten Start ist *Automatisch* voreingestellt; gespeicherte Stände und
+- **Krisen** (nur in «Was wäre, wenn …?», keine eigene Karte), drei Stufen (beim ersten Start ist *Automatisch* voreingestellt; gespeicherte Stände und
   Links behalten ihren Modus): *Keine Krise*; *Automatisch* – die «normalen» historischen Krisen (Ölkrise
   1973/74, Schwarzer Montag 1987, Schweizer Immobilienkrise, Dotcom, Finanzkrise 2008, Eurokrise 2011, Covid 2020,
   Zinsschock 2022) rotierend im Abstand gemäss Häufigkeit (Standard 0,74 pro Dekade, etwa alle 13,5 Jahre), erste
@@ -269,7 +269,10 @@ Steuermodelle der Zielländer sind Näherungen (bei Ländern ohne Modell wird we
   normalen Jahre werden so ausgeglichen, dass der reale Durchschnitt über den   eigenen Planungszeitraum (heute bis
   Planungsalter, Wertschriften und Hauspreise getrennt) der Annahme entspricht; *Individuell* –
   eigene Liste (hinzufügen, entfernen, höchstens 120) mit allen Krisen inkl. der extremen (Grosse Depression,
-  Stagflation 1973–81, Japan ab 1990) oder einer eigenen Annahme (Rückgang, Dauer, Erholung). «Automatische
+  Stagflation 1973–81, Japan ab 1990) oder einer eigenen Annahme (Rückgang, Dauer, Erholung). Wechsel auf
+  *Individuell* bei leerer Liste übernimmt die automatischen Krisen sofort (Ausgleich ein); eine gefüllte Liste
+  bleibt. Ist die Liste leer, stehen «Krise hinzufügen» und «Automatische Krisen übernehmen» direkt unter dem
+  Modus. «Automatische
   Krisen übernehmen» füllt die Liste mit denselben Krisen wie «Automatisch» und gleicht
   die normalen Jahre aus; der Ausgleich lässt sich abschalten (Stresstest). Unter 3 normalen Jahren
   entfällt der Ausgleich, über 30 % oder unter −20 % wird er begrenzt. Beginnt «Automatisch» nach dem
