@@ -56,7 +56,7 @@ import {
 } from '../../data/krisen';
 import type { Regeln } from '../../rules';
 import { darstellungVon, endBetrag, inFranken } from '../darstellung';
-import { fmtChf, fmtProzent } from '../format';
+import { fmtChf, fmtProzent, MONATSNAMEN } from '../format';
 import type { Setzer } from '../kontext';
 import { krisenAbschnitte, krisenText } from '../krisenGrafik';
 import type { McEinstellung } from '../mcKern';
@@ -67,6 +67,15 @@ import { Karte } from './Karte';
 import { ScrollTabelle } from './ScrollTabelle';
 
 const LAENDER: readonly KrisenLand[] = ['CHE', 'USA', 'JPN'];
+const MONATE = MONATSNAMEN.map((n, i) => ({ value: i + 1, label: n }));
+
+function ausgleichHinweisText(hinweis: 'zuWenig' | 'gedeckelt' | undefined): string | null {
+  if (hinweis === 'zuWenig')
+    return 'Weniger als 3 normale Jahre im Horizont. Der Ausgleich entfällt, die normalen Jahre bleiben Ihre Annahme.';
+  if (hinweis === 'gedeckelt')
+    return 'Der Ausgleich ist auf −20 % bis 30 % begrenzt (dieselbe Spanne wie die Renditeannahme). Der reale Durchschnitt entspricht dann nicht mehr genau Ihrer Annahme.';
+  return null;
+}
 const BASIS0 = { renditeNominal: 0, renditeBargeld: 0, inflation: 0 };
 
 function setzeKrisen(setH: Setzer, fn: (k: KrisenEinstellungen) => KrisenEinstellungen) {
@@ -286,9 +295,10 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
               Die Krisenjahre ersetzen Ihre Renditeannahme – sie kommen nicht noch dazu. Damit der Durchschnitt Ihrer
               Annahme entspricht, rechnet die App in normalen Jahren mit{' '}
               <strong>{fmtProzent(normal.wertschriften, 2)}</strong> statt {fmtProzent(effH.annahmen.renditeNominal, 2)}{' '}
-              (Wertschriften, Ihr Mix) und mit <strong>{fmtProzent(normal.wohneigentum, 2)}</strong> (Hauspreise). So
-              entspricht der reale Durchschnitt über Ihren Planungszeitraum ({horizont}) genau Ihrer Annahme – mit den
-              Krisen, die in diesen Zeitraum fallen.
+              (Wertschriften, Ihr Mix) und mit <strong>{fmtProzent(normal.wohneigentum, 2)}</strong> (Hauspreise).
+              {normal.hinweis
+                ? ` ${ausgleichHinweisText(normal.hinweis)}`
+                : ` So entspricht der reale Durchschnitt über Ihren Planungszeitraum (${horizont}) genau Ihrer Annahme – mit den Krisen, die in diesen Zeitraum fallen.`}
               {umlauf
                 ? ` Zum Vergleich: Ausgleich über einen ganzen Umlauf der Liste (${autoVersatz(AUTO_KRISEN.length, rate)} Jahre) wären ${fmtProzent(umlauf.wertschriften, 2)}.`
                 : ''}
@@ -301,10 +311,13 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
         <>
           <p className="klein">
             {k.ausgleich === true
-              ? 'Die Krisenjahre ersetzen die Renditeannahme. Normale Jahre werden ausgeglichen, wie im Modus Automatisch: der reale Durchschnitt über den Planungshorizont entspricht Ihrer Annahme.'
+              ? normal?.hinweis
+                ? 'Die Krisenjahre ersetzen die Renditeannahme. Der Ausgleich der normalen Jahre gilt nur eingeschränkt, siehe Hinweis unten.'
+                : 'Die Krisenjahre ersetzen die Renditeannahme. Normale Jahre werden ausgeglichen, wie im Modus Automatisch: der reale Durchschnitt über den Planungshorizont entspricht Ihrer Annahme.'
               : 'Legen Sie fest, welche historische Krise in welchem zukünftigen Jahr wiederkehrt. Das ist ein Stresstest: Die Krisenjahre ersetzen die Renditeannahme, die übrigen Jahre bleiben unverändert.'}{' '}
             Höchstens {MAX_GEPLANTE_KRISEN} Einträge. Ein Beginn kurz vor {fenster.von} zählt mit, sobald ein Krisenjahr
-            im Horizont {fenster.von}–{fenster.bis} liegt.
+            im Horizont {fenster.von}–{fenster.bis} liegt. Der Monat ist eine Annäherung: die Daten sind Jahresrenditen,
+            die App verteilt sie geometrisch auf die Kalenderjahre. Januar rechnet das ganze Jahr, wie bisher.
           </p>
           <Schalter
             label="Normale Jahre ausgleichen (wie Automatisch)"
@@ -364,7 +377,7 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
               In normalen Jahren rechnet die App mit <strong>{fmtProzent(normal.wertschriften, 2)}</strong> statt{' '}
               {fmtProzent(effH.annahmen.renditeNominal, 2)} (Wertschriften) und mit{' '}
               <strong>{fmtProzent(normal.wohneigentum, 2)}</strong> (Hauspreise), über{' '}
-              {horizont || 'den Planungshorizont'}.
+              {horizont || 'den Planungshorizont'}.{normal.hinweis ? ` ${ausgleichHinweisText(normal.hinweis)}` : ''}
             </p>
           ) : null}
           {k.auswahl.map((a, i) => (
@@ -526,6 +539,8 @@ function GeplanteKrise({
   const teuerungMix = pfad ? pfad.reduce((s, p) => s * (1 + p.teuerung), 1) - 1 : null;
   const lander = krise ? LAENDER.filter((l) => datenVollstaendig(krise, l, KRISEN_DATEN)) : [];
   const beginn = startJahr ?? a.jahr;
+  const monat = a.monat ?? 1;
+  const monatName = MONATSNAMEN[monat - 1] ?? 'Januar';
   const eigene = eigen ? bereinigeEigeneKrise(a.eigen) : null;
   const setEigen = (patch: Partial<EigeneKrise>) =>
     setze((x) => ({ ...x, id: EIGENE_KRISE_ID, eigen: { ...bereinigeEigeneKrise(x.eigen), ...patch } }));
@@ -665,9 +680,22 @@ function GeplanteKrise({
           onChange={(j) => setze((x) => ({ ...x, jahreNach: Math.round(j) }))}
         />
       )}
+      <AuswahlFeld<number>
+        label="Monat"
+        hinweis={
+          a.startArt === 'jahr'
+            ? 'Januar rechnet das ganze Startjahr. Ab Februar wird die Jahresrendite geometrisch auf diesen Monat und die Folgejahre verteilt. Das ist eine Annäherung, die Daten bleiben Jahreswerte.'
+            : a.startArt === 'alter'
+              ? `Monat im Kalenderjahr, in dem ${namen[a.person] ?? namen[0]} das Alter erreicht. Januar = das ganze Jahr, wie bisher.`
+              : 'Monat im Kalenderjahr des Abstands zum Rücktritt. Januar = das ganze Jahr, wie bisher. Nicht die Monate seit dem Rücktrittsdatum.'
+        }
+        value={monat}
+        optionen={MONATE}
+        onChange={(v) => setze((x) => ({ ...x, monat: v }))}
+      />
       {krise && dd !== null && teuerungMix !== null ? (
         <p className="klein">
-          {krise.kurz} beginnt {beginn}
+          {krise.kurz} beginnt {monat > 1 ? `im ${monatName} ${beginn}` : beginn}
           {startJahr ? ` (${alterAmJahresende(startJahr, h.personen, namen).replace(/\.$/, '')})` : ''}. Ihr Mix (
           {fmtProzent(h.annahmen.aktienanteil, 0)} Aktien) verliert in den Katalogjahren real bis zu{' '}
           <strong>{fmtProzent(-dd, 0)}</strong>, Teuerung total {fmtProzent(teuerungMix, 0)}.
@@ -678,7 +706,7 @@ function GeplanteKrise({
         </p>
       ) : eigene ? (
         <p className="klein">
-          {eigene.name} beginnt {beginn}
+          {eigene.name} beginnt {monat > 1 ? `im ${monatName} ${beginn}` : beginn}
           {startJahr ? ` (${alterAmJahresende(startJahr, h.personen, namen).replace(/\.$/, '')})` : ''}. Realer Rückgang{' '}
           {fmtProzent(-eigene.rueckgang, 0)} über {eigene.dauer} {eigene.dauer === 1 ? 'Jahr' : 'Jahre'}
           {eigene.erholung > 0

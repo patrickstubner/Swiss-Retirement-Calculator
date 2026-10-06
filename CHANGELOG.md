@@ -3,6 +3,12 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.3.2] - 2026-10-06
+
+### Geändert
+- Krisenbeginn mit Jahr und Monat. Januar rechnet das ganze Kalenderjahr wie bisher. Ein späterer Monat ist eine Annäherung: die Jahresrenditen werden geometrisch auf die betroffenen Kalenderjahre verteilt. Dasselbe Monatfeld gilt für Beginn im Kalenderjahr, im Alter und nach dem Rücktritt (Monat im aufgelösten Kalenderjahr, nicht Monate seit dem Geburtstag oder dem Rücktrittsdatum). Schema 15.
+- Ausgleich der normalen Jahre: unter 3 normalen Jahren entfällt er, darüber wird die Normalrendite auf −20 % bis 30 % begrenzt. Die App sagt das dazu. Gilt für «Automatisch» und «Individuell» gleich.
+
 ## [1.3.1] - 2026-10-06
 
 ### Geändert

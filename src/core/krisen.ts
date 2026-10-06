@@ -66,13 +66,33 @@ export interface Krise {
   beschreibung: string;
 }
 
-/** Eintrag im Krisenplan: Krise `krise` beginnt im Kalenderjahr `startJahr` (Simulation). */
+/**
+ * Eintrag im Krisenplan: Krise `krise` beginnt im Kalenderjahr `startJahr`.
+ * `startMonat` 1 = Januar = das ganze Jahr (bisheriges Verhalten). Ein späterer Monat
+ * ist eine Annäherung: die Jahresrendite wird geometrisch auf die Monate verteilt.
+ */
 export interface KrisenPlanEintrag {
   krise: Krise;
   land: KrisenLand;
   startJahr: number;
+  /** 1–12. Fehlt = Januar. */
+  startMonat?: number;
   /** Gesetzte eigene Krise: die Jahresrendite kommt nicht aus der Historie */
   eigen?: EigeneKrise;
+}
+
+/** Anteil eines Kalenderjahres mit einer Rendite (Summe der Scheiben eines Jahres = 1). */
+export interface KrisenScheibe {
+  gewicht: number;
+  land: KrisenLand;
+  /** Historisches Jahr. Fehlt zusammen mit `normal`: wird nicht gesetzt. */
+  jahr?: number;
+  krise?: string;
+  name?: string;
+  kurz?: string;
+  eigenReal?: number;
+  /** Monate mit der normalen Annahme, nicht mit einer Krisenrendite */
+  normal?: boolean;
 }
 
 /** Was in einem Kalenderjahr abgespielt wird. Bei Überschneidung bleibt die später beginnende Krise. */
@@ -85,6 +105,14 @@ export interface KrisenKalenderZelle {
   kurz?: string;
   /** Reale Wertschriftenrendite einer eigenen Krise in diesem Jahr */
   eigenReal?: number;
+  /** Erster und letzter Monat (1–12), in dem in diesem Kalenderjahr eine Krise liegt */
+  monatVon: number;
+  monatBis: number;
+  /**
+   * Gemisch aus Krisen- und normalen Monaten. Fehlt = das ganze Jahr ist genau eine
+   * historische oder eigene Jahresrendite (Januar-Beginn, bisheriges Verhalten).
+   */
+  scheiben?: KrisenScheibe[];
 }
 
 /** Normale Annahmen (nominal) ausserhalb der Krisenjahre */
@@ -103,7 +131,15 @@ export interface JahresRenditen {
   bargeld: number;
   inflation: number;
   /** Historisches Jahr (null = normale Annahmen) */
-  hist: { land: KrisenLand; jahr: number; krise: string } | null;
+  hist: {
+    land: KrisenLand;
+    jahr: number;
+    krise: string;
+    name?: string;
+    kurz?: string;
+    monatVon?: number;
+    monatBis?: number;
+  } | null;
 }
 
 export function historischesJahr(daten: KrisenDaten, land: KrisenLand, jahr: number): HistJahr | null {
@@ -145,27 +181,171 @@ export function jahresRenditen(
   };
 }
 
+interface MonatSlot {
+  land: KrisenLand;
+  jahr: number;
+  krise: string;
+  name?: string;
+  kurz?: string;
+  eigenReal?: number;
+  key: string;
+}
+
+/** Späterer Beginn gewinnt. Bei gleichem Beginn bleibt die Listenreihenfolge (stabil sortiert). */
+function planNachBeginn(plan: readonly KrisenPlanEintrag[]): KrisenPlanEintrag[] {
+  return [...plan].sort((a, b) => a.startJahr - b.startJahr || krisenMonat(a.startMonat) - krisenMonat(b.startMonat));
+}
+
+/**
+ * Monat für Monat, welche Krise gilt. `null` = normale Annahme.
+ * Ein Beginn im Januar füllt zwölf gleiche Monate und rechnet damit wie bisher jahrweise.
+ */
+function monatsPlan(plan: readonly KrisenPlanEintrag[]): Map<number, (MonatSlot | null)[]> {
+  const belegt = new Map<number, (MonatSlot | null)[]>();
+  for (const e of planNachBeginn(plan)) {
+    const m0 = krisenMonat(e.startMonat) - 1;
+    const laenge = e.krise.bis - e.krise.von + 1;
+    if (laenge <= 0) continue;
+    const startAbs = e.startJahr * 12 + m0;
+    for (let i = 0; i < laenge * 12; i++) {
+      const abs = startAbs + i;
+      const jahr = Math.floor(abs / 12);
+      const monat = abs - jahr * 12;
+      let slots = belegt.get(jahr);
+      if (!slots) {
+        slots = Array.from({ length: 12 }, () => null);
+        belegt.set(jahr, slots);
+      }
+      const offset = Math.floor(i / 12);
+      const histJahr = e.krise.von + offset;
+      const real = e.eigen ? eigenReal(e.eigen, offset) : undefined;
+      slots[monat] = {
+        land: e.land,
+        jahr: histJahr,
+        krise: e.krise.id,
+        ...(e.eigen ? { name: e.krise.name, kurz: e.krise.kurz, eigenReal: real } : {}),
+        key: e.eigen ? `e:${e.krise.id}:${offset}` : `${e.land}:${histJahr}:${e.krise.id}`,
+      };
+    }
+  }
+  return belegt;
+}
+
+function zelleAusMonaten(slots: readonly (MonatSlot | null)[]): KrisenKalenderZelle | null {
+  let erste = -1;
+  let letzte = -1;
+  for (let i = 0; i < slots.length; i++) {
+    if (!slots[i]) continue;
+    if (erste < 0) erste = i;
+    letzte = i;
+  }
+  if (erste < 0 || letzte < 0) return null;
+  const ersteSlot = slots[erste];
+  if (!ersteSlot) return null;
+  const rein = slots.every((s) => s?.key === ersteSlot.key);
+  if (rein) {
+    return {
+      land: ersteSlot.land,
+      jahr: ersteSlot.jahr,
+      krise: ersteSlot.krise,
+      ...(ersteSlot.name ? { name: ersteSlot.name, kurz: ersteSlot.kurz } : {}),
+      ...(ersteSlot.eigenReal !== undefined ? { eigenReal: ersteSlot.eigenReal } : {}),
+      monatVon: 1,
+      monatBis: 12,
+    };
+  }
+  const scheiben: KrisenScheibe[] = [];
+  for (let i = 0; i < slots.length; ) {
+    const key = slots[i]?.key ?? '';
+    let j = i + 1;
+    while (j < slots.length && (slots[j]?.key ?? '') === key) j++;
+    const gewicht = (j - i) / 12;
+    const s = slots[i];
+    if (!s) scheiben.push({ gewicht, land: 'CHE', normal: true });
+    else
+      scheiben.push({
+        gewicht,
+        land: s.land,
+        jahr: s.jahr,
+        krise: s.krise,
+        ...(s.name ? { name: s.name, kurz: s.kurz } : {}),
+        ...(s.eigenReal !== undefined ? { eigenReal: s.eigenReal } : {}),
+      });
+    i = j;
+  }
+  const dominierend = scheiben
+    .filter((s) => !s.normal && s.jahr !== undefined && s.krise)
+    .sort((a, b) => b.gewicht - a.gewicht)[0];
+  if (!dominierend || dominierend.jahr === undefined || !dominierend.krise) return null;
+  return {
+    land: dominierend.land,
+    jahr: dominierend.jahr,
+    krise: dominierend.krise,
+    ...(dominierend.name ? { name: dominierend.name, kurz: dominierend.kurz } : {}),
+    monatVon: erste + 1,
+    monatBis: letzte + 1,
+    scheiben,
+  };
+}
+
 /**
  * Kalenderjahr → abgespieltes Jahr. Bei Überschneidung gilt die später beginnende Krise
  * (bei gleichem Beginn der spätere Eintrag der Liste). Jedes Kalenderjahr hat genau einen
- * Wert: Krisen werden nicht addiert.
+ * Wert: Krisen werden nicht addiert. Ein Beginn nach Januar mischt die Monate geometrisch.
  */
 export function krisenKalender(plan: readonly KrisenPlanEintrag[]): Map<number, KrisenKalenderZelle> {
   const m = new Map<number, KrisenKalenderZelle>();
-  const sortiert = [...plan].sort((a, b) => a.startJahr - b.startJahr);
-  for (const e of sortiert) {
-    for (let j = e.krise.von; j <= e.krise.bis; j++) {
-      const offset = j - e.krise.von;
-      const zelle: KrisenKalenderZelle = { land: e.land, jahr: j, krise: e.krise.id };
-      if (e.eigen) {
-        zelle.eigenReal = eigenReal(e.eigen, offset);
-        zelle.name = e.krise.name;
-        zelle.kurz = e.krise.kurz;
-      }
-      m.set(e.startJahr + offset, zelle);
-    }
+  for (const [jahr, slots] of monatsPlan(plan)) {
+    const zelle = zelleAusMonaten(slots);
+    if (zelle) m.set(jahr, zelle);
   }
   return m;
+}
+
+function faktor(x: number, gewicht: number): number {
+  const basis = 1 + x;
+  if (!(basis > 0)) return 1e-12 ** gewicht;
+  return basis ** gewicht;
+}
+
+/** Geometrisches Mittel der Monatsscheiben über ein Kalenderjahr. */
+function gemischteRendite(
+  zelle: KrisenKalenderZelle,
+  basis: BasisAnnahmen,
+  aktienanteil: number,
+  daten: KrisenDaten,
+): JahresRenditen {
+  let ws = 1;
+  let wohn = 1;
+  let bar = 1;
+  let inf = 1;
+  for (const s of zelle.scheiben ?? []) {
+    const h =
+      s.normal || s.jahr === undefined
+        ? null
+        : s.eigenReal !== undefined
+          ? synthetischesJahr({ ...zelle, jahr: s.jahr, eigenReal: s.eigenReal }, basis.inflation)
+          : historischesJahr(daten, s.land, s.jahr);
+    const r = jahresRenditen(basis, aktienanteil, h, null);
+    ws *= faktor(r.wertschriften, s.gewicht);
+    wohn *= faktor(r.wohneigentum, s.gewicht);
+    bar *= faktor(r.bargeld, s.gewicht);
+    inf *= faktor(r.inflation, s.gewicht);
+  }
+  return {
+    wertschriften: ws - 1,
+    wohneigentum: wohn - 1,
+    bargeld: bar - 1,
+    inflation: inf - 1,
+    hist: {
+      land: zelle.land,
+      jahr: zelle.jahr,
+      krise: zelle.krise,
+      ...(zelle.name ? { name: zelle.name, kurz: zelle.kurz } : {}),
+      monatVon: zelle.monatVon,
+      monatBis: zelle.monatBis,
+    },
+  };
 }
 
 export interface KrisenModell extends RenditeModell {
@@ -188,8 +368,20 @@ export function krisenModell(
     let r = cache.get(t);
     if (!r) {
       const k = kal.get(startKalenderjahr + t) ?? null;
+      if (k?.scheiben) {
+        r = gemischteRendite(k, basis, aktienanteil, daten);
+        cache.set(t, r);
+        return r;
+      }
       const info = k
-        ? { land: k.land, jahr: k.jahr, krise: k.krise, ...(k.name ? { name: k.name, kurz: k.kurz } : {}) }
+        ? {
+            land: k.land,
+            jahr: k.jahr,
+            krise: k.krise,
+            ...(k.name ? { name: k.name, kurz: k.kurz } : {}),
+            monatVon: k.monatVon,
+            monatBis: k.monatBis,
+          }
         : null;
       const h = !k
         ? null
@@ -250,11 +442,20 @@ export function datenVollstaendig(krise: Krise, land: KrisenLand, daten: KrisenD
   return true;
 }
 
-/** Start einer gewählten Krise: festes Kalenderjahr, X Jahre nach dem Rücktritt oder Alter einer Person */
+/**
+ * Start einer gewählten Krise: festes Kalenderjahr, X Jahre nach dem Rücktritt oder Alter einer Person.
+ * `monat` ist der Monat im aufgelösten Kalenderjahr (1 = Januar = ganzes Jahr).
+ */
 export type KrisenStart =
-  | { art: 'jahr'; jahr: number }
-  | { art: 'nachRuecktritt'; jahre: number }
-  | { art: 'alter'; alter: number; person: number };
+  | { art: 'jahr'; jahr: number; monat?: number }
+  | { art: 'nachRuecktritt'; jahre: number; monat?: number }
+  | { art: 'alter'; alter: number; person: number; monat?: number };
+
+/** Monat 1–12. Fehlende oder ungültige Werte werden Januar. */
+export function krisenMonat(monat: number | undefined): number {
+  if (monat === undefined || !Number.isFinite(monat)) return 1;
+  return Math.min(12, Math.max(1, Math.round(monat)));
+}
 
 export interface KrisenWahl {
   krise: Krise;
@@ -290,6 +491,7 @@ export function krisenPlan(
     krise: w.krise,
     land: w.land,
     ...(w.eigen ? { eigen: w.eigen } : {}),
+    startMonat: krisenMonat(w.start.monat),
     startJahr:
       w.start.art === 'jahr'
         ? w.start.jahr
@@ -345,10 +547,27 @@ function krisenLog(
 }
 
 /**
+ * Unter so vielen normalen Jahren ist der Ausgleich instabil: schon zwei Krisenjahre mit −50 %
+ * und ein Viertel normales Jahr verlangen eine absurde Normalrendite. Dieselbe Untergrenze
+ * gilt für «Automatisch» und «Individuell».
+ */
+export const AUSGLEICH_MIN_NORMALE_JAHRE = 3;
+/**
+ * Ober- und Untergrenze der ausgeglichenen Nominalrendite. Dieselbe Spanne wie die
+ * Renditeannahme in der Eingabe (`annahmen.renditeNominal`). Darüber wäre der Satz
+ * keine Annahme mehr, die die App sonst zulässt.
+ */
+export const AUSGLEICH_RENDITE_MIN = -0.2;
+export const AUSGLEICH_RENDITE_MAX = 0.3;
+
+export type AusgleichHinweis = 'zuWenig' | 'gedeckelt';
+
+/**
  * Nominale Rendite für normale Jahre, damit der reale geometrische Durchschnitt über `jahre` Jahre
  * (davon `krisenJahre` mit der realen Log-Summe `krisenSumme`) der Annahme entspricht.
  * `inflKorrektur`: Summe log(1 + Teuerung) − log(1 + Annahme) der Jahre mit normaler Rendite, aber
  * historischer Teuerung (Krisenjahre ohne Daten für diesen Kanal).
+ * Unter drei normalen Jahren entfällt der Ausgleich. Ausserhalb −20 %…30 % wird gedeckelt.
  */
 function normalRendite(
   annahme: number,
@@ -357,12 +576,29 @@ function normalRendite(
   krisenJahre: number,
   krisenSumme: number,
   inflKorrektur = 0,
-) {
+): { wert: number; hinweis?: AusgleichHinweis } {
   const normaleJahre = jahre - krisenJahre;
-  if (krisenJahre <= 0 || normaleJahre <= 0) return annahme;
+  if (krisenJahre <= 0 || normaleJahre <= 0) return { wert: annahme };
+  if (normaleJahre < AUSGLEICH_MIN_NORMALE_JAHRE) return { wert: annahme, hinweis: 'zuWenig' };
   const g = Math.log((1 + annahme) / (1 + inflation));
   const logNominal = (jahre * g - krisenSumme + inflKorrektur) / normaleJahre + Math.log(1 + inflation);
-  return Math.exp(logNominal) - 1;
+  const roh = Math.exp(logNominal) - 1;
+  if (!Number.isFinite(roh)) return { wert: annahme, hinweis: 'zuWenig' };
+  if (roh > AUSGLEICH_RENDITE_MAX || roh < AUSGLEICH_RENDITE_MIN)
+    return {
+      wert: Math.min(AUSGLEICH_RENDITE_MAX, Math.max(AUSGLEICH_RENDITE_MIN, roh)),
+      hinweis: 'gedeckelt',
+    };
+  return { wert: roh };
+}
+
+function hinweisZusammen(
+  a: AusgleichHinweis | undefined,
+  b: AusgleichHinweis | undefined,
+): AusgleichHinweis | undefined {
+  if (a === 'zuWenig' || b === 'zuWenig') return 'zuWenig';
+  if (a === 'gedeckelt' || b === 'gedeckelt') return 'gedeckelt';
+  return undefined;
 }
 
 /**
@@ -388,15 +624,10 @@ export function ausgleichZyklus(
   }
   const s = krisenLog(fenster, aktienanteil, daten, basis.inflation);
   return {
-    wertschriften: normalRendite(basis.renditeNominal, basis.inflation, L, s.wsJahre, s.wsSumme, s.wsInflKorrektur),
-    wohneigentum: normalRendite(
-      basis.renditeNominal,
-      basis.inflation,
-      L,
-      s.wohnJahre,
-      s.wohnSumme,
-      s.wohnInflKorrektur,
-    ),
+    wertschriften: normalRendite(basis.renditeNominal, basis.inflation, L, s.wsJahre, s.wsSumme, s.wsInflKorrektur)
+      .wert,
+    wohneigentum: normalRendite(basis.renditeNominal, basis.inflation, L, s.wohnJahre, s.wohnSumme, s.wohnInflKorrektur)
+      .wert,
   };
 }
 
@@ -440,7 +671,7 @@ export function ausgleichErwartet(
       summe.wsJahre / n,
       summe.wsSumme / n,
       summe.wsInflKorrektur / n,
-    ),
+    ).wert,
     wohneigentum: normalRendite(
       basis.renditeNominal,
       basis.inflation,
@@ -448,7 +679,7 @@ export function ausgleichErwartet(
       summe.wohnJahre / n,
       summe.wohnSumme / n,
       summe.wohnInflKorrektur / n,
-    ),
+    ).wert,
   };
 }
 
@@ -461,19 +692,54 @@ export function ausgleichErwartet(
  * Eine eigene Krise hat kein historisches Jahr. Ihre synthetische reale Wertschriftenrendite
  * (`eigenReal`) zählt mit; Hauspreise, Teuerung und Bargeld bleiben die Annahme.
  */
+function addiereLog(ziel: LogSummen, e: LogSummen, gewicht: number) {
+  ziel.wsSumme += e.wsSumme * gewicht;
+  ziel.wsJahre += e.wsJahre * gewicht;
+  ziel.wohnSumme += e.wohnSumme * gewicht;
+  ziel.wohnJahre += e.wohnJahre * gewicht;
+  ziel.wsInflKorrektur += e.wsInflKorrektur * gewicht;
+  ziel.wohnInflKorrektur += e.wohnInflKorrektur * gewicht;
+}
+
+/** Log-Summe einer gemischten Jahreszelle. Normale Monate zählen nicht als Krisenjahre. */
+function scheibenLog(
+  scheiben: readonly KrisenScheibe[],
+  aktienanteil: number,
+  daten: KrisenDaten,
+  inflation: number,
+): LogSummen {
+  const s = leer();
+  for (const sch of scheiben) {
+    if (sch.normal || sch.jahr === undefined) continue;
+    if (sch.eigenReal !== undefined) {
+      if (1 + sch.eigenReal > 0) {
+        s.wsSumme += Math.log(1 + sch.eigenReal) * sch.gewicht;
+        s.wsJahre += sch.gewicht;
+      }
+      continue;
+    }
+    addiereLog(s, krisenLog([{ land: sch.land, jahr: sch.jahr }], aktienanteil, daten, inflation), sch.gewicht);
+  }
+  return s;
+}
+
 export function ausgleichHorizont(
   basis: BasisAnnahmen,
   aktienanteil: number,
   plan: readonly KrisenPlanEintrag[],
   jahre: readonly { jahr: number; gewicht: number }[],
   daten: KrisenDaten,
-): { wertschriften: number; wohneigentum: number } {
+): { wertschriften: number; wohneigentum: number; hinweis?: AusgleichHinweis } {
   const kal = krisenKalender(plan);
   const total = jahre.reduce((s, j) => s + j.gewicht, 0);
   const s = leer();
   for (const j of jahre) {
     const k = kal.get(j.jahr);
     if (!k) continue;
+    if (k.scheiben) {
+      addiereLog(s, scheibenLog(k.scheiben, aktienanteil, daten, basis.inflation), j.gewicht);
+      continue;
+    }
     if (k.eigenReal !== undefined) {
       if (1 + k.eigenReal > 0) {
         s.wsSumme += Math.log(1 + k.eigenReal) * j.gewicht;
@@ -481,24 +747,22 @@ export function ausgleichHorizont(
       }
       continue;
     }
-    const e = krisenLog([k], aktienanteil, daten, basis.inflation);
-    s.wsSumme += e.wsSumme * j.gewicht;
-    s.wsJahre += e.wsJahre * j.gewicht;
-    s.wohnSumme += e.wohnSumme * j.gewicht;
-    s.wohnJahre += e.wohnJahre * j.gewicht;
-    s.wsInflKorrektur += e.wsInflKorrektur * j.gewicht;
-    s.wohnInflKorrektur += e.wohnInflKorrektur * j.gewicht;
+    addiereLog(s, krisenLog([k], aktienanteil, daten, basis.inflation), j.gewicht);
   }
+  const ws = normalRendite(basis.renditeNominal, basis.inflation, total, s.wsJahre, s.wsSumme, s.wsInflKorrektur);
+  const wohn = normalRendite(
+    basis.renditeNominal,
+    basis.inflation,
+    total,
+    s.wohnJahre,
+    s.wohnSumme,
+    s.wohnInflKorrektur,
+  );
+  const hinweis = hinweisZusammen(ws.hinweis, wohn.hinweis);
   return {
-    wertschriften: normalRendite(basis.renditeNominal, basis.inflation, total, s.wsJahre, s.wsSumme, s.wsInflKorrektur),
-    wohneigentum: normalRendite(
-      basis.renditeNominal,
-      basis.inflation,
-      total,
-      s.wohnJahre,
-      s.wohnSumme,
-      s.wohnInflKorrektur,
-    ),
+    wertschriften: ws.wert,
+    wohneigentum: wohn.wert,
+    ...(hinweis ? { hinweis } : {}),
   };
 }
 
@@ -552,7 +816,8 @@ export function ausgleichErwartetHorizont(
     }
   }
   return {
-    wertschriften: normalRendite(basis.renditeNominal, basis.inflation, total, s.wsJahre, s.wsSumme, s.wsInflKorrektur),
+    wertschriften: normalRendite(basis.renditeNominal, basis.inflation, total, s.wsJahre, s.wsSumme, s.wsInflKorrektur)
+      .wert,
     wohneigentum: normalRendite(
       basis.renditeNominal,
       basis.inflation,
@@ -560,7 +825,7 @@ export function ausgleichErwartetHorizont(
       s.wohnJahre,
       s.wohnSumme,
       s.wohnInflKorrektur,
-    ),
+    ).wert,
   };
 }
 
@@ -662,16 +927,35 @@ export interface KrisenUeberlappung {
  * (bei gleichem Beginn der spätere Listeneintrag). Dieselben Jahre wie `krisenKalender`.
  */
 export function krisenUeberlappungen(plan: readonly KrisenPlanEintrag[]): KrisenUeberlappung[] {
-  const belegt = new Map<number, { gilt: string; verdraengt: string[] }>();
-  const sortiert = [...plan].sort((a, b) => a.startJahr - b.startJahr);
-  for (const e of sortiert) {
+  const monate = new Map<number, { name: string; verdraengt: string[] }[]>();
+  for (const e of planNachBeginn(plan)) {
     const name = e.krise.kurz || e.krise.name;
-    for (let j = e.krise.von; j <= e.krise.bis; j++) {
-      const jahr = e.startJahr + (j - e.krise.von);
-      const alt = belegt.get(jahr);
-      if (!alt) belegt.set(jahr, { gilt: name, verdraengt: [] });
-      else belegt.set(jahr, { gilt: name, verdraengt: [...alt.verdraengt, alt.gilt] });
+    const m0 = krisenMonat(e.startMonat) - 1;
+    const laenge = e.krise.bis - e.krise.von + 1;
+    const startAbs = e.startJahr * 12 + m0;
+    for (let i = 0; i < laenge * 12; i++) {
+      const abs = startAbs + i;
+      const jahr = Math.floor(abs / 12);
+      const monat = abs - jahr * 12;
+      let slots = monate.get(jahr);
+      if (!slots) {
+        slots = Array.from({ length: 12 }, () => ({ name: '', verdraengt: [] as string[] }));
+        monate.set(jahr, slots);
+      }
+      const alt = slots[monat];
+      if (!alt || alt.name === '') slots[monat] = { name, verdraengt: [] };
+      else if (alt.name !== name) slots[monat] = { name, verdraengt: [...alt.verdraengt, alt.name] };
     }
+  }
+  const belegt = new Map<number, { gilt: string; verdraengt: string[] }>();
+  for (const [jahr, slots] of monate) {
+    const mitKrise = slots.filter((s) => s.name !== '');
+    if (mitKrise.length === 0) continue;
+    const namen = new Set(mitKrise.map((s) => s.name));
+    const verdraengt = [...new Set(mitKrise.flatMap((s) => s.verdraengt))];
+    if (namen.size < 2 && verdraengt.length === 0) continue;
+    const gilt = mitKrise[mitKrise.length - 1]?.name ?? '';
+    belegt.set(jahr, { gilt, verdraengt });
   }
   const out: KrisenUeberlappung[] = [];
   for (const jahr of [...belegt.keys()].sort((a, b) => a - b)) {
@@ -692,14 +976,15 @@ export function kriseImHorizont(
   krise: Pick<Krise, 'von' | 'bis'>,
   von: number,
   bis: number,
+  startMonat = 1,
 ): boolean {
-  const ende = startJahr + (krise.bis - krise.von);
+  const ende = startJahr + (krise.bis - krise.von) + (krisenMonat(startMonat) > 1 ? 1 : 0);
   return ende >= von && startJahr <= bis;
 }
 
 /** Einträge, von denen kein Jahr im Planungshorizont liegt. */
 export function krisenAusserhalb(plan: readonly KrisenPlanEintrag[], von: number, bis: number): KrisenPlanEintrag[] {
-  return plan.filter((e) => !kriseImHorizont(e.startJahr, e.krise, von, bis));
+  return plan.filter((e) => !kriseImHorizont(e.startJahr, e.krise, von, bis, e.startMonat ?? 1));
 }
 
 /**

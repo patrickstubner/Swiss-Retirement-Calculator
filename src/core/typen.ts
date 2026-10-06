@@ -618,6 +618,12 @@ export interface KrisenAuswahl {
   person: number;
   /** Jahre nach dem Rücktritt (bei 'nachRuecktritt'; 0 = im Rücktrittsjahr) */
   jahreNach: number;
+  /**
+   * Monat des Beginns im aufgelösten Kalenderjahr (1 = Januar).
+   * Januar rechnet das ganze Jahr wie bisher. Ein späterer Monat verteilt die
+   * Jahresrendite geometrisch (Annäherung, Schema 15). Fehlt = Januar.
+   */
+  monat?: number;
   /** Gesetzt bei `id` = `eigen`, sonst null. Fehlt in älteren Speicherständen. */
   eigen?: EigeneKrise | null;
 }
@@ -906,9 +912,26 @@ export interface SimulationsErgebnis {
   /** Erstes Jahr, in dem Wohneigentum für Ausgaben angetastet wird */
   wohneigentumAngetastetJahr: number | null;
   /** Kalenderjahre mit abgespielten historischen Werten (Krisenszenario) */
-  krisenJahre: { jahr: number; land: string; histJahr: number; krise: string; name?: string; kurz?: string }[];
-  /** Nominale Renditen der normalen Jahre nach dem Krisenausgleich (null = kein Ausgleich) */
-  krisenNormal: { wertschriften: number; wohneigentum: number } | null;
+  krisenJahre: {
+    jahr: number;
+    land: string;
+    histJahr: number;
+    krise: string;
+    name?: string;
+    kurz?: string;
+    /** Erster und letzter Krisenmonat in diesem Kalenderjahr (1–12). Fehlt = ganzes Jahr. */
+    monatVon?: number;
+    monatBis?: number;
+  }[];
+  /**
+   * Nominale Renditen der normalen Jahre nach dem Krisenausgleich (null = kein Ausgleich).
+   * `hinweis` wenn der Ausgleich entfällt oder gedeckelt ist (Schema 15).
+   */
+  krisenNormal: {
+    wertschriften: number;
+    wohneigentum: number;
+    hinweis?: 'zuWenig' | 'gedeckelt';
+  } | null;
   personen: PersonInfo[];
   /** Todesfall-Szenario (null = keines aktiv) */
   todesfall?: TodesfallInfo | null;

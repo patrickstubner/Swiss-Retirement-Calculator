@@ -92,7 +92,9 @@ weil `normalisiere` den Modus aus den Rohdaten ableitet statt aus dem Standard (
   erste Krise, Krisenjahre = historische Werte, Durchschnitt über den Planungszeitraum = Annahme (auch mit
   angebrochenem erstem Jahr und am Ende abgeschnittener Krise), Umlauf-Ausgleich weiterhin als Referenz, bei
   «Individuell» kein Ausgleich, ausser der Schalter «Normale Jahre ausgleichen» ist ein (Schema 14, nach der
-  Übernahme der automatischen Krisen).
+  Übernahme der automatischen Krisen). Unter 3 normalen Jahren im Horizont entfällt der Ausgleich (die
+  Normalrendite würde sonst absurd). Liegt sie ausserhalb −20 %…30 % (dieselbe Spanne wie die Renditeannahme),
+  wird sie gedeckelt. Die App weist darauf hin. «Automatisch» und «Individuell» nutzen dieselbe Rechnung.
 
 ### Individuell
 
@@ -100,6 +102,16 @@ Ersetzt die frühere Auswahl «Krise testen» (inklusive Datenreihe CH/USA/JP). 
 Startjahr bis zum Jahr, in dem die jüngste Person das Planungsalter erreicht; ein Beginn bis zu 30 Jahre davor
 bleibt editierbar, damit eine Krise, die vor dem Horizont anfängt und noch hineinreicht, nicht verschoben wird;
 das Alter am Jahresende steht als Hilfe daneben), **im Alter** einer Person oder **X Jahre nach dem Rücktritt**.
+Zusätzlich der **Monat** im aufgelösten Kalenderjahr (Standard Januar, Schema 15). Januar rechnet das ganze
+Jahr wie bisher. Ein späterer Monat ist eine Annäherung: die historischen Daten sind Jahresrenditen, die App
+verteilt sie geometrisch auf die Monate (`(1 + Rendite) ^ Anteil`, Teuerung analog). Der kumulierte
+Gesamtrückgang bleibt erhalten, er verteilt sich auf das Startjahr und das Folgejahr. Am Horizontende zählt
+nur der Bruchteil, der noch im letzten Jahr liegt; der Rest im Folgejahr entfällt. Der Monat beim Alter und
+nach dem Rücktritt ist der Monat in diesem Kalenderjahr, nicht die Monate seit dem Geburtstag oder dem
+Rücktrittsdatum: sonst würde schon «0 Monate» vom Januar abweichen und «Automatisch» nicht mehr treffen.
+Im Diagramm beginnt das Band am gewählten Monat. Fällt der Krisenbeginn in dasselbe Kalenderjahr wie der
+Simulationsstart und dieser liegt nach Januar, skaliert die Simulation die schon gemischte Jahresrendite
+noch einmal mit dem Anteil der simulierten Monate. Das ist eine zweite, gröbere Annäherung; Januar bleibt exakt.
 Liegt kein Jahr der Krise im Horizont, weist die App darauf hin; diese Jahre fliessen nicht in die Rechnung ein.
 Ohne Ausgleich ist die Liste ein Stresstest («was, wenn zusätzlich zu meinen Annahmen diese Krise kommt?»).
 Der Schalter «Normale Jahre ausgleichen (wie Automatisch)» setzt denselben Ausgleich über den Planungshorizont

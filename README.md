@@ -29,7 +29,7 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
 
 ## Funktionsumfang (Version 1.3)
 
-Aktuelle Version: **1.3.1** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [CONTRIBUTING](CONTRIBUTING.md)).
+Aktuelle Version: **1.3.2** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [CONTRIBUTING](CONTRIBUTING.md)).
 
 - **Neutrale Standardwerte:** Alle Beträge sind anfangs leer (0) und frei editierbar – keine Beispielvermögen.
   Gesetzliche Werte (z.B. BVG-Mindestzins) und Annahmen (Standard: 7 % Rendite nominal, 2 % Teuerung; eine Annahme, keine Garantie) sind vorbelegt und anpassbar. Der Schnellmodus rechnet mit denselben Annahmen wie «Detailliert» und zeigt sie sichtbar an.
@@ -271,7 +271,8 @@ Steuermodelle der Zielländer sind Näherungen (bei Ländern ohne Modell wird we
   eigene Liste (hinzufügen, entfernen, höchstens 120) mit allen Krisen inkl. der extremen (Grosse Depression,
   Stagflation 1973–81, Japan ab 1990) oder einer eigenen Annahme (Rückgang, Dauer, Erholung). «Automatische
   Krisen übernehmen» füllt die Liste mit denselben Krisen wie «Automatisch» und gleicht
-  die normalen Jahre aus; der Ausgleich lässt sich abschalten (Stresstest). Beginnt «Automatisch» nach dem
+  die normalen Jahre aus; der Ausgleich lässt sich abschalten (Stresstest). Unter 3 normalen Jahren
+  entfällt der Ausgleich, über 30 % oder unter −20 % wird er begrenzt. Beginnt «Automatisch» nach dem
   Rücktritt, bleibt der Abstand erhalten und die Krisen wandern mit. Beginn im Kalenderjahr (auch kurz
   vor dem Horizont, wenn die Krise noch hineinreicht), im Alter oder X Jahre nach dem Rücktritt, Datenreihe
   CH/USA/JP. Bei Überschneidung gilt die später beginnende Krise. Echte

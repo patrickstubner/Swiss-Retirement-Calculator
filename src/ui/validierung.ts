@@ -66,6 +66,7 @@ export const GRENZEN: Readonly<Record<string, Bereich>> = {
   'krisen.auswahl.*.alter': [0, 130, true],
   'krisen.auswahl.*.person': [0, 1, true],
   'krisen.auswahl.*.jahreNach': [JAHRE_NACH_MIN, JAHRE_NACH_MAX, true],
+  'krisen.auswahl.*.monat': [1, 12, true],
   'krisen.auswahl.*.eigen.rueckgang': [-0.8, -0.05],
   'krisen.auswahl.*.eigen.dauer': [1, 8, true],
   'krisen.auswahl.*.eigen.erholung': [0, 15, true],
