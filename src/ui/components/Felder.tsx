@@ -336,11 +336,18 @@ export function TextFeld({
   hinweis,
   value,
   onChange,
-}: Basis & { value: string; onChange: (v: string) => void }) {
+  maxLength,
+}: Basis & { value: string; onChange: (v: string) => void; maxLength?: number }) {
   const id = useId();
   return (
     <Rahmen id={id} label={label} hinweis={hinweis}>
-      <input id={id} type="text" value={value} onChange={(e) => onChange(e.target.value)} />
+      <input
+        id={id}
+        type="text"
+        value={value}
+        maxLength={maxLength}
+        onChange={(e) => onChange(maxLength ? e.target.value.slice(0, maxLength) : e.target.value)}
+      />
     </Rahmen>
   );
 }

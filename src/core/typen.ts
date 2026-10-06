@@ -585,13 +585,30 @@ export interface TodesfallInfo {
 
 export type KrisenReihe = 'CHE' | 'USA' | 'JPN';
 
-/** Eine gewählte historische Krise */
+/**
+ * Eigene Krise (Stresstest, Schema 13). Keine historischen Daten: der reale Rückgang
+ * des Wertschriftenportfolios wird über `dauer` Jahre gleichmässig verteilt, danach
+ * über `erholung` Jahre real wieder aufgeholt. Teuerung, Bargeld und Hauspreise
+ * bleiben die Annahmen des Haushalts.
+ */
+export interface EigeneKrise {
+  /** Anzeigename, höchstens 40 Zeichen, ohne Steuerzeichen */
+  name: string;
+  /** Realer Rückgang, negativ, z.B. −0.30 */
+  rueckgang: number;
+  /** Jahre des Rückgangs (1–8) */
+  dauer: number;
+  /** Jahre der realen Erholung danach (0–15; 0 = der Stand bleibt unten) */
+  erholung: number;
+}
+
+/** Eine geplante Krise: Katalogeintrag oder eigene Krise (`id` = `eigen`) */
 export interface KrisenAuswahl {
   /** Eindeutige Kennung des Eintrags (für die Anzeige) */
   uid: string;
-  /** Id im Krisenkatalog (src/data/krisen.ts) */
+  /** Id im Krisenkatalog (src/data/krisen.ts) oder `eigen` */
   id: string;
-  /** Abgespielte Datenreihe */
+  /** Abgespielte Datenreihe; bei einer eigenen Krise unbenutzt */
   land: KrisenReihe;
   startArt: 'jahr' | 'alter' | 'nachRuecktritt';
   /** Kalenderjahr des Krisenbeginns (bei 'jahr') */
@@ -601,6 +618,8 @@ export interface KrisenAuswahl {
   person: number;
   /** Jahre nach dem Rücktritt (bei 'nachRuecktritt'; 0 = im Rücktrittsjahr) */
   jahreNach: number;
+  /** Gesetzt bei `id` = `eigen`, sonst null. Fehlt in älteren Speicherständen. */
+  eigen?: EigeneKrise | null;
 }
 
 /** Krisenmodus (Schema 6): keine Krise, automatische Abfolge oder eigene Liste */
@@ -881,7 +900,7 @@ export interface SimulationsErgebnis {
   /** Erstes Jahr, in dem Wohneigentum für Ausgaben angetastet wird */
   wohneigentumAngetastetJahr: number | null;
   /** Kalenderjahre mit abgespielten historischen Werten (Krisenszenario) */
-  krisenJahre: { jahr: number; land: string; histJahr: number; krise: string }[];
+  krisenJahre: { jahr: number; land: string; histJahr: number; krise: string; name?: string; kurz?: string }[];
   /** Nominale Renditen der normalen Jahre nach dem Krisenausgleich (null = kein Ausgleich) */
   krisenNormal: { wertschriften: number; wohneigentum: number } | null;
   personen: PersonInfo[];

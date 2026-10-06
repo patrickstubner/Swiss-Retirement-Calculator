@@ -16,6 +16,7 @@ import {
   ahvRentenzuschlag,
   ahvRenteSkala44,
   ahvTeilrente,
+  ahvVerschiebungKlemmen,
   ahvVorbezugKuerzung,
   ahvWeitesterVorbezugMonate,
   pruefeAhvVerschiebung,
@@ -166,6 +167,17 @@ describe('Aufschub (MB 3.04)', () => {
     expect(ahvBezugFaktor(-12, 1970, 'm', 80000, r)).toBeCloseTo(0.932, 10);
     expect(ahvBezugFaktor(60, 1970, 'm', 80000, r)).toBeCloseTo(1.315, 10);
     expect(ahvBezugFaktor(0, 1970, 'm', 80000, r)).toBe(1);
+  });
+  it('unzulässiger Vorbezug wird auf das höchste zulässige Mass gekürzt', () => {
+    expect(ahvVerschiebungKlemmen(-36, 1965, 'm', r)).toBe(-24);
+    expect(ahvVerschiebungKlemmen(-100, 1965, 'm', r)).toBe(-24);
+    expect(ahvVerschiebungKlemmen(-24, 1965, 'm', r)).toBe(-24);
+    expect(ahvVerschiebungKlemmen(-36, 1965, 'w', r)).toBe(-36);
+    expect(ahvVerschiebungKlemmen(6, 1965, 'm', r)).toBe(0);
+    expect(ahvVerschiebungKlemmen(24, 1965, 'm', r)).toBe(24);
+    expect(ahvVerschiebungKlemmen(Number.NaN, 1965, 'm', r)).toBe(0);
+    expect(pruefeAhvVerschiebung(-36, 1965, 'm', r)).toBe('Vorbezug höchstens 24 Monate.');
+    expect(pruefeAhvVerschiebung(-36, 1965, 'w', r)).toBeNull();
   });
 });
 

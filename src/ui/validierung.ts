@@ -65,6 +65,9 @@ export const GRENZEN: Readonly<Record<string, Bereich>> = {
   'krisen.auswahl.*.alter': [0, 130, true],
   'krisen.auswahl.*.person': [0, 1, true],
   'krisen.auswahl.*.jahreNach': [-30, 60, true],
+  'krisen.auswahl.*.eigen.rueckgang': [-0.8, -0.05],
+  'krisen.auswahl.*.eigen.dauer': [1, 8, true],
+  'krisen.auswahl.*.eigen.erholung': [0, 15, true],
   'steuern.einkommenSatz': [0, 0.5],
   'steuern.vermoegenPromille': [0, 20],
   'steuern.kapitalSatz': [0, 0.3],
@@ -168,6 +171,11 @@ export const GRENZEN: Readonly<Record<string, Bereich>> = {
 const GEBURTSJAHR = 'personen.*.geburtsjahr';
 const VERBOTENE_SCHLUESSEL = new Set(['__proto__', 'constructor', 'prototype']);
 const MAX_TIEFE = 12;
+
+/** Geburtsjahr auf 1900…laufendes Jahr klemmen (dieselbe Grenze wie `begrenze`). */
+export function geburtsjahrKlemmen(x: number): number {
+  return klemme(x, bereichFuer(GEBURTSJAHR));
+}
 
 function bereichFuer(pfad: string): Bereich {
   if (pfad === GEBURTSJAHR) return [1900, JAHR_MAX(), true];

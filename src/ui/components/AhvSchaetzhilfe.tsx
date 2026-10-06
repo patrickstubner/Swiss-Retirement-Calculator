@@ -4,6 +4,7 @@ import type { AhvSchaetzhilfeEingabe, Person } from '../../core/typen';
 import type { Regeln } from '../../rules';
 import { fmtChf } from '../format';
 import { BetragFeld, Schalter, Segmente, ZahlFeld } from './Felder';
+import { personNachJahrgang } from './PersonBasis';
 
 interface Props {
   p: Person;
@@ -60,7 +61,7 @@ export function AhvSchaetzhilfe({ p, partner, verheiratet, regeln, set }: Props)
               max={2015}
               nachkomma={0}
               gruppieren={false}
-              onChange={(v) => set((x) => ({ ...x, geburtsjahr: Math.round(v) }))}
+              onChange={(v) => set((x) => personNachJahrgang(x, { geburtsjahr: Math.round(v) }, regeln.ahv))}
             />
             <Segmente
               label="Geschlecht"
@@ -69,7 +70,7 @@ export function AhvSchaetzhilfe({ p, partner, verheiratet, regeln, set }: Props)
                 { value: 'w', label: 'Frau' },
                 { value: 'm', label: 'Mann' },
               ]}
-              onChange={(v) => set((x) => ({ ...x, geschlecht: v }))}
+              onChange={(v) => set((x) => personNachJahrgang(x, { geschlecht: v }, regeln.ahv))}
             />
           </div>
           <Segmente

@@ -63,6 +63,7 @@ import {
   ahvRentenzuschlag,
   ahvRenteSkala44,
   ahvTeilrente,
+  ahvVerschiebungKlemmen,
   ausMonatIndex,
   inMonaten,
   monatIndex,
@@ -419,11 +420,18 @@ function planePerson(p: Person, regeln: Regeln, stoppMonate: number, startIdx: n
       );
   }
 
-  let verschiebung = p.ahv.bezugVerschiebungMonate;
-  const fehler = pruefeAhvVerschiebung(verschiebung, p.geburtsjahr, p.geschlecht, regeln.ahv);
-  if (fehler) {
-    hinweise.push(`AHV: ${fehler} Es wird mit ordentlichem Bezug gerechnet.`);
-    verschiebung = 0;
+  const verschiebungRoh = p.ahv.bezugVerschiebungMonate;
+  const verschiebung = ahvVerschiebungKlemmen(verschiebungRoh, p.geburtsjahr, p.geschlecht, regeln.ahv);
+  const verschiebungGanz = Number.isFinite(verschiebungRoh) ? Math.round(verschiebungRoh) : 0;
+  if (verschiebung !== verschiebungGanz) {
+    const fehler = pruefeAhvVerschiebung(verschiebungGanz, p.geburtsjahr, p.geschlecht, regeln.ahv);
+    if (verschiebungGanz < 0 && verschiebung < 0) {
+      hinweise.push(
+        `AHV: ${fehler ?? 'Vorbezug zu weit.'} Gerechnet wird mit dem höchsten zulässigen Vorbezug (${-verschiebung} Monate).`,
+      );
+    } else {
+      hinweise.push(`AHV: ${fehler ?? 'Unzulässiger Bezug.'} Es wird mit ordentlichem Bezug gerechnet.`);
+    }
   }
   const mdje = p.ahv.modus === 'skala44' || p.ahv.mdje > 0 ? p.ahv.mdje : ahvMdjeAusRente(p.ahv.renteMonat, regeln.ahv);
   const ahvBasisMonat =
@@ -788,7 +796,8 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
       opt.start.jahr,
     );
   }
-  const krisenJahre: { jahr: number; land: string; histJahr: number; krise: string }[] = [];
+  const krisenJahre: { jahr: number; land: string; histJahr: number; krise: string; name?: string; kurz?: string }[] =
+    [];
   // Wohnkosten (Schema 7): separat gerechnet oder in den Ausgaben enthalten (Standard, bisherige Rechnung)
   const wohnen = h.wohnen;
   const separat = wohnen?.separat === true;
@@ -842,7 +851,15 @@ export function simuliere(h: Haushalt, regeln: Regeln, opt: SimOptionen): Simula
     const rWohn = modell.wohneigentum ? real(modell.wohneigentum(t) - a.kosten) : rWert;
     const rBar = real(modell.bargeld ? modell.bargeld(t) : a.renditeBargeld);
     const hist = modell.historisch?.(t) ?? null;
-    if (hist) krisenJahre.push({ jahr, land: hist.land, histJahr: hist.jahr, krise: hist.krise });
+    if (hist) {
+      krisenJahre.push({
+        jahr,
+        land: hist.land,
+        histJahr: hist.jahr,
+        krise: hist.krise,
+        ...(hist.name ? { name: hist.name, kurz: hist.kurz ?? hist.name } : {}),
+      });
+    }
     const ersterMonat = jahr === opt.start.jahr ? opt.start.monat : 1;
     const nMonate = 13 - ersterMonat;
     const wachstum = (r: number) => (1 + r) ** (nMonate / 12);

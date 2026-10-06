@@ -21,15 +21,17 @@ export function krisenAbschnitte(e: SimulationsErgebnis, refIdx: number): Krisen
     const letzte = out[out.length - 1];
     const alter = alterIn.get(k.jahr);
     if (alter === undefined) continue;
-    if (letzte && letzte.krise === k.krise && letzte.jahrBis === k.jahr - 1 && k.histJahr !== kriseNach(k.krise)?.von) {
+    const krise = kriseNach(k.krise);
+    const neuerBeginn = krise !== undefined && k.histJahr === krise.von;
+    if (letzte && letzte.krise === k.krise && letzte.jahrBis === k.jahr - 1 && !neuerBeginn) {
       letzte.jahrBis = k.jahr;
       letzte.bis = alter;
     } else {
-      const krise = kriseNach(k.krise);
+      const name = k.name ?? krise?.name ?? 'Krise';
       out.push({
         krise: k.krise,
-        name: krise?.name ?? k.krise,
-        label: krise?.kurz ?? k.krise,
+        name,
+        label: k.kurz ?? krise?.kurz ?? name,
         jahrVon: k.jahr,
         jahrBis: k.jahr,
         von: alter - 1,

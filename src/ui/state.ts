@@ -7,8 +7,9 @@
  *   nie an einen Server gesendet. Ein geteilter Link hat Vorrang vor dem localStorage.
  */
 import LZString from 'lz-string';
-import { ahvRenteSkala44, ahvTeilrente } from '../core/ahv';
+import { ahvRenteSkala44, ahvTeilrente, ahvVerschiebungKlemmen } from '../core/ahv';
 import { normalisiereEntnahme } from '../core/entnahme';
+import { bereinigeEigeneKrise, bereinigeKrisenUid, EIGENE_KRISE_ID, MAX_GEPLANTE_KRISEN } from '../core/krisen';
 import { detailwerte, SCHAETZ_FELDER } from '../core/schaetzwerte';
 import type {
   Ausgaben,
@@ -44,7 +45,7 @@ import { kantonNach } from '../data/kantone';
 import { kriseNach } from '../data/krisen';
 import { wegzugsLand } from '../data/laender';
 import type { Regeln } from '../rules';
-import { begrenze, MAX_HASH_LAENGE, MAX_JSON_LAENGE } from './validierung';
+import { begrenze, geburtsjahrKlemmen, MAX_HASH_LAENGE, MAX_JSON_LAENGE } from './validierung';
 
 /**
  * Version des Haushalt-Schemas (URL-Fragment und localStorage).
@@ -76,10 +77,13 @@ import { begrenze, MAX_HASH_LAENGE, MAX_JSON_LAENGE } from './validierung';
  * 12: Entnahmestrategie (`entnahme`). Fehlt sie, gilt «Dynamisch gestaffelt» (Standard). Das ändert die Entnahme
  *    aus dem freien Vermögen gegenüber der reinen Ausgaben-Lücke; «Statisch (Ausgaben)» stellt das frühere
  *    Verhalten wieder her.
+ * 13: Geplante Krisen im Modus «Individuell» (`krisen.auswahl`, optional `eigen` für eine eigene Krise).
+ *    Fehlt die Liste, bleibt sie leer (Modus unverändert, keine neue Standardkrise). Einträge ohne `eigen`
+ *    sind Katalogkrisen. Höchstens 8 Einträge. Unbekannte Katalog-Ids werden verworfen.
  * 8: Darstellung der Ergebnisse (`darstellung`: 'real' = heutige Kaufkraft, 'nominal' = Franken des
  *    jeweiligen Jahres). Ältere Versionen und ungültige Werte erhalten 'real'; die Rechnung ändert sich nicht.
  */
-export const SCHEMA_VERSION = 12;
+export const SCHEMA_VERSION = 13;
 const HASH_PREFIX = '#s=';
 /** Einziger Schlüssel mit Daten (ganzer Zustand als JSON). */
 export const STORAGE_KEY = 'ruhestandsrechner:v1';
@@ -235,8 +239,15 @@ function wohneigentum(w: Person['wohneigentum']): Person['wohneigentum'] {
 
 /** Macht einen (evtl. fremden oder alten) Zustand robust nutzbar. */
 function personMitManuell(roh: unknown, regeln: Regeln, i: number): Person {
-  const p = person(roh, regeln, i);
-  return { ...p, manuell: manuellAus(roh, p, regeln) };
+  const rohPerson = person(roh, regeln, i);
+  const geburtsjahr = geburtsjahrKlemmen(rohPerson.geburtsjahr);
+  const p = geburtsjahr === rohPerson.geburtsjahr ? rohPerson : { ...rohPerson, geburtsjahr };
+  const bezug = ahvVerschiebungKlemmen(p.ahv.bezugVerschiebungMonate, p.geburtsjahr, p.geschlecht, regeln.ahv);
+  return {
+    ...p,
+    ahv: bezug === p.ahv.bezugVerschiebungMonate ? p.ahv : { ...p.ahv, bezugVerschiebungMonate: bezug },
+    manuell: manuellAus(roh, p, regeln),
+  };
 }
 
 const ganzzahl = (x: number, min: number, max: number) => Math.min(max, Math.max(min, Math.round(x)));
@@ -281,23 +292,34 @@ const KRISEN_REIHEN: readonly KrisenReihe[] = ['CHE', 'USA', 'JPN'];
 
 const KRISEN_MODI: readonly KrisenModus[] = ['keine', 'automatisch', 'individuell'];
 
-/** Krisenszenarien (Schema 5/6): unbekannte Krisen und Reihen werden verworfen. */
+/** Krisenszenarien (Schema 5/6/13): unbekannte Krisen und Reihen werden verworfen, eigene Krisen bereinigt. */
 function normalisiereKrisen(k: KrisenEinstellungen, roh: unknown, personen: number): KrisenEinstellungen {
   const r = istObj(roh) ? roh : {};
-  const auswahl = (Array.isArray(r.auswahl) ? r.auswahl : [])
-    .slice(0, 5)
-    .map((x) => mische(neueKrisenAuswahl('', 'CHE', 2030), x))
-    .filter((x) => kriseNach(x.id) !== undefined)
-    .map((x, i) => ({
-      ...x,
-      uid: x.uid || `kr-${i}`,
-      land: KRISEN_REIHEN.find((l) => l === x.land) ?? (kriseNach(x.id)?.land as KrisenReihe),
-      startArt: x.startArt === 'jahr' || x.startArt === 'alter' ? x.startArt : ('nachRuecktritt' as const),
-      jahr: ganzzahl(x.jahr, 1900, 2200),
-      alter: ganzzahl(x.alter, 0, 130),
-      person: ganzzahl(x.person, 0, Math.max(0, personen - 1)),
-      jahreNach: ganzzahl(x.jahreNach, -30, 60),
-    }));
+  const rohListe = (Array.isArray(r.auswahl) ? r.auswahl : []).slice(0, 32);
+  const auswahl = rohListe
+    .flatMap((rohEintrag) => {
+      const x = mische(neueKrisenAuswahl('', 'CHE', 2030), rohEintrag);
+      if (x.id !== EIGENE_KRISE_ID && kriseNach(x.id) === undefined) return [];
+      const katalog = x.id !== EIGENE_KRISE_ID;
+      const eigenRoh = istObj(rohEintrag) ? rohEintrag.eigen : undefined;
+      return [
+        {
+          ...x,
+          id: katalog ? x.id : EIGENE_KRISE_ID,
+          land: katalog
+            ? (KRISEN_REIHEN.find((l) => l === x.land) ?? (kriseNach(x.id)?.land as KrisenReihe))
+            : ('CHE' as const),
+          startArt: x.startArt === 'jahr' || x.startArt === 'alter' ? x.startArt : ('nachRuecktritt' as const),
+          jahr: ganzzahl(x.jahr, 1900, 2200),
+          alter: ganzzahl(x.alter, 0, 130),
+          person: ganzzahl(x.person, 0, Math.max(0, personen - 1)),
+          jahreNach: ganzzahl(x.jahreNach, -30, 60),
+          eigen: katalog ? null : bereinigeEigeneKrise(eigenRoh),
+        },
+      ];
+    })
+    .slice(0, MAX_GEPLANTE_KRISEN)
+    .map((x, i) => ({ ...x, uid: bereinigeKrisenUid(x.uid, i) }));
   // Schema 5 kannte nur «aktiv» (gewählte Krisen einbeziehen)
   const modus: KrisenModus =
     KRISEN_MODI.find((m) => m === r.modus) ?? (r.aktiv === true && auswahl.length > 0 ? 'individuell' : 'keine');

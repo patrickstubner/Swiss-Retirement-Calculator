@@ -309,7 +309,7 @@ describe('Speichern der Versionen (Speicher-Version 2)', () => {
   });
 
   it('Haushalt-Schema 12 gilt für Version A und B (Entnahmestrategie)', () => {
-    expect(SCHEMA_VERSION).toBe(12);
+    expect(SCHEMA_VERSION).toBeGreaterThanOrEqual(13);
   });
 });
 

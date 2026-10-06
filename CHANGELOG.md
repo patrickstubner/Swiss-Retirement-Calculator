@@ -3,6 +3,15 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.3.0] - 2026-10-06
+
+### Geändert
+- Krisenmodus «Individuell»: geplante Krisen lassen sich hinzufügen, entfernen und bearbeiten. Pro Eintrag eine historische Krise aus dem Katalog (oder eine eigene Annahme mit Rückgang, Dauer und Erholung) und ein Startjahr im Planungshorizont. Das Alter am Jahresende wird als Hilfe angezeigt. Überschneidungen werden nicht doppelt gezählt (späterer Beginn gilt). Höchstens 8 Einträge. Die Bänder im Vermögensverlauf tragen den Namen der gewählten Krise.
+- Kennzahlen der Katalogkrisen (realer Aktienrückgang, Dauer bis zum Tiefpunkt, Erholung, Teuerung) werden aus den bestehenden Reihen gerechnet (JST Macrohistory R6, Schweiz ab 2021 SNB und BFS). Eine eigene Krise ist eine Modellannahme, keine historische Zahl.
+- Schema 13. Ein gespeicherter Stand ohne Krisenliste bleibt leer. Einträge ohne `eigen` sind Katalogkrisen.
+- AHV-Vorbezug: Ein unzulässiger Vorbezug wird auf den höchsten zulässigen Wert gekürzt (Mann Jahrgang 1965: −36 Monate wird −24), statt auf den ordentlichen Bezug zurückzufallen. Gilt beim Laden, in der Simulation und beim Wechsel von Geschlecht oder Jahrgang. Frauen der Übergangsgeneration behalten einen zulässigen Vorbezug von −36 Monaten.
+- AHV-Bezug: Der doppelte Hinweis am Zahlenfeld der Monate entfällt. Die Beschriftung der Entnahme-Töpfe ist auf 40 Zeichen begrenzt.
+
 ## [1.2.2] - 2026-10-06
 
 ### Geändert
