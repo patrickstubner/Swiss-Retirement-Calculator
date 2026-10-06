@@ -29,6 +29,13 @@ export interface SolverErgebnis {
   sofort: boolean;
   ergebnis: SimulationsErgebnis | null;
   simulationen: number;
+  /**
+   * Ausgleich der gefundenen Rechnung (oder, wenn keine gefunden wurde, eines geprüften Alters).
+   * Fehlt, wenn der Ausgleich nirgends entfällt oder gedeckelt ist.
+   */
+  ausgleichHinweis?: 'zuWenig' | 'gedeckelt';
+  /** Ein früheres geprüftes Alter war begrenzt, die gefundene Rechnung selbst nicht. */
+  ausgleichFrueher?: boolean;
 }
 
 export function fruehestesRuecktrittsalter(h: Haushalt, regeln: Regeln, opt: SolverOptionen): SolverErgebnis {
@@ -38,6 +45,13 @@ export function fruehestesRuecktrittsalter(h: Haushalt, regeln: Regeln, opt: Sol
   const aktuellM = Math.max(0, monatIndex(opt.start) - refGeb);
   const maxM = Math.max(aktuellM, opt.maxAlter * 12);
   let simulationen = 0;
+  let probeHinweis: 'zuWenig' | 'gedeckelt' | undefined;
+
+  const merke = (e: SimulationsErgebnis) => {
+    const h = e.krisenNormal?.hinweis;
+    if (!h) return;
+    if (h === 'zuWenig' || probeHinweis !== 'zuWenig') probeHinweis = h;
+  };
 
   const stoppFuer = (a: number): number[] =>
     h.personen.map((p, i) => {
@@ -47,17 +61,24 @@ export function fruehestesRuecktrittsalter(h: Haushalt, regeln: Regeln, opt: Sol
     });
   const teste = (a: number): SimulationsErgebnis => {
     simulationen++;
-    return simuliere(h, regeln, { ...opt, stoppAlterMonate: stoppFuer(a) });
+    const e = simuliere(h, regeln, { ...opt, stoppAlterMonate: stoppFuer(a) });
+    merke(e);
+    return e;
   };
 
-  const treffer = (a: number, e: SimulationsErgebnis): SolverErgebnis => ({
-    gefunden: true,
-    alterMonate: a,
-    stoppAlterMonate: stoppFuer(a),
-    sofort: a === aktuellM,
-    ergebnis: e,
-    simulationen,
-  });
+  const treffer = (a: number, e: SimulationsErgebnis): SolverErgebnis => {
+    const eigen = e.krisenNormal?.hinweis;
+    return {
+      gefunden: true,
+      alterMonate: a,
+      stoppAlterMonate: stoppFuer(a),
+      sofort: a === aktuellM,
+      ergebnis: e,
+      simulationen,
+      ...(eigen ? { ausgleichHinweis: eigen } : {}),
+      ...(probeHinweis && probeHinweis !== eigen ? { ausgleichFrueher: true } : {}),
+    };
+  };
 
   const sofort = teste(aktuellM);
   if (sofort.erfolg) return treffer(aktuellM, sofort);
@@ -74,5 +95,13 @@ export function fruehestesRuecktrittsalter(h: Haushalt, regeln: Regeln, opt: Sol
     }
     vorher = a;
   }
-  return { gefunden: false, alterMonate: null, stoppAlterMonate: null, sofort: false, ergebnis: null, simulationen };
+  return {
+    gefunden: false,
+    alterMonate: null,
+    stoppAlterMonate: null,
+    sofort: false,
+    ergebnis: null,
+    simulationen,
+    ...(probeHinweis ? { ausgleichHinweis: probeHinweis } : {}),
+  };
 }

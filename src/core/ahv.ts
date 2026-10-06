@@ -208,6 +208,20 @@ export function ahvVerschiebungKlemmen(
 }
 
 /**
+ * Hinweis nur nach einer Nutzeränderung von Jahrgang oder Geschlecht.
+ * Beim Laden eines Haushalts (Link, Version, Speicher) bleibt er aus, auch wenn der Stand wechselt.
+ */
+export function kuerzungNachNutzer(
+  nutzerAktion: boolean,
+  vorher: { jahr: number; geschlecht: string; verschiebung: number },
+  nachher: { jahr: number; geschlecht: string; verschiebung: number },
+): string | null {
+  if (!nutzerAktion) return null;
+  if (vorher.jahr === nachher.jahr && vorher.geschlecht === nachher.geschlecht) return null;
+  return vorbezugKuerzHinweis(vorher.verschiebung, nachher.verschiebung);
+}
+
+/**
  * Hinweis, wenn ein zu weiter Vorbezug auf das zulässige Maximum gekürzt wird (K-05).
  * `nachher` ist der geklemmte Wert, weiterhin negativ.
  */

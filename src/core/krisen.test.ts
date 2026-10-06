@@ -33,6 +33,7 @@ import {
 } from './krisen';
 import { monteCarlo, perzentil, vollstaendigeJahre, wiederkehrendeKrisenPfad, zufall } from './montecarlo';
 import { simuliere } from './simulation';
+import { fruehestesRuecktrittsalter } from './solver';
 import type { Haushalt } from './typen';
 
 const regeln = ladeRegeln(2026);
@@ -295,6 +296,15 @@ describe('Geplante Krisen (Modus Individuell)', () => {
     expect(kal.has(2044)).toBe(false);
     const ueber = krisenUeberlappungen(plan);
     expect(ueber).toEqual([{ jahrVon: 2041, jahrBis: 2042, gilt: 'Finanzkrise', verdraengt: 'Dotcom' }]);
+    const kuerzer = krisenUeberlappungen([
+      { krise: finanz, land: 'CHE', startJahr: 2040, startMonat: 7 },
+      { krise: k('covid2020'), land: 'CHE', startJahr: 2041, startMonat: 4 },
+    ]);
+    expect(kuerzer).toEqual([
+      { jahrVon: 2041, jahrBis: 2041, gilt: 'Finanzkrise bis März, danach Covid', verdraengt: '' },
+      { jahrVon: 2042, jahrBis: 2042, gilt: 'Covid bis März, danach Finanzkrise', verdraengt: '' },
+    ]);
+    expect(kuerzer.every((u) => u.gilt !== u.verdraengt)).toBe(true);
     const m = krisenModell(basis, 1, plan, KRISEN_DATEN, 2040);
     expect(m.renditeNominal(1)).toBeCloseTo(KRISEN_DATEN.CHE.get(2007)?.aktien ?? 0, 6);
     expect(m.renditeNominal(1)).not.toBeCloseTo(
@@ -527,5 +537,96 @@ describe('Ausgleich bei wenig normalen Jahren', () => {
     // 2027–2028 Krise, drei normale Jahre: die ungedeckelte Rendite läge über 30 %
     expect(n.hinweis).toBe('gedeckelt');
     expect(n.wertschriften).toBe(AUSGLEICH_RENDITE_MAX);
+  });
+});
+
+describe('Laufzeit bei vielen Krisen', () => {
+  it('120 überlappende Krisen bleiben unter 5 ms pro Simulation', () => {
+    const lang = k('japan1990');
+    const basisHaushalt = haushalt();
+    const person0 = basisHaushalt.personen[0];
+    if (!person0) throw new Error('Person');
+    const h = {
+      ...basisHaushalt,
+      personen: [{ ...person0, geburtsjahr: 1980, name: '' }],
+      planungsalter: 95,
+      krisen: {
+        ...basisHaushalt.krisen,
+        modus: 'individuell' as const,
+        ausgleich: true,
+        auswahl: Array.from({ length: 120 }, (_, i) => ({
+          uid: `k${i}`,
+          id: lang.id,
+          land: 'CHE' as const,
+          startArt: 'jahr' as const,
+          jahr: 2010 + i,
+          alter: 70,
+          person: 0,
+          jahreNach: 0,
+          monat: 1,
+          eigen: null,
+        })),
+      },
+    };
+    const messe = (monat: number) => {
+      const hh = {
+        ...h,
+        krisen: {
+          ...h.krisen,
+          auswahl: h.krisen.auswahl.map((a, i) => ({ ...a, monat: monat === 1 ? 1 : i % 2 === 0 ? 1 : 7 })),
+        },
+      };
+      const opt = { start, krisen: krisenOptionen(hh) };
+      const erste = simuliere(hh, regeln, opt);
+      const proben: number[] = [];
+      let letzte = erste;
+      for (let i = 0; i < 5; i++) {
+        const t0 = performance.now();
+        letzte = simuliere(hh, regeln, opt);
+        proben.push(performance.now() - t0);
+      }
+      proben.sort((a, b) => a - b);
+      const ms = proben[2] ?? 0;
+      expect(letzte.endVermoegen).toBe(erste.endVermoegen);
+      expect(ms).toBeLessThan(5);
+    };
+    messe(1);
+    messe(7);
+  });
+
+  it('das Suchergebnis nennt den Ausgleichshinweis der gefundenen Rechnung', () => {
+    const h = haushalt();
+    const person0 = h.personen[0];
+    if (!person0) throw new Error('Person');
+    h.personen = [{ ...person0, geburtsjahr: 1980, geburtsmonat: 1, name: '' }];
+    h.planungsalter = 71;
+    h.krisen = {
+      ...h.krisen,
+      modus: 'individuell',
+      ausgleich: true,
+      auswahl: [
+        {
+          uid: 'a',
+          id: 'oelkrise1973',
+          land: 'CHE',
+          startArt: 'jahr',
+          jahr: 2049,
+          alter: 70,
+          person: 0,
+          jahreNach: 0,
+          monat: 1,
+          eigen: null,
+        },
+      ],
+    };
+    const s = fruehestesRuecktrittsalter(h, regeln, {
+      start: { jahr: 2049, monat: 1 },
+      modus: 'gemeinsam',
+      person: 0,
+      maxAlter: 70,
+      krisen: krisenOptionen(h),
+    });
+    expect(s.ergebnis?.krisenNormal?.hinweis).toBe('zuWenig');
+    expect(s.ausgleichHinweis).toBe('zuWenig');
   });
 });

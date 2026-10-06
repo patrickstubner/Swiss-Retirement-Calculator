@@ -19,7 +19,7 @@ import { FlussKarte, MarkerTabelle } from '../components/Fluesse';
 import { JahresUebersicht } from '../components/JahresUebersicht';
 import { KantoneKarte } from '../components/Kantone';
 import { Karte } from '../components/Karte';
-import { KrisenKarte, MonteCarloKarte } from '../components/Krisen';
+import { ausgleichHinweisText, KrisenKarte, MonteCarloKarte } from '../components/Krisen';
 import { StaffelungKarte } from '../components/Staffelung';
 import { TodesfallKarte } from '../components/Todesfall';
 import { UmkehrKarte } from '../components/Umkehr';
@@ -192,6 +192,13 @@ export function Ergebnis({ h, setH, berechnung, heute, suchModus, setSuchModus, 
         ) : (
           <p className="gross gross--negativ">Nicht bis 70</p>
         )}
+        {solver?.ausgleichHinweis ? <p className="klein">{ausgleichHinweisText(solver.ausgleichHinweis)}</p> : null}
+        {solver?.ausgleichFrueher ? (
+          <p className="klein">
+            Bei einem früheren geprüften Rücktrittsalter entfällt der Ausgleich oder er ist begrenzt. Das kann das
+            gefundene Alter verschieben.
+          </p>
+        ) : null}
         {!solver?.gefunden ? (
           <p>
             Selbst mit Erwerbsaufgabe mit 70 reicht das Vermögen mit diesen Annahmen nicht bis zum Planungsalter{' '}
