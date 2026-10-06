@@ -25,6 +25,14 @@ export const MAX_KRISEN_ROHDATEN = MAX_GEPLANTE_KRISEN * 2;
  * Ein früherer Beginn zählt mit, sobald ein Krisenjahr im Horizont liegt.
  */
 export const KRISEN_START_VORLAUF = 30;
+/**
+ * Abstand «Jahre nach dem Rücktritt» eines Listeneintrags.
+ * Die erste automatische Krise liegt zwischen −30 und 60 Jahren, die Folge reicht
+ * danach 200 Jahre (Versatz 0…200). Die Übernahme speichert diesen Abstand. Eine
+ * engere Grenze würde ihn beim Speichern klemmen, die Krisen würden nicht mehr mitwandern.
+ */
+export const JAHRE_NACH_MIN = -30;
+export const JAHRE_NACH_MAX = 260;
 export const EIGENE_NAME_MAX = 40;
 
 const EIGEN_RUECKGANG: readonly [number, number] = [-0.8, -0.05];
@@ -450,6 +458,8 @@ export function ausgleichErwartet(
  * (inklusive der Krisenjahre, die in diesen Zeitraum fallen, abgeschnitten am Horizontende) genau
  * der Annahme entspricht – für Wertschriften und Wohneigentum getrennt. `jahre` = Kalenderjahre mit
  * Gewicht (erstes Jahr: Anteil der simulierten Monate).
+ * Eine eigene Krise hat kein historisches Jahr. Ihre synthetische reale Wertschriftenrendite
+ * (`eigenReal`) zählt mit; Hauspreise, Teuerung und Bargeld bleiben die Annahme.
  */
 export function ausgleichHorizont(
   basis: BasisAnnahmen,
@@ -464,6 +474,13 @@ export function ausgleichHorizont(
   for (const j of jahre) {
     const k = kal.get(j.jahr);
     if (!k) continue;
+    if (k.eigenReal !== undefined) {
+      if (1 + k.eigenReal > 0) {
+        s.wsSumme += Math.log(1 + k.eigenReal) * j.gewicht;
+        s.wsJahre += j.gewicht;
+      }
+      continue;
+    }
     const e = krisenLog([k], aktienanteil, daten, basis.inflation);
     s.wsSumme += e.wsSumme * j.gewicht;
     s.wsJahre += e.wsJahre * j.gewicht;

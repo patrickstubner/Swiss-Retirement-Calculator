@@ -8,6 +8,8 @@ import {
   datenVollstaendig,
   EIGENE_KRISE_ID,
   filterKrisenName,
+  JAHRE_NACH_MAX,
+  JAHRE_NACH_MIN,
   KRISEN_START_VORLAUF,
   type KrisenLand,
   type KrisenPlanEintrag,
@@ -314,6 +316,12 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
             <p className="klein" role="status">
               Die Liste ist leer. «Automatische Krisen übernehmen» füllt sie mit denselben Krisenarten und Startjahren,
               die der Modus Automatisch für diesen Haushalt und diesen Planungshorizont rechnen würde.
+            </p>
+          ) : null}
+          {k.autoStartArt === 'nachRuecktritt' ? (
+            <p className="klein">
+              Automatisch beginnt nach dem Rücktritt. Die Übernahme behält den Abstand, damit die Krisen mit dem
+              Rücktritt mitwandern.
             </p>
           ) : null}
           <button
@@ -650,8 +658,8 @@ function GeplanteKrise({
           label="Jahre nach dem Rücktritt"
           hinweis={`0 = im Jahr des Rücktritts von ${erwName ?? 'der erwerbstätigen Person'}${startJahr ? ` (${startJahr})` : ''}.`}
           value={a.jahreNach}
-          min={-30}
-          max={60}
+          min={JAHRE_NACH_MIN}
+          max={JAHRE_NACH_MAX}
           nachkomma={0}
           einheit="Jahre"
           onChange={(j) => setze((x) => ({ ...x, jahreNach: Math.round(j) }))}

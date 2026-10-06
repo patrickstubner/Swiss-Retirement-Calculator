@@ -37,9 +37,12 @@ export function GeburtFelder({ p, set, heute, regeln }: Props & { regeln: Regeln
   const ahv = regeln.ahv;
   const [kuerzung, setKuerzung] = useState<string | null>(null);
   const setzeJahrgang = (patch: Partial<Pick<Person, 'geschlecht' | 'geburtsjahr'>>) => {
-    const n = personNachJahrgang(p, patch, ahv);
-    setKuerzung(vorbezugKuerzHinweis(p.ahv.bezugVerschiebungMonate, n.ahv.bezugVerschiebungMonate));
-    set(() => n);
+    set((x) => {
+      const n = personNachJahrgang(x, patch, ahv);
+      const text = vorbezugKuerzHinweis(x.ahv.bezugVerschiebungMonate, n.ahv.bezugVerschiebungMonate);
+      queueMicrotask(() => setKuerzung(text));
+      return n;
+    });
   };
   return (
     <>

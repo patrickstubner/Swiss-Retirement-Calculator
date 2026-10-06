@@ -23,6 +23,8 @@ import { dekodiere, kodiere } from '../ui/state';
 import {
   ausgleichErwartet,
   ausgleichErwartetHorizont,
+  JAHRE_NACH_MAX,
+  JAHRE_NACH_MIN,
   jahresRenditen,
   krisenModell,
   krisenPlan,
@@ -30,6 +32,7 @@ import {
 } from './krisen';
 import { wiederkehrendeKrisenPfad, zufall } from './montecarlo';
 import { referenzPerson, simuliere } from './simulation';
+import { fruehestesRuecktrittsalter } from './solver';
 import type { Haushalt, KrisenEinstellungen } from './typen';
 import { geburtIndex, stoppAlterMonate } from './zeitpunkt';
 
@@ -360,11 +363,27 @@ describe('Automatische Krisen übernehmen', () => {
     ]);
   });
 
-  it('«nach dem Rücktritt» wird zum Kalenderjahr des aktuellen Rücktritts', () => {
+  it('«nach dem Rücktritt» bleibt ein Abstand und wandert mit', () => {
     const h = haushalt({ autoStartArt: 'nachRuecktritt', autoJahreNach: 2 });
     const ind = nachUebernahme(h);
-    expect(ind.krisen.auswahl[0]).toMatchObject({ id: 'oelkrise1973', jahr: 2032, startArt: 'jahr' });
+    expect(ind.krisen.auswahl[0]).toMatchObject({
+      id: 'oelkrise1973',
+      jahr: 2032,
+      startArt: 'nachRuecktritt',
+      jahreNach: 2,
+    });
+    expect(ind.krisen.auswahl[1]).toMatchObject({ startArt: 'nachRuecktritt', jahreNach: 16 });
+    for (const a of ind.krisen.auswahl) {
+      expect(a.jahreNach).toBeGreaterThanOrEqual(JAHRE_NACH_MIN);
+      expect(a.jahreNach).toBeLessThanOrEqual(JAHRE_NACH_MAX);
+    }
     erwarteGleich(h, ind);
+    const geladen = dekodiere(kodiere(ind), regeln);
+    if (!geladen) throw new Error('Dekodieren fehlgeschlagen');
+    expect(geladen.krisen.auswahl.map((a) => [a.id, a.jahreNach, a.startArt])).toEqual(
+      ind.krisen.auswahl.map((a) => [a.id, a.jahreNach, a.startArt]),
+    );
+    erwarteGleich(h, geladen);
   });
 
   it('angebrochenes erstes Jahr bleibt gleich', () => {
@@ -418,5 +437,176 @@ describe('Automatische Krisen übernehmen', () => {
     const eng = krisenListeZusammenfuehren(erst.auswahl.slice(0, 1), neu, 2);
     expect(eng.auswahl).toHaveLength(2);
     expect(eng.ausgelassen).toBe(neu.length - 2);
+    const relativ = automatischeKrisenAlsAuswahl(
+      haushalt({ autoStartArt: 'nachRuecktritt', autoJahreNach: 2 }).krisen,
+      ruecktrittVon(h),
+      horizontVon(h),
+    );
+    const dazu = krisenListeZusammenfuehren(erst.auswahl, relativ);
+    expect(dazu.auswahl.length).toBe(erst.auswahl.length + relativ.length);
+    const nochmalRelativ = krisenListeZusammenfuehren(relativ, relativ);
+    expect(nochmalRelativ.auswahl).toHaveLength(relativ.length);
+    expect(nochmalRelativ.ausgelassen).toBe(0);
+  });
+
+  it('grosse Abstände nach dem Rücktritt überstehen das Speichern', () => {
+    const h = haushalt({ autoStartArt: 'nachRuecktritt', autoJahreNach: 60, autoProDekade: 5 });
+    const ind = nachUebernahme(h);
+    expect(ind.krisen.auswahl.some((a) => a.jahreNach > 60)).toBe(true);
+    expect(Math.max(...ind.krisen.auswahl.map((a) => a.jahreNach))).toBeLessThanOrEqual(JAHRE_NACH_MAX);
+    const geladen = dekodiere(kodiere(ind), regeln);
+    if (!geladen) throw new Error('Dekodieren fehlgeschlagen');
+    erwarteGleich(h, geladen);
+  });
+});
+
+describe('Frühestes Rücktrittsalter nach der Übernahme', () => {
+  const suchOpt = {
+    start,
+    modus: 'person' as const,
+    person: 0,
+    maxAlter: 70,
+  };
+
+  function suchHaushalt(teil: {
+    geburtsjahr: number;
+    geburtsmonat?: number;
+    stoppAlter?: number;
+    planungsalter?: number;
+    autoStartArt?: 'jahr' | 'nachRuecktritt';
+    autoJahreNach?: number;
+    autoProDekade?: number;
+    wertschriften?: number;
+    lebenshaltung?: number;
+  }): Haushalt {
+    const h = haushalt({
+      autoStartArt: teil.autoStartArt ?? 'nachRuecktritt',
+      autoJahreNach: teil.autoJahreNach ?? 0,
+      autoProDekade: teil.autoProDekade ?? 0.74,
+    });
+    const person = h.personen[0];
+    if (!person) throw new Error('Person fehlt');
+    person.name = 'Beispiel';
+    person.geburtsjahr = teil.geburtsjahr;
+    person.geburtsmonat = teil.geburtsmonat ?? 3;
+    person.stoppAlter = teil.stoppAlter ?? 65;
+    person.lohn = 110_000;
+    person.wertschriften = teil.wertschriften ?? 280_000;
+    person.pk.guthaben = 160_000;
+    h.ausgaben = { ...h.ausgaben, lebenshaltung: teil.lebenshaltung ?? 78_000 };
+    h.planungsalter = teil.planungsalter ?? 100;
+    h.entnahme = { art: 'statisch', quelle: 'ausgaben', satz: 0.04 };
+    return h;
+  }
+
+  function gleicheSuche(auto: Haushalt) {
+    const ind = nachUebernahme(auto);
+    const a = fruehestesRuecktrittsalter(auto, regeln, { ...suchOpt, krisen: krisenOptionen(auto) });
+    const b = fruehestesRuecktrittsalter(ind, regeln, { ...suchOpt, krisen: krisenOptionen(ind) });
+    expect(b.gefunden).toBe(a.gefunden);
+    expect(b.alterMonate).toBe(a.alterMonate);
+    return a;
+  }
+
+  it('Automatisch und Individuell nach Übernahme finden dasselbe Alter', () => {
+    const jahre = [1958, 1962, 1964, 1966, 1980, 1985, 1990];
+    const monate = [1, 7];
+    const stopps = [60, 65, 70];
+    const abstaende = [-5, 0, 2, 15];
+    let faelle = 0;
+    let gesucht = 0;
+    let ohneTreffer = 0;
+    for (const geburtsjahr of jahre) {
+      for (const geburtsmonat of monate) {
+        for (const stoppAlter of stopps) {
+          for (const autoJahreNach of abstaende) {
+            faelle++;
+            const a = gleicheSuche(suchHaushalt({ geburtsjahr, geburtsmonat, stoppAlter, autoJahreNach }));
+            if (!a.sofort) gesucht++;
+            if (!a.gefunden) ohneTreffer++;
+          }
+        }
+      }
+    }
+    // 7 Jahrgänge × 2 Monate × 3 Stopp-Alter × 4 Abstände
+    expect(faelle).toBe(168);
+    expect(gesucht).toBeGreaterThan(20);
+    // dichte und weite Folge, kurzer und langer Horizont: derselbe Treffer
+    for (const autoProDekade of [0.74, 2, 5]) {
+      for (const planungsalter of [90, 105]) {
+        gleicheSuche(suchHaushalt({ geburtsjahr: 1964, autoJahreNach: 2, autoProDekade, planungsalter }));
+        gleicheSuche(suchHaushalt({ geburtsjahr: 1985, autoJahreNach: 0, autoProDekade, planungsalter }));
+      }
+    }
+    // Beginn im Kalenderjahr bleibt fest und trifft denselben Treffer
+    for (const geburtsjahr of [1958, 1966, 1985]) {
+      gleicheSuche(suchHaushalt({ geburtsjahr, autoStartArt: 'jahr', stoppAlter: 64 }));
+    }
+    expect(ohneTreffer + gesucht).toBeGreaterThan(0);
+  }, 120_000);
+
+  it('eigene Krise: Ausgleich rechnet die synthetische Rendite ein', () => {
+    const g = Math.log(1.04 / 1.01);
+    const h = haushalt();
+    h.krisen = {
+      ...h.krisen,
+      modus: 'individuell',
+      ausgleich: true,
+      auswahl: [
+        {
+          uid: 'ek',
+          id: 'eigen',
+          land: 'CHE',
+          startArt: 'jahr',
+          jahr: 2032,
+          alter: 70,
+          person: 0,
+          jahreNach: 0,
+          eigen: { name: 'Testkrise', rueckgang: -0.5, dauer: 2, erholung: 4 },
+        },
+      ],
+    };
+    for (const monat of [1, 10] as const) {
+      const st = { jahr: 2026, monat };
+      const opt = krisenOptionen(h);
+      expect(opt?.ausgleichHorizont).toBe(true);
+      const e = simuliere(h, regeln, { start: st, krisen: opt });
+      const n = e.krisenNormal;
+      if (!n || !opt) throw new Error('kein Ausgleich');
+      expect(n.wertschriften).toBeGreaterThan(0.04);
+      expect(n.wohneigentum).toBeCloseTo(0.04, 12);
+      const m = krisenModell(
+        {
+          renditeNominal: n.wertschriften,
+          renditeBargeld: 0.005,
+          inflation: 0.01,
+          wohneigentumNominal: n.wohneigentum,
+        },
+        0.5,
+        krisenPlan(
+          opt.wahl,
+          ruecktrittVon(h),
+          h.personen.map((p) => p.geburtsjahr),
+        ),
+        KRISEN_DATEN,
+        st.jahr,
+      );
+      let ws = 0;
+      let wohn = 0;
+      let total = 0;
+      e.zeilen.forEach((_z, t) => {
+        const w = t === 0 ? (13 - monat) / 12 : 1;
+        ws += w * Math.log((1 + m.renditeNominal(t)) / (1 + m.inflation(t)));
+        wohn += w * Math.log((1 + (m.wohneigentum?.(t) ?? 0)) / (1 + m.inflation(t)));
+        total += w;
+      });
+      expect(ws / total).toBeCloseTo(g, 10);
+      expect(wohn / total).toBeCloseTo(g, 10);
+      expect(e.krisenJahre.length).toBeGreaterThan(0);
+      const stress = { ...h, krisen: { ...h.krisen, ausgleich: false } };
+      const b = simuliere(stress, regeln, { start: st, krisen: krisenOptionen(stress) });
+      expect(b.krisenNormal).toBeNull();
+      expect(b.endVermoegen).not.toBe(e.endVermoegen);
+    }
   });
 });

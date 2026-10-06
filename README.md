@@ -270,8 +270,9 @@ Steuermodelle der Zielländer sind Näherungen (bei Ländern ohne Modell wird we
   Planungsalter, Wertschriften und Hauspreise getrennt) der Annahme entspricht; *Individuell* –
   eigene Liste (hinzufügen, entfernen, höchstens 120) mit allen Krisen inkl. der extremen (Grosse Depression,
   Stagflation 1973–81, Japan ab 1990) oder einer eigenen Annahme (Rückgang, Dauer, Erholung). «Automatische
-  Krisen übernehmen» füllt die Liste mit denselben Krisenarten und Startjahren wie «Automatisch» und gleicht
-  die normalen Jahre aus; der Ausgleich lässt sich abschalten (Stresstest). Beginn im Kalenderjahr (auch kurz
+  Krisen übernehmen» füllt die Liste mit denselben Krisen wie «Automatisch» und gleicht
+  die normalen Jahre aus; der Ausgleich lässt sich abschalten (Stresstest). Beginnt «Automatisch» nach dem
+  Rücktritt, bleibt der Abstand erhalten und die Krisen wandern mit. Beginn im Kalenderjahr (auch kurz
   vor dem Horizont, wenn die Krise noch hineinreicht), im Alter oder X Jahre nach dem Rücktritt, Datenreihe
   CH/USA/JP. Bei Überschneidung gilt die später beginnende Krise. Echte
   Jahresrenditen von Aktien und Obligationen (gemäss Aktienanteil), Geldmarkt, Hauspreise und Teuerung. Krisenjahre

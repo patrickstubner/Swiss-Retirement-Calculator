@@ -13,6 +13,8 @@ import {
   bereinigeEigeneKrise,
   bereinigeKrisenUid,
   EIGENE_KRISE_ID,
+  JAHRE_NACH_MAX,
+  JAHRE_NACH_MIN,
   MAX_GEPLANTE_KRISEN,
   MAX_KRISEN_ROHDATEN,
 } from '../core/krisen';
@@ -325,7 +327,7 @@ function normalisiereKrisen(k: KrisenEinstellungen, roh: unknown, personen: numb
           jahr: ganzzahl(x.jahr, 1900, 2200),
           alter: ganzzahl(x.alter, 0, 130),
           person: ganzzahl(x.person, 0, Math.max(0, personen - 1)),
-          jahreNach: ganzzahl(x.jahreNach, -30, 60),
+          jahreNach: ganzzahl(x.jahreNach, JAHRE_NACH_MIN, JAHRE_NACH_MAX),
           eigen: katalog ? null : bereinigeEigeneKrise(eigenRoh),
         },
       ];

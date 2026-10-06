@@ -10,6 +10,8 @@ Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1
 - Höchstens 120 geplante Krisen. Die automatische Folge erzeugt bei höchster Häufigkeit über 200 Jahre höchstens 101 Beginne; 8 Einträge hätten das Ergebnis dann verschoben. Schema 14: `krisen.ausgleich`. Fehlt das Feld, bleibt der bisherige Stresstest.
 - Namen von Krisen, Entnahme-Töpfen und Personen: unsichtbare Zeichen (Formatzeichen, Privatnutzung, Nichtzeichen, Zeilentrenner) werden entfernt.
 - AHV: Wird ein zu weiter Vorbezug gekürzt, steht «Vorbezug auf X Monate gekürzt».
+- «Automatische Krisen übernehmen» bei Beginn «nach dem Rücktritt»: die Einträge bleiben ein Abstand zum Rücktritt und wandern mit, auch in der Suche nach dem frühesten Rücktrittsalter. Der Abstand darf −30 bis 260 Jahre betragen, damit die ganze Folge das Speichern übersteht.
+- «Normale Jahre ausgleichen» rechnet eigene Krisen mit ihrer synthetischen Wertschriftenrendite ein. Hauspreise bleiben die Annahme.
 
 ## [1.3.0] - 2026-10-06
 

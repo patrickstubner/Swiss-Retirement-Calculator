@@ -22,9 +22,12 @@ export function AhvSchaetzhilfe({ p, partner, verheiratet, regeln, set }: Props)
   const [uebernommen, setUebernommen] = useState(false);
   const [kuerzung, setKuerzung] = useState<string | null>(null);
   const setzeJahrgang = (patch: Partial<Pick<Person, 'geschlecht' | 'geburtsjahr'>>) => {
-    const n = personNachJahrgang(p, patch, regeln.ahv);
-    setKuerzung(vorbezugKuerzHinweis(p.ahv.bezugVerschiebungMonate, n.ahv.bezugVerschiebungMonate));
-    set(() => n);
+    set((x) => {
+      const n = personNachJahrgang(x, patch, regeln.ahv);
+      const text = vorbezugKuerzHinweis(x.ahv.bezugVerschiebungMonate, n.ahv.bezugVerschiebungMonate);
+      queueMicrotask(() => setKuerzung(text));
+      return n;
+    });
   };
   const e = p.ahvSchaetzhilfe;
   const setE = (fn: (x: AhvSchaetzhilfeEingabe) => AhvSchaetzhilfeEingabe) => {

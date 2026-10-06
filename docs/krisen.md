@@ -111,8 +111,10 @@ Stresstest.
 - **Liste:** Hinzufügen, Bearbeiten, Entfernen. Höchstens 120 Einträge (Oberfläche und Speicher; Rohdaten vorher
   auf 240 gekürzt, danach höchstens 120 gültige Einträge). Die Grenze 8 hätte die automatische Folge bei hoher
   Häufigkeit abgeschnitten (höchstens 101 Beginne: 5 pro Dekade über 200 Jahre). «Automatische Krisen übernehmen»
-  schreibt die Krisen, deren Jahre den Horizont schneiden, als Kalenderjahr in die Liste und schaltet den Ausgleich
-  ein. «Nach dem Rücktritt» wird dabei zum Jahr des aktuellen Rücktritts. Ist die Liste gefüllt, fragt die App nach
+  schreibt bei Beginn im Kalenderjahr die Krisen, deren Jahre den Horizont schneiden, als Kalenderjahr in die
+  Liste und schaltet den Ausgleich ein. Beginnt «Automatisch» nach dem Rücktritt, übernimmt die App die ganze Folge
+  als Abstand zum Rücktritt (auch Beginne, die beim aktuellen Rücktritt ausserhalb des Horizonts liegen). Die Krisen
+  wandern damit mit, auch in der Suche nach dem frühesten Rücktrittsalter. Ist die Liste gefüllt, fragt die App nach
   Ersetzen oder Anhängen. Wechsel von «Automatisch» auf eine leere Liste bietet die Übernahme an. Wechsel von
   «Keine Krise» auf eine leere Liste setzt weiterhin eine Finanzkrise mit Startjahr 2036, sofern das im Horizont liegt.
 - **Überschneidung:** Jedes Kalenderjahr hat genau eine Rendite. Es gilt die später beginnende Krise, bei gleichem
@@ -127,7 +129,9 @@ Stresstest.
   Wertschriftenportfolios (−80 % bis −5 %, Standard −30 %) gleichmässig über 1–8 Jahre, danach reale Erholung auf
   den Stand vor der Krise über 0–15 Jahre (0 = der Stand bleibt unten). Aktien und Obligationen erhalten dieselbe
   nominale Rendite, damit der Aktienanteil das Ergebnis nicht verschiebt. Teuerung, Bargeld und Hauspreise bleiben
-  die Annahmen; Anlagekosten werden wie sonst abgezogen. Bezeichnung höchstens 40 Zeichen, ohne Steuerzeichen und
+  die Annahmen; Anlagekosten werden wie sonst abgezogen. Ist «Normale Jahre ausgleichen» ein, zählt die synthetische
+  reale Wertschriftenrendite im Ausgleich mit (Hauspreise bleiben die Annahme, diese Jahre sind dafür keine
+  Krisenjahre). Bezeichnung höchstens 40 Zeichen, ohne Steuerzeichen und
   ohne spitze Klammern und ohne unsichtbare Zeichen (Format-, Privat- und Nichtzeichen, U+2028/U+2029). Am Band steht diese Bezeichnung.
 
 ### Darstellung
