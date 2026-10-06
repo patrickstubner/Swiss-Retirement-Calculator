@@ -26,6 +26,7 @@ import { VorlesenKnoepfe } from '../vorlesen/Vorlesen';
 import { LinienChart, type Serie } from './Chart';
 import { Faecher } from './Faecher';
 import { Segmente } from './Felder';
+import { KrisenSteuerung } from './Krisen';
 
 export type SuchModusA = 'gemeinsam' | 'p0' | 'p1';
 
@@ -301,8 +302,8 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
         <VorlesenKnoepfe titel="Was wäre, wenn" />
       </div>
       <p className="karte__untertitel">
-        Schieben Sie die Regler – das Ergebnis wird neu gerechnet. Ihre Eingaben bleiben unverändert, bis Sie
-        «Übernehmen» wählen.
+        Krisen stellen Sie hier ein; sie gelten sofort. Die übrigen Regler rechnen neu, ohne die Eingaben zu ändern, bis
+        Sie «Übernehmen» wählen.
       </p>
       {ausLaeuft ? (
         <p className="info" role="status">
@@ -337,6 +338,17 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
       ) : ausLaeuft ? null : (
         <p className="warnung">Berechnung nicht möglich – bitte Eingaben prüfen.</p>
       )}
+
+      <KrisenSteuerung
+        h={h}
+        setH={setH}
+        effH={effH}
+        regeln={regeln}
+        heute={heute}
+        wunsch={k?.wunsch ?? null}
+        refIdx={refIdx}
+        namen={namen}
+      />
 
       <div className="regler-gruppe">
         {zweiRegler ? (
@@ -443,17 +455,6 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
           geaendert={w.teuerung !== null}
           onChange={(v) => setW((x) => ({ ...x, teuerung: v }))}
         />
-        <p className="krisen-sprung">
-          <a href="#krisen">Krisen einstellen</a>
-          {'. '}
-          {krisenModus === 'keine'
-            ? 'Derzeit keine Krise: jedes Jahr gilt Ihre Renditeannahme (Standard wäre «Automatisch»).'
-            : krisenModus === 'automatisch'
-              ? 'Derzeit automatisch: normale historische Krisen im Abstand gemäss Häufigkeit. Häufigkeit und Beginn stehen in der Karte «Krisen».'
-              : h.krisen.auswahl.length === 0
-                ? 'Derzeit individuell, die Liste ist leer. In der Karte «Krisen» eine Krise hinzufügen oder die automatischen Krisen übernehmen.'
-                : `Derzeit individuell mit ${h.krisen.auswahl.length} ${h.krisen.auswahl.length === 1 ? 'Eintrag' : 'Einträgen'} in der Karte «Krisen».`}
-        </p>
       </div>
       {geaendert ? (
         <div className="knopf-reihe">

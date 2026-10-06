@@ -758,7 +758,7 @@ await p10.goto(url, { waitUntil: 'networkidle' });
     .first()
     .click();
   await p10.waitForTimeout(500);
-  const kk = p10.locator('.karte', { hasText: 'Krisenmodus' }).first();
+  const kk = p10.locator('.krisen-steuerung').first();
   await kk.getByText(/^Indi\u00ad?viduell$/).click();
   await p10.waitForTimeout(600);
   await kk.scrollIntoViewIfNeeded();
@@ -767,9 +767,12 @@ await p10.goto(url, { waitUntil: 'networkidle' });
   if (!/Mit Ihren Krisen/.test(kt) || !/Krisen in Ihrer Rechnung/.test(kt))
     fehler.push(`Krise: Vergleich fehlt: ${kt}`);
   // Grosse Depression im Kalenderjahr 2030, Daten USA
-  await kk.getByLabel('Krise', { exact: true }).selectOption('depression1929');
+  await kk
+    .getByLabel(/^Krise/)
+    .first()
+    .selectOption('depression1929');
   await kk.getByText(/^Kalender\u00ad?jahr$/).click();
-  await fuelle10('Kalenderjahr des Krisenbeginns', 2030);
+  await fuelle10('Startjahr', 2030);
   await p10.waitForTimeout(600);
   await kk.screenshot({ path: `${out}54-krise-depression-kalenderjahr-360.png` });
   const top = p10.locator('.karte--ergebnis');
@@ -923,7 +926,7 @@ for (const schema of ['light', 'dark']) {
     if (!/Eingabe: 65 J\./.test(await rg.innerText())) fehler.push('Regler: Eingabe-Hinweis fehlt');
     // b) Krisenmodus Automatisch in der Krisen-Karte
     await aw.getByText('Zurücksetzen', { exact: true }).click();
-    const kk = pg.locator('.karte', { hasText: 'Krisenmodus' }).first();
+    const kk = pg.locator('.krisen-steuerung').first();
     await kk
       .getByText(/^Auto\u00ad?matisch$/)
       .first()
@@ -1004,7 +1007,7 @@ for (const schema of ['light', 'dark']) {
     await pg.waitForTimeout(800);
     if ((await aw.getByLabel(/^Rücktritt Person/).count()) !== 2) fehler.push('Pro Person: zwei Regler erwartet');
     await rg.screenshot({ path: `${out}72-dunkel-paar-regler-pro-person-360.png` });
-    const kk = pg.locator('.karte', { hasText: 'Krisenmodus' }).first();
+    const kk = pg.locator('.krisen-steuerung').first();
     await kk
       .getByText(/^Auto\u00ad?matisch$/)
       .first()
@@ -1060,7 +1063,7 @@ for (const schema of ['light', 'dark']) {
   await top.scrollIntoViewIfNeeded();
   await top.screenshot({ path: `${out}75-erster-start-krisen-automatisch-ergebnis-360.png` });
   if (!/Mit Krisen \(automatisch\)/.test(await top.innerText())) fehler.push('Erster Start: Hinweis Automatisch fehlt');
-  const kk = pg.locator('.karte', { hasText: 'Krisenmodus' }).first();
+  const kk = pg.locator('.krisen-steuerung').first();
   await kk.scrollIntoViewIfNeeded();
   await kk.screenshot({ path: `${out}76-erster-start-krisenkarte-automatisch-360.png` });
   if (!/Standard für neue Berechnungen/.test(await kk.innerText()))
@@ -1147,7 +1150,7 @@ for (const schema of ['light', 'dark']) {
   await info.scrollIntoViewIfNeeded();
   await info.screenshot({ path: `${out}80-ergebnis-verkauf-nach-wegzug-360.png` });
   if (!/Grundstückgewinnsteuer CHF/.test(await info.innerText())) fehler.push('Ergebnis: Verkauf fehlt');
-  const kk = pg.locator('.karte', { hasText: 'Krisenmodus' }).first();
+  const kk = pg.locator('.krisen-steuerung').first();
   await kk.scrollIntoViewIfNeeded();
   await kk.screenshot({ path: `${out}81-krisen-ausgleich-planungszeitraum-360.png` });
   if (!/Planungszeitraum/.test(await kk.innerText())) fehler.push('Krisen: Ausgleich über den Planungszeitraum fehlt');

@@ -133,7 +133,8 @@ interface Props {
   namen: string[];
 }
 
-export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, namen }: Props) {
+/** Krisenmodus und Editor. Eine Stelle, im Block «Was wäre, wenn …?», schreibt direkt in den Haushalt. */
+export function KrisenSteuerung({ h, setH, effH, regeln, heute, wunsch, refIdx, namen }: Props) {
   const k = h.krisen;
   const [rueckfrage, setRueckfrage] = useState(false);
   const [uebernahmeHinweis, setUebernahmeHinweis] = useState<string | null>(null);
@@ -216,16 +217,12 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
     });
 
   return (
-    <Karte
-      id="krisen"
-      titel="Krisen"
-      untertitel="Wie wirken Börsenkrisen auf Ihr Vermögen? Die App spielt die echten Jahresrenditen und die Teuerung historischer Krisenjahre ab. Die Wahl gilt für das ganze Ergebnis."
-    >
+    <div className="krisen-steuerung">
       <Segmente<KrisenModus>
-        label="Krisenmodus"
+        label="Krisen"
         value={k.modus}
         optionen={[
-          { value: 'keine', label: 'Keine Krise' },
+          { value: 'keine', label: 'Keine' },
           { value: 'automatisch', label: 'Auto\u00admatisch' },
           { value: 'individuell', label: 'Indi\u00adviduell' },
         ]}
@@ -318,7 +315,7 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
             <div className="krisen-leer" role="status">
               <p>
                 Noch keine Krise in der Liste. Fügen Sie eine hinzu oder übernehmen Sie die automatischen Krisen.
-                Solange die Liste leer ist, wird ohne Krise gerechnet.
+                Solange die Liste leer ist, setzt diese Auswertung die Finanzkrise 2007–2009 ab nächstem Jahr.
               </p>
               {uebernahmeHinweis ? <p className="warnung">{uebernahmeHinweis}</p> : null}
               <div className="knopf-reihe">
@@ -496,7 +493,7 @@ export function KrisenKarte({ h, setH, effH, regeln, heute, wunsch, refIdx, name
         </ul>
       </details>
       <HaeufigkeitTabelle />
-    </Karte>
+    </div>
   );
 }
 

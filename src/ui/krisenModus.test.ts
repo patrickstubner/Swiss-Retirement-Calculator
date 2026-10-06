@@ -1,7 +1,11 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { neueGeplanteKrise, neueKrisenEinstellungen } from '../data/defaults';
 import { automatischeKrisenAlsAuswahl } from '../data/krisen';
 import { krisenNachModuswechsel } from './krisenModus';
+
+const lies = (p: string) => readFileSync(join(__dirname, p), 'utf8');
 
 const fenster = { von: 2026, bis: 2090 };
 
@@ -34,6 +38,19 @@ describe('Wechsel auf Individuell', () => {
     expect(w.krisen.auswahl).toEqual([]);
     expect(w.krisen.ausgleich).toBe(false);
     expect(w.hinweis).toMatch(/keine automatische Krise/);
+  });
+
+  it('der Editor sitzt nur in «Was wäre, wenn», ohne zweite Karte oder zweite Liste', () => {
+    const auswertung = lies('components/Auswertung.tsx');
+    const ergebnis = lies('schritte/Ergebnis.tsx');
+    const krisen = lies('components/Krisen.tsx');
+    const umkehr = lies('components/Umkehr.tsx');
+    expect(auswertung).toMatch(/<KrisenSteuerung/);
+    expect(auswertung).not.toMatch(/#krisen|Krisen einstellen|siehe unten/);
+    expect(ergebnis).not.toMatch(/KrisenKarte|KrisenSteuerung|#krisen/);
+    expect(krisen).toMatch(/export function KrisenSteuerung/);
+    expect(krisen).not.toMatch(/KrisenKarte|id="krisen"|titel="Krisen"/);
+    expect(umkehr).not.toMatch(/#krisen|KrisenKarte|GeplanteKrise|Krise hinzufügen/);
   });
 
   it('Wechsel auf einen anderen Modus lässt die Liste stehen', () => {

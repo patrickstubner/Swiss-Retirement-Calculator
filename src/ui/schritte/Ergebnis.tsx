@@ -19,7 +19,7 @@ import { FlussKarte, MarkerTabelle } from '../components/Fluesse';
 import { JahresUebersicht } from '../components/JahresUebersicht';
 import { KantoneKarte } from '../components/Kantone';
 import { Karte } from '../components/Karte';
-import { ausgleichHinweisText, KrisenKarte, MonteCarloKarte } from '../components/Krisen';
+import { ausgleichHinweisText, MonteCarloKarte } from '../components/Krisen';
 import { StaffelungKarte } from '../components/Staffelung';
 import { TodesfallKarte } from '../components/Todesfall';
 import { UmkehrKarte } from '../components/Umkehr';
@@ -253,17 +253,6 @@ export function Ergebnis({
           {t}
         </p>
       ))}
-
-      <KrisenKarte
-        h={h}
-        setH={setH}
-        effH={eff.haushalt}
-        regeln={regeln}
-        heute={heute}
-        wunsch={wunsch}
-        refIdx={ref}
-        namen={namen}
-      />
 
       <Auswertung
         h={h}

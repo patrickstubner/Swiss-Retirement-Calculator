@@ -199,9 +199,9 @@ Vereinfachungen: Ohne «Wohnkosten separat» kein Eigenmietwert, Zins und Unterh
 am Ende des Verkaufsjahres; Hypothek ohne Amortisation; Vermögenssteuer auf dem Verkehrswert (effektiver Satz). Barauszahlung wegen Selbstständigkeit ist nicht abgebildet;
 Steuermodelle der Zielländer sind Näherungen (bei Ländern ohne Modell wird weiter mit Schweizer Steuern gerechnet oder ein eigener Satz verwendet).
 
-- **Was wäre, wenn …?** (oben im Ergebnis, direkt unter der Karte «Krisen»): Regler für Rücktrittsalter (Mitte = Eingabe, ±10 Jahre, frühestens heute,
+- **Was wäre, wenn …?** (oben im Ergebnis): Umschalter Keine / Automatisch / Individuell. Bei Individuell liegen Liste, Beginn, Hinzufügen, Entfernen, «Automatische Krisen übernehmen» und der Ausgleich direkt unter dem Umschalter; bei Automatisch Häufigkeit, erste Krise und Aktienanteil. Diese Krisen gelten sofort. Regler für Rücktrittsalter (Mitte = Eingabe, ±10 Jahre, frühestens heute,
   spätestens 70; bei Paaren gemeinsam oder pro Person), Planungsalter (±20 Jahre), Ausgaben, Rendite und Teuerung
-  mit sofortiger Neuberechnung (Eingaben bleiben unverändert bis «Übernehmen»). Den Krisenmodus stellt die Karte «Krisen» ein; «Was wäre, wenn» verweist dorthin. Kennzahlen «Geld reicht bis Alter»,
+  rechnen neu, ohne die übrigen Eingaben zu ändern, bis «Übernehmen». Kennzahlen «Geld reicht bis Alter»,
   Erfolgswahrscheinlichkeit mit wiederkehrenden Krisen, frühestes Rücktrittsalter, Vermögen am Ende;
   Vermögensverlauf als Monte-Carlo-Fächer (10., 25., 50., 75., 90. Perzentil) mit Erfolgsquote und «Mit 90 % / 75 % /
   50 % Wahrscheinlichkeit reicht das Geld bis Alter …»; «Varianten Ihres Plans im Vergleich» (Grafik 2: Ihr Plan mit
@@ -261,7 +261,7 @@ Steuermodelle der Zielländer sind Näherungen (bei Ländern ohne Modell wird we
   als ganzes Teuerungsjahr. Screenshots `screenshots/84-…` bis `88-…`.
 - Erscheinungsbild: ruhigeres Design mit Karten, klarer Typografie, Diagrammfarben aus CSS-Variablen und **dunklem
   Modus** gemäss Systemeinstellung; Kontraste nach WCAG AA (Text ≥ 4.5:1).
-- **Krisen** (Karte direkt über «Was wäre, wenn …?»), drei Stufen (beim ersten Start ist *Automatisch* voreingestellt; gespeicherte Stände und
+- **Krisen** (nur in «Was wäre, wenn …?», keine eigene Karte), drei Stufen (beim ersten Start ist *Automatisch* voreingestellt; gespeicherte Stände und
   Links behalten ihren Modus): *Keine Krise*; *Automatisch* – die «normalen» historischen Krisen (Ölkrise
   1973/74, Schwarzer Montag 1987, Schweizer Immobilienkrise, Dotcom, Finanzkrise 2008, Eurokrise 2011, Covid 2020,
   Zinsschock 2022) rotierend im Abstand gemäss Häufigkeit (Standard 0,74 pro Dekade, etwa alle 13,5 Jahre), erste

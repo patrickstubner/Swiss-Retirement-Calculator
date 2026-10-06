@@ -1,5 +1,5 @@
 /**
- * Wechsel des Krisenmodus in der Karte «Krisen».
+ * Wechsel des Krisenmodus in «Was wäre, wenn …?».
  * «Individuell» mit leerer Liste übernimmt sofort die automatischen Krisen (Ausgleich ein).
  * Eine schon gefüllte Liste bleibt. Die Rechnung selbst ändert diese Funktion nicht.
  */
