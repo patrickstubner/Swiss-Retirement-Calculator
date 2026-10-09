@@ -70,7 +70,18 @@ function erwartet(krise: (typeof KRISEN)[number]) {
     dauerJahre: erholtJahr !== null ? erholtJahr - krise.von + 1 : phasenJahre,
     dauerArt: erholtJahr !== null ? 'erholt' : unter ? 'offen' : 'phase',
     hauspreise: hauspreiseErwartet(krise),
+    hauspreisJahreOhneDaten: jahreOhneHauspreis(krise),
   };
+}
+
+function jahreOhneHauspreis(krise: (typeof KRISEN)[number]): number[] {
+  const daten = KRISEN_DATEN[krise.land];
+  const fehlend: number[] = [];
+  for (let j = krise.von; j <= krise.bis; j++) {
+    const h = daten.get(j);
+    if (!h || h.immobilien === null || h.teuerung === null) fehlend.push(j);
+  }
+  return fehlend;
 }
 
 /** Dieselbe Hauspreis-Rechnung wie `hauspreiseDerPhase`, noch einmal aus der Reihe. */
@@ -123,6 +134,7 @@ describe('Krisen-Schwere aus der Jahresreihe', () => {
       expect(s.dauerJahre, krise.id).toBe(e.dauerJahre);
       expect(s.dauerArt, krise.id).toBe(e.dauerArt);
       expect(s.hauspreise, krise.id).toEqual(e.hauspreise);
+      expect(s.hauspreisJahreOhneDaten, krise.id).toEqual(e.hauspreisJahreOhneDaten);
       expect(s.startjahr, krise.id).toBe(krise.von);
       expect(s.phasenJahre, krise.id).toBe(krise.bis - krise.von + 1);
       const pfad = krisenPfad(krise, krise.land, 1, KRISEN_DATEN, basis);
@@ -169,6 +181,10 @@ describe('Krisen-Schwere aus der Jahresreihe', () => {
     const zins = krisenSchwere(KRISEN.find((k) => k.id === 'zinsschock2022') as (typeof KRISEN)[number], 'CHE');
     expect(zins?.dauerArt).toBe('offen');
     expect(zins?.hauspreise).toBeNull();
+    expect(zins?.hauspreisJahreOhneDaten).toEqual([2022]);
+    const dotcomHaus = krisenSchwere(KRISEN.find((k) => k.id === 'dotcom2000') as (typeof KRISEN)[number], 'CHE');
+    expect(dotcomHaus?.hauspreise?.maxRueckgang).toBeGreaterThan(-0.01);
+    expect(dotcomHaus?.hauspreise?.maxRueckgang).toBeLessThan(0);
   });
 
   it('Sortierung: nur nach dem Aktienrückgang, Plus bleibt in der Reihe, Katalog selbst historisch', () => {
@@ -219,6 +235,7 @@ describe('Krisen-Schwere aus der Jahresreihe', () => {
       dauerJahre: 1,
       dauerArt: 'offen',
       hauspreise: null,
+      hauspreisJahreOhneDaten: [],
     };
     const plus: KrisenSchwere = {
       ...leicht,

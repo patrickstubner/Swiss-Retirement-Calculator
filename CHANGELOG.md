@@ -3,6 +3,13 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.3.6] - 2026-10-09
+
+### Geändert
+- Krisenauswahl: die Zeile im Menü zeigt den maximalen Aktienrückgang, höchstens einen Zusatz und dann den Namen. Der Zusatz steht vor dem Namen, damit er bei 360 px Breite sichtbar bleibt. Reihenfolge: «extrem», dann «nicht erholt», dann «Häuser -x%». Katalogphase, Aktien-Tiefpunkt, historische Erholung, Aktien am Phasenende und die übrigen Hauspreise stehen im Kasten unter der Auswahl.
+- Hauspreise erscheinen erst ab einem realen Rückgang von 1 % (`HAUSPREIS_ANZEIGE_AB` = −0.01). Ein kleinerer Rückgang, zum Beispiel Dotcom, heisst im Kasten «kein Rückgang über 1 %».
+- Fehlen Hauspreisdaten (Zinsschock 2022), nennt der Kasten den eingesetzten Satz: ohne Ausgleich die Renditeannahme, mit Ausgleich die ausgeglichene Hauspreisrendite. Die Teuerung dieses Jahres bleibt historisch. Die Rechnung ändert sich nicht.
+
 ## [1.3.5] - 2026-10-09
 
 ### Geändert

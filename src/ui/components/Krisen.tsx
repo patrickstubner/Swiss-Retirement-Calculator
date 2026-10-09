@@ -63,8 +63,10 @@ import { krisenAbschnitte, krisenText } from '../krisenGrafik';
 import { krisenNachModuswechsel } from '../krisenModus';
 import {
   KRISEN_KATALOG_OPTIONEN,
+  type KrisenFolgeText,
   krisenAktienEndeText,
   krisenErholungText,
+  krisenExtremText,
   krisenHauspreisText,
   krisenPhasenText,
   krisenTiefpunktText,
@@ -412,6 +414,13 @@ export function KrisenSteuerung({ h, setH, effH, regeln, heute, wunsch, refIdx, 
               namen={namen}
               fenster={fenster}
               erwName={erwName}
+              folge={{
+                ausgleich: k.ausgleich === true,
+                renditeNominal: h.annahmen.renditeNominal,
+                ...(normal
+                  ? { hauspreisAusgeglichen: normal.wohneigentum, wertschriftenAusgeglichen: normal.wertschriften }
+                  : {}),
+              }}
               setze={(fn) => setzeAuswahl(i, fn)}
               entfernen={() => setzeKrisen(setH, (kr) => ({ ...kr, auswahl: kr.auswahl.filter((_, j) => j !== i) }))}
             />
@@ -518,21 +527,26 @@ export function KrisenSteuerung({ h, setH, effH, regeln, heute, wunsch, refIdx, 
 }
 
 function KriseSchwereInfo({
+  kriseId,
   kriseName,
   standardLand,
   land,
   s,
+  folge,
 }: {
+  kriseId: string;
   kriseName: string;
   standardLand: KrisenLand;
   land: KrisenLand;
   s: KrisenSchwere;
+  folge: KrisenFolgeText;
 }) {
   const rueckgang =
     s.jahreBisTiefpunkt === null
       ? 'keiner unter dem Vorkrisenstand'
       : `${fmtProzent(s.maxRueckgang, 1)} (Peak-to-Trough, kumuliert)`;
-  const hauspreise = krisenHauspreisText(s);
+  const hauspreise = krisenHauspreisText(s, folge);
+  const extrem = krisenExtremText(kriseId);
   return (
     <div className="krise-schwere">
       <dl aria-label={`Schwere: ${kriseName}`}>
@@ -549,12 +563,12 @@ function KriseSchwereInfo({
           <dd>{rueckgang}</dd>
         </div>
         <div>
-          <dt>Tiefpunkt</dt>
+          <dt>Aktien-Tiefpunkt</dt>
           <dd>{krisenTiefpunktText(s)}</dd>
         </div>
         <div>
           <dt>Katalogphase</dt>
-          <dd>{krisenPhasenText(s)}</dd>
+          <dd>{krisenPhasenText(s, folge)}</dd>
         </div>
         <div>
           <dt>Historische Erholung</dt>
@@ -570,10 +584,17 @@ function KriseSchwereInfo({
             <dd>{hauspreise}</dd>
           </div>
         ) : null}
+        {extrem ? (
+          <div>
+            <dt>Einordnung</dt>
+            <dd>{extrem}</dd>
+          </div>
+        ) : null}
       </dl>
       <p className="klein">
-        Jahreswerte. Realer Aktien-Gesamtertrag, inkl. Dividenden, 100 % Aktien, {LAND_NAMEN[land]}. Der Tiefpunkt ist
-        ein Jahresende, nicht ein Monat. Die historische Erholung nach der Katalogphase fliesst nicht in die Rechnung.
+        Jahreswerte. Realer Aktien-Gesamtertrag, inkl. Dividenden, 100 % Aktien, {LAND_NAMEN[land]}. Der
+        Aktien-Tiefpunkt ist ein Jahresende, nicht ein Monat. Die historische Erholung nach der Katalogphase fliesst
+        nicht in die Rechnung.
         {land !== standardLand ? ` Die Liste sortiert nach der Standardreihe ${LAND_NAMEN[standardLand]}.` : ''}
       </p>
     </div>
@@ -589,6 +610,7 @@ function GeplanteKrise({
   namen,
   fenster,
   erwName,
+  folge,
   setze,
   entfernen,
 }: {
@@ -600,6 +622,7 @@ function GeplanteKrise({
   namen: string[];
   fenster: { von: number; bis: number };
   erwName: string | undefined;
+  folge: KrisenFolgeText;
   setze: (fn: (a: KrisenAuswahl) => KrisenAuswahl) => void;
   entfernen: () => void;
 }) {
@@ -633,7 +656,14 @@ function GeplanteKrise({
         }
       />
       {krise && schwere ? (
-        <KriseSchwereInfo kriseName={krise.name} standardLand={krise.land} land={land} s={schwere} />
+        <KriseSchwereInfo
+          kriseId={krise.id}
+          kriseName={krise.name}
+          standardLand={krise.land}
+          land={land}
+          s={schwere}
+          folge={folge}
+        />
       ) : null}
       {krise ? <p className="klein">{krise.beschreibung}</p> : null}
       {eigene ? (

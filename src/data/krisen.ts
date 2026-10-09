@@ -519,6 +519,8 @@ export interface KrisenSchwere {
   dauerArt: KrisenDauerArt;
   /** null, wenn die Katalogphase keine vollständige Hauspreisreihe hat. */
   hauspreise: KrisenHauspreis | null;
+  /** Katalogjahre ohne `hpnom` oder ohne Teuerung. Leer, wenn die Reihe vollständig ist. */
+  hauspreisJahreOhneDaten: readonly number[];
 }
 
 const SCHWERE_UNTER = 1e-9;
@@ -526,9 +528,19 @@ const SCHWERE_RUECKGANG = 1e-12;
 
 /**
  * Realer Hauspreis, dieselbe Peak-to-Trough-Rechnung wie beim Aktienindex, nur mit `hpnom`.
- * null, sobald in `von`…`bis` ein Hauspreis oder die Teuerung fehlt.
+ * `wert` ist null, sobald in `von`…`bis` ein Hauspreis oder die Teuerung fehlt.
+ * Die fehlenden Jahre stehen in `jahreOhneDaten` (die Simulation ersetzt sie nicht hier).
  */
-function hauspreiseDerPhase(krise: Krise, daten: ReadonlyMap<number, HistJahr>): KrisenHauspreis | null {
+function hauspreiseDerPhase(
+  krise: Krise,
+  daten: ReadonlyMap<number, HistJahr>,
+): { wert: KrisenHauspreis | null; jahreOhneDaten: number[] } {
+  const jahreOhneDaten: number[] = [];
+  for (let j = krise.von; j <= krise.bis; j++) {
+    const h = daten.get(j);
+    if (!h || h.immobilien === null || h.teuerung === null) jahreOhneDaten.push(j);
+  }
+  if (jahreOhneDaten.length > 0) return { wert: null, jahreOhneDaten };
   let index = 1;
   let peak = 1;
   let peakJahr = krise.von - 1;
@@ -537,7 +549,7 @@ function hauspreiseDerPhase(krise: Krise, daten: ReadonlyMap<number, HistJahr>):
   let ddTroughJahr = peakJahr;
   for (let j = krise.von; j <= krise.bis; j++) {
     const h = daten.get(j);
-    if (!h || h.immobilien === null || h.teuerung === null) return null;
+    if (!h || h.immobilien === null || h.teuerung === null) return { wert: null, jahreOhneDaten: [j] };
     index *= (1 + h.immobilien) / (1 + h.teuerung);
     if (index > peak) {
       peak = index;
@@ -552,10 +564,13 @@ function hauspreiseDerPhase(krise: Krise, daten: ReadonlyMap<number, HistJahr>):
   }
   const hatRueckgang = maxDd < -SCHWERE_RUECKGANG;
   return {
-    maxRueckgang: hatRueckgang ? maxDd : 0,
-    peakJahr: hatRueckgang ? ddPeakJahr : peakJahr,
-    tiefpunktJahr: hatRueckgang ? ddTroughJahr : null,
-    jahreBisTiefpunkt: hatRueckgang ? ddTroughJahr - ddPeakJahr : null,
+    wert: {
+      maxRueckgang: hatRueckgang ? maxDd : 0,
+      peakJahr: hatRueckgang ? ddPeakJahr : peakJahr,
+      tiefpunktJahr: hatRueckgang ? ddTroughJahr : null,
+      jahreBisTiefpunkt: hatRueckgang ? ddTroughJahr - ddPeakJahr : null,
+    },
+    jahreOhneDaten,
   };
 }
 
@@ -607,6 +622,7 @@ export function krisenSchwere(krise: Krise, land: KrisenLand): KrisenSchwere | n
   let dauerArt: KrisenDauerArt = 'phase';
   if (erholtJahr !== null) dauerArt = 'erholt';
   else if (unter) dauerArt = 'offen';
+  const haeuser = hauspreiseDerPhase(krise, daten);
   return {
     id: krise.id,
     startjahr: krise.von,
@@ -620,7 +636,8 @@ export function krisenSchwere(krise: Krise, land: KrisenLand): KrisenSchwere | n
     erholtJahr,
     dauerJahre: erholtJahr !== null ? erholtJahr - krise.von + 1 : phasenJahre,
     dauerArt,
-    hauspreise: hauspreiseDerPhase(krise, daten),
+    hauspreise: haeuser.wert,
+    hauspreisJahreOhneDaten: haeuser.jahreOhneDaten,
   };
 }
 
