@@ -1085,6 +1085,10 @@ tr.negativ td {
 .vergleich p.klein {
   font-weight: 400;
 }
+.vergleich__hinweis {
+  grid-column: 1 / -1;
+  margin: 0;
+}
 .negativ {
   color: var(--farbe-warnung);
 }

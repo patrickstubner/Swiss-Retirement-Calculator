@@ -3,6 +3,7 @@
  * Krisen und die historische Krisenhäufigkeit pro Dekade (JST R6).
  */
 import { useDeferredValue, useId, useMemo, useState } from 'react';
+import { normalisiereEntnahme } from '../../core/entnahme';
 import {
   bereinigeEigeneKrise,
   datenVollstaendig,
@@ -25,6 +26,7 @@ import {
 import { referenzPerson, simuliere } from '../../core/simulation';
 import type {
   EigeneKrise,
+  Entnahme,
   Haushalt,
   KrisenAuswahl,
   KrisenEinstellungen,
@@ -131,11 +133,73 @@ function jahrSpanne(von: number, bis: number): string {
   return von === bis ? String(von) : `${von}–${bis}`;
 }
 
+/**
+ * Vergleich «Ohne Krise»: derselbe Haushalt wie die Krisenvariante, nur der Modus aus.
+ * Regler aus «Was wäre, wenn» (Rendite, Teuerung, Rücktritt, Ausgaben, Planungsalter) bleiben.
+ */
+export function haushaltOhneKrise(h: Haushalt): Haushalt {
+  return { ...h, krisen: { ...h.krisen, modus: 'keine' } };
+}
+
+/** Dieselbe Simulation wie «Mit Krisen» (`simuliere` mit Krisenoption), hier ohne Krisen. */
+export function vergleichOhneKrise(h: Haushalt, regeln: Regeln, start: Monat): SimulationsErgebnis {
+  const ohne = haushaltOhneKrise(h);
+  return simuliere(ohne, regeln, { start, krisen: krisenOptionen(ohne) });
+}
+
+/** Summe der Entnahmen aus dem freien Vermögen, in heutigen Franken, aus den schon gerechneten Jahren. */
+export function entnahmenGesamt(e: SimulationsErgebnis): number {
+  return e.zeilen.reduce((s, z) => s + z.entnahmeFrei, 0);
+}
+
+/**
+ * Hinweis erst ab diesem Abstand des realen Endvermögens (`endVermoegen`, heutige Franken).
+ * Ein Prozent scheitert, wenn «Ohne Krise» bei null oder darunter endet.
+ */
+export const MEHR_UEBRIG_AB = 10_000;
+
+/**
+ * Hinweis, wenn «Mit Krisen» den Planungshorizont erreicht, positiv endet und real
+ * mindestens `MEHR_UEBRIG_AB` über «Ohne Krise» liegt. Verglichen wird `endVermoegen`,
+ * auch in der Darstellung «Nominal». Die Entnahmen sind die Summen derselben beiden Rechnungen.
+ * Den Satz über schwache Jahre gibt es nur bei «Dynamisch gestaffelt» oder «Dynamisch
+ * (fester Prozentsatz)» und nur, wenn die Entnahmen wirklich tiefer liegen.
+ */
+export function mehrUebrigText(
+  endeOhne: number,
+  endeMit: number,
+  entnahmeOhne: number,
+  entnahmeMit: number,
+  ausgleich: boolean,
+  strategie: Entnahme,
+  erfolg: boolean,
+): string | null {
+  if (!erfolg || !(endeMit > 0) || endeMit - endeOhne < MEHR_UEBRIG_AB) return null;
+  const kopf = 'Mit Krisen bleibt hier am Ende mehr übrig.';
+  const weniger = entnahmeMit < entnahmeOhne;
+  const satzNachSchwachenJahren = strategie.art === 'gestaffelt' || strategie.art === 'dynamisch';
+  const summen = `${fmtChf(entnahmeMit)} statt ${fmtChf(entnahmeOhne)}`;
+  if (weniger && satzNachSchwachenJahren) {
+    const grund = ausgleich
+      ? 'Der Ausgleich hebt die normalen Jahre an, und Ihre Entnahmestrategie entnimmt nach schwachen Jahren weniger.'
+      : 'Ihre Entnahmestrategie entnimmt nach schwachen Jahren weniger.';
+    return `${kopf} Grund: ${grund} Unterwegs entnehmen Sie dadurch insgesamt weniger (${summen}, in heutigen Franken).`;
+  }
+  if (ausgleich) {
+    return (
+      `${kopf} Grund: Der Ausgleich hebt die normalen Jahre an. ` +
+      'Je nachdem, wann die Krisen fallen, wächst das Vermögen dadurch insgesamt stärker.'
+    );
+  }
+  if (weniger) {
+    return `${kopf} Unterwegs entnehmen Sie insgesamt weniger (${summen}, in heutigen Franken).`;
+  }
+  return kopf;
+}
+
 interface Props {
   h: Haushalt;
   setH: Setzer;
-  /** effektiver Haushalt (mit Schätzwerten) */
-  effH: Haushalt;
   regeln: Regeln;
   heute: Monat;
   /** Wunsch-Rücktritt mit Krise (falls aktiv) */
@@ -149,13 +213,17 @@ interface Props {
    * Nicht `h.annahmen.renditeNominal`: der Regler ändert die Rechnung, bevor er übernommen wird.
    */
   annahmeRendite: number;
+  /**
+   * Haushalt, mit dem «Mit Krisen» rechnet (Regler schon eingesetzt, noch nicht übernommen).
+   * «Ohne Krise» und der Umlauf-Vergleich nutzen denselben Stand.
+   */
+  rechnungH: Haushalt;
 }
 
 /** Krisenmodus und Editor. Eine Stelle, im Block «Was wäre, wenn …?», schreibt direkt in den Haushalt. */
 export function KrisenSteuerung({
   h,
   setH,
-  effH,
   regeln,
   heute,
   wunsch,
@@ -163,15 +231,15 @@ export function KrisenSteuerung({
   namen,
   aktienanteilHier,
   annahmeRendite,
+  rechnungH,
 }: Props) {
   const k = h.krisen;
   const [rueckfrage, setRueckfrage] = useState(false);
   const [uebernahmeHinweis, setUebernahmeHinweis] = useState<string | null>(null);
-  const aktiv = krisenOptionen(effH) !== undefined;
-  // Vergleich ohne Krise (gleiche Eingaben)
+  const aktiv = krisenOptionen(rechnungH) !== undefined;
   const ohne = useMemo(
-    () => (aktiv ? simuliere({ ...effH, krisen: { ...effH.krisen, modus: 'keine' } }, regeln, { start: heute }) : null),
-    [aktiv, effH, regeln, heute],
+    () => (aktiv ? vergleichOhneKrise(rechnungH, regeln, heute) : null),
+    [aktiv, rechnungH, regeln, heute],
   );
   const abschnitte = useMemo(() => (wunsch ? krisenAbschnitte(wunsch, refIdx) : []), [wunsch, refIdx]);
   const fenster = useMemo(() => horizontVon(h, heute.jahr), [h, heute.jahr]);
@@ -194,7 +262,22 @@ export function KrisenSteuerung({
     k.modus === 'automatisch' || (k.modus === 'individuell' && k.ausgleich === true)
       ? (wunsch?.krisenNormal ?? null)
       : null;
-  const umlauf = k.modus === 'automatisch' ? autoNormal(effH) : null;
+  const umlauf = k.modus === 'automatisch' ? autoNormal(rechnungH) : null;
+  const dar = darstellungVon(h);
+  const entnahmeOhne = ohne ? entnahmenGesamt(ohne) : 0;
+  const entnahmeMit = wunsch ? entnahmenGesamt(wunsch) : 0;
+  const hinweisMehr =
+    wunsch && ohne
+      ? mehrUebrigText(
+          ohne.endVermoegen,
+          wunsch.endVermoegen,
+          entnahmeOhne,
+          entnahmeMit,
+          k.modus === 'automatisch' || k.ausgleich === true,
+          normalisiereEntnahme(rechnungH.entnahme),
+          wunsch.erfolg,
+        )
+      : null;
   const horizont = wunsch ? `${wunsch.zeilen[0]?.jahr ?? heute.jahr}–${wunsch.zeilen.at(-1)?.jahr ?? ''}` : '';
   const erwName =
     namen[
@@ -483,7 +566,8 @@ export function KrisenSteuerung({
               <div>
                 <h3>Ohne Krise</h3>
                 <p>{ohne.erfolg ? 'Reicht bis zum Planungsalter' : `Reicht bis ${ohne.ruinJahr}`}</p>
-                <p className="klein">Am Ende: {fmtChf(endBetrag(ohne, darstellungVon(h)))}</p>
+                <p className="klein">Am Ende: {fmtChf(endBetrag(ohne, dar))}</p>
+                <p className="klein">Entnahmen gesamt (heute): {fmtChf(entnahmeOhne)}</p>
               </div>
               <div>
                 <h3>{k.modus === 'automatisch' ? 'Mit Krisen (automatisch)' : 'Mit Ihren Krisen'}</h3>
@@ -492,8 +576,10 @@ export function KrisenSteuerung({
                     ? 'Reicht bis zum Planungsalter'
                     : `Reicht bis ${wunsch.ruinJahr} (Alter ${wunsch.ruinAlter})`}
                 </p>
-                <p className="klein">Am Ende: {fmtChf(endBetrag(wunsch, darstellungVon(h)))}</p>
+                <p className="klein">Am Ende: {fmtChf(endBetrag(wunsch, dar))}</p>
+                <p className="klein">Entnahmen gesamt (heute): {fmtChf(entnahmeMit)}</p>
               </div>
+              {hinweisMehr ? <p className="klein vergleich__hinweis">{hinweisMehr}</p> : null}
             </div>
           ) : null}
           {abschnitte.length > 0 ? (

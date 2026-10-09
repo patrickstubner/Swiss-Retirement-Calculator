@@ -94,6 +94,11 @@ export function mitWasWaere(h: Haushalt, w: WasWaere, jahr: number): Haushalt {
   };
 }
 
+/** Was «Übernehmen» in den Haushalt schreibt: die Regler ersetzen die Eingabe. */
+export function haushaltNachUebernehmen(aktuell: Haushalt, w: WasWaere, jahr: number): Haushalt {
+  return mitWasWaere(aktuell, w, jahr);
+}
+
 export interface Kennzahlen {
   wunsch: SimulationsErgebnis;
   solver: SolverErgebnis;
@@ -210,10 +215,26 @@ interface Props {
   refIdx: number;
   /** Aktienanteil hier eingeben (Schnell) oder nur anzeigen (Detailliert, Feld im Schritt Annahmen). */
   aktienanteilHier: boolean;
+  /** Anfang der Regler. Fehlt er, gilt die Eingabe. Die Seite setzt ihn nicht. */
+  reglerAnfang?: WasWaere;
+  /** Wunsch-Rechnung sofort, ohne Worker. Die Seite setzt das nicht. */
+  sofort?: boolean;
 }
 
-export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, refIdx, aktienanteilHier }: Props) {
-  const [w, setW] = useState<WasWaere>(KEIN_WAS_WAERE);
+export function Auswertung({
+  h,
+  setH,
+  effH,
+  regeln,
+  heute,
+  suchModus,
+  namen,
+  refIdx,
+  aktienanteilHier,
+  reglerAnfang,
+  sofort,
+}: Props) {
+  const [w, setW] = useState<WasWaere>(reglerAnfang ?? KEIN_WAS_WAERE);
   const [gemeinsam, setGemeinsam] = useState(true);
   const geaendert =
     w.alter.some((a) => a !== null && a !== undefined) ||
@@ -235,8 +256,12 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
     }),
     [hwVerz, heute, suchModus],
   );
-  const ausStand = useRechnung(ausVorlage, (m) => (m.art === 'auswertung' ? m.kennzahlen : undefined));
-  const k = ausStand.wert;
+  const ausStand = useRechnung(sofort ? null : ausVorlage, (m) => (m.art === 'auswertung' ? m.kennzahlen : undefined));
+  const sync = useMemo(
+    () => (sofort ? auswertungRechnung(hw, regeln, heute, suchModus) : null),
+    [sofort, hw, regeln, heute, suchModus],
+  );
+  const k = ausStand.wert ?? sync;
   const ausLaeuft = ausStand.laeuft || (k === null && ausStand.fehler === null);
   // Monte Carlo (wiederkehrende Krisen) für Erfolgswahrscheinlichkeit und Bandbreite – etwas verzögert
   const mcEingabe = useDeferredValue(hwVerz);
@@ -301,7 +326,7 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
   const krisenModus = w.krise ?? h.krisen.modus;
 
   const uebernehmen = () => {
-    setH((x) => mitWasWaere(x, w, heute.jahr));
+    setH((x) => haushaltNachUebernehmen(x, w, heute.jahr));
     setW(KEIN_WAS_WAERE);
   };
 
@@ -352,7 +377,6 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
       <KrisenSteuerung
         h={h}
         setH={setH}
-        effH={effH}
         regeln={regeln}
         heute={heute}
         wunsch={k?.wunsch ?? null}
@@ -360,6 +384,7 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
         namen={namen}
         aktienanteilHier={aktienanteilHier}
         annahmeRendite={simulierteRenditeNominal(effH.annahmen.renditeNominal, w.rendite)}
+        rechnungH={hwVerz}
       />
 
       <div className="regler-gruppe">

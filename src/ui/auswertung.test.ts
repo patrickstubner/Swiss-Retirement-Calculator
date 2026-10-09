@@ -1,10 +1,16 @@
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { simuliere } from '../core/simulation';
 import type { Haushalt } from '../core/typen';
 import { neuePerson, standardHaushalt } from '../data/defaults';
+import { autoNormal } from '../data/krisen';
 import { ladeRegeln } from '../rules';
-import { KEIN_WAS_WAERE, mitWasWaere, rechne } from './components/Auswertung';
+import { Auswertung, haushaltNachUebernehmen, KEIN_WAS_WAERE, mitWasWaere, rechne } from './components/Auswertung';
+import { vergleichOhneKrise } from './components/Krisen';
+import { darstellungVon, endBetrag } from './darstellung';
 import { chartFarbe, mitAlpha } from './farben';
+import { fmtChf, fmtProzent } from './format';
 import { krisenAbschnitte, krisenText } from './krisenGrafik';
 
 const regeln = ladeRegeln(2026);
@@ -38,6 +44,62 @@ describe('Was-wäre-wenn', () => {
     expect(hw).toEqual(h);
     const k = rechne(hw, regeln, start, 'gemeinsam');
     expect(k.wunsch.endVermoegen).toBe(simuliere(h, regeln, { start }).endVermoegen);
+  });
+
+  it('«Übernehmen» schreibt den Regler über die Eingabe', () => {
+    const h = haushalt();
+    const eingabe = { ...h, annahmen: { ...h.annahmen, renditeNominal: 0.07 } };
+    const regler = { ...KEIN_WAS_WAERE, rendite: 0.05, teuerung: 0.03, ausgaben: 70_000, planungsalter: 88 };
+    const nach = haushaltNachUebernehmen(eingabe, regler, 2026);
+    expect(eingabe.annahmen.renditeNominal).toBe(0.07);
+    expect(nach.annahmen.renditeNominal).toBe(0.05);
+    expect(nach.annahmen.inflation).toBe(0.03);
+    expect(nach.ausgaben.lebenshaltung).toBe(70_000);
+    expect(nach.planungsalter).toBe(88);
+    expect(nach).toEqual(mitWasWaere(eingabe, regler, 2026));
+    expect(simuliere(nach, regeln, { start }).endVermoegen).not.toBe(
+      simuliere(eingabe, regeln, { start }).endVermoegen,
+    );
+  });
+
+  it('die Auswertung zeigt «Ohne Krise» und den Umlauf zum Regler, nicht zur Eingabe', () => {
+    const basis = haushalt();
+    const h: Haushalt = {
+      ...basis,
+      annahmen: { ...basis.annahmen, renditeNominal: 0.07 },
+      krisen: { ...basis.krisen, modus: 'automatisch' },
+    };
+    const regler = { ...KEIN_WAS_WAERE, rendite: 0.1 };
+    const hw = mitWasWaere(h, regler, 2026);
+    const ohneRegler = vergleichOhneKrise(hw, regeln, start);
+    const ohneEingabe = vergleichOhneKrise(h, regeln, start);
+    const umlaufRegler = autoNormal(hw);
+    const umlaufEingabe = autoNormal(h);
+    expect(ohneRegler.endVermoegen).not.toBe(ohneEingabe.endVermoegen);
+    expect(umlaufRegler.wertschriften).not.toBeCloseTo(umlaufEingabe.wertschriften, 6);
+    const html = renderToStaticMarkup(
+      createElement(Auswertung, {
+        h,
+        setH: () => {},
+        effH: h,
+        regeln,
+        heute: start,
+        suchModus: 'gemeinsam',
+        namen: ['Muster'],
+        refIdx: 0,
+        aktienanteilHier: false,
+        reglerAnfang: regler,
+        sofort: true,
+      }),
+    );
+    const dar = darstellungVon(h);
+    expect(html).toContain('Ohne Krise');
+    expect(html).toContain(`Am Ende: ${fmtChf(endBetrag(ohneRegler, dar))}`);
+    expect(html).not.toContain(`Am Ende: ${fmtChf(endBetrag(ohneEingabe, dar))}`);
+    expect(html).toContain(`wären ${fmtProzent(umlaufRegler.wertschriften, 2)}`);
+    expect(html).not.toContain(`wären ${fmtProzent(umlaufEingabe.wertschriften, 2)}`);
+    expect(html).toContain(`statt ${fmtProzent(0.1, 2)}`);
+    expect(html).not.toContain('statt 7%');
   });
 
   it('überträgt Rücktrittsalter, Ausgaben, Rendite und Teuerung', () => {
