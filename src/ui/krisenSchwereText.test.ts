@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { EIGENE_KRISE_ID } from '../core/krisen';
-import { KRISEN, krisenNachSchwere, krisenSchwere } from '../data/krisen';
+import { EIGENE_KRISE_ID, type Krise } from '../core/krisen';
+import { KRISEN, type KrisenSchwere, krisenNachSchwere, krisenSchwere } from '../data/krisen';
 import {
+  HAUSPREIS_ANZEIGE_AB,
   KRISEN_KATALOG_OPTIONEN,
   krisenAktienEndeText,
   krisenErholungText,
+  krisenExtremText,
   krisenHauspreisText,
   krisenKatalogOptionen,
   krisenOptionLabel,
@@ -13,52 +15,51 @@ import {
 } from './krisenSchwereText';
 
 describe('Texte der Krisenauswahl', () => {
-  it('Optionen folgen dem Aktienrückgang und die eigene Krise steht am Ende', () => {
+  it('die Optionszeile nennt Rückgang, Name und höchstens einen Zusatz', () => {
     const optionen = krisenKatalogOptionen();
     expect(optionen.map((o) => o.value)).toEqual([...krisenNachSchwere().map((k) => k.id), EIGENE_KRISE_ID]);
-    expect(KRISEN_KATALOG_OPTIONEN.map((o) => o.value)).toEqual(optionen.map((o) => o.value));
+    expect(KRISEN_KATALOG_OPTIONEN.map((o) => o.label)).toEqual(optionen.map((o) => o.label));
     expect(Object.isFrozen(KRISEN_KATALOG_OPTIONEN)).toBe(true);
-    expect(optionen.at(-1)).toEqual({ value: EIGENE_KRISE_ID, label: 'Eigene Krise (Annahme)' });
-    const japan = optionen.find((o) => o.value === 'japan1990');
-    expect(japan?.label.startsWith('-62.7%')).toBe(true);
-    expect(japan?.label).toContain('Japan-Krise 1990');
-    expect(japan?.label).toContain('extrem');
-    expect(japan?.label).toContain('Tiefpunkt nach ca. 14 J.');
-    expect(japan?.label).toContain('Katalogphase 14 J.');
-    expect(japan?.label).toContain('nicht erholt');
-    expect(japan?.label).toContain('Hauspreise real max. -32.9%');
-    expect(japan?.label).not.toContain('Dauer');
-    expect(japan?.label).not.toContain('endete im Plus');
-    const covid = optionen.find((o) => o.value === 'covid2020');
-    expect(covid?.label).toContain('Aktien am Phasenende +4.8%');
-    expect(covid?.label).toContain('Katalogphase 1 J.');
-    expect(covid?.label).not.toContain('Tiefpunkt');
-    expect(covid?.label).not.toContain('endete im Plus');
-    const immo = optionen.find((o) => o.value === 'immobilienCh1990');
-    expect(immo?.label).toContain('Aktien am Phasenende +181.7%');
-    expect(immo?.label).toContain('Hauspreise real max. -31.8%');
-    expect(immo?.label).toContain('Katalogphase 8 J.');
-    expect(immo?.label).toContain('Tiefpunkt nach ca. 1 J.');
-    expect(immo?.label).not.toContain('endete im Plus');
-    const zins = optionen.find((o) => o.value === 'zinsschock2022');
-    expect(zins?.label).toContain('nicht erholt');
-    expect(zins?.label).toContain('Katalogphase 1 J.');
-    expect(zins?.label).not.toContain('Hauspreise');
-    const oel = optionen.find((o) => o.value === 'oelkrise1973');
-    expect(oel?.label).toContain('Aktien historisch nach 13 J. erholt');
-    expect(oel?.label).toContain('Hauspreise real max. -10%');
-    expect(oel?.label).not.toContain('extrem');
+    expect(optionen.map((o) => o.label)).toEqual([
+      '-62.7% · Japan-Krise 1990 · extrem',
+      '-55.2% · Ölkrise 1973 · Häuser -10%',
+      '-51.9% · Grosse Depression 1929 · extrem',
+      '-47.2% · Stagflation 1973 · extrem',
+      '-43.2% · Dotcom 2000',
+      '-36.1% · Finanzkrise 2007',
+      '-28.5% · Schwarzer Montag 1987',
+      '-23.5% · Immobilienkrise CH 1990 · Häuser -31.8%',
+      '-18.8% · Zinsschock 2022 · nicht erholt',
+      '-7.9% · Eurokrise 2011',
+      'Covid 2020',
+      'Eigene Krise (Annahme)',
+    ]);
+    for (const o of optionen) {
+      expect(o.label.length, o.label).toBeLessThanOrEqual(50);
+      expect(o.label).not.toContain('Tiefpunkt');
+      expect(o.label).not.toContain('Katalogphase');
+      expect(o.label.split(' · ').length).toBeLessThanOrEqual(3);
+    }
     const ids = optionen.map((o) => o.value);
     expect(ids.indexOf('immobilienCh1990')).toBeLessThan(ids.indexOf('zinsschock2022'));
-    expect(ids.indexOf('immobilienCh1990')).toBeLessThan(ids.indexOf('eurokrise2011'));
   });
 
-  it('Infozeile trennt Katalogphase, historische Erholung und Hauspreise', () => {
-    const covid = krisenSchwere(KRISEN.find((k) => k.id === 'covid2020') as (typeof KRISEN)[number], 'CHE');
-    const japan = krisenSchwere(KRISEN.find((k) => k.id === 'japan1990') as (typeof KRISEN)[number], 'JPN');
-    const oel = krisenSchwere(KRISEN.find((k) => k.id === 'oelkrise1973') as (typeof KRISEN)[number], 'CHE');
-    const immo = krisenSchwere(KRISEN.find((k) => k.id === 'immobilienCh1990') as (typeof KRISEN)[number], 'CHE');
-    const zins = krisenSchwere(KRISEN.find((k) => k.id === 'zinsschock2022') as (typeof KRISEN)[number], 'CHE');
+  it('der eine Zusatz folgt extrem, dann nicht erholt, dann Häuser ab −1 %', () => {
+    const vorlage = KRISEN.find((k) => k.id === 'oelkrise1973') as Krise;
+    const s = krisenSchwere(vorlage, 'CHE') as KrisenSchwere;
+    expect(krisenOptionLabel(vorlage, s)).toBe('-55.2% · Ölkrise 1973 · Häuser -10%');
+    expect(krisenOptionLabel(vorlage, { ...s, dauerArt: 'offen' })).toBe('-55.2% · Ölkrise 1973 · nicht erholt');
+    expect(krisenOptionLabel({ ...vorlage, id: 'nurExtrem' }, s)).toBe('-55.2% · Ölkrise 1973 · extrem');
+    expect(HAUSPREIS_ANZEIGE_AB).toBe(-0.01);
+  });
+
+  it('der Kasten trägt Katalogphase, Aktien-Tiefpunkt, Hauspreise und die Lücke 2022', () => {
+    const covid = krisenSchwere(KRISEN.find((k) => k.id === 'covid2020') as Krise, 'CHE');
+    const japan = krisenSchwere(KRISEN.find((k) => k.id === 'japan1990') as Krise, 'JPN');
+    const oel = krisenSchwere(KRISEN.find((k) => k.id === 'oelkrise1973') as Krise, 'CHE');
+    const immo = krisenSchwere(KRISEN.find((k) => k.id === 'immobilienCh1990') as Krise, 'CHE');
+    const zins = krisenSchwere(KRISEN.find((k) => k.id === 'zinsschock2022') as Krise, 'CHE');
+    const dotcom = krisenSchwere(KRISEN.find((k) => k.id === 'dotcom2000') as Krise, 'CHE');
     expect(covid && krisenTiefpunktText(covid)).toContain('keiner');
     expect(covid && krisenPhasenText(covid)).toBe(
       'Die App spielt nur die Katalogphase (1 Jahr) ab, danach gilt Ihre Renditeannahme.',
@@ -67,18 +68,16 @@ describe('Texte der Krisenauswahl', () => {
     expect(covid && krisenAktienEndeText(covid)).toBe('+4.8%');
     expect(covid && krisenHauspreisText(covid)).toBe('kein Rückgang in den Jahreswerten');
     expect(japan && krisenErholungText(japan)).toBe('nicht erholt');
-    expect(japan && krisenPhasenText(japan)).toContain('Katalogphase (14 Jahre)');
     expect(japan && krisenTiefpunktText(japan)).toBe('nach ca. 14 Jahren');
     expect(japan && krisenHauspreisText(japan)).toBe('real max. -32.9% (Peak-to-Trough)');
-    expect(oel && krisenErholungText(oel)).toContain('nach 13 Jahren wieder auf dem Vorkrisenniveau');
+    expect(japan && krisenExtremText('japan1990')).toBe('extrem (nicht in «Automatisch»)');
+    expect(krisenExtremText('oelkrise1973')).toBeNull();
     expect(oel && krisenErholungText(oel)).toContain('wird nicht abgespielt');
-    expect(oel && krisenPhasenText(oel)).toContain('Katalogphase (2 Jahre)');
-    expect(oel && krisenTiefpunktText(oel)).toBe('nach ca. 2 Jahren');
-    expect(immo && krisenErholungText(immo)).toContain('innerhalb der Katalogphase');
-    expect(immo && krisenAktienEndeText(immo)).toBe('+181.7%');
+    expect(oel && krisenHauspreisText(oel)).toBe('real max. -10% (Peak-to-Trough)');
     expect(immo && krisenHauspreisText(immo)).toBe('real max. -31.8% (Peak-to-Trough)');
-    expect(zins && krisenErholungText(zins)).toBe('nicht erholt');
-    expect(zins && krisenHauspreisText(zins)).toBeNull();
+    expect(immo && krisenAktienEndeText(immo)).toBe('+181.7%');
+    expect(zins && krisenHauspreisText(zins)).toBe('keine Jahresdaten 2022; die Rechnung nutzt Ihre Renditeannahme.');
+    expect(dotcom && krisenHauspreisText(dotcom)).toBe('kein Rückgang in den Jahreswerten');
   });
 
   it('die Optionszeile enthält keine HTML-Zeichen aus dem Katalognamen', () => {
@@ -89,7 +88,6 @@ describe('Texte der Krisenauswahl', () => {
       const label = krisenOptionLabel(krise, s);
       expect(label).not.toContain('<');
       expect(label).not.toContain('>');
-      expect(label).not.toContain('Dauer');
     }
   });
 });

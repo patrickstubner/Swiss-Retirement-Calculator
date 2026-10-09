@@ -65,6 +65,7 @@ import {
   KRISEN_KATALOG_OPTIONEN,
   krisenAktienEndeText,
   krisenErholungText,
+  krisenExtremText,
   krisenHauspreisText,
   krisenPhasenText,
   krisenTiefpunktText,
@@ -518,11 +519,13 @@ export function KrisenSteuerung({ h, setH, effH, regeln, heute, wunsch, refIdx, 
 }
 
 function KriseSchwereInfo({
+  kriseId,
   kriseName,
   standardLand,
   land,
   s,
 }: {
+  kriseId: string;
   kriseName: string;
   standardLand: KrisenLand;
   land: KrisenLand;
@@ -533,6 +536,7 @@ function KriseSchwereInfo({
       ? 'keiner unter dem Vorkrisenstand'
       : `${fmtProzent(s.maxRueckgang, 1)} (Peak-to-Trough, kumuliert)`;
   const hauspreise = krisenHauspreisText(s);
+  const extrem = krisenExtremText(kriseId);
   return (
     <div className="krise-schwere">
       <dl aria-label={`Schwere: ${kriseName}`}>
@@ -549,7 +553,7 @@ function KriseSchwereInfo({
           <dd>{rueckgang}</dd>
         </div>
         <div>
-          <dt>Tiefpunkt</dt>
+          <dt>Aktien-Tiefpunkt</dt>
           <dd>{krisenTiefpunktText(s)}</dd>
         </div>
         <div>
@@ -570,10 +574,17 @@ function KriseSchwereInfo({
             <dd>{hauspreise}</dd>
           </div>
         ) : null}
+        {extrem ? (
+          <div>
+            <dt>Einordnung</dt>
+            <dd>{extrem}</dd>
+          </div>
+        ) : null}
       </dl>
       <p className="klein">
-        Jahreswerte. Realer Aktien-Gesamtertrag, inkl. Dividenden, 100 % Aktien, {LAND_NAMEN[land]}. Der Tiefpunkt ist
-        ein Jahresende, nicht ein Monat. Die historische Erholung nach der Katalogphase fliesst nicht in die Rechnung.
+        Jahreswerte. Realer Aktien-Gesamtertrag, inkl. Dividenden, 100 % Aktien, {LAND_NAMEN[land]}. Der
+        Aktien-Tiefpunkt ist ein Jahresende, nicht ein Monat. Die historische Erholung nach der Katalogphase fliesst
+        nicht in die Rechnung.
         {land !== standardLand ? ` Die Liste sortiert nach der Standardreihe ${LAND_NAMEN[standardLand]}.` : ''}
       </p>
     </div>
@@ -633,7 +644,7 @@ function GeplanteKrise({
         }
       />
       {krise && schwere ? (
-        <KriseSchwereInfo kriseName={krise.name} standardLand={krise.land} land={land} s={schwere} />
+        <KriseSchwereInfo kriseId={krise.id} kriseName={krise.name} standardLand={krise.land} land={land} s={schwere} />
       ) : null}
       {krise ? <p className="klein">{krise.beschreibung}</p> : null}
       {eigene ? (

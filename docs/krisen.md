@@ -194,13 +194,24 @@ dass sie nicht abgespielt wird (Ölkrise: Katalogphase 2 Jahre, Rückkehr auf de
 nach 13 Jahren). Wird das Niveau in der Datenreihe nicht erreicht (Japan ab 1990, Zinsschock 2022), steht
 «nicht erholt». Fiel der Index nie unter den Vorkrisenstand, steht «kein Einbruch unter dem Vorkrisenstand».
 
-**Aktien am Phasenende:** der kumulierte reale Aktien-Gesamtertrag am Jahresende `bis` (Index − 1). Ist er positiv,
-nennt die Optionszeile das als Zusatz «Aktien am Phasenende +181.7%». Das Plus bildet keine eigene Gruppe in der Liste.
+**Aktien-Tiefpunkt:** Jahre vom Jahresende des Höchststands bis zum Jahresende des Tiefpunkts. Steht nur im Kasten,
+Anzeige «nach ca. N Jahren». Der Name sagt, dass es der Aktienindex ist, nicht die Hauspreise.
 
-**Hauspreise:** wo jedes Katalogjahr `hpnom` und Teuerung hat, zusätzlich der maximale reale Hauspreis-Rückgang,
-dieselbe Peak-to-Trough-Rechnung (Jahresende, Index = 1 am Jahresende vor `von`, real = nominal / Teuerung). Die
-Optionszeile nennt ihn nur bei einem Rückgang, zum Beispiel «Hauspreise real max. -31.8%». Fehlt ein Jahr (Zinsschock
-2022), gibt es keine Hauspreiszeile. Die Kennzahl ändert die Sortierung nicht.
+**Aktien am Phasenende:** der kumulierte reale Aktien-Gesamtertrag am Jahresende `bis` (Index − 1). Steht nur im Kasten,
+zum Beispiel «+181.7%». Das Plus bildet keine eigene Gruppe und keinen Zusatz in der Menüzeile.
+
+**Hauspreise:** wo jedes Katalogjahr `hpnom` und Teuerung hat, der maximale reale Hauspreis-Rückgang, dieselbe
+Peak-to-Trough-Rechnung (Jahresende, Index = 1 am Jahresende vor `von`, real = nominal / Teuerung). Angezeigt wird er
+erst ab 1 Prozentpunkt (`HAUSPREIS_ANZEIGE_AB` = −0.01 in `src/ui/krisenSchwereText.ts`). Flacher, zum Beispiel Dotcom
+rund −0.1 %, gilt als kein Rückgang. In der Menüzeile heisst der Zusatz «Häuser -31.8%», und nur wenn die Krise weder
+«extrem» noch «nicht erholt» ist. Im Kasten steht «real max. -31.8% (Peak-to-Trough)». Fehlt `hpnom` (Zinsschock,
+Schweiz 2022; Aktien, Obligationen, Geldmarkt und Teuerung sind vorhanden), sagt der Kasten «keine Jahresdaten 2022;
+die Rechnung nutzt Ihre Renditeannahme.» Das stimmt mit `jahresRenditen`: fehlendes `hpnom` wird
+`wohneigentumNominal` (nur bei Ausgleich) oder sonst `annahmen.renditeNominal`. Ein eigenes Feld für eine
+Wohneigentumsrendite gibt es nicht. Die Teuerung 2022 bleibt die historische Zahl. Die Kennzahl sortiert nicht.
+
+**Menüzeile (ab 1.3.6):** höchstens etwa 50 Zeichen: Rückgang, Name, ein Zusatz. Reihenfolge des Zusatzes: «extrem»,
+dann «nicht erholt», dann «Häuser» ab der Schwelle. Alles andere steht im Kasten direkt unter der Auswahl.
 
 **Sortierung:** nur nach dem maximalen realen Aktienrückgang, grösster zuerst, dann «Eigene Krise (Annahme)». Ein Plus
 am Phasenende schiebt die Krise nicht nach hinten. Die eigene Krise ist ein Modell, keine historische Kennzahl; ihre
@@ -211,25 +222,25 @@ weil dort die Abfolge gerechnet wird, nicht die Schwere.
 Gerundet wie in der App (`fmtProzent`, de-CH, Dezimalpunkt, kein Leerzeichen vor %), Stand der Reihe 27.9.2026
 (JST R6, Schweiz ab 2021 SNB und BFS):
 
-| Krise | Start | Maximaler Rückgang | Tiefpunkt | Katalogphase | Historische Erholung | Aktien am Phasenende | Hauspreise real |
+| Krise | Start | Maximaler Rückgang | Aktien-Tiefpunkt | Katalogphase | Historische Erholung | Aktien am Phasenende | Hauspreise real | Menüzeile |
 |---|---|---|---|---|---|---|---|
-| Japan ab 1990 (extrem) | 1990 | -62.7% | nach ca. 14 Jahren | 14 Jahre | nicht erholt | -62.7% | -32.9% |
-| Ölkrise | 1973 | -55.2% | nach ca. 2 Jahren | 2 Jahre | nach 13 Jahren (wird nicht abgespielt) | -55.2% | -10% |
-| Grosse Depression (extrem) | 1929 | -51.9% | nach ca. 4 Jahren | 4 Jahre | nach 7 Jahren (wird nicht abgespielt) | -51.9% | -24.6% |
-| Stagflation (extrem) | 1973 | -47.2% | nach ca. 2 Jahren | 9 Jahre | nach 11 Jahren (wird nicht abgespielt) | -23.3% | -6.9% |
-| Dotcom | 2000 | -43.2% | nach ca. 2 Jahren | 3 Jahre | nach 6 Jahren (wird nicht abgespielt) | -37.4% | -0.1% |
-| Finanz- und Immobilienkrise | 2007 | -36.1% | nach ca. 2 Jahren | 3 Jahre | nach 7 Jahren (wird nicht abgespielt) | -20.9% | kein Rückgang |
-| Schwarzer Montag | 1987 | -28.5% | nach ca. 1 Jahr | 1 Jahr | nach 3 Jahren (wird nicht abgespielt) | -28.5% | kein Rückgang |
-| Schweizer Immobilienkrise | 1990 | -23.5% | nach ca. 1 Jahr | 8 Jahre | nach 4 Jahren (innerhalb der Phase) | +181.7% | -31.8% |
-| Inflations- und Zinsschock | 2022 | -18.8% | nach ca. 1 Jahr | 1 Jahr | nicht erholt | -18.8% | keine Daten |
-| Eurokrise | 2011 | -7.9% | nach ca. 1 Jahr | 1 Jahr | nach 2 Jahren (wird nicht abgespielt) | -7.9% | kein Rückgang |
-| Covid | 2020 | keiner unter dem Vorkrisenstand | keiner | 1 Jahr | kein Einbruch unter dem Vorkrisenstand | +4.8% | kein Rückgang |
+| Japan ab 1990 (extrem) | 1990 | -62.7% | nach ca. 14 Jahren | 14 Jahre | nicht erholt | -62.7% | -32.9% | `-62.7% · Japan-Krise 1990 · extrem` |
+| Ölkrise | 1973 | -55.2% | nach ca. 2 Jahren | 2 Jahre | nach 13 Jahren (wird nicht abgespielt) | -55.2% | -10% | `-55.2% · Ölkrise 1973 · Häuser -10%` |
+| Grosse Depression (extrem) | 1929 | -51.9% | nach ca. 4 Jahren | 4 Jahre | nach 7 Jahren (wird nicht abgespielt) | -51.9% | -24.6% | `-51.9% · Grosse Depression 1929 · extrem` |
+| Stagflation (extrem) | 1973 | -47.2% | nach ca. 2 Jahren | 9 Jahre | nach 11 Jahren (wird nicht abgespielt) | -23.3% | -6.9% | `-47.2% · Stagflation 1973 · extrem` |
+| Dotcom | 2000 | -43.2% | nach ca. 2 Jahren | 3 Jahre | nach 6 Jahren (wird nicht abgespielt) | -37.4% | kein Rückgang (unter 1 %) | `-43.2% · Dotcom 2000` |
+| Finanz- und Immobilienkrise | 2007 | -36.1% | nach ca. 2 Jahren | 3 Jahre | nach 7 Jahren (wird nicht abgespielt) | -20.9% | kein Rückgang | `-36.1% · Finanzkrise 2007` |
+| Schwarzer Montag | 1987 | -28.5% | nach ca. 1 Jahr | 1 Jahr | nach 3 Jahren (wird nicht abgespielt) | -28.5% | kein Rückgang | `-28.5% · Schwarzer Montag 1987` |
+| Schweizer Immobilienkrise | 1990 | -23.5% | nach ca. 1 Jahr | 8 Jahre | nach 4 Jahren (innerhalb der Phase) | +181.7% | -31.8% | `-23.5% · Immobilienkrise CH 1990 · Häuser -31.8%` |
+| Inflations- und Zinsschock | 2022 | -18.8% | nach ca. 1 Jahr | 1 Jahr | nicht erholt | -18.8% | keine Jahresdaten 2022 | `-18.8% · Zinsschock 2022 · nicht erholt` |
+| Eurokrise | 2011 | -7.9% | nach ca. 1 Jahr | 1 Jahr | nach 2 Jahren (wird nicht abgespielt) | -7.9% | kein Rückgang | `-7.9% · Eurokrise 2011` |
+| Covid | 2020 | keiner unter dem Vorkrisenstand | keiner | 1 Jahr | kein Einbruch unter dem Vorkrisenstand | +4.8% | kein Rückgang | `Covid 2020` |
 
 Die Schweizer Immobilienkrise endet bei den Aktien im Plus und steht trotzdem über dem Zinsschock, weil der maximale
-Aktienrückgang -23.5% tiefer ist als -18.8%. Die Hauspreise derselben Phase fielen real um -31.8% (Tiefpunkt 1997);
-diese Zahl steht in der Zeile, sortiert aber nicht. Aktien Schweiz 1990–1997 fielen nur 1990 real und lagen 1997 weit
-über dem Stand von 1989. Covid 2020 ist im Jahresendstand positiv; der Einbruch im März fehlt in den Jahreswerten.
-Beim Zinsschock 2022 fehlt `hpnom`.
+Aktienrückgang -23.5% tiefer ist als -18.8%. Die Hauspreise derselben Phase fielen real um -31.8% (Jahresende 1997);
+die Menüzeile nennt das als «Häuser -31.8%». Aktien Schweiz 1990–1997 fielen nur 1990 real und lagen 1997 weit über
+dem Stand von 1989. Covid 2020 ist im Jahresendstand positiv; der Einbruch im März fehlt in den Jahreswerten. Beim
+Zinsschock 2022 fehlt `hpnom`; die Teuerung ist vorhanden.
 
 ## 3. Rechenweise
 
