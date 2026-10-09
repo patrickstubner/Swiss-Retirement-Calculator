@@ -3,6 +3,12 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.3.5] - 2026-10-09
+
+### Geändert
+- Krisenauswahl im Modus «Individuell»: die Liste ist nach dem maximalen realen Aktienrückgang sortiert (grösster zuerst). Krisen, deren kumulierte Wirkung am Ende der Katalogphase positiv ist, folgen danach. «Eigene Krise» bleibt am Schluss. Gespeichert wird die Id, nicht die Position.
+- Pro Katalogkrise sichtbar: Name, Startjahr, Dauer bis zum Vorkrisenniveau (sonst die Länge der Katalogphase), maximaler Rückgang (Peak-to-Trough, kumuliert) und die Zeit bis zu diesem Tiefpunkt. Alles aus den Jahresreihen gerechnet, Anzeige «nach ca. N Jahren» und Hinweis «Jahreswerte». Realer Aktien-Gesamtertrag, inkl. Dividenden, 100 % Aktien, Standardreihe der Krise. Endet die Phase im Plus, steht das in der Zeile. Die Rechnung ändert sich nicht. Definition: `docs/krisen.md`, Abschnitt 2b.
+
 ## [1.3.4] - 2026-10-06
 
 ### Geändert

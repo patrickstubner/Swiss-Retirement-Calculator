@@ -37,7 +37,6 @@ import { geburtIndex, stoppAlterMonate } from '../../core/zeitpunkt';
 import { neueGeplanteKrise } from '../../data/defaults';
 import {
   AUTO_KRISEN,
-  aktienKennzahl,
   autoHaeufigkeit,
   automatischeKrisenAlsAuswahl,
   autoNormal,
@@ -46,10 +45,12 @@ import {
   KRISEN,
   KRISEN_DATEN,
   KRISEN_DATEN_STAND,
+  type KrisenSchwere,
   kriseNach,
   krisenAbstand,
   krisenListeZusammenfuehren,
   krisenOptionen,
+  krisenSchwere,
   LAND_NAMEN,
   STANDARD_KRISEN_PRO_DEKADE,
   standardErsteKrise,
@@ -60,6 +61,7 @@ import { fmtChf, fmtProzent, MONATSNAMEN } from '../format';
 import type { Setzer } from '../kontext';
 import { krisenAbschnitte, krisenText } from '../krisenGrafik';
 import { krisenNachModuswechsel } from '../krisenModus';
+import { krisenDauerText, krisenKatalogOptionen, krisenTiefpunktText } from '../krisenSchwereText';
 import type { McEinstellung } from '../mcKern';
 import { useVollMc } from '../mcVergleich';
 import { Faecher } from './Faecher';
@@ -247,7 +249,9 @@ export function KrisenSteuerung({ h, setH, effH, regeln, heute, wunsch, refIdx, 
           <p className="klein">
             Standard für neue Berechnungen. Die App legt die «normalen» Krisen der Geschichte der Reihe nach in die
             Zukunft: {AUTO_KRISEN.map((x) => x.kurz).join(', ')} – danach wieder von vorne. Die Grosse Depression, die
-            Stagflation 1973–81 und Japan ab 1990 gelten als extrem; sie sind nur bei «Individuell» wählbar.
+            Stagflation 1973–81 und Japan ab 1990 gelten als extrem; sie sind nur bei «Individuell» wählbar. Die
+            Reihenfolge hier ist der historische Ablauf, nicht die Schwere. Rückgang, Tiefpunkt und Dauer stehen bei
+            «Individuell» an der gewählten Krise.
           </p>
           <ZahlFeld
             label="Krisen pro 10 Jahre"
@@ -506,6 +510,60 @@ export function KrisenSteuerung({ h, setH, effH, regeln, heute, wunsch, refIdx, 
   );
 }
 
+function KriseSchwereInfo({
+  kriseName,
+  standardLand,
+  land,
+  s,
+}: {
+  kriseName: string;
+  standardLand: KrisenLand;
+  land: KrisenLand;
+  s: KrisenSchwere;
+}) {
+  const rueckgang =
+    s.jahreBisTiefpunkt === null
+      ? 'keiner unter dem Vorkrisenstand'
+      : `${fmtProzent(s.maxRueckgang, 1)} (Peak-to-Trough, kumuliert)`;
+  return (
+    <div className="krise-schwere">
+      <dl aria-label={`Schwere: ${kriseName}`}>
+        <div>
+          <dt>Krise</dt>
+          <dd>{kriseName}</dd>
+        </div>
+        <div>
+          <dt>Startjahr</dt>
+          <dd>{s.startjahr}</dd>
+        </div>
+        <div>
+          <dt>Maximaler Rückgang</dt>
+          <dd>{rueckgang}</dd>
+        </div>
+        <div>
+          <dt>Tiefpunkt</dt>
+          <dd>{krisenTiefpunktText(s)}</dd>
+        </div>
+        <div>
+          <dt>Dauer</dt>
+          <dd>{krisenDauerText(s)}</dd>
+        </div>
+        {s.endeteImPlus ? (
+          <div>
+            <dt>Ende der Krisenphase</dt>
+            <dd>endete im Plus: +{fmtProzent(s.endeKumuliert, 1)}</dd>
+          </div>
+        ) : null}
+      </dl>
+      <p className="klein">
+        Jahreswerte. Realer Aktien-Gesamtertrag, inkl. Dividenden, 100 % Aktien, {LAND_NAMEN[land]}. Der Tiefpunkt ist
+        ein Jahresende, nicht ein Monat.
+        {land !== standardLand ? ` Die Liste sortiert nach der Standardreihe ${LAND_NAMEN[standardLand]}.` : ''}
+      </p>
+    </div>
+  );
+}
+
 function GeplanteKrise({
   a,
   i,
@@ -532,7 +590,7 @@ function GeplanteKrise({
   const eigen = a.id === EIGENE_KRISE_ID;
   const krise = eigen ? undefined : kriseNach(a.id);
   const land = krise && LAENDER.includes(a.land) ? a.land : (krise?.land ?? 'CHE');
-  const kennzahl = krise ? aktienKennzahl(krise, land) : null;
+  const schwere = krise ? krisenSchwere(krise, land) : null;
   const pfad = krise ? krisenPfad(krise, land, h.annahmen.aktienanteil, KRISEN_DATEN, BASIS0) : null;
   const dd = pfad ? maxRealerRueckgang(pfad) : null;
   const teuerungMix = pfad ? pfad.reduce((s, p) => s * (1 + p.teuerung), 1) - 1 : null;
@@ -549,13 +607,7 @@ function GeplanteKrise({
       <AuswahlFeld
         label={anzahl > 1 ? `Krise ${i + 1}` : 'Krise'}
         value={eigen ? EIGENE_KRISE_ID : a.id}
-        optionen={[
-          ...KRISEN.map((x) => ({
-            value: x.id,
-            label: AUTO_KRISEN.includes(x) ? x.name : `${x.name} (extrem)`,
-          })),
-          { value: EIGENE_KRISE_ID, label: 'Eigene Krise (Annahme)' },
-        ]}
+        optionen={krisenKatalogOptionen()}
         onChange={(id) =>
           setze((x) =>
             id === EIGENE_KRISE_ID
@@ -564,6 +616,9 @@ function GeplanteKrise({
           )
         }
       />
+      {krise && schwere ? (
+        <KriseSchwereInfo kriseName={krise.name} standardLand={krise.land} land={land} s={schwere} />
+      ) : null}
       {krise ? <p className="klein">{krise.beschreibung}</p> : null}
       {eigene ? (
         <>
@@ -697,11 +752,8 @@ function GeplanteKrise({
           {krise.kurz} beginnt {monat > 1 ? `im ${monatName} ${beginn}` : beginn}
           {startJahr ? ` (${alterAmJahresende(startJahr, h.personen, namen).replace(/\.$/, '')})` : ''}. Ihr Mix (
           {fmtProzent(h.annahmen.aktienanteil, 0)} Aktien) verliert in den Katalogjahren real bis zu{' '}
-          <strong>{fmtProzent(-dd, 0)}</strong>, Teuerung total {fmtProzent(teuerungMix, 0)}.
-          {kennzahl && kennzahl.rueckgang < -0.001
-            ? ` Aktien real (100 %, ${LAND_NAMEN[land]}): Rückgang ${fmtProzent(-kennzahl.rueckgang, 0)}, Dauer bis zum Tiefpunkt ${kennzahl.dauer} ${kennzahl.dauer === 1 ? 'Jahr' : 'Jahre'}${kennzahl.erholung === null ? ', Erholung in der Datenreihe nicht erreicht' : `, Erholung ${kennzahl.erholung} ${kennzahl.erholung === 1 ? 'Jahr' : 'Jahre'}`}.`
-            : ' In den Jahresdaten kein realer Aktieneinbruch (z.B. Covid im Kalenderjahr).'}{' '}
-          Quelle: JST Macrohistory R6, Schweiz ab 2021 SNB und BFS.
+          <strong>{fmtProzent(-dd, 0)}</strong>, Teuerung total {fmtProzent(teuerungMix, 0)}. Quelle: JST Macrohistory
+          R6, Schweiz ab 2021 SNB und BFS.
         </p>
       ) : eigene ? (
         <p className="klein">

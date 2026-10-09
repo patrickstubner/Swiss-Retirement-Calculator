@@ -137,12 +137,10 @@ Stresstest.
   Ein Kalenderjahr hat genau eine Rendite (bei einem Monatsbeginn geometrisch gemischt). Läuft die frühere Krise
   danach weiter, nennt die App die Reihenfolge (z.B. «Covid bis März, danach Finanzkrise») und nicht dieselbe Krise
   als verdrängt. Die Jahre werden nicht addiert.
-- **Kennzahlen** am Eintrag (Aktien real, 100 %, gewählte Datenreihe): Stand 1 am Jahresende vor `von`, Tiefpunkt
-  nur in den Katalogjahren `von`…`bis`, Dauer = Jahre bis dorthin, Erholung = Jahre vom Tiefpunkt bis der Index
-  wieder mindestens 1 ist (die Reihe darf dafür über `bis` hinausgehen, höchstens 80 Jahre ab `von`; sonst «nicht
-  erreicht»). Teuerung = Produkt über `von`…`bis`. Gerechnet aus `data/krisen-historisch.json` (`aktienKennzahl`),
-  nicht aus einer gerundeten Ersatztabelle. Zusätzlich der reale Rückgang des eigenen Aktienmix über dieselben
-  Katalogjahre.
+- **Kennzahlen** an der gewählten Krise: siehe Abschnitt 2b (`krisenSchwere`). Zusätzlich, einmal unter den
+  Feldern, der reale Rückgang des eigenen Aktienmix über dieselben Katalogjahre. `aktienKennzahl` bleibt die ältere
+  Zerlegung (Rückgang vom Vorkrisenstand, Jahre bis zu diesem Minimum, Erholung ab dort, Teuerung) und fliesst nicht
+  in die Simulation.
 - **Eigene Krise** (`id` `eigen`): Modellannahme, keine historische Reihe. Realer Rückgang des ganzen
   Wertschriftenportfolios (−80 % bis −5 %, Standard −30 %) gleichmässig über 1–8 Jahre, danach reale Erholung auf
   den Stand vor der Krise über 0–15 Jahre (0 = der Stand bleibt unten). Aktien und Obligationen erhalten dieselbe
@@ -159,6 +157,68 @@ Vergleich» farbig hinterlegt und mit dem Kurznamen beschriftet (senkrecht, wenn
 Text mit Jahren und Alter (auch für Screenreader). Ein Punkt zeigt das Vermögen am Jahresende; ein Krisenjahr J liegt
 zwischen den Punkten J−1 und J. Kontraste: Beschriftung hell 6,8–8,0:1, dunkel 8,6–10,8:1 (auf eigenem Hintergrund),
 Rand der Fläche hell 3,7:1, dunkel 3,6:1.
+
+## 2b. Kennzahlen in der Krisenauswahl (ab 1.3.5)
+
+Die Auswahl im Modus «Individuell» zeigt pro Katalogkrise, wie schwer sie in den Jahresdaten war. Die Zahlen werden zur
+Laufzeit aus `data/krisen-historisch.json` gerechnet (`krisenSchwere` in `src/data/krisen.ts`). Es gibt keine
+eingetippte Ersatztabelle. Tests in `src/data/krisenSchwere.test.ts` rechnen dieselben Grössen noch einmal aus der Datei
+und vergleichen.
+
+**Messgrösse:** realer Aktien-Gesamtertrag, 100 % Aktien, auf der Standard-Datenreihe der Krise (wählbar bleibt die
+Reihe darunter; weicht sie ab, sagt die Infozeile das). Nominal ist das `eq_tr` (Dividenden reinvestiert). Real heisst
+deflationiert mit der Teuerung desselben Jahres: Index neu = Index alt × (1 + `eq_tr`) / (1 + Teuerung). Dieselbe
+Aktienreihe verwendet die Simulation. Der Aktienanteil des Haushalts mischt Obligationen bei und steht einmal unter den
+Feldern («Ihr Mix»); er ändert weder die Kennzahl noch die Sortierung.
+
+**Vorkrisenstand:** Index = 1 am Jahresende vor `von`.
+
+**Maximaler Rückgang (Peak-to-Trough, kumuliert):** vom jeweiligen Höchststand innerhalb des Pfads (Start bei 1) zum
+späteren Tiefstand, nur in den Katalogjahren `von`…`bis`. Der Rückgang ist Tiefstand / Höchststand − 1, also der
+kumulierte Faktor, nicht die Summe der Jahresrenditen. Liegt der Höchststand am Jahresende vor `von`, fällt die Krise
+ab dem Start. Steigt der Index in einem Katalogjahr zuerst, wandert der Höchststand (Dotcom: Ende 2000, weil 2000 real
+noch positiv war). Das ist dieselbe Rechnung wie `maxRealerRueckgang` auf dem 100-%-Aktienpfad.
+
+**Zeit bis zum Tiefpunkt:** Anzahl Jahre vom Jahresende des Höchststands bis zum Jahresende des Tiefpunkts. Die Anzeige
+sagt «nach ca. N Jahren». Fiel der Jahresendstand nie unter einen vorherigen Höchststand, gibt es keinen Tiefpunkt.
+Ein Monat innerhalb des Jahres ist in den Daten nicht sichtbar (Jahreswerte).
+
+**Dauer:** Jahre vom Startjahr `von` bis und mit dem Jahresende, an dem der Index wieder mindestens den Vorkrisenstand
+erreicht. Die Suche darf über `bis` hinausgehen, höchstens 80 Jahre ab `von` (gleiche Grenze wie `aktienKennzahl`).
+Wird das Niveau nicht erreicht, ist die angezeigte Dauer die Länge der Katalogphase (`bis − von + 1`) und der Text sagt
+«Vorkrisenniveau nicht wieder erreicht». Fiel der Index nie unter den Vorkrisenstand, ist die Dauer ebenfalls die
+Katalogphase. Die Katalogjahre stehen schon im Namen (`von–bis`); die Dauer kann länger sein, weil die Erholung nach
+`bis` liegen kann (Ölkrise: Katalog 1973–1974, Rückkehr auf den realen Aktienstand erst 1985).
+
+**Endete im Plus:** der kumulierte reale Aktien-Gesamtertrag am Jahresende `bis` ist positiv (Index > 1). Die Zeile
+nennt «endete im Plus: +x %». Diese Krisen stehen in der Liste nach allen Krisen, die nicht im Plus enden, auch wenn
+ihr maximaler Rückgang grösser ist.
+
+**Sortierung:** grösster maximaler Rückgang zuerst, dann die Krisen im Plus (unter sich ebenfalls nach dem Rückgang),
+dann «Eigene Krise (Annahme)». Die eigene Krise ist ein Modell, keine historische Kennzahl; ihre Bezeichnung bleibt im
+Textfeld, nicht in der Liste. Gespeichert wird die Id. `KRISEN` und der Modus «Automatisch» bleiben in der historischen
+Reihenfolge, weil dort die Abfolge gerechnet wird, nicht die Schwere.
+
+Gerundet auf eine Dezimalstelle, Stand der Reihe 27.9.2026 (JST R6, Schweiz ab 2021 SNB und BFS):
+
+| Krise | Start | Maximaler Rückgang | Tiefpunkt | Dauer | Ende der Katalogphase |
+|---|---|---|---|---|---|
+| Japan ab 1990 (extrem) | 1990 | −62,7 % | nach ca. 14 Jahren | 14 Jahre, Vorkrisenniveau nicht wieder erreicht | −62,7 % |
+| Ölkrise | 1973 | −55,2 % | nach ca. 2 Jahren | 13 Jahre bis zum Vorkrisenniveau (Katalogphase 2 Jahre) | −55,2 % |
+| Grosse Depression (extrem) | 1929 | −51,9 % | nach ca. 4 Jahren | 7 Jahre bis zum Vorkrisenniveau (Katalogphase 4 Jahre) | −51,9 % |
+| Stagflation (extrem) | 1973 | −47,2 % | nach ca. 2 Jahren | 11 Jahre bis zum Vorkrisenniveau (Katalogphase 9 Jahre) | −23,3 % |
+| Dotcom | 2000 | −43,2 % | nach ca. 2 Jahren | 6 Jahre bis zum Vorkrisenniveau (Katalogphase 3 Jahre) | −37,4 % |
+| Finanz- und Immobilienkrise | 2007 | −36,1 % | nach ca. 2 Jahren | 7 Jahre bis zum Vorkrisenniveau (Katalogphase 3 Jahre) | −20,9 % |
+| Schwarzer Montag | 1987 | −28,5 % | nach ca. 1 Jahr | 3 Jahre bis zum Vorkrisenniveau (Katalogphase 1 Jahr) | −28,5 % |
+| Inflations- und Zinsschock | 2022 | −18,8 % | nach ca. 1 Jahr | 1 Jahr, Vorkrisenniveau nicht wieder erreicht | −18,8 % |
+| Eurokrise | 2011 | −7,9 % | nach ca. 1 Jahr | 2 Jahre bis zum Vorkrisenniveau (Katalogphase 1 Jahr) | −7,9 % |
+| Schweizer Immobilienkrise | 1990 | −23,5 % | nach ca. 1 Jahr | 4 Jahre bis zum Vorkrisenniveau (Katalogphase 8 Jahre) | endete im Plus: +181,7 % |
+| Covid | 2020 | keiner unter dem Vorkrisenstand | keiner | 1 Jahr (Katalogphase) | endete im Plus: +4,8 % |
+
+Die Schweizer Immobilienkrise und Covid enden im Plus und stehen deshalb unter der Eurokrise, obwohl der Aktienrückgang
+1990 tiefer war als 2011. Aktien Schweiz 1990–1997 fielen nur 1990 real und lagen 1997 weit über dem Stand von 1989;
+die Krise in den Daten ist vor allem eine Immobilien- und Bankenkrise. Covid 2020 ist im Jahresendstand positiv; der
+Einbruch im März fehlt in den Jahreswerten.
 
 ## 3. Rechenweise
 

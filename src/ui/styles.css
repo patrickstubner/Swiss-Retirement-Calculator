@@ -1032,6 +1032,36 @@ tr.negativ td {
 .krise .knopf--sekundaer {
   margin-top: 4px;
 }
+.krise-schwere {
+  margin: 8px 0 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--farbe-rand);
+  border-radius: var(--radius-klein);
+}
+.krise-schwere dl {
+  display: grid;
+  gap: 4px 12px;
+  margin: 0;
+}
+.krise-schwere div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 8px;
+}
+.krise-schwere dt {
+  margin: 0;
+  font-weight: 600;
+}
+.krise-schwere dt::after {
+  content: ":";
+}
+.krise-schwere dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.krise-schwere .klein {
+  margin: 8px 0 0;
+}
 .vergleich {
   display: grid;
   grid-template-columns: 1fr 1fr;
