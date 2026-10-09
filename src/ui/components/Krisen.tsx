@@ -63,6 +63,7 @@ import { krisenAbschnitte, krisenText } from '../krisenGrafik';
 import { krisenNachModuswechsel } from '../krisenModus';
 import {
   KRISEN_KATALOG_OPTIONEN,
+  type KrisenFolgeText,
   krisenAktienEndeText,
   krisenErholungText,
   krisenExtremText,
@@ -413,6 +414,13 @@ export function KrisenSteuerung({ h, setH, effH, regeln, heute, wunsch, refIdx, 
               namen={namen}
               fenster={fenster}
               erwName={erwName}
+              folge={{
+                ausgleich: k.ausgleich === true,
+                renditeNominal: h.annahmen.renditeNominal,
+                ...(normal
+                  ? { hauspreisAusgeglichen: normal.wohneigentum, wertschriftenAusgeglichen: normal.wertschriften }
+                  : {}),
+              }}
               setze={(fn) => setzeAuswahl(i, fn)}
               entfernen={() => setzeKrisen(setH, (kr) => ({ ...kr, auswahl: kr.auswahl.filter((_, j) => j !== i) }))}
             />
@@ -524,18 +532,20 @@ function KriseSchwereInfo({
   standardLand,
   land,
   s,
+  folge,
 }: {
   kriseId: string;
   kriseName: string;
   standardLand: KrisenLand;
   land: KrisenLand;
   s: KrisenSchwere;
+  folge: KrisenFolgeText;
 }) {
   const rueckgang =
     s.jahreBisTiefpunkt === null
       ? 'keiner unter dem Vorkrisenstand'
       : `${fmtProzent(s.maxRueckgang, 1)} (Peak-to-Trough, kumuliert)`;
-  const hauspreise = krisenHauspreisText(s);
+  const hauspreise = krisenHauspreisText(s, folge);
   const extrem = krisenExtremText(kriseId);
   return (
     <div className="krise-schwere">
@@ -558,7 +568,7 @@ function KriseSchwereInfo({
         </div>
         <div>
           <dt>Katalogphase</dt>
-          <dd>{krisenPhasenText(s)}</dd>
+          <dd>{krisenPhasenText(s, folge)}</dd>
         </div>
         <div>
           <dt>Historische Erholung</dt>
@@ -600,6 +610,7 @@ function GeplanteKrise({
   namen,
   fenster,
   erwName,
+  folge,
   setze,
   entfernen,
 }: {
@@ -611,6 +622,7 @@ function GeplanteKrise({
   namen: string[];
   fenster: { von: number; bis: number };
   erwName: string | undefined;
+  folge: KrisenFolgeText;
   setze: (fn: (a: KrisenAuswahl) => KrisenAuswahl) => void;
   entfernen: () => void;
 }) {
@@ -644,7 +656,14 @@ function GeplanteKrise({
         }
       />
       {krise && schwere ? (
-        <KriseSchwereInfo kriseId={krise.id} kriseName={krise.name} standardLand={krise.land} land={land} s={schwere} />
+        <KriseSchwereInfo
+          kriseId={krise.id}
+          kriseName={krise.name}
+          standardLand={krise.land}
+          land={land}
+          s={schwere}
+          folge={folge}
+        />
       ) : null}
       {krise ? <p className="klein">{krise.beschreibung}</p> : null}
       {eigene ? (

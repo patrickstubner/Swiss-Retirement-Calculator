@@ -6,9 +6,9 @@ Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1
 ## [1.3.6] - 2026-10-09
 
 ### Geändert
-- Krisenauswahl: die Zeile im Menü zeigt nur den maximalen Aktienrückgang, den Namen und höchstens einen Zusatz. Reihenfolge des Zusatzes: «extrem», dann «nicht erholt», dann «Häuser -x%». Katalogphase, Aktien-Tiefpunkt, historische Erholung, Aktien am Phasenende und die übrigen Hauspreise stehen im Kasten unter der Auswahl.
-- Hauspreise erscheinen erst ab einem realen Rückgang von 1 % (`HAUSPREIS_ANZEIGE_AB` = −0.01). Darunter, zum Beispiel Dotcom, gilt die Anzeige als kein Rückgang.
-- Fehlen Hauspreisdaten (Zinsschock 2022), sagt der Kasten: «keine Jahresdaten 2022; die Rechnung nutzt Ihre Renditeannahme.» Die Simulation setzt in dem Jahr `annahmen.renditeNominal` ein, bei Ausgleich die normale Hauspreisrendite. Die Teuerung dieses Jahres bleibt historisch. Die Rechnung ändert sich nicht.
+- Krisenauswahl: die Zeile im Menü zeigt den maximalen Aktienrückgang, höchstens einen Zusatz und dann den Namen. Der Zusatz steht vor dem Namen, damit er bei 360 px Breite sichtbar bleibt. Reihenfolge: «extrem», dann «nicht erholt», dann «Häuser -x%». Katalogphase, Aktien-Tiefpunkt, historische Erholung, Aktien am Phasenende und die übrigen Hauspreise stehen im Kasten unter der Auswahl.
+- Hauspreise erscheinen erst ab einem realen Rückgang von 1 % (`HAUSPREIS_ANZEIGE_AB` = −0.01). Ein kleinerer Rückgang, zum Beispiel Dotcom, heisst im Kasten «kein Rückgang über 1 %».
+- Fehlen Hauspreisdaten (Zinsschock 2022), nennt der Kasten den eingesetzten Satz: ohne Ausgleich die Renditeannahme, mit Ausgleich die ausgeglichene Hauspreisrendite. Die Teuerung dieses Jahres bleibt historisch. Die Rechnung ändert sich nicht.
 
 ## [1.3.5] - 2026-10-09
 

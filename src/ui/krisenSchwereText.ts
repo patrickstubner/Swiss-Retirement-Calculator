@@ -12,7 +12,7 @@ const AUTO_IDS: readonly string[] = AUTO_KRISEN_IDS;
 
 /**
  * Hauspreise in der Auswahl erst ab diesem realen Peak-to-Trough.
- * Kleiner (Dotcom etwa -0.1 %) gilt als Rauschen und wird wie «kein Rückgang» gezeigt.
+ * Kleiner (Dotcom etwa -0.1 %) steht nicht in der Menüzeile. Im Kasten heisst es «kein Rückgang über 1 %».
  * -0.01 = −1 Prozentpunkt.
  */
 export const HAUSPREIS_ANZEIGE_AB = -0.01;
@@ -44,7 +44,8 @@ function krisenOptionZusatz(krise: Krise, s: KrisenSchwere): string | null {
 }
 
 /**
- * Kurze Optionszeile: Rückgang, Name und höchstens ein Zusatz.
+ * Kurze Optionszeile. Der Zusatz steht direkt nach dem Rückgang, damit er im schmalen
+ * Feld sichtbar bleibt, auch wenn der Name abgeschnitten wird.
  * Reihenfolge des Zusatzes: «extrem», dann «nicht erholt», dann «Häuser -x%»
  * (nur ab `HAUSPREIS_ANZEIGE_AB`). Katalogphase, Erholung, Phasenende und der
  * Aktien-Tiefpunkt stehen nur im Kasten darunter.
@@ -53,15 +54,39 @@ export function krisenOptionLabel(krise: Krise, s: KrisenSchwere): string {
   const name = `${krise.kurz} ${krise.von}`;
   const teile: string[] = [];
   if (s.jahreBisTiefpunkt !== null && s.maxRueckgang < 0) teile.push(fmtProzent(s.maxRueckgang, 1));
-  teile.push(name);
   const zusatz = krisenOptionZusatz(krise, s);
   if (zusatz) teile.push(zusatz);
+  teile.push(name);
   return teile.join(' · ');
 }
 
+/**
+ * Was nach der Katalogphase gilt. Mit Ausgleich sind das die ausgeglichenen Sätze
+ * (Wertschriften und Hauspreise), sonst die Renditeannahme. Die Zahlen kommen von aussen;
+ * diese Funktion rechnet nicht.
+ */
+export interface KrisenFolgeText {
+  ausgleich: boolean;
+  renditeNominal: number;
+  hauspreisAusgeglichen?: number;
+  wertschriftenAusgeglichen?: number;
+}
+
+function satz(x: number): string {
+  return fmtProzent(x, 2);
+}
+
 /** Katalogphase so, wie die Infozeile sie zeigt. Das ist die abgespielte Länge. */
-export function krisenPhasenText(s: KrisenSchwere): string {
-  return `Die App spielt nur die Katalogphase (${jahreWort(s.phasenJahre)}) ab, danach gilt Ihre Renditeannahme.`;
+export function krisenPhasenText(s: KrisenSchwere, folge?: KrisenFolgeText): string {
+  const kopf = `Die App spielt nur die Katalogphase (${jahreWort(s.phasenJahre)}) ab`;
+  if (!folge) return `${kopf}, danach gilt Ihre Renditeannahme.`;
+  if (folge.ausgleich) {
+    if (folge.wertschriftenAusgeglichen != null && folge.hauspreisAusgeglichen != null) {
+      return `${kopf}, danach gelten die ausgeglichenen Renditen (Wertschriften ${satz(folge.wertschriftenAusgeglichen)}, Hauspreise ${satz(folge.hauspreisAusgeglichen)}).`;
+    }
+    return `${kopf}, danach gilt die ausgeglichene Rendite.`;
+  }
+  return `${kopf}, danach gilt Ihre Renditeannahme (${satz(folge.renditeNominal)}).`;
 }
 
 /** Historische Rückkehr auf den Vorkrisenstand. Nicht die Simulationslänge. */
@@ -90,19 +115,29 @@ export function krisenAktienEndeText(s: KrisenSchwere): string {
 }
 
 /**
- * Hauspreise im Kasten. Eine Lücke nennt die fehlenden Jahre: die Simulation setzt dann
- * `renditeNominal` ein (bei Ausgleich die normale Hauspreisrendite), nicht eine eigene
- * Wohneigentumsrendite. Rückgänge flacher als `HAUSPREIS_ANZEIGE_AB` gelten als kein Rückgang.
+ * Hauspreise im Kasten. Eine Lücke nennt die fehlenden Jahre und den Satz, den
+ * `jahresRenditen` dann einsetzt: ohne Ausgleich die Renditeannahme, mit Ausgleich
+ * die ausgeglichene Hauspreisrendite. Ein Rückgang zwischen 0 und der Schwelle
+ * (versteckt, z.B. Dotcom) heisst «kein Rückgang über 1 %». Genau 0 bleibt «kein Rückgang».
  */
-export function krisenHauspreisText(s: KrisenSchwere): string | null {
+export function krisenHauspreisText(s: KrisenSchwere, folge?: KrisenFolgeText): string | null {
   if (s.hauspreisJahreOhneDaten.length > 0) {
     const jahre = s.hauspreisJahreOhneDaten.join(', ');
-    return `keine Jahresdaten ${jahre}; die Rechnung nutzt Ihre Renditeannahme.`;
+    if (folge?.ausgleich && folge.hauspreisAusgeglichen != null) {
+      return `keine Jahresdaten ${jahre}; die Rechnung nutzt die ausgeglichene Hauspreisrendite (${satz(folge.hauspreisAusgeglichen)}).`;
+    }
+    if (folge?.ausgleich) {
+      return `keine Jahresdaten ${jahre}; die Rechnung nutzt die ausgeglichene Hauspreisrendite.`;
+    }
+    if (folge)
+      return `keine Jahresdaten ${jahre}; die Rechnung nutzt Ihre Renditeannahme (${satz(folge.renditeNominal)}).`;
+    return `keine Jahresdaten ${jahre}; die Rechnung setzt für Häuser die Rendite eines normalen Jahres ein (Ihre Renditeannahme, mit Ausgleich der ausgeglichene Satz).`;
   }
   if (!s.hauspreise) return null;
   if (s.hauspreise.maxRueckgang <= HAUSPREIS_ANZEIGE_AB) {
     return `real max. ${fmtProzent(s.hauspreise.maxRueckgang, 1)} (Peak-to-Trough)`;
   }
+  if (s.hauspreise.maxRueckgang < 0) return 'kein Rückgang über 1 %';
   return 'kein Rückgang in den Jahreswerten';
 }
 
