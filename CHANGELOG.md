@@ -3,6 +3,12 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.3.5] - 2026-10-09
+
+### Geändert
+- Krisenauswahl im Modus «Individuell»: die Liste ist nur nach dem maximalen realen Aktienrückgang sortiert (grösster zuerst). Ein Plus am Phasenende bildet keine eigene Gruppe. «Eigene Krise» bleibt am Schluss. Gespeichert wird die Id, nicht die Position.
+- Pro Katalogkrise sichtbar: Name, Startjahr, Katalogphase (nur diese Jahre spielt die App ab, danach gilt die eigene Renditeannahme), historische Erholung («nicht erholt», wenn der Vorkrisenstand in der Reihe nie zurückkam), maximaler Aktienrückgang (Peak-to-Trough) und die Zeit bis zu diesem Tiefpunkt. Liegen Hauspreise für die ganze Phase vor, steht der reale Hauspreis-Rückgang dazu, zum Beispiel «Hauspreise real max. -31.8%». Ein Plus heisst «Aktien am Phasenende +181.7%». Alles aus den Jahresreihen gerechnet. Die Rechnung ändert sich nicht. Definition: `docs/krisen.md`, Abschnitt 2b.
+
 ## [1.3.4] - 2026-10-06
 
 ### Geändert

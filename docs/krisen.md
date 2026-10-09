@@ -137,12 +137,10 @@ Stresstest.
   Ein Kalenderjahr hat genau eine Rendite (bei einem Monatsbeginn geometrisch gemischt). Läuft die frühere Krise
   danach weiter, nennt die App die Reihenfolge (z.B. «Covid bis März, danach Finanzkrise») und nicht dieselbe Krise
   als verdrängt. Die Jahre werden nicht addiert.
-- **Kennzahlen** am Eintrag (Aktien real, 100 %, gewählte Datenreihe): Stand 1 am Jahresende vor `von`, Tiefpunkt
-  nur in den Katalogjahren `von`…`bis`, Dauer = Jahre bis dorthin, Erholung = Jahre vom Tiefpunkt bis der Index
-  wieder mindestens 1 ist (die Reihe darf dafür über `bis` hinausgehen, höchstens 80 Jahre ab `von`; sonst «nicht
-  erreicht»). Teuerung = Produkt über `von`…`bis`. Gerechnet aus `data/krisen-historisch.json` (`aktienKennzahl`),
-  nicht aus einer gerundeten Ersatztabelle. Zusätzlich der reale Rückgang des eigenen Aktienmix über dieselben
-  Katalogjahre.
+- **Kennzahlen** an der gewählten Krise: siehe Abschnitt 2b (`krisenSchwere`). Zusätzlich, einmal unter den
+  Feldern, der reale Rückgang des eigenen Aktienmix über dieselben Katalogjahre. `aktienKennzahl` bleibt die ältere
+  Zerlegung (Rückgang vom Vorkrisenstand, Jahre bis zu diesem Minimum, Erholung ab dort, Teuerung) und fliesst nicht
+  in die Simulation.
 - **Eigene Krise** (`id` `eigen`): Modellannahme, keine historische Reihe. Realer Rückgang des ganzen
   Wertschriftenportfolios (−80 % bis −5 %, Standard −30 %) gleichmässig über 1–8 Jahre, danach reale Erholung auf
   den Stand vor der Krise über 0–15 Jahre (0 = der Stand bleibt unten). Aktien und Obligationen erhalten dieselbe
@@ -159,6 +157,79 @@ Vergleich» farbig hinterlegt und mit dem Kurznamen beschriftet (senkrecht, wenn
 Text mit Jahren und Alter (auch für Screenreader). Ein Punkt zeigt das Vermögen am Jahresende; ein Krisenjahr J liegt
 zwischen den Punkten J−1 und J. Kontraste: Beschriftung hell 6,8–8,0:1, dunkel 8,6–10,8:1 (auf eigenem Hintergrund),
 Rand der Fläche hell 3,7:1, dunkel 3,6:1.
+
+## 2b. Kennzahlen in der Krisenauswahl (ab 1.3.5)
+
+Die Auswahl im Modus «Individuell» zeigt pro Katalogkrise, wie schwer sie in den Jahresdaten war. Die Zahlen werden zur
+Laufzeit aus `data/krisen-historisch.json` gerechnet (`krisenSchwere` in `src/data/krisen.ts`). Es gibt keine
+eingetippte Ersatztabelle. Tests in `src/data/krisenSchwere.test.ts` rechnen dieselben Grössen noch einmal aus der Datei
+und vergleichen.
+
+**Messgrösse:** realer Aktien-Gesamtertrag, 100 % Aktien, auf der Standard-Datenreihe der Krise (wählbar bleibt die
+Reihe darunter; weicht sie ab, sagt die Infozeile das). Nominal ist das `eq_tr` (Dividenden reinvestiert). Real heisst
+deflationiert mit der Teuerung desselben Jahres: Index neu = Index alt × (1 + `eq_tr`) / (1 + Teuerung). Dieselbe
+Aktienreihe verwendet die Simulation. Der Aktienanteil des Haushalts mischt Obligationen bei und steht einmal unter den
+Feldern («Ihr Mix»); er ändert weder die Kennzahl noch die Sortierung.
+
+**Vorkrisenstand:** Index = 1 am Jahresende vor `von`.
+
+**Maximaler Rückgang (Peak-to-Trough, kumuliert):** vom jeweiligen Höchststand innerhalb des Pfads (Start bei 1) zum
+späteren Tiefstand, nur in den Katalogjahren `von`…`bis`. Der Rückgang ist Tiefstand / Höchststand − 1, also der
+kumulierte Faktor, nicht die Summe der Jahresrenditen. Liegt der Höchststand am Jahresende vor `von`, fällt die Krise
+ab dem Start. Steigt der Index in einem Katalogjahr zuerst, wandert der Höchststand (Dotcom: Ende 2000, weil 2000 real
+noch positiv war). Das ist dieselbe Rechnung wie `maxRealerRueckgang` auf dem 100-%-Aktienpfad.
+
+**Zeit bis zum Tiefpunkt:** Anzahl Jahre vom Jahresende des Höchststands bis zum Jahresende des Tiefpunkts. Die Anzeige
+sagt «nach ca. N Jahren». Fiel der Jahresendstand nie unter einen vorherigen Höchststand, gibt es keinen Tiefpunkt.
+Ein Monat innerhalb des Jahres ist in den Daten nicht sichtbar (Jahreswerte).
+
+**Katalogphase:** `bis − von + 1` Jahre. Nur diese Jahre spielt die Simulation ab. Danach gilt die eigene Renditeannahme
+(gegebenenfalls mit Ausgleich der normalen Jahre). Die Infozeile sagt das ausdrücklich:
+«Die App spielt nur die Katalogphase (x Jahre) ab, danach gilt Ihre Renditeannahme.»
+
+**Historische Erholung:** Jahre vom Startjahr `von` bis und mit dem Jahresende, an dem der reale Aktienindex wieder
+mindestens den Vorkrisenstand erreicht. Die Suche darf über `bis` hinausgehen, höchstens 80 Jahre ab `von` (gleiche
+Grenze wie `aktienKennzahl`). Das ist nicht die Simulationslänge. Liegt die Rückkehr nach `bis`, sagt die Infozeile,
+dass sie nicht abgespielt wird (Ölkrise: Katalogphase 2 Jahre, Rückkehr auf den realen Aktienstand erst 1985, also
+nach 13 Jahren). Wird das Niveau in der Datenreihe nicht erreicht (Japan ab 1990, Zinsschock 2022), steht
+«nicht erholt». Fiel der Index nie unter den Vorkrisenstand, steht «kein Einbruch unter dem Vorkrisenstand».
+
+**Aktien am Phasenende:** der kumulierte reale Aktien-Gesamtertrag am Jahresende `bis` (Index − 1). Ist er positiv,
+nennt die Optionszeile das als Zusatz «Aktien am Phasenende +181.7%». Das Plus bildet keine eigene Gruppe in der Liste.
+
+**Hauspreise:** wo jedes Katalogjahr `hpnom` und Teuerung hat, zusätzlich der maximale reale Hauspreis-Rückgang,
+dieselbe Peak-to-Trough-Rechnung (Jahresende, Index = 1 am Jahresende vor `von`, real = nominal / Teuerung). Die
+Optionszeile nennt ihn nur bei einem Rückgang, zum Beispiel «Hauspreise real max. -31.8%». Fehlt ein Jahr (Zinsschock
+2022), gibt es keine Hauspreiszeile. Die Kennzahl ändert die Sortierung nicht.
+
+**Sortierung:** nur nach dem maximalen realen Aktienrückgang, grösster zuerst, dann «Eigene Krise (Annahme)». Ein Plus
+am Phasenende schiebt die Krise nicht nach hinten. Die eigene Krise ist ein Modell, keine historische Kennzahl; ihre
+Bezeichnung bleibt im Textfeld, nicht in der Liste. Gespeichert wird die Id. Die Optionszeilen werden einmal beim Laden
+berechnet (`KRISEN_KATALOG_OPTIONEN`). `KRISEN` und der Modus «Automatisch» bleiben in der historischen Reihenfolge,
+weil dort die Abfolge gerechnet wird, nicht die Schwere.
+
+Gerundet wie in der App (`fmtProzent`, de-CH, Dezimalpunkt, kein Leerzeichen vor %), Stand der Reihe 27.9.2026
+(JST R6, Schweiz ab 2021 SNB und BFS):
+
+| Krise | Start | Maximaler Rückgang | Tiefpunkt | Katalogphase | Historische Erholung | Aktien am Phasenende | Hauspreise real |
+|---|---|---|---|---|---|---|---|
+| Japan ab 1990 (extrem) | 1990 | -62.7% | nach ca. 14 Jahren | 14 Jahre | nicht erholt | -62.7% | -32.9% |
+| Ölkrise | 1973 | -55.2% | nach ca. 2 Jahren | 2 Jahre | nach 13 Jahren (wird nicht abgespielt) | -55.2% | -10% |
+| Grosse Depression (extrem) | 1929 | -51.9% | nach ca. 4 Jahren | 4 Jahre | nach 7 Jahren (wird nicht abgespielt) | -51.9% | -24.6% |
+| Stagflation (extrem) | 1973 | -47.2% | nach ca. 2 Jahren | 9 Jahre | nach 11 Jahren (wird nicht abgespielt) | -23.3% | -6.9% |
+| Dotcom | 2000 | -43.2% | nach ca. 2 Jahren | 3 Jahre | nach 6 Jahren (wird nicht abgespielt) | -37.4% | -0.1% |
+| Finanz- und Immobilienkrise | 2007 | -36.1% | nach ca. 2 Jahren | 3 Jahre | nach 7 Jahren (wird nicht abgespielt) | -20.9% | kein Rückgang |
+| Schwarzer Montag | 1987 | -28.5% | nach ca. 1 Jahr | 1 Jahr | nach 3 Jahren (wird nicht abgespielt) | -28.5% | kein Rückgang |
+| Schweizer Immobilienkrise | 1990 | -23.5% | nach ca. 1 Jahr | 8 Jahre | nach 4 Jahren (innerhalb der Phase) | +181.7% | -31.8% |
+| Inflations- und Zinsschock | 2022 | -18.8% | nach ca. 1 Jahr | 1 Jahr | nicht erholt | -18.8% | keine Daten |
+| Eurokrise | 2011 | -7.9% | nach ca. 1 Jahr | 1 Jahr | nach 2 Jahren (wird nicht abgespielt) | -7.9% | kein Rückgang |
+| Covid | 2020 | keiner unter dem Vorkrisenstand | keiner | 1 Jahr | kein Einbruch unter dem Vorkrisenstand | +4.8% | kein Rückgang |
+
+Die Schweizer Immobilienkrise endet bei den Aktien im Plus und steht trotzdem über dem Zinsschock, weil der maximale
+Aktienrückgang -23.5% tiefer ist als -18.8%. Die Hauspreise derselben Phase fielen real um -31.8% (Tiefpunkt 1997);
+diese Zahl steht in der Zeile, sortiert aber nicht. Aktien Schweiz 1990–1997 fielen nur 1990 real und lagen 1997 weit
+über dem Stand von 1989. Covid 2020 ist im Jahresendstand positiv; der Einbruch im März fehlt in den Jahreswerten.
+Beim Zinsschock 2022 fehlt `hpnom`.
 
 ## 3. Rechenweise
 

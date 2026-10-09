@@ -460,6 +460,209 @@ export function aktienKennzahl(
   };
 }
 
+/**
+ * Historische Rückkehr des realen Aktienindex auf den Vorkrisenstand. Das ist nicht die
+ * Länge, die die Simulation abspielt (das ist immer die Katalogphase).
+ * - `erholt`: der Index war unter dem Vorkrisenstand und hat ihn wieder erreicht.
+ *   `dauerJahre` zählt vom Startjahr bis und mit diesem Jahresende, auch nach `bis`.
+ * - `offen`: er war darunter und hat den Stand in der Datenreihe nicht wieder erreicht
+ *   (höchstens 80 Jahre ab `von`, gleiche Grenze wie `aktienKennzahl`). `dauerJahre` ist dann
+ *   die Länge der Katalogphase; die Anzeige sagt «nicht erholt».
+ * - `phase`: er fiel nicht unter den Vorkrisenstand. `dauerJahre` ist die Katalogphase.
+ */
+export type KrisenDauerArt = 'erholt' | 'offen' | 'phase';
+
+/**
+ * Realer Hauspreis in der Katalogphase: nominal `hpnom`, deflationiert mit der Teuerung,
+ * Peak-to-Trough nur in `von`…`bis`, Jahresendstände. null, wenn ein Katalogjahr keine
+ * Hauspreis- oder Teuerungszahl hat. Die Kennzahl sortiert die Liste nicht.
+ */
+export interface KrisenHauspreis {
+  maxRueckgang: number;
+  peakJahr: number;
+  tiefpunktJahr: number | null;
+  jahreBisTiefpunkt: number | null;
+}
+
+/**
+ * Schwere einer Katalogkrise, gerechnet aus der gewählten Jahresreihe.
+ * Messgrösse = realer Aktien-Gesamtertrag, 100 % Aktien: nominal `eq_tr` (Dividenden
+ * reinvestiert), deflationiert mit der Teuerung. Dieselbe Aktienreihe verwendet die
+ * Simulation. Der Aktienanteil des Haushalts mischt Obligationen dazu und steht separat;
+ * er ändert diese Kennzahlen nicht.
+ * Jahresendstände. Index = 1 am Jahresende vor `von` (Vorkrisenstand).
+ * Siehe docs/krisen.md, Abschnitt 2b.
+ */
+export interface KrisenSchwere {
+  id: string;
+  startjahr: number;
+  /** Katalogjahre `von`…`bis`, inklusive. */
+  phasenJahre: number;
+  /**
+   * Maximaler kumulierter Rückgang vom jeweiligen Höchststand zum späteren Tiefstand
+   * innerhalb `von`…`bis` (Peak-to-Trough). 0 = der Index fiel nie unter einen vorherigen Stand.
+   */
+  maxRueckgang: number;
+  /** Jahresende des Peaks, der zum maximalen Rückgang gehört. `von − 1` = Vorkrisenstand. */
+  peakJahr: number;
+  /** Jahresende des Tiefpunkts. null = kein Rückgang. */
+  tiefpunktJahr: number | null;
+  /** Jahre vom Peak-Jahresende bis zum Tiefpunkt-Jahresende. null = kein Rückgang. */
+  jahreBisTiefpunkt: number | null;
+  /** Kumulierter realer Aktien-Gesamtertrag am Jahresende `bis` (Index − 1). Kann positiv sein. */
+  endeKumuliert: number;
+  /** true, wenn `endeKumuliert` positiv ist (die Katalogphase endete über dem Vorkrisenstand). */
+  endeteImPlus: boolean;
+  /** Jahresende der Rückkehr auf den Vorkrisenstand. null = nie verloren oder nicht erreicht. */
+  erholtJahr: number | null;
+  dauerJahre: number;
+  dauerArt: KrisenDauerArt;
+  /** null, wenn die Katalogphase keine vollständige Hauspreisreihe hat. */
+  hauspreise: KrisenHauspreis | null;
+}
+
+const SCHWERE_UNTER = 1e-9;
+const SCHWERE_RUECKGANG = 1e-12;
+
+/**
+ * Realer Hauspreis, dieselbe Peak-to-Trough-Rechnung wie beim Aktienindex, nur mit `hpnom`.
+ * null, sobald in `von`…`bis` ein Hauspreis oder die Teuerung fehlt.
+ */
+function hauspreiseDerPhase(krise: Krise, daten: ReadonlyMap<number, HistJahr>): KrisenHauspreis | null {
+  let index = 1;
+  let peak = 1;
+  let peakJahr = krise.von - 1;
+  let maxDd = 0;
+  let ddPeakJahr = peakJahr;
+  let ddTroughJahr = peakJahr;
+  for (let j = krise.von; j <= krise.bis; j++) {
+    const h = daten.get(j);
+    if (!h || h.immobilien === null || h.teuerung === null) return null;
+    index *= (1 + h.immobilien) / (1 + h.teuerung);
+    if (index > peak) {
+      peak = index;
+      peakJahr = j;
+    }
+    const dd = index / peak - 1;
+    if (dd < maxDd) {
+      maxDd = dd;
+      ddPeakJahr = peakJahr;
+      ddTroughJahr = j;
+    }
+  }
+  const hatRueckgang = maxDd < -SCHWERE_RUECKGANG;
+  return {
+    maxRueckgang: hatRueckgang ? maxDd : 0,
+    peakJahr: hatRueckgang ? ddPeakJahr : peakJahr,
+    tiefpunktJahr: hatRueckgang ? ddTroughJahr : null,
+    jahreBisTiefpunkt: hatRueckgang ? ddTroughJahr - ddPeakJahr : null,
+  };
+}
+
+/**
+ * Kennzahlen für die Auswahl. null, wenn in `von`…`bis` Aktien oder Teuerung fehlen.
+ * Reine Anzeige: die Simulation liest diese Funktion nicht.
+ */
+export function krisenSchwere(krise: Krise, land: KrisenLand): KrisenSchwere | null {
+  const daten = KRISEN_DATEN[land];
+  let index = 1;
+  let peak = 1;
+  let peakJahr = krise.von - 1;
+  let maxDd = 0;
+  let ddPeakJahr = peakJahr;
+  let ddTroughJahr = peakJahr;
+  let unter = false;
+  let erholtJahr: number | null = null;
+  for (let j = krise.von; j <= krise.bis; j++) {
+    const h = daten.get(j);
+    if (!h || h.aktien === null || h.teuerung === null) return null;
+    index *= (1 + h.aktien) / (1 + h.teuerung);
+    if (index > peak) {
+      peak = index;
+      peakJahr = j;
+    }
+    const dd = index / peak - 1;
+    if (dd < maxDd) {
+      maxDd = dd;
+      ddPeakJahr = peakJahr;
+      ddTroughJahr = j;
+    }
+    if (index < 1 - SCHWERE_UNTER) unter = true;
+    else if (unter && erholtJahr === null && index >= 1 - SCHWERE_UNTER) erholtJahr = j;
+  }
+  const endeIndex = index;
+  if (unter && erholtJahr === null) {
+    for (let j = krise.bis + 1; j <= krise.von + 80; j++) {
+      const h = daten.get(j);
+      if (!h || h.aktien === null || h.teuerung === null) break;
+      index *= (1 + h.aktien) / (1 + h.teuerung);
+      if (index >= 1 - SCHWERE_UNTER) {
+        erholtJahr = j;
+        break;
+      }
+    }
+  }
+  const phasenJahre = krise.bis - krise.von + 1;
+  const hatRueckgang = maxDd < -SCHWERE_RUECKGANG;
+  let dauerArt: KrisenDauerArt = 'phase';
+  if (erholtJahr !== null) dauerArt = 'erholt';
+  else if (unter) dauerArt = 'offen';
+  return {
+    id: krise.id,
+    startjahr: krise.von,
+    phasenJahre,
+    maxRueckgang: hatRueckgang ? maxDd : 0,
+    peakJahr: hatRueckgang ? ddPeakJahr : peakJahr,
+    tiefpunktJahr: hatRueckgang ? ddTroughJahr : null,
+    jahreBisTiefpunkt: hatRueckgang ? ddTroughJahr - ddPeakJahr : null,
+    endeKumuliert: endeIndex - 1,
+    endeteImPlus: endeIndex - 1 > SCHWERE_UNTER,
+    erholtJahr,
+    dauerJahre: erholtJahr !== null ? erholtJahr - krise.von + 1 : phasenJahre,
+    dauerArt,
+    hauspreise: hauspreiseDerPhase(krise, daten),
+  };
+}
+
+/**
+ * Sortierung der Auswahl: nur nach dem maximalen realen Aktienrückgang, grösster zuerst.
+ * Ein Plus am Phasenende ändert die Reihenfolge nicht. Bei Gleichstand entscheidet das
+ * Startjahr, dann die Id.
+ */
+export function vergleicheKrisenSchwere(a: KrisenSchwere, b: KrisenSchwere): number {
+  if (a.maxRueckgang !== b.maxRueckgang) return a.maxRueckgang - b.maxRueckgang;
+  if (a.startjahr !== b.startjahr) return a.startjahr - b.startjahr;
+  if (a.id < b.id) return -1;
+  if (a.id > b.id) return 1;
+  return 0;
+}
+
+function sortiereNachSchwere(krisen: readonly Krise[]): Krise[] {
+  return [...krisen].sort((a, b) => {
+    const sa = krisenSchwere(a, a.land);
+    const sb = krisenSchwere(b, b.land);
+    if (!sa || !sb) {
+      if (a.von !== b.von) return a.von - b.von;
+      if (a.id < b.id) return -1;
+      if (a.id > b.id) return 1;
+      return 0;
+    }
+    return vergleicheKrisenSchwere(sa, sb);
+  });
+}
+
+/** Einmalig: der Katalog ändert sich nicht. Weitere Aufrufe kopieren nur diese Reihenfolge. */
+const KRISEN_NACH_SCHWERE = sortiereNachSchwere(KRISEN);
+
+/**
+ * Katalog in der Reihenfolge der Auswahl. `KRISEN` selbst bleibt historisch geordnet.
+ * Die Standardliste wird einmal sortiert. Eine andere Liste wird neu sortiert.
+ */
+export function krisenNachSchwere(krisen: readonly Krise[] = KRISEN): Krise[] {
+  if (krisen === KRISEN) return KRISEN_NACH_SCHWERE.slice();
+  return sortiereNachSchwere(krisen);
+}
+
 /** Pool für «wiederkehrende Krisen» (Monte Carlo): dieselben «normalen» Krisen wie im Modus «Automatisch» */
 export function mcKrisenPool(): { krise: Krise; land: KrisenLand }[] {
   return AUTO_KRISEN.map((k) => ({ krise: k, land: k.land }));
