@@ -61,6 +61,14 @@ function mitRuecktritt(p: Person, monate: number): Person {
   return { ...p, stoppModus: 'alter', stoppAlter: monate / 12 };
 }
 
+/**
+ * Rendite, mit der «Was wäre, wenn» rechnet. Der Regler gilt sofort, die Eingabe erst nach «Übernehmen».
+ * Fehlt der Regler, bleibt die eingegebene Rendite.
+ */
+export function simulierteRenditeNominal(eingabe: number, regler: number | null): number {
+  return regler ?? eingabe;
+}
+
 /** Überträgt die Regler auf einen Haushalt (für die Rechnung bzw. zum Übernehmen). */
 export function mitWasWaere(h: Haushalt, w: WasWaere, jahr: number): Haushalt {
   const personen = h.personen.map((p, i) => {
@@ -79,7 +87,7 @@ export function mitWasWaere(h: Haushalt, w: WasWaere, jahr: number): Haushalt {
     ausgaben: w.ausgaben === null ? h.ausgaben : { ...h.ausgaben, lebenshaltung: w.ausgaben },
     annahmen: {
       ...h.annahmen,
-      renditeNominal: w.rendite ?? h.annahmen.renditeNominal,
+      renditeNominal: simulierteRenditeNominal(h.annahmen.renditeNominal, w.rendite),
       inflation: w.teuerung ?? h.annahmen.inflation,
     },
     krisen: modus === h.krisen.modus && auswahl === h.krisen.auswahl ? h.krisen : { ...h.krisen, modus, auswahl },
@@ -351,6 +359,7 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
         refIdx={refIdx}
         namen={namen}
         aktienanteilHier={aktienanteilHier}
+        annahmeRendite={simulierteRenditeNominal(effH.annahmen.renditeNominal, w.rendite)}
       />
 
       <div className="regler-gruppe">

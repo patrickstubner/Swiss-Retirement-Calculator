@@ -144,10 +144,26 @@ interface Props {
   namen: string[];
   /** true: einziges Eingabefeld (Modus Schnell). false: nur Anzeige, das Feld steht im Schritt Annahmen. */
   aktienanteilHier: boolean;
+  /**
+   * Rendite, mit der diese Auswertung rechnet (Regler «Was wäre, wenn», sonst die Eingabe).
+   * Nicht `h.annahmen.renditeNominal`: der Regler ändert die Rechnung, bevor er übernommen wird.
+   */
+  annahmeRendite: number;
 }
 
 /** Krisenmodus und Editor. Eine Stelle, im Block «Was wäre, wenn …?», schreibt direkt in den Haushalt. */
-export function KrisenSteuerung({ h, setH, effH, regeln, heute, wunsch, refIdx, namen, aktienanteilHier }: Props) {
+export function KrisenSteuerung({
+  h,
+  setH,
+  effH,
+  regeln,
+  heute,
+  wunsch,
+  refIdx,
+  namen,
+  aktienanteilHier,
+  annahmeRendite,
+}: Props) {
   const k = h.krisen;
   const [rueckfrage, setRueckfrage] = useState(false);
   const [uebernahmeHinweis, setUebernahmeHinweis] = useState<string | null>(null);
@@ -311,7 +327,7 @@ export function KrisenSteuerung({ h, setH, effH, regeln, heute, wunsch, refIdx, 
             <p className="klein">
               Die Krisenjahre ersetzen Ihre Renditeannahme – sie kommen nicht noch dazu. Damit der Durchschnitt Ihrer
               Annahme entspricht, rechnet die App in normalen Jahren mit{' '}
-              <strong>{fmtProzent(normal.wertschriften, 2)}</strong> statt {fmtProzent(effH.annahmen.renditeNominal, 2)}{' '}
+              <strong>{fmtProzent(normal.wertschriften, 2)}</strong> statt {fmtProzent(annahmeRendite, 2)}{' '}
               (Wertschriften, Ihr Mix) und mit <strong>{fmtProzent(normal.wohneigentum, 2)}</strong> (Hauspreise).
               {normal.hinweis
                 ? ` ${ausgleichHinweisText(normal.hinweis)}`
@@ -398,7 +414,7 @@ export function KrisenSteuerung({ h, setH, effH, regeln, heute, wunsch, refIdx, 
           {normal && k.ausgleich === true ? (
             <p className="klein">
               In normalen Jahren rechnet die App mit <strong>{fmtProzent(normal.wertschriften, 2)}</strong> statt{' '}
-              {fmtProzent(effH.annahmen.renditeNominal, 2)} (Wertschriften) und mit{' '}
+              {fmtProzent(annahmeRendite, 2)} (Wertschriften) und mit{' '}
               <strong>{fmtProzent(normal.wohneigentum, 2)}</strong> (Hauspreise), über{' '}
               {horizont || 'den Planungshorizont'}.{normal.hinweis ? ` ${ausgleichHinweisText(normal.hinweis)}` : ''}
             </p>
@@ -416,7 +432,7 @@ export function KrisenSteuerung({ h, setH, effH, regeln, heute, wunsch, refIdx, 
               erwName={erwName}
               folge={{
                 ausgleich: k.ausgleich === true,
-                renditeNominal: h.annahmen.renditeNominal,
+                renditeNominal: annahmeRendite,
                 ...(normal
                   ? { hauspreisAusgeglichen: normal.wohneigentum, wertschriftenAusgeglichen: normal.wertschriften }
                   : {}),

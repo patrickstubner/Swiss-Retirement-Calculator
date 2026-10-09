@@ -209,8 +209,9 @@ weder «extrem» noch «nicht erholt» ist. Im Kasten steht «real max. -31.8% (
 (Dotcom) heisst im Kasten «kein Rückgang über 1 %»; genau 0 bleibt «kein Rückgang in den Jahreswerten». Fehlt `hpnom`
 (Zinsschock, Schweiz 2022; Aktien, Obligationen, Geldmarkt und Teuerung sind vorhanden), nennt der Kasten den Satz,
 den `jahresRenditen` einsetzt: ohne Ausgleich «Ihre Renditeannahme (x%)», mit Ausgleich «die ausgeglichene
-Hauspreisrendite (y%)». Das ist `wohneigentumNominal`, falls der Ausgleich einen Satz gesetzt hat, sonst
-`annahmen.renditeNominal`. Ein eigenes Feld für eine Wohneigentumsrendite gibt es nicht. Die Teuerung 2022 bleibt
+Hauspreisrendite (y%)». x% ist die Rendite dieser Auswertung: der Regler «Rendite Börse (nominal)» in
+«Was wäre, wenn», sonst die Eingabe. y% ist der ausgeglichene Satz derselben Rechnung. Das ist
+`wohneigentumNominal`, falls der Ausgleich einen Satz gesetzt hat, sonst `annahmen.renditeNominal`. Ein eigenes Feld für eine Wohneigentumsrendite gibt es nicht. Die Teuerung 2022 bleibt
 die historische Zahl. Die Katalogphase sagt dasselbe für die Zeit nach der Phase: die Renditeannahme oder die
 ausgeglichenen Renditen von Wertschriften und Hauspreisen. Die Kennzahl sortiert nicht.
 

@@ -3,6 +3,11 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.3.7] - 2026-10-09
+
+### Geändert
+- Krisenkasten: die genannte Rendite ist der Satz, mit dem die Auswertung rechnet. Steht der Regler «Rendite Börse (nominal)» auf einem anderen Wert als die Eingabe, zeigt der Kasten den Regler. Dasselbe gilt für «statt …» beim Ausgleich. Die Rechnung ändert sich nicht.
+
 ## [1.3.6] - 2026-10-09
 
 ### Geändert
