@@ -69,6 +69,40 @@ function erwartet(krise: (typeof KRISEN)[number]) {
     erholtJahr,
     dauerJahre: erholtJahr !== null ? erholtJahr - krise.von + 1 : phasenJahre,
     dauerArt: erholtJahr !== null ? 'erholt' : unter ? 'offen' : 'phase',
+    hauspreise: hauspreiseErwartet(krise),
+  };
+}
+
+/** Dieselbe Hauspreis-Rechnung wie `hauspreiseDerPhase`, noch einmal aus der Reihe. */
+function hauspreiseErwartet(krise: (typeof KRISEN)[number]) {
+  const daten = KRISEN_DATEN[krise.land];
+  let index = 1;
+  let peak = 1;
+  let peakJahr = krise.von - 1;
+  let maxDd = 0;
+  let ddPeakJahr = peakJahr;
+  let ddTroughJahr = peakJahr;
+  for (let j = krise.von; j <= krise.bis; j++) {
+    const h = daten.get(j);
+    if (!h || h.immobilien === null || h.teuerung === null) return null;
+    index *= (1 + h.immobilien) / (1 + h.teuerung);
+    if (index > peak) {
+      peak = index;
+      peakJahr = j;
+    }
+    const dd = index / peak - 1;
+    if (dd < maxDd) {
+      maxDd = dd;
+      ddPeakJahr = peakJahr;
+      ddTroughJahr = j;
+    }
+  }
+  const hatRueckgang = maxDd < -1e-12;
+  return {
+    maxRueckgang: hatRueckgang ? maxDd : 0,
+    peakJahr: hatRueckgang ? ddPeakJahr : peakJahr,
+    tiefpunktJahr: hatRueckgang ? ddTroughJahr : null,
+    jahreBisTiefpunkt: hatRueckgang ? ddTroughJahr - ddPeakJahr : null,
   };
 }
 
@@ -88,6 +122,7 @@ describe('Krisen-Schwere aus der Jahresreihe', () => {
       expect(s.erholtJahr, krise.id).toBe(e.erholtJahr);
       expect(s.dauerJahre, krise.id).toBe(e.dauerJahre);
       expect(s.dauerArt, krise.id).toBe(e.dauerArt);
+      expect(s.hauspreise, krise.id).toEqual(e.hauspreise);
       expect(s.startjahr, krise.id).toBe(krise.von);
       expect(s.phasenJahre, krise.id).toBe(krise.bis - krise.von + 1);
       const pfad = krisenPfad(krise, krise.land, 1, KRISEN_DATEN, basis);
@@ -126,9 +161,17 @@ describe('Krisen-Schwere aus der Jahresreihe', () => {
     expect(immo?.dauerJahre).toBe(4);
     expect(immo?.endeteImPlus).toBe(true);
     expect(immo?.endeKumuliert).toBeCloseTo(1.8168792438, 8);
+    // Hauspreise real, Peak-to-Trough 1989–1997, Tiefpunkt 1997. Aus der Datei, nicht aus einer Tabelle.
+    expect(immo?.hauspreise?.maxRueckgang).toBeCloseTo(-0.3179619215, 8);
+    expect(immo?.hauspreise?.tiefpunktJahr).toBe(1997);
+    expect(immo?.hauspreise?.jahreBisTiefpunkt).toBe(8);
+
+    const zins = krisenSchwere(KRISEN.find((k) => k.id === 'zinsschock2022') as (typeof KRISEN)[number], 'CHE');
+    expect(zins?.dauerArt).toBe('offen');
+    expect(zins?.hauspreise).toBeNull();
   });
 
-  it('Sortierung: grösster Rückgang zuerst, Plus am Ende, Katalog selbst bleibt historisch', () => {
+  it('Sortierung: nur nach dem Aktienrückgang, Plus bleibt in der Reihe, Katalog selbst historisch', () => {
     expect(KRISEN.map((k) => k.id)[0]).toBe('depression1929');
     expect([...AUTO_KRISEN_IDS]).toEqual([
       'oelkrise1973',
@@ -148,17 +191,20 @@ describe('Krisen-Schwere aus der Jahresreihe', () => {
       'dotcom2000',
       'finanzkrise2007',
       'schwarzerMontag1987',
+      'immobilienCh1990',
       'zinsschock2022',
       'eurokrise2011',
-      'immobilienCh1990',
       'covid2020',
     ]);
     const ids = krisenNachSchwere().map((k) => k.id);
-    expect(ids.indexOf('immobilienCh1990')).toBeGreaterThan(ids.indexOf('eurokrise2011'));
+    expect(ids.indexOf('immobilienCh1990')).toBeLessThan(ids.indexOf('zinsschock2022'));
+    expect(ids.indexOf('immobilienCh1990')).toBeLessThan(ids.indexOf('eurokrise2011'));
     expect(ids.indexOf('covid2020')).toBe(ids.length - 1);
+    const nochmals = krisenNachSchwere();
+    expect(nochmals.map((k) => k.id)).toEqual(ids);
   });
 
-  it('eine Krise im Plus steht unter einer mit kleinerem Rückgang, auch wenn ihr Einbruch tiefer ist', () => {
+  it('ein Plus am Phasenende sortiert nicht nach hinten', () => {
     const leicht: KrisenSchwere = {
       id: 'leicht',
       startjahr: 2000,
@@ -172,6 +218,7 @@ describe('Krisen-Schwere aus der Jahresreihe', () => {
       erholtJahr: null,
       dauerJahre: 1,
       dauerArt: 'offen',
+      hauspreise: null,
     };
     const plus: KrisenSchwere = {
       ...leicht,
@@ -182,8 +229,8 @@ describe('Krisen-Schwere aus der Jahresreihe', () => {
       endeteImPlus: true,
       dauerArt: 'erholt',
     };
-    expect(vergleicheKrisenSchwere(leicht, plus)).toBeLessThan(0);
-    expect(vergleicheKrisenSchwere(plus, leicht)).toBeGreaterThan(0);
+    expect(vergleicheKrisenSchwere(plus, leicht)).toBeLessThan(0);
+    expect(vergleicheKrisenSchwere(leicht, plus)).toBeGreaterThan(0);
     const gleichTief = { ...leicht, id: 'b', startjahr: 2001 };
     expect(vergleicheKrisenSchwere(leicht, gleichTief)).toBeLessThan(0);
   });

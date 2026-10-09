@@ -61,7 +61,14 @@ import { fmtChf, fmtProzent, MONATSNAMEN } from '../format';
 import type { Setzer } from '../kontext';
 import { krisenAbschnitte, krisenText } from '../krisenGrafik';
 import { krisenNachModuswechsel } from '../krisenModus';
-import { krisenDauerText, krisenKatalogOptionen, krisenTiefpunktText } from '../krisenSchwereText';
+import {
+  KRISEN_KATALOG_OPTIONEN,
+  krisenAktienEndeText,
+  krisenErholungText,
+  krisenHauspreisText,
+  krisenPhasenText,
+  krisenTiefpunktText,
+} from '../krisenSchwereText';
 import type { McEinstellung } from '../mcKern';
 import { useVollMc } from '../mcVergleich';
 import { Faecher } from './Faecher';
@@ -250,8 +257,8 @@ export function KrisenSteuerung({ h, setH, effH, regeln, heute, wunsch, refIdx, 
             Standard für neue Berechnungen. Die App legt die «normalen» Krisen der Geschichte der Reihe nach in die
             Zukunft: {AUTO_KRISEN.map((x) => x.kurz).join(', ')} – danach wieder von vorne. Die Grosse Depression, die
             Stagflation 1973–81 und Japan ab 1990 gelten als extrem; sie sind nur bei «Individuell» wählbar. Die
-            Reihenfolge hier ist der historische Ablauf, nicht die Schwere. Rückgang, Tiefpunkt und Dauer stehen bei
-            «Individuell» an der gewählten Krise.
+            Reihenfolge hier ist der historische Ablauf, nicht die Schwere. Rückgang, Katalogphase und historische
+            Erholung stehen bei «Individuell» an der gewählten Krise.
           </p>
           <ZahlFeld
             label="Krisen pro 10 Jahre"
@@ -525,6 +532,7 @@ function KriseSchwereInfo({
     s.jahreBisTiefpunkt === null
       ? 'keiner unter dem Vorkrisenstand'
       : `${fmtProzent(s.maxRueckgang, 1)} (Peak-to-Trough, kumuliert)`;
+  const hauspreise = krisenHauspreisText(s);
   return (
     <div className="krise-schwere">
       <dl aria-label={`Schwere: ${kriseName}`}>
@@ -545,19 +553,27 @@ function KriseSchwereInfo({
           <dd>{krisenTiefpunktText(s)}</dd>
         </div>
         <div>
-          <dt>Dauer</dt>
-          <dd>{krisenDauerText(s)}</dd>
+          <dt>Katalogphase</dt>
+          <dd>{krisenPhasenText(s)}</dd>
         </div>
-        {s.endeteImPlus ? (
+        <div>
+          <dt>Historische Erholung</dt>
+          <dd>{krisenErholungText(s)}</dd>
+        </div>
+        <div>
+          <dt>Aktien am Phasenende</dt>
+          <dd>{krisenAktienEndeText(s)}</dd>
+        </div>
+        {hauspreise ? (
           <div>
-            <dt>Ende der Krisenphase</dt>
-            <dd>endete im Plus: +{fmtProzent(s.endeKumuliert, 1)}</dd>
+            <dt>Hauspreise</dt>
+            <dd>{hauspreise}</dd>
           </div>
         ) : null}
       </dl>
       <p className="klein">
         Jahreswerte. Realer Aktien-Gesamtertrag, inkl. Dividenden, 100 % Aktien, {LAND_NAMEN[land]}. Der Tiefpunkt ist
-        ein Jahresende, nicht ein Monat.
+        ein Jahresende, nicht ein Monat. Die historische Erholung nach der Katalogphase fliesst nicht in die Rechnung.
         {land !== standardLand ? ` Die Liste sortiert nach der Standardreihe ${LAND_NAMEN[standardLand]}.` : ''}
       </p>
     </div>
@@ -607,7 +623,7 @@ function GeplanteKrise({
       <AuswahlFeld
         label={anzahl > 1 ? `Krise ${i + 1}` : 'Krise'}
         value={eigen ? EIGENE_KRISE_ID : a.id}
-        optionen={krisenKatalogOptionen()}
+        optionen={KRISEN_KATALOG_OPTIONEN}
         onChange={(id) =>
           setze((x) =>
             id === EIGENE_KRISE_ID

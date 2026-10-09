@@ -183,42 +183,53 @@ noch positiv war). Das ist dieselbe Rechnung wie `maxRealerRueckgang` auf dem 10
 sagt «nach ca. N Jahren». Fiel der Jahresendstand nie unter einen vorherigen Höchststand, gibt es keinen Tiefpunkt.
 Ein Monat innerhalb des Jahres ist in den Daten nicht sichtbar (Jahreswerte).
 
-**Dauer:** Jahre vom Startjahr `von` bis und mit dem Jahresende, an dem der Index wieder mindestens den Vorkrisenstand
-erreicht. Die Suche darf über `bis` hinausgehen, höchstens 80 Jahre ab `von` (gleiche Grenze wie `aktienKennzahl`).
-Wird das Niveau nicht erreicht, ist die angezeigte Dauer die Länge der Katalogphase (`bis − von + 1`) und der Text sagt
-«Vorkrisenniveau nicht wieder erreicht». Fiel der Index nie unter den Vorkrisenstand, ist die Dauer ebenfalls die
-Katalogphase. Die Katalogjahre stehen schon im Namen (`von–bis`); die Dauer kann länger sein, weil die Erholung nach
-`bis` liegen kann (Ölkrise: Katalog 1973–1974, Rückkehr auf den realen Aktienstand erst 1985).
+**Katalogphase:** `bis − von + 1` Jahre. Nur diese Jahre spielt die Simulation ab. Danach gilt die eigene Renditeannahme
+(gegebenenfalls mit Ausgleich der normalen Jahre). Die Infozeile sagt das ausdrücklich:
+«Die App spielt nur die Katalogphase (x Jahre) ab, danach gilt Ihre Renditeannahme.»
 
-**Endete im Plus:** der kumulierte reale Aktien-Gesamtertrag am Jahresende `bis` ist positiv (Index > 1). Die Zeile
-nennt «endete im Plus: +x %». Diese Krisen stehen in der Liste nach allen Krisen, die nicht im Plus enden, auch wenn
-ihr maximaler Rückgang grösser ist.
+**Historische Erholung:** Jahre vom Startjahr `von` bis und mit dem Jahresende, an dem der reale Aktienindex wieder
+mindestens den Vorkrisenstand erreicht. Die Suche darf über `bis` hinausgehen, höchstens 80 Jahre ab `von` (gleiche
+Grenze wie `aktienKennzahl`). Das ist nicht die Simulationslänge. Liegt die Rückkehr nach `bis`, sagt die Infozeile,
+dass sie nicht abgespielt wird (Ölkrise: Katalogphase 2 Jahre, Rückkehr auf den realen Aktienstand erst 1985, also
+nach 13 Jahren). Wird das Niveau in der Datenreihe nicht erreicht (Japan ab 1990, Zinsschock 2022), steht
+«nicht erholt». Fiel der Index nie unter den Vorkrisenstand, steht «kein Einbruch unter dem Vorkrisenstand».
 
-**Sortierung:** grösster maximaler Rückgang zuerst, dann die Krisen im Plus (unter sich ebenfalls nach dem Rückgang),
-dann «Eigene Krise (Annahme)». Die eigene Krise ist ein Modell, keine historische Kennzahl; ihre Bezeichnung bleibt im
-Textfeld, nicht in der Liste. Gespeichert wird die Id. `KRISEN` und der Modus «Automatisch» bleiben in der historischen
-Reihenfolge, weil dort die Abfolge gerechnet wird, nicht die Schwere.
+**Aktien am Phasenende:** der kumulierte reale Aktien-Gesamtertrag am Jahresende `bis` (Index − 1). Ist er positiv,
+nennt die Optionszeile das als Zusatz «Aktien am Phasenende +181.7%». Das Plus bildet keine eigene Gruppe in der Liste.
 
-Gerundet auf eine Dezimalstelle, Stand der Reihe 27.9.2026 (JST R6, Schweiz ab 2021 SNB und BFS):
+**Hauspreise:** wo jedes Katalogjahr `hpnom` und Teuerung hat, zusätzlich der maximale reale Hauspreis-Rückgang,
+dieselbe Peak-to-Trough-Rechnung (Jahresende, Index = 1 am Jahresende vor `von`, real = nominal / Teuerung). Die
+Optionszeile nennt ihn nur bei einem Rückgang, zum Beispiel «Hauspreise real max. -31.8%». Fehlt ein Jahr (Zinsschock
+2022), gibt es keine Hauspreiszeile. Die Kennzahl ändert die Sortierung nicht.
 
-| Krise | Start | Maximaler Rückgang | Tiefpunkt | Dauer | Ende der Katalogphase |
-|---|---|---|---|---|---|
-| Japan ab 1990 (extrem) | 1990 | −62,7 % | nach ca. 14 Jahren | 14 Jahre, Vorkrisenniveau nicht wieder erreicht | −62,7 % |
-| Ölkrise | 1973 | −55,2 % | nach ca. 2 Jahren | 13 Jahre bis zum Vorkrisenniveau (Katalogphase 2 Jahre) | −55,2 % |
-| Grosse Depression (extrem) | 1929 | −51,9 % | nach ca. 4 Jahren | 7 Jahre bis zum Vorkrisenniveau (Katalogphase 4 Jahre) | −51,9 % |
-| Stagflation (extrem) | 1973 | −47,2 % | nach ca. 2 Jahren | 11 Jahre bis zum Vorkrisenniveau (Katalogphase 9 Jahre) | −23,3 % |
-| Dotcom | 2000 | −43,2 % | nach ca. 2 Jahren | 6 Jahre bis zum Vorkrisenniveau (Katalogphase 3 Jahre) | −37,4 % |
-| Finanz- und Immobilienkrise | 2007 | −36,1 % | nach ca. 2 Jahren | 7 Jahre bis zum Vorkrisenniveau (Katalogphase 3 Jahre) | −20,9 % |
-| Schwarzer Montag | 1987 | −28,5 % | nach ca. 1 Jahr | 3 Jahre bis zum Vorkrisenniveau (Katalogphase 1 Jahr) | −28,5 % |
-| Inflations- und Zinsschock | 2022 | −18,8 % | nach ca. 1 Jahr | 1 Jahr, Vorkrisenniveau nicht wieder erreicht | −18,8 % |
-| Eurokrise | 2011 | −7,9 % | nach ca. 1 Jahr | 2 Jahre bis zum Vorkrisenniveau (Katalogphase 1 Jahr) | −7,9 % |
-| Schweizer Immobilienkrise | 1990 | −23,5 % | nach ca. 1 Jahr | 4 Jahre bis zum Vorkrisenniveau (Katalogphase 8 Jahre) | endete im Plus: +181,7 % |
-| Covid | 2020 | keiner unter dem Vorkrisenstand | keiner | 1 Jahr (Katalogphase) | endete im Plus: +4,8 % |
+**Sortierung:** nur nach dem maximalen realen Aktienrückgang, grösster zuerst, dann «Eigene Krise (Annahme)». Ein Plus
+am Phasenende schiebt die Krise nicht nach hinten. Die eigene Krise ist ein Modell, keine historische Kennzahl; ihre
+Bezeichnung bleibt im Textfeld, nicht in der Liste. Gespeichert wird die Id. Die Optionszeilen werden einmal beim Laden
+berechnet (`KRISEN_KATALOG_OPTIONEN`). `KRISEN` und der Modus «Automatisch» bleiben in der historischen Reihenfolge,
+weil dort die Abfolge gerechnet wird, nicht die Schwere.
 
-Die Schweizer Immobilienkrise und Covid enden im Plus und stehen deshalb unter der Eurokrise, obwohl der Aktienrückgang
-1990 tiefer war als 2011. Aktien Schweiz 1990–1997 fielen nur 1990 real und lagen 1997 weit über dem Stand von 1989;
-die Krise in den Daten ist vor allem eine Immobilien- und Bankenkrise. Covid 2020 ist im Jahresendstand positiv; der
-Einbruch im März fehlt in den Jahreswerten.
+Gerundet wie in der App (`fmtProzent`, de-CH, Dezimalpunkt, kein Leerzeichen vor %), Stand der Reihe 27.9.2026
+(JST R6, Schweiz ab 2021 SNB und BFS):
+
+| Krise | Start | Maximaler Rückgang | Tiefpunkt | Katalogphase | Historische Erholung | Aktien am Phasenende | Hauspreise real |
+|---|---|---|---|---|---|---|---|
+| Japan ab 1990 (extrem) | 1990 | -62.7% | nach ca. 14 Jahren | 14 Jahre | nicht erholt | -62.7% | -32.9% |
+| Ölkrise | 1973 | -55.2% | nach ca. 2 Jahren | 2 Jahre | nach 13 Jahren (wird nicht abgespielt) | -55.2% | -10% |
+| Grosse Depression (extrem) | 1929 | -51.9% | nach ca. 4 Jahren | 4 Jahre | nach 7 Jahren (wird nicht abgespielt) | -51.9% | -24.6% |
+| Stagflation (extrem) | 1973 | -47.2% | nach ca. 2 Jahren | 9 Jahre | nach 11 Jahren (wird nicht abgespielt) | -23.3% | -6.9% |
+| Dotcom | 2000 | -43.2% | nach ca. 2 Jahren | 3 Jahre | nach 6 Jahren (wird nicht abgespielt) | -37.4% | -0.1% |
+| Finanz- und Immobilienkrise | 2007 | -36.1% | nach ca. 2 Jahren | 3 Jahre | nach 7 Jahren (wird nicht abgespielt) | -20.9% | kein Rückgang |
+| Schwarzer Montag | 1987 | -28.5% | nach ca. 1 Jahr | 1 Jahr | nach 3 Jahren (wird nicht abgespielt) | -28.5% | kein Rückgang |
+| Schweizer Immobilienkrise | 1990 | -23.5% | nach ca. 1 Jahr | 8 Jahre | nach 4 Jahren (innerhalb der Phase) | +181.7% | -31.8% |
+| Inflations- und Zinsschock | 2022 | -18.8% | nach ca. 1 Jahr | 1 Jahr | nicht erholt | -18.8% | keine Daten |
+| Eurokrise | 2011 | -7.9% | nach ca. 1 Jahr | 1 Jahr | nach 2 Jahren (wird nicht abgespielt) | -7.9% | kein Rückgang |
+| Covid | 2020 | keiner unter dem Vorkrisenstand | keiner | 1 Jahr | kein Einbruch unter dem Vorkrisenstand | +4.8% | kein Rückgang |
+
+Die Schweizer Immobilienkrise endet bei den Aktien im Plus und steht trotzdem über dem Zinsschock, weil der maximale
+Aktienrückgang -23.5% tiefer ist als -18.8%. Die Hauspreise derselben Phase fielen real um -31.8% (Tiefpunkt 1997);
+diese Zahl steht in der Zeile, sortiert aber nicht. Aktien Schweiz 1990–1997 fielen nur 1990 real und lagen 1997 weit
+über dem Stand von 1989. Covid 2020 ist im Jahresendstand positiv; der Einbruch im März fehlt in den Jahreswerten.
+Beim Zinsschock 2022 fehlt `hpnom`.
 
 ## 3. Rechenweise
 
