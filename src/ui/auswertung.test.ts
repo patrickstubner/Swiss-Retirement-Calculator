@@ -1,9 +1,11 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { simuliere } from '../core/simulation';
 import type { Haushalt } from '../core/typen';
 import { neuePerson, standardHaushalt } from '../data/defaults';
 import { ladeRegeln } from '../rules';
-import { KEIN_WAS_WAERE, mitWasWaere, rechne } from './components/Auswertung';
+import { haushaltNachUebernehmen, KEIN_WAS_WAERE, mitWasWaere, rechne } from './components/Auswertung';
 import { chartFarbe, mitAlpha } from './farben';
 import { krisenAbschnitte, krisenText } from './krisenGrafik';
 
@@ -38,6 +40,24 @@ describe('Was-wäre-wenn', () => {
     expect(hw).toEqual(h);
     const k = rechne(hw, regeln, start, 'gemeinsam');
     expect(k.wunsch.endVermoegen).toBe(simuliere(h, regeln, { start }).endVermoegen);
+  });
+
+  it('«Übernehmen» schreibt den Regler über die Eingabe', () => {
+    const h = haushalt();
+    const eingabe = { ...h, annahmen: { ...h.annahmen, renditeNominal: 0.07 } };
+    const regler = { ...KEIN_WAS_WAERE, rendite: 0.05, teuerung: 0.03, ausgaben: 70_000, planungsalter: 88 };
+    const nach = haushaltNachUebernehmen(eingabe, regler, 2026);
+    expect(eingabe.annahmen.renditeNominal).toBe(0.07);
+    expect(nach.annahmen.renditeNominal).toBe(0.05);
+    expect(nach.annahmen.inflation).toBe(0.03);
+    expect(nach.ausgaben.lebenshaltung).toBe(70_000);
+    expect(nach.planungsalter).toBe(88);
+    expect(nach).toEqual(mitWasWaere(eingabe, regler, 2026));
+    expect(simuliere(nach, regeln, { start }).endVermoegen).not.toBe(
+      simuliere(eingabe, regeln, { start }).endVermoegen,
+    );
+    const quelle = readFileSync(join(__dirname, 'components/Auswertung.tsx'), 'utf8');
+    expect(quelle).toMatch(/setH\(\(x\) => haushaltNachUebernehmen\(x, w, heute\.jahr\)\)/);
   });
 
   it('überträgt Rücktrittsalter, Ausgaben, Rendite und Teuerung', () => {

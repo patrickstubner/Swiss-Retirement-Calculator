@@ -94,6 +94,11 @@ export function mitWasWaere(h: Haushalt, w: WasWaere, jahr: number): Haushalt {
   };
 }
 
+/** Was «Übernehmen» in den Haushalt schreibt: die Regler ersetzen die Eingabe. */
+export function haushaltNachUebernehmen(aktuell: Haushalt, w: WasWaere, jahr: number): Haushalt {
+  return mitWasWaere(aktuell, w, jahr);
+}
+
 export interface Kennzahlen {
   wunsch: SimulationsErgebnis;
   solver: SolverErgebnis;
@@ -301,7 +306,7 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
   const krisenModus = w.krise ?? h.krisen.modus;
 
   const uebernehmen = () => {
-    setH((x) => mitWasWaere(x, w, heute.jahr));
+    setH((x) => haushaltNachUebernehmen(x, w, heute.jahr));
     setW(KEIN_WAS_WAERE);
   };
 
@@ -352,7 +357,6 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
       <KrisenSteuerung
         h={h}
         setH={setH}
-        effH={effH}
         regeln={regeln}
         heute={heute}
         wunsch={k?.wunsch ?? null}
@@ -360,6 +364,7 @@ export function Auswertung({ h, setH, effH, regeln, heute, suchModus, namen, ref
         namen={namen}
         aktienanteilHier={aktienanteilHier}
         annahmeRendite={simulierteRenditeNominal(effH.annahmen.renditeNominal, w.rendite)}
+        rechnungH={hwVerz}
       />
 
       <div className="regler-gruppe">

@@ -3,6 +3,12 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.3.8] - 2026-10-09
+
+### Geändert
+- Vergleich «Ohne Krise / Mit Ihren Krisen»: «Ohne Krise» rechnet mit denselben Reglern wie die Spalte mit Krisen (Rendite, Teuerung, Rücktritt, Ausgaben, Planungsalter). Nur die Krisen sind aus.
+- «Zum Vergleich … über einen ganzen Umlauf» nennt den Satz des Reglers, nicht die noch nicht übernommene Eingabe.
+
 ## [1.3.7] - 2026-10-09
 
 ### Geändert

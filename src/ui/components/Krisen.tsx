@@ -131,11 +131,23 @@ function jahrSpanne(von: number, bis: number): string {
   return von === bis ? String(von) : `${von}–${bis}`;
 }
 
+/**
+ * Vergleich «Ohne Krise»: derselbe Haushalt wie die Krisenvariante, nur der Modus aus.
+ * Regler aus «Was wäre, wenn» (Rendite, Teuerung, Rücktritt, Ausgaben, Planungsalter) bleiben.
+ */
+export function haushaltOhneKrise(h: Haushalt): Haushalt {
+  return { ...h, krisen: { ...h.krisen, modus: 'keine' } };
+}
+
+/** Dieselbe Simulation wie «Mit Krisen» (`simuliere` mit Krisenoption), hier ohne Krisen. */
+export function vergleichOhneKrise(h: Haushalt, regeln: Regeln, start: Monat): SimulationsErgebnis {
+  const ohne = haushaltOhneKrise(h);
+  return simuliere(ohne, regeln, { start, krisen: krisenOptionen(ohne) });
+}
+
 interface Props {
   h: Haushalt;
   setH: Setzer;
-  /** effektiver Haushalt (mit Schätzwerten) */
-  effH: Haushalt;
   regeln: Regeln;
   heute: Monat;
   /** Wunsch-Rücktritt mit Krise (falls aktiv) */
@@ -149,13 +161,17 @@ interface Props {
    * Nicht `h.annahmen.renditeNominal`: der Regler ändert die Rechnung, bevor er übernommen wird.
    */
   annahmeRendite: number;
+  /**
+   * Haushalt, mit dem «Mit Krisen» rechnet (Regler schon eingesetzt, noch nicht übernommen).
+   * «Ohne Krise» und der Umlauf-Vergleich nutzen denselben Stand.
+   */
+  rechnungH: Haushalt;
 }
 
 /** Krisenmodus und Editor. Eine Stelle, im Block «Was wäre, wenn …?», schreibt direkt in den Haushalt. */
 export function KrisenSteuerung({
   h,
   setH,
-  effH,
   regeln,
   heute,
   wunsch,
@@ -163,15 +179,15 @@ export function KrisenSteuerung({
   namen,
   aktienanteilHier,
   annahmeRendite,
+  rechnungH,
 }: Props) {
   const k = h.krisen;
   const [rueckfrage, setRueckfrage] = useState(false);
   const [uebernahmeHinweis, setUebernahmeHinweis] = useState<string | null>(null);
-  const aktiv = krisenOptionen(effH) !== undefined;
-  // Vergleich ohne Krise (gleiche Eingaben)
+  const aktiv = krisenOptionen(rechnungH) !== undefined;
   const ohne = useMemo(
-    () => (aktiv ? simuliere({ ...effH, krisen: { ...effH.krisen, modus: 'keine' } }, regeln, { start: heute }) : null),
-    [aktiv, effH, regeln, heute],
+    () => (aktiv ? vergleichOhneKrise(rechnungH, regeln, heute) : null),
+    [aktiv, rechnungH, regeln, heute],
   );
   const abschnitte = useMemo(() => (wunsch ? krisenAbschnitte(wunsch, refIdx) : []), [wunsch, refIdx]);
   const fenster = useMemo(() => horizontVon(h, heute.jahr), [h, heute.jahr]);
@@ -194,7 +210,7 @@ export function KrisenSteuerung({
     k.modus === 'automatisch' || (k.modus === 'individuell' && k.ausgleich === true)
       ? (wunsch?.krisenNormal ?? null)
       : null;
-  const umlauf = k.modus === 'automatisch' ? autoNormal(effH) : null;
+  const umlauf = k.modus === 'automatisch' ? autoNormal(rechnungH) : null;
   const horizont = wunsch ? `${wunsch.zeilen[0]?.jahr ?? heute.jahr}–${wunsch.zeilen.at(-1)?.jahr ?? ''}` : '';
   const erwName =
     namen[

@@ -84,7 +84,8 @@ weil `normalisiere` den Modus aus den Rohdaten ableitet statt aus dem Standard (
   Screenshot 81 (damals explizit gesetzt: 4 % nominal, 1 % Teuerung, 50 % Aktien, Planungszeitraum 2026–2086): normale Jahre 4,79 %
   (Wertschriften) und 5,56 % (Hauspreise). Der Standard für neue Eingaben ist seit 2.10.2026 7 % nominal und 2 % Teuerung (`ANNAHMEN_STANDARD`); die Tests, die diese Regeln prüfen, setzen 4 %/1 % ausdrücklich. Bis Schema 6 galt der Ausgleich über einen ganzen Umlauf der Liste
   (8 Krisen, 108 Jahre; `ausgleichZyklus`: 4,84 % bei 50 % Aktien, Wohneigentum 4,78 %); die App zeigt diesen Wert
-  zum Vergleich. Nach einem Verkauf der Liegenschaft zählen die Hauspreise weiterhin über den ganzen Zeitraum
+  zum Vergleich. Die Prozentzahl in «Zum Vergleich … wären x %» ist `autoNormal` des Haushalts, mit dem die Auswertung
+  rechnet: der Regler «Rendite Börse (nominal)» in «Was wäre, wenn», sonst die Eingabe. Nach einem Verkauf der Liegenschaft zählen die Hauspreise weiterhin über den ganzen Zeitraum
   (vereinfacht). Krisenjahre ohne Daten für
   einen Kanal (z.B. Hauspreise 2022) rechnen mit der normalen Rendite und der historischen Teuerung; das ist im
   Ausgleich berücksichtigt. Die App zeigt die erhöhte Rendite der normalen Jahre an.
@@ -131,6 +132,8 @@ Stresstest.
   (Ausgleich ein). Ist die Liste schon gefüllt, bleibt sie. Eine leere Liste zeigt «Krise hinzufügen» und
   «Automatische Krisen übernehmen», nicht nur einen Hinweis. Der einzige Editor sitzt in «Was wäre, wenn …?»,
   direkt unter dem Umschalter Keine / Automatisch / Individuell. Eine eigene Karte «Krisen» gibt es nicht.
+  Der Vergleich «Ohne Krise / Mit Ihren Krisen» (bei «Automatisch»: «Mit Krisen (automatisch)») rechnet beide Spalten
+  mit denselben Reglern aus «Was wäre, wenn». «Ohne Krise» ist dieselbe Simulation, nur mit Krisenmodus «Keine».
   Ist in der Umkehrrechnung «Individuell» gewählt, gilt dieselbe Liste aus dem Haushalt. Ist sie leer, rechnet
   die Umkehr weiterhin die Finanzkrise ab nächstem Jahr, bis die Liste Einträge hat.
 - **Überschneidung:** Pro Monat gilt die später beginnende Krise, bei gleichem Beginn der Eintrag weiter unten.
