@@ -153,9 +153,17 @@ export function entnahmenGesamt(e: SimulationsErgebnis): number {
 }
 
 /**
- * Hinweis, wenn «Mit Krisen» am Ende höher ist als «Ohne Krise».
- * Beträge sind die angezeigten Endergebnisse und die Entnahmen derselben beiden Rechnungen.
- * Ohne Ausgleich oder ohne die gestaffelte Strategie fällt der Satz weg, der dann nicht stimmen würde.
+ * Hinweis erst ab diesem Abstand des realen Endvermögens (`endVermoegen`, heutige Franken).
+ * Ein Prozent scheitert, wenn «Ohne Krise» bei null oder darunter endet.
+ */
+export const MEHR_UEBRIG_AB = 10_000;
+
+/**
+ * Hinweis, wenn «Mit Krisen» den Planungshorizont erreicht, positiv endet und real
+ * mindestens `MEHR_UEBRIG_AB` über «Ohne Krise» liegt. Verglichen wird `endVermoegen`,
+ * auch in der Darstellung «Nominal». Die Entnahmen sind die Summen derselben beiden Rechnungen.
+ * Den Satz über schwache Jahre gibt es nur bei «Dynamisch gestaffelt» oder «Dynamisch
+ * (fester Prozentsatz)» und nur, wenn die Entnahmen wirklich tiefer liegen.
  */
 export function mehrUebrigText(
   endeOhne: number,
@@ -164,18 +172,29 @@ export function mehrUebrigText(
   entnahmeMit: number,
   ausgleich: boolean,
   strategie: Entnahme,
+  erfolg: boolean,
 ): string | null {
-  if (!(Math.round(endeMit) > Math.round(endeOhne))) return null;
+  if (!erfolg || !(endeMit > 0) || endeMit - endeOhne < MEHR_UEBRIG_AB) return null;
+  const kopf = 'Mit Krisen bleibt hier am Ende mehr übrig.';
   const weniger = entnahmeMit < entnahmeOhne;
-  const betraege = weniger
-    ? ` Unterwegs entnehmen Sie dadurch insgesamt weniger (${fmtChf(entnahmeMit)} statt ${fmtChf(entnahmeOhne)}, in heutigen Franken).`
-    : '';
-  if (!ausgleich) return `Mit Krisen bleibt hier am Ende mehr übrig.${betraege}`;
-  const gestaffelt = strategie.art === 'gestaffelt';
-  const grund = gestaffelt
-    ? 'Der Ausgleich hebt die normalen Jahre an, und Ihre Entnahmestrategie entnimmt nach schwachen Jahren weniger.'
-    : 'Der Ausgleich hebt die normalen Jahre an.';
-  return `Mit Krisen bleibt hier am Ende mehr übrig. Grund: ${grund}${betraege}`;
+  const satzNachSchwachenJahren = strategie.art === 'gestaffelt' || strategie.art === 'dynamisch';
+  const summen = `${fmtChf(entnahmeMit)} statt ${fmtChf(entnahmeOhne)}`;
+  if (weniger && satzNachSchwachenJahren) {
+    const grund = ausgleich
+      ? 'Der Ausgleich hebt die normalen Jahre an, und Ihre Entnahmestrategie entnimmt nach schwachen Jahren weniger.'
+      : 'Ihre Entnahmestrategie entnimmt nach schwachen Jahren weniger.';
+    return `${kopf} Grund: ${grund} Unterwegs entnehmen Sie dadurch insgesamt weniger (${summen}, in heutigen Franken).`;
+  }
+  if (ausgleich) {
+    return (
+      `${kopf} Grund: Der Ausgleich hebt die normalen Jahre an. ` +
+      'Je nachdem, wann die Krisen fallen, wächst das Vermögen dadurch insgesamt stärker.'
+    );
+  }
+  if (weniger) {
+    return `${kopf} Unterwegs entnehmen Sie insgesamt weniger (${summen}, in heutigen Franken).`;
+  }
+  return kopf;
 }
 
 interface Props {
@@ -250,12 +269,13 @@ export function KrisenSteuerung({
   const hinweisMehr =
     wunsch && ohne
       ? mehrUebrigText(
-          endBetrag(ohne, dar),
-          endBetrag(wunsch, dar),
+          ohne.endVermoegen,
+          wunsch.endVermoegen,
           entnahmeOhne,
           entnahmeMit,
           k.modus === 'automatisch' || k.ausgleich === true,
           normalisiereEntnahme(rechnungH.entnahme),
+          wunsch.erfolg,
         )
       : null;
   const horizont = wunsch ? `${wunsch.zeilen[0]?.jahr ?? heute.jahr}–${wunsch.zeilen.at(-1)?.jahr ?? ''}` : '';
@@ -547,7 +567,7 @@ export function KrisenSteuerung({
                 <h3>Ohne Krise</h3>
                 <p>{ohne.erfolg ? 'Reicht bis zum Planungsalter' : `Reicht bis ${ohne.ruinJahr}`}</p>
                 <p className="klein">Am Ende: {fmtChf(endBetrag(ohne, dar))}</p>
-                <p className="klein">Entnahmen gesamt (heutige Franken): {fmtChf(entnahmeOhne)}</p>
+                <p className="klein">Entnahmen gesamt (heute): {fmtChf(entnahmeOhne)}</p>
               </div>
               <div>
                 <h3>{k.modus === 'automatisch' ? 'Mit Krisen (automatisch)' : 'Mit Ihren Krisen'}</h3>
@@ -557,7 +577,7 @@ export function KrisenSteuerung({
                     : `Reicht bis ${wunsch.ruinJahr} (Alter ${wunsch.ruinAlter})`}
                 </p>
                 <p className="klein">Am Ende: {fmtChf(endBetrag(wunsch, dar))}</p>
-                <p className="klein">Entnahmen gesamt (heutige Franken): {fmtChf(entnahmeMit)}</p>
+                <p className="klein">Entnahmen gesamt (heute): {fmtChf(entnahmeMit)}</p>
               </div>
               {hinweisMehr ? <p className="klein vergleich__hinweis">{hinweisMehr}</p> : null}
             </div>

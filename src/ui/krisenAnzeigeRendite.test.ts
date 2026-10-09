@@ -12,6 +12,7 @@ import {
   entnahmenGesamt,
   haushaltOhneKrise,
   KrisenSteuerung,
+  MEHR_UEBRIG_AB,
   mehrUebrigText,
   vergleichOhneKrise,
 } from './components/Krisen';
@@ -223,56 +224,183 @@ describe('Vergleich Ohne Krise mit dem Regler', () => {
     const hw = mitWasWaere(h, { ...KEIN_WAS_WAERE, rendite: 0.1 }, 2026);
     const ohne = vergleichOhneKrise(hw, regeln, start);
     const mit = rechne(hw, regeln, start, 'gemeinsam').wunsch;
-    const dar = darstellungVon(h);
-    const endeOhne = endBetrag(ohne, dar);
-    const endeMit = endBetrag(mit, dar);
     const summeOhne = entnahmenGesamt(ohne);
     const summeMit = entnahmenGesamt(mit);
     expect(summeOhne).toBe(ohne.zeilen.reduce((s, z) => s + z.entnahmeFrei, 0));
     expect(summeMit).toBe(mit.zeilen.reduce((s, z) => s + z.entnahmeFrei, 0));
-    expect(Math.round(endeMit)).toBeGreaterThan(Math.round(endeOhne));
+    expect(mit.erfolg).toBe(true);
+    expect(mit.endVermoegen - ohne.endVermoegen).toBeGreaterThanOrEqual(MEHR_UEBRIG_AB);
     expect(summeMit).toBeLessThan(summeOhne);
-    const text = mehrUebrigText(endeOhne, endeMit, summeOhne, summeMit, true, normalisiereEntnahme(hw.entnahme));
+    const text = mehrUebrigText(
+      ohne.endVermoegen,
+      mit.endVermoegen,
+      summeOhne,
+      summeMit,
+      true,
+      normalisiereEntnahme(hw.entnahme),
+      mit.erfolg,
+    );
     expect(text).toContain('entnimmt nach schwachen Jahren weniger');
     expect(text).toContain(`${fmtChf(summeMit)} statt ${fmtChf(summeOhne)}`);
     const html = kasten(h, 0.1, mit, hw);
-    expect(html).toContain(`Entnahmen gesamt (heutige Franken): ${fmtChf(summeOhne)}`);
-    expect(html).toContain(`Entnahmen gesamt (heutige Franken): ${fmtChf(summeMit)}`);
+    expect(html).toContain(`Entnahmen gesamt (heute): ${fmtChf(summeOhne)}`);
+    expect(html).toContain(`Entnahmen gesamt (heute): ${fmtChf(summeMit)}`);
     expect(html).toContain(text ?? '');
 
     const stress = haushalt('individuell', false);
     const hwStress = mitWasWaere(stress, { ...KEIN_WAS_WAERE, rendite: 0.1 }, 2026);
     const ohneStress = vergleichOhneKrise(hwStress, regeln, start);
     const mitStress = rechne(hwStress, regeln, start, 'gemeinsam').wunsch;
-    expect(Math.round(endBetrag(mitStress, dar))).toBeLessThan(Math.round(endBetrag(ohneStress, dar)));
+    expect(Math.round(mitStress.endVermoegen)).toBeLessThan(Math.round(ohneStress.endVermoegen));
     const htmlStress = kasten(stress, 0.1, mitStress, hwStress);
     expect(htmlStress).not.toContain('bleibt hier am Ende mehr übrig');
-    expect(htmlStress).toContain(`Entnahmen gesamt (heutige Franken): ${fmtChf(entnahmenGesamt(ohneStress))}`);
-    expect(htmlStress).toContain(`Entnahmen gesamt (heutige Franken): ${fmtChf(entnahmenGesamt(mitStress))}`);
+    expect(htmlStress).toContain(`Entnahmen gesamt (heute): ${fmtChf(entnahmenGesamt(ohneStress))}`);
+    expect(htmlStress).toContain(`Entnahmen gesamt (heute): ${fmtChf(entnahmenGesamt(mitStress))}`);
   });
 
-  it('ohne gestaffelte Strategie nennt der Hinweis nicht die Stufen', () => {
+  it('ohne gestaffelte oder dynamische Strategie nennt der Hinweis nicht die schwachen Jahre', () => {
     const h = { ...haushalt('automatisch', false), entnahme: entnahmeAusgaben() };
     const hw = mitWasWaere(h, { ...KEIN_WAS_WAERE, rendite: 0.1 }, 2026);
     const ohne = vergleichOhneKrise(hw, regeln, start);
     const mit = rechne(hw, regeln, start, 'gemeinsam').wunsch;
-    const dar = darstellungVon(h);
     const text = mehrUebrigText(
-      endBetrag(ohne, dar),
-      endBetrag(mit, dar),
+      ohne.endVermoegen,
+      mit.endVermoegen,
       entnahmenGesamt(ohne),
       entnahmenGesamt(mit),
       true,
       normalisiereEntnahme(hw.entnahme),
+      mit.erfolg,
     );
     const html = kasten(h, 0.1, mit, hw);
     if (text) {
       expect(text).not.toContain('schwachen Jahren');
+      expect(text).not.toContain('dadurch insgesamt weniger');
       expect(text).toContain('Der Ausgleich hebt die normalen Jahre an');
       expect(html).toContain(text);
     } else {
       expect(html).not.toContain('bleibt hier am Ende mehr übrig');
     }
     expect(html).not.toContain('schwachen Jahren');
+  });
+
+  it('W-01: der Satz über schwache Jahre steht nur, wenn weniger entnommen wird', () => {
+    const basis = haushalt('automatisch', false);
+    const h = {
+      ...basis,
+      personen: [{ ...(basis.personen[0] as (typeof basis.personen)[0]), wertschriften: 250_000 }],
+      ausgaben: { ...basis.ausgaben, lebenshaltung: 100_000 },
+      planungsalter: 80,
+    };
+    const hw = mitWasWaere(h, { ...KEIN_WAS_WAERE, rendite: 0.04 }, 2026);
+    const ohne = vergleichOhneKrise(hw, regeln, start);
+    const mit = rechne(hw, regeln, start, 'gemeinsam').wunsch;
+    const summeOhne = entnahmenGesamt(ohne);
+    const summeMit = entnahmenGesamt(mit);
+    expect(mit.erfolg).toBe(true);
+    expect(mit.endVermoegen).toBeGreaterThan(0);
+    expect(mit.endVermoegen - ohne.endVermoegen).toBeGreaterThanOrEqual(MEHR_UEBRIG_AB);
+    expect(summeMit).toBeGreaterThanOrEqual(summeOhne);
+    const text = mehrUebrigText(
+      ohne.endVermoegen,
+      mit.endVermoegen,
+      summeOhne,
+      summeMit,
+      true,
+      normalisiereEntnahme(hw.entnahme),
+      mit.erfolg,
+    );
+    expect(text).toContain('Je nachdem, wann die Krisen fallen, wächst das Vermögen dadurch insgesamt stärker.');
+    expect(text).not.toContain('schwachen Jahren');
+    expect(text).not.toContain('insgesamt weniger');
+    const html = kasten(h, 0.04, mit, hw);
+    expect(html).toContain(text ?? '');
+    expect(html).not.toContain('schwachen Jahren');
+  });
+
+  it('W-02: im Ruinfall steht der Hinweis nicht, auch wenn das Ende höher ist', () => {
+    const basis = haushalt('automatisch', false);
+    const person = basis.personen[0] as (typeof basis.personen)[0];
+    const h = {
+      ...basis,
+      personen: [{ ...person, lohn: 60_000, wertschriften: 200_000 }],
+      ausgaben: { ...basis.ausgaben, lebenshaltung: 80_000 },
+      planungsalter: 80,
+    };
+    const hw = mitWasWaere(h, { ...KEIN_WAS_WAERE, rendite: 0 }, 2026);
+    const ohne = vergleichOhneKrise(hw, regeln, start);
+    const mit = rechne(hw, regeln, start, 'gemeinsam').wunsch;
+    expect(mit.erfolg).toBe(false);
+    expect(mit.endVermoegen).toBeLessThanOrEqual(0);
+    expect(mit.endVermoegen - ohne.endVermoegen).toBeGreaterThanOrEqual(MEHR_UEBRIG_AB);
+    expect(
+      mehrUebrigText(
+        ohne.endVermoegen,
+        mit.endVermoegen,
+        entnahmenGesamt(ohne),
+        entnahmenGesamt(mit),
+        true,
+        normalisiereEntnahme(hw.entnahme),
+        mit.erfolg,
+      ),
+    ).toBeNull();
+    const html = kasten(h, 0, mit, hw);
+    expect(html).not.toContain('bleibt hier am Ende mehr übrig');
+    expect(html).toContain('Entnahmen gesamt (heute)');
+    expect(mehrUebrigText(0, 20_000, 10, 5, true, normalisiereEntnahme(hw.entnahme), false)).toBeNull();
+  });
+
+  it('W-03: fester Prozentsatz zählt wie gestaffelt; ohne Grund fehlt «dadurch»', () => {
+    const gestaffelt = normalisiereEntnahme(haushalt('automatisch', false).entnahme);
+    const dynamisch = normalisiereEntnahme({ art: 'dynamisch', satz: 0.04 });
+    const statisch = entnahmeAusgaben();
+    const mitSatz = mehrUebrigText(100_000, 130_000, 80_000, 60_000, true, dynamisch, true);
+    expect(mitSatz).toContain('entnimmt nach schwachen Jahren weniger');
+    expect(mitSatz).toContain('dadurch insgesamt weniger');
+    expect(mehrUebrigText(100_000, 130_000, 80_000, 60_000, true, gestaffelt, true)).toContain(
+      'entnimmt nach schwachen Jahren weniger',
+    );
+    const ohneGrund = mehrUebrigText(100_000, 130_000, 80_000, 60_000, false, statisch, true);
+    expect(ohneGrund).toContain('insgesamt weniger');
+    expect(ohneGrund).not.toContain('dadurch');
+    expect(ohneGrund).not.toContain('Grund:');
+  });
+
+  it('W-04: in der Darstellung Nominal zählt das reale Ende', () => {
+    const h = { ...haushalt('automatisch', false), darstellung: 'nominal' as const };
+    const ohne = vergleichOhneKrise(h, regeln, start);
+    const mit = rechne(h, regeln, start, 'gemeinsam').wunsch;
+    const dar = darstellungVon(h);
+    expect(dar).toBe('nominal');
+    expect(mit.endVermoegen).toBeLessThan(ohne.endVermoegen);
+    expect(endBetrag(mit, dar)).toBeGreaterThan(endBetrag(ohne, dar));
+    expect(
+      mehrUebrigText(
+        endBetrag(ohne, dar),
+        endBetrag(mit, dar),
+        entnahmenGesamt(ohne),
+        entnahmenGesamt(mit),
+        true,
+        normalisiereEntnahme(h.entnahme),
+        mit.erfolg,
+      ),
+    ).not.toBeNull();
+    const html = kasten(h, h.annahmen.renditeNominal, mit, h);
+    expect(html).not.toContain('bleibt hier am Ende mehr übrig');
+    expect(html).toContain(`Am Ende: ${fmtChf(endBetrag(mit, dar))}`);
+
+    const zehn = mitWasWaere(h, { ...KEIN_WAS_WAERE, rendite: 0.1 }, 2026);
+    const ohneZehn = vergleichOhneKrise(zehn, regeln, start);
+    const mitZehn = rechne(zehn, regeln, start, 'gemeinsam').wunsch;
+    expect(mitZehn.endVermoegen - ohneZehn.endVermoegen).toBeGreaterThanOrEqual(MEHR_UEBRIG_AB);
+    const htmlZehn = kasten(h, 0.1, mitZehn, zehn);
+    expect(htmlZehn).toContain('bleibt hier am Ende mehr übrig');
+  });
+
+  it('der Hinweis beginnt erst ab 10’000 Franken Abstand', () => {
+    const strategie = normalisiereEntnahme(haushalt('automatisch', false).entnahme);
+    expect(mehrUebrigText(100_000, 100_000 + MEHR_UEBRIG_AB - 1, 10, 5, true, strategie, true)).toBeNull();
+    expect(mehrUebrigText(100_000, 100_000 + MEHR_UEBRIG_AB, 10, 5, true, strategie, true)).toContain('schwache');
+    expect(mehrUebrigText(-20_000, 0, 10, 5, true, strategie, true)).toBeNull();
   });
 });

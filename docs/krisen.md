@@ -134,10 +134,13 @@ Stresstest.
   direkt unter dem Umschalter Keine / Automatisch / Individuell. Eine eigene Karte «Krisen» gibt es nicht.
   Der Vergleich «Ohne Krise / Mit Ihren Krisen» (bei «Automatisch»: «Mit Krisen (automatisch)») rechnet beide Spalten
   mit denselben Reglern aus «Was wäre, wenn». «Ohne Krise» ist dieselbe Simulation, nur mit Krisenmodus «Keine».
-  Beide Spalten nennen «Entnahmen gesamt (heutige Franken)», die Summe von `entnahmeFrei` derselben Rechnung.
-  Liegt «Mit Krisen» am Ende höher, steht darunter der Grund: der Ausgleich hebt die normalen Jahre an. Bei
-  «Dynamisch gestaffelt» entnimmt die Strategie nach schwachen Jahren weniger; der Satz nennt dann die beiden
-  Entnahmesummen. Ohne diese Strategie entfällt der Satz über die schwachen Jahre.
+  Beide Spalten nennen «Entnahmen gesamt (heute)», die Summe von `entnahmeFrei` derselben Rechnung.
+  Der Hinweis darunter steht nur, wenn «Mit Krisen» bis zum Planungsalter reicht, real positiv endet
+  (`endVermoegen` > 0, auch in der Darstellung «Nominal») und mindestens CHF 10’000 über «Ohne Krise» liegt
+  (`MEHR_UEBRIG_AB`). Liegen die Entnahmen tiefer und die Strategie ist «Dynamisch gestaffelt» oder
+  «Dynamisch (fester Prozentsatz)», nennt der Satz die schwachen Jahre und die beiden Summen. Sonst, mit
+  Ausgleich: die normalen Jahre werden angehoben, und je nachdem, wann die Krisen fallen, wächst das Vermögen
+  stärker. Ohne genannten Grund fehlt «dadurch».
   Ist in der Umkehrrechnung «Individuell» gewählt, gilt dieselbe Liste aus dem Haushalt. Ist sie leer, rechnet
   die Umkehr weiterhin die Finanzkrise ab nächstem Jahr, bis die Liste Einträge hat.
 - **Überschneidung:** Pro Monat gilt die später beginnende Krise, bei gleichem Beginn der Eintrag weiter unten.
