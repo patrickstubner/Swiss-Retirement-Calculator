@@ -58,7 +58,8 @@ describe('Krisenfeld bei 360 px', () => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         if (!ctx) return null;
-        ctx.font = cs.font;
+        // `cs.font` ist in Chrome leer; die Einzelwerte ergeben die echte Schrift (sonst 10 px).
+        ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
         const textStart = Number.parseFloat(cs.paddingLeft);
         const pfeilLinks = select.clientWidth - reserve;
         const zeilen = [...select.options].map((o) => {
@@ -66,7 +67,14 @@ describe('Krisenfeld bei 360 px', () => {
           const zusatz = teile.length >= 3 ? `${teile[0]} · ${teile[1]}` : null;
           return { label: o.label, breite: zusatz ? ctx.measureText(zusatz).width : null };
         });
-        return { textStart, pfeilLinks, clientWidth: select.clientWidth, font: cs.font, zeilen };
+        return {
+          textStart,
+          pfeilLinks,
+          clientWidth: select.clientWidth,
+          fontSize: cs.fontSize,
+          canvasFont: ctx.font,
+          zeilen,
+        };
       }, PFEIL_RESERVE);
 
       expect(lage, 'canvas oder Feld fehlt').not.toBeNull();
@@ -75,6 +83,8 @@ describe('Krisenfeld bei 360 px', () => {
       expect(lage.clientWidth).toBeLessThan(340);
       expect(lage.textStart).toBeGreaterThan(0);
       expect(lage.pfeilLinks).toBe(lage.clientWidth - PFEIL_RESERVE);
+      expect(lage.canvasFont).toContain(lage.fontSize);
+      expect(Number.parseFloat(lage.fontSize)).toBeGreaterThanOrEqual(16);
       const mitZusatz = lage.zeilen.filter((z) => z.breite !== null);
       expect(mitZusatz.length).toBeGreaterThanOrEqual(4);
       for (const z of mitZusatz) {

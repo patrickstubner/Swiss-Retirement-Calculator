@@ -3,6 +3,7 @@
  * Krisen und die historische Krisenhäufigkeit pro Dekade (JST R6).
  */
 import { useDeferredValue, useId, useMemo, useState } from 'react';
+import { normalisiereEntnahme } from '../../core/entnahme';
 import {
   bereinigeEigeneKrise,
   datenVollstaendig,
@@ -25,6 +26,7 @@ import {
 import { referenzPerson, simuliere } from '../../core/simulation';
 import type {
   EigeneKrise,
+  Entnahme,
   Haushalt,
   KrisenAuswahl,
   KrisenEinstellungen,
@@ -145,6 +147,37 @@ export function vergleichOhneKrise(h: Haushalt, regeln: Regeln, start: Monat): S
   return simuliere(ohne, regeln, { start, krisen: krisenOptionen(ohne) });
 }
 
+/** Summe der Entnahmen aus dem freien Vermögen, in heutigen Franken, aus den schon gerechneten Jahren. */
+export function entnahmenGesamt(e: SimulationsErgebnis): number {
+  return e.zeilen.reduce((s, z) => s + z.entnahmeFrei, 0);
+}
+
+/**
+ * Hinweis, wenn «Mit Krisen» am Ende höher ist als «Ohne Krise».
+ * Beträge sind die angezeigten Endergebnisse und die Entnahmen derselben beiden Rechnungen.
+ * Ohne Ausgleich oder ohne die gestaffelte Strategie fällt der Satz weg, der dann nicht stimmen würde.
+ */
+export function mehrUebrigText(
+  endeOhne: number,
+  endeMit: number,
+  entnahmeOhne: number,
+  entnahmeMit: number,
+  ausgleich: boolean,
+  strategie: Entnahme,
+): string | null {
+  if (!(Math.round(endeMit) > Math.round(endeOhne))) return null;
+  const weniger = entnahmeMit < entnahmeOhne;
+  const betraege = weniger
+    ? ` Unterwegs entnehmen Sie dadurch insgesamt weniger (${fmtChf(entnahmeMit)} statt ${fmtChf(entnahmeOhne)}, in heutigen Franken).`
+    : '';
+  if (!ausgleich) return `Mit Krisen bleibt hier am Ende mehr übrig.${betraege}`;
+  const gestaffelt = strategie.art === 'gestaffelt';
+  const grund = gestaffelt
+    ? 'Der Ausgleich hebt die normalen Jahre an, und Ihre Entnahmestrategie entnimmt nach schwachen Jahren weniger.'
+    : 'Der Ausgleich hebt die normalen Jahre an.';
+  return `Mit Krisen bleibt hier am Ende mehr übrig. Grund: ${grund}${betraege}`;
+}
+
 interface Props {
   h: Haushalt;
   setH: Setzer;
@@ -211,6 +244,20 @@ export function KrisenSteuerung({
       ? (wunsch?.krisenNormal ?? null)
       : null;
   const umlauf = k.modus === 'automatisch' ? autoNormal(rechnungH) : null;
+  const dar = darstellungVon(h);
+  const entnahmeOhne = ohne ? entnahmenGesamt(ohne) : 0;
+  const entnahmeMit = wunsch ? entnahmenGesamt(wunsch) : 0;
+  const hinweisMehr =
+    wunsch && ohne
+      ? mehrUebrigText(
+          endBetrag(ohne, dar),
+          endBetrag(wunsch, dar),
+          entnahmeOhne,
+          entnahmeMit,
+          k.modus === 'automatisch' || k.ausgleich === true,
+          normalisiereEntnahme(rechnungH.entnahme),
+        )
+      : null;
   const horizont = wunsch ? `${wunsch.zeilen[0]?.jahr ?? heute.jahr}–${wunsch.zeilen.at(-1)?.jahr ?? ''}` : '';
   const erwName =
     namen[
@@ -499,7 +546,8 @@ export function KrisenSteuerung({
               <div>
                 <h3>Ohne Krise</h3>
                 <p>{ohne.erfolg ? 'Reicht bis zum Planungsalter' : `Reicht bis ${ohne.ruinJahr}`}</p>
-                <p className="klein">Am Ende: {fmtChf(endBetrag(ohne, darstellungVon(h)))}</p>
+                <p className="klein">Am Ende: {fmtChf(endBetrag(ohne, dar))}</p>
+                <p className="klein">Entnahmen gesamt (heutige Franken): {fmtChf(entnahmeOhne)}</p>
               </div>
               <div>
                 <h3>{k.modus === 'automatisch' ? 'Mit Krisen (automatisch)' : 'Mit Ihren Krisen'}</h3>
@@ -508,8 +556,10 @@ export function KrisenSteuerung({
                     ? 'Reicht bis zum Planungsalter'
                     : `Reicht bis ${wunsch.ruinJahr} (Alter ${wunsch.ruinAlter})`}
                 </p>
-                <p className="klein">Am Ende: {fmtChf(endBetrag(wunsch, darstellungVon(h)))}</p>
+                <p className="klein">Am Ende: {fmtChf(endBetrag(wunsch, dar))}</p>
+                <p className="klein">Entnahmen gesamt (heutige Franken): {fmtChf(entnahmeMit)}</p>
               </div>
+              {hinweisMehr ? <p className="klein vergleich__hinweis">{hinweisMehr}</p> : null}
             </div>
           ) : null}
           {abschnitte.length > 0 ? (

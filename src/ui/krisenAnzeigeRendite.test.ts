@@ -1,13 +1,20 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import { entnahmeAusgaben, normalisiereEntnahme } from '../core/entnahme';
 import { simuliere } from '../core/simulation';
 import type { Haushalt, SimulationsErgebnis } from '../core/typen';
 import { neueGeplanteKrise, neuePerson, standardHaushalt } from '../data/defaults';
 import { autoNormal, krisenOptionen } from '../data/krisen';
 import { ladeRegeln } from '../rules';
 import { KEIN_WAS_WAERE, mitWasWaere, rechne, simulierteRenditeNominal } from './components/Auswertung';
-import { haushaltOhneKrise, KrisenSteuerung, vergleichOhneKrise } from './components/Krisen';
+import {
+  entnahmenGesamt,
+  haushaltOhneKrise,
+  KrisenSteuerung,
+  mehrUebrigText,
+  vergleichOhneKrise,
+} from './components/Krisen';
 import { darstellungVon, endBetrag } from './darstellung';
 import { fmtChf, fmtProzent } from './format';
 
@@ -209,5 +216,63 @@ describe('Vergleich Ohne Krise mit dem Regler', () => {
     const html = kasten(h, 0.1, bei.wunsch, hw);
     expect(html).toContain(`wären ${fmtProzent(umlaufRegler.wertschriften, 2)}`);
     expect(html).not.toContain(`wären ${fmtProzent(umlaufEingabe.wertschriften, 2)}`);
+  });
+
+  it('der Hinweis steht nur, wenn Mit Krisen am Ende höher ist; die Entnahmen sind die der Rechnung', () => {
+    const h = haushalt('automatisch', false);
+    const hw = mitWasWaere(h, { ...KEIN_WAS_WAERE, rendite: 0.1 }, 2026);
+    const ohne = vergleichOhneKrise(hw, regeln, start);
+    const mit = rechne(hw, regeln, start, 'gemeinsam').wunsch;
+    const dar = darstellungVon(h);
+    const endeOhne = endBetrag(ohne, dar);
+    const endeMit = endBetrag(mit, dar);
+    const summeOhne = entnahmenGesamt(ohne);
+    const summeMit = entnahmenGesamt(mit);
+    expect(summeOhne).toBe(ohne.zeilen.reduce((s, z) => s + z.entnahmeFrei, 0));
+    expect(summeMit).toBe(mit.zeilen.reduce((s, z) => s + z.entnahmeFrei, 0));
+    expect(Math.round(endeMit)).toBeGreaterThan(Math.round(endeOhne));
+    expect(summeMit).toBeLessThan(summeOhne);
+    const text = mehrUebrigText(endeOhne, endeMit, summeOhne, summeMit, true, normalisiereEntnahme(hw.entnahme));
+    expect(text).toContain('entnimmt nach schwachen Jahren weniger');
+    expect(text).toContain(`${fmtChf(summeMit)} statt ${fmtChf(summeOhne)}`);
+    const html = kasten(h, 0.1, mit, hw);
+    expect(html).toContain(`Entnahmen gesamt (heutige Franken): ${fmtChf(summeOhne)}`);
+    expect(html).toContain(`Entnahmen gesamt (heutige Franken): ${fmtChf(summeMit)}`);
+    expect(html).toContain(text ?? '');
+
+    const stress = haushalt('individuell', false);
+    const hwStress = mitWasWaere(stress, { ...KEIN_WAS_WAERE, rendite: 0.1 }, 2026);
+    const ohneStress = vergleichOhneKrise(hwStress, regeln, start);
+    const mitStress = rechne(hwStress, regeln, start, 'gemeinsam').wunsch;
+    expect(Math.round(endBetrag(mitStress, dar))).toBeLessThan(Math.round(endBetrag(ohneStress, dar)));
+    const htmlStress = kasten(stress, 0.1, mitStress, hwStress);
+    expect(htmlStress).not.toContain('bleibt hier am Ende mehr übrig');
+    expect(htmlStress).toContain(`Entnahmen gesamt (heutige Franken): ${fmtChf(entnahmenGesamt(ohneStress))}`);
+    expect(htmlStress).toContain(`Entnahmen gesamt (heutige Franken): ${fmtChf(entnahmenGesamt(mitStress))}`);
+  });
+
+  it('ohne gestaffelte Strategie nennt der Hinweis nicht die Stufen', () => {
+    const h = { ...haushalt('automatisch', false), entnahme: entnahmeAusgaben() };
+    const hw = mitWasWaere(h, { ...KEIN_WAS_WAERE, rendite: 0.1 }, 2026);
+    const ohne = vergleichOhneKrise(hw, regeln, start);
+    const mit = rechne(hw, regeln, start, 'gemeinsam').wunsch;
+    const dar = darstellungVon(h);
+    const text = mehrUebrigText(
+      endBetrag(ohne, dar),
+      endBetrag(mit, dar),
+      entnahmenGesamt(ohne),
+      entnahmenGesamt(mit),
+      true,
+      normalisiereEntnahme(hw.entnahme),
+    );
+    const html = kasten(h, 0.1, mit, hw);
+    if (text) {
+      expect(text).not.toContain('schwachen Jahren');
+      expect(text).toContain('Der Ausgleich hebt die normalen Jahre an');
+      expect(html).toContain(text);
+    } else {
+      expect(html).not.toContain('bleibt hier am Ende mehr übrig');
+    }
+    expect(html).not.toContain('schwachen Jahren');
   });
 });

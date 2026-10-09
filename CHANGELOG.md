@@ -6,7 +6,8 @@ Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1
 ## [1.3.8] - 2026-10-09
 
 ### Geändert
-- Vergleich «Ohne Krise / Mit Ihren Krisen»: «Ohne Krise» rechnet mit denselben Reglern wie die Spalte mit Krisen (Rendite, Teuerung, Rücktritt, Ausgaben, Planungsalter). Nur die Krisen sind aus.
+- Vergleich «Ohne Krise / Mit Ihren Krisen»: «Ohne Krise» rechnet mit denselben Reglern wie die Spalte mit Krisen (Rendite, Teuerung, Rücktritt, Ausgaben, Planungsalter). Nur die Krisen sind aus. Beide Spalten nennen die Entnahmen gesamt in heutigen Franken.
+- Liegt «Mit Krisen» am Ende höher, sagt der Vergleich warum: der Ausgleich hebt die normalen Jahre an, und «Dynamisch gestaffelt» entnimmt nach schwachen Jahren weniger. Die genannten Beträge sind die Entnahmen derselben beiden Rechnungen. Ohne diese Strategie fällt der Satz über die schwachen Jahre weg.
 - «Zum Vergleich … über einen ganzen Umlauf» nennt den Satz des Reglers, nicht die noch nicht übernommene Eingabe.
 
 ## [1.3.7] - 2026-10-09
