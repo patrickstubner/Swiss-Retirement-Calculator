@@ -13,8 +13,9 @@ Nichts davon ist gebaut. Aufwand in Personentagen (PT) grob, jeweils mit Tests u
 | 7 | Teilvorbezug 20–80 % und AHV-Skalen 1–43 | mittel, 3–4 PT | Tabellen aus MB 3.04 / Art. 52 AHVV |
 
 ## 1. Regeljahr 2027 fertigstellen
-- Stand 5.10.2026: Bundesratsentscheid vom 2.10.2026 (AHV/IV/EO, BVG-Grenzen, Säule 3a) ist in `src/rules/2027.json` (Abschnitt 21 in `docs/quellen.md`). DBG-Tarife und Kinderermässigung 264 bleiben der EFD-Vorabdruck.
-- Weiter offen: BVG-Mindestzins (Bundesrat, voraussichtlich November), QStV-Satz 125–150k bis zur AS, kantonale Tarife, Gegenprobe der abgeleiteten Skala-44-Tabelle mit «Rententabellen 2027».
+- Stand 5.10.2026: Bundesratsentscheid vom 2.10.2026 (AHV/IV/EO, BVG-Grenzen, Säule 3a) ist in `src/rules/2027.json` (Abschnitt 21 in `docs/quellen.md`).
+- Stand 2026-11-02: Quellensteuer Bund auf Kapitalleistungen (Stufe 125'000–150'000: 1,90 % / 1,70 %, AS 2026 485, ESTV-Rundschreiben 2-221) und die Skala-44-Rententabelle (Rententabellen 2027, AS 2026 542) sind verifiziert. DBG-Tarife und Kinderermässigung 264: Quelle ESTV-Rundschreiben 2-220 vom 22.9.2026, Werte unverändert.
+- Weiter offen: BVG-Mindestzins, kantonale Tarife.
 - Abnahme: Banner ab 1.1.2027 sagt «teilweise erfasst» und trennt Beschlossenes von den fortgeschriebenen Werten; Wächter `regeljahr.yml` bleibt grün. Der Zähler geht auf 0, wenn keine Hinweise «Fortgeschrieben» mehr übrig sind.
 
 ## 2. Kirchensteuer übrige Kantone (3–5 PT)

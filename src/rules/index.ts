@@ -79,7 +79,7 @@ export interface RegeljahrBanner {
 
 /**
  * Text des Regeljahr-Banners. «teilweise» nennt, was für 2027 beschlossen ist und was offen bleibt
- * (Stand Bundesratsentscheid 2.10.2026). Die Skala-44-Tabelle wird nur erwähnt, solange sie «offen» ist.
+ * (Stand 2026-11-02). Die Skala-44-Tabelle wird nur als noch nicht abgeglichen erwähnt, solange sie «offen» ist.
  */
 export function regeljahrBanner(jahr: number): RegeljahrBanner | null {
   const status = regelJahrStatus(jahr);
@@ -102,7 +102,7 @@ export function regeljahrBanner(jahr: number): RegeljahrBanner | null {
     rolle: 'status',
     stark: `Regeln für ${status.angefragt} teilweise erfasst.`,
     rest:
-      `Berücksichtigt sind AHV-Renten (Minimum und Maximum) und Beiträge, BVG-Grenzbeträge, Säule 3a sowie die Tarife der direkten Bundessteuer. Für ${n} Werte gibt es noch keinen amtlichen Beschluss (unter anderem BVG-Mindestzins, Quellensteuer auf Kapitalleistungen bis zur Amtlichen Sammlung, kantonale Tarife); dort gelten vorläufig die Werte von ${status.angefragt - 1}.` +
+      `Berücksichtigt sind AHV-Renten (Minimum und Maximum) und Beiträge, die Skala-44-Rententabelle, BVG-Grenzbeträge, Säule 3a, die Tarife der direkten Bundessteuer sowie die Quellensteuer des Bundes auf Kapitalleistungen. Für ${n} Werte gibt es noch keinen amtlichen Beschluss (unter anderem BVG-Mindestzins, kantonale Tarife); dort gelten vorläufig die Werte von ${status.angefragt - 1}.` +
       `${rentenSatz} Die Ergebnisse können deshalb abweichen.`,
   };
 }

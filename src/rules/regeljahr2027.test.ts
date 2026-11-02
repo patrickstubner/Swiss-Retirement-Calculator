@@ -1,11 +1,15 @@
 /**
- * Regeljahr 2027: Amtlich beschlossen am 2.10.2026 (AHV/IV/EO, BVG-Grenzen, Säule 3a) plus DBG-Vorabdruck.
+ * Regeljahr 2027: Amtlich beschlossen am 2.10.2026 (AHV/IV/EO, BVG-Grenzen, Säule 3a).
+ * DBG-Tarife und Kinderermässigung: ESTV-Rundschreiben 2-220 vom 22.9.2026.
+ * Quellensteuer Bund auf Kapitalleistungen: AS 2026 485 und ESTV-Rundschreiben 2-221.
+ * Skala 44: Rententabellen 2027 und AS 2026 542.
  * Was nicht beschlossen ist, führt den Wert 2026 fort und ist «offen» (Hinweis «Fortgeschrieben»).
- * Die Skala-44-Tabelle ist aus Art. 34 abgeleitet und «offen», ohne «Fortgeschrieben».
+ * Der BVG-Mindestzins 2027 bleibt offen.
  */
 import { describe, expect, it } from 'vitest';
 import { ahvRenteSkala44 } from '../core/ahv';
 import { beitragAusTabelle, neBeitragTabelle } from '../core/neBeitrag';
+import { quellensteuerBundKapital } from '../core/quellensteuer';
 import { dbgEinkommen, wendeTarifAn } from '../core/steuern';
 import json2027 from './2027.json';
 import {
@@ -29,7 +33,7 @@ describe('rules/2027.json', () => {
     expect(regelJahrStatus(2028)).toEqual({ angefragt: 2028, verwendet: 2027, fehlt: true });
   });
 
-  it('DBG-Tarif Alleinstehende 2027: Stützpunkte laut VKP-Vorabdruck', () => {
+  it('DBG-Tarif Alleinstehende 2027: Stützpunkte laut ESTV-Rundschreiben 2-220', () => {
     const t = r27.steuern.dbgTarifAlleinstehend;
     expect(wendeTarifAn(15300, t)).toBe(0);
     expect(wendeTarifAn(33400, t)).toBeCloseTo(139.35, 6);
@@ -44,7 +48,7 @@ describe('rules/2027.json', () => {
     expect(wendeTarifAn(797500, t)).toBeCloseTo(91712.5, 6);
   });
 
-  it('DBG-Tarif Verheiratete 2027: Stützpunkte laut VKP-Vorabdruck', () => {
+  it('DBG-Tarif Verheiratete 2027: Stützpunkte laut ESTV-Rundschreiben 2-220', () => {
     const t = r27.steuern.dbgTarifVerheiratet;
     const punkte: [number, number][] = [
       [29900, 0],
@@ -196,7 +200,7 @@ describe('rules/2027.json', () => {
     expect(beitragAusTabelle(9160000, t)).toBe(25750);
   });
 
-  it('Skala 44: Formel und abgeleitete Tabelle, amtliche Publikation noch offen', () => {
+  it('Skala 44: Formel und Tabelle, mit Rententabellen 2027 und AS 2026 542 verifiziert', () => {
     expect(r27.ahv.rententabelleStufe).toBe(1536);
     expect(r27.ahv.rententabelleSkala44).toHaveLength(51);
     expect(r27.ahv.rententabelleSkala44[0]).toEqual([15360, 1280]);
@@ -212,10 +216,12 @@ describe('rules/2027.json', () => {
     }
     for (const p of ['ahv.rententabelleStufe', 'ahv.rententabelleReferenz', 'ahv.rententabelleSkala44']) {
       const e = regelEintraege(2027).find((x) => x.pfad === p);
-      expect(e?.status, p).toBe('offen');
+      expect(e?.status, p).toBe('verifiziert');
       expect(e?.hinweis, p).not.toContain('Fortgeschrieben');
       expect(e?.hinweis, p).toContain('Rententabellen 2027');
-      expect(e?.source, p).toContain('fedlex.admin.ch');
+      expect(e?.source, p).toContain('https://sozialversicherungen.admin.ch/de/d/6850/download');
+      expect(e?.source, p).toContain('https://www.fedlex.admin.ch/eli/oc/2026/542/de');
+      expect(e?.stand, p).toContain('2026-11-02');
     }
   });
 
@@ -229,12 +235,9 @@ describe('rules/2027.json', () => {
     );
     for (const p of [
       'bvg.mindestzins2027',
-      'ahv.rententabelleSkala44',
       'ahv.vorbezugKuerzung',
       'ahv.aufschubZuschlag',
       'ahv.neueVorbezugsAufschubsaetze',
-      'steuern.quellensteuer.kapitalBundAlleinstehend',
-      'steuern.quellensteuer.kapitalBundVerheiratet',
       'beitraege.alvHoechstlohn',
     ])
       expect(offen.has(p), p).toBe(true);
@@ -250,6 +253,11 @@ describe('rules/2027.json', () => {
       'steuern.dbgTarifAlleinstehend',
       'steuern.dbgTarifVerheiratet',
       'steuern.dbgAbzugProKind',
+      'ahv.rententabelleSkala44',
+      'ahv.rententabelleReferenz',
+      'ahv.rententabelleStufe',
+      'steuern.quellensteuer.kapitalBundAlleinstehend',
+      'steuern.quellensteuer.kapitalBundVerheiratet',
     ])
       expect(offen.has(p), p).toBe(false);
     const zins = regelEintraege(2027).find((x) => x.pfad === 'bvg.mindestzins2027');
@@ -257,18 +265,49 @@ describe('rules/2027.json', () => {
     expect(zins?.hinweis).toContain('Empfehlung');
   });
 
-  it('QStV-Kapitalsätze 125–150k: Wert 2026 fortgeschrieben, Abweichung im Vorabdruck dokumentiert', () => {
-    const al = r27.steuern.quellensteuer.kapitalBundAlleinstehend.find((s) => s.bis === 150000);
-    const ve = r27.steuern.quellensteuer.kapitalBundVerheiratet.find((s) => s.bis === 150000);
-    expect(al?.satz).toBe(0.0195);
-    expect(ve?.satz).toBe(0.0175);
-    const e = regelEintraege(2027).find((x) => x.pfad === 'steuern.quellensteuer.kapitalBundAlleinstehend');
-    expect(e?.hinweis).toContain('1,90 %');
+  it('QStV-Kapitalsätze 125–150k: AS 2026 485, 1,90 % und 1,70 %, übrige Stufen unverändert', () => {
+    expect(r27.steuern.quellensteuer.kapitalBundAlleinstehend).toEqual([
+      { bis: 25000, satz: 0 },
+      { bis: 50000, satz: 0.0035 },
+      { bis: 75000, satz: 0.0055 },
+      { bis: 100000, satz: 0.0125 },
+      { bis: 125000, satz: 0.016 },
+      { bis: 150000, satz: 0.019 },
+      { bis: 750000, satz: 0.026 },
+      { bis: null, satz: 0.023 },
+    ]);
+    expect(r27.steuern.quellensteuer.kapitalBundVerheiratet).toEqual([
+      { bis: 25000, satz: 0 },
+      { bis: 50000, satz: 0.0015 },
+      { bis: 75000, satz: 0.005 },
+      { bis: 100000, satz: 0.008 },
+      { bis: 125000, satz: 0.0115 },
+      { bis: 150000, satz: 0.017 },
+      { bis: 900000, satz: 0.026 },
+      { bis: null, satz: 0.023 },
+    ]);
+    expect(quellensteuerBundKapital(150_000, 'alleinstehend', r27)).toBeCloseTo(1412.5, 6);
+    expect(quellensteuerBundKapital(150_000, 'verheiratet', r27)).toBeCloseTo(1075, 6);
+    for (const p of [
+      'steuern.quellensteuer.kapitalBundAlleinstehend',
+      'steuern.quellensteuer.kapitalBundVerheiratet',
+    ]) {
+      const e = regelEintraege(2027).find((x) => x.pfad === p);
+      expect(e?.status, p).toBe('verifiziert');
+      expect(e?.hinweis ?? '', p).not.toContain('Fortgeschrieben');
+      expect(e?.source, p).toContain('https://www.fedlex.admin.ch/eli/oc/2026/485/de');
+      expect(e?.source, p).toContain('https://www.estv.admin.ch/dam/de/sd-web/FFOcGTD6UMdr/2-221-D-2026-de.pdf');
+      expect(e?.stand, p).toContain('2026-11-02');
+    }
+    const al = regelEintraege(2027).find((x) => x.pfad === 'steuern.quellensteuer.kapitalBundAlleinstehend');
+    const ve = regelEintraege(2027).find((x) => x.pfad === 'steuern.quellensteuer.kapitalBundVerheiratet');
+    expect(al?.hinweis).toContain('1,90 %');
+    expect(ve?.hinweis).toContain('1,70 %');
   });
 
   it('jeder fortgeschriebene Wert trägt Quelle, Stand und den Hinweis «Fortgeschrieben»', () => {
     const n = anzahlFortgeschrieben(2027);
-    expect(n).toBe(8);
+    expect(n).toBe(6);
     expect(anzahlFortgeschrieben(2026)).toBe(0);
     for (const e of regelEintraege(2027).filter((x) => (x.hinweis ?? '').includes('Fortgeschrieben'))) {
       expect(e.status, e.pfad).toBe('offen');
@@ -287,7 +326,8 @@ describe('rules/2027.json', () => {
     expect(teilweise?.rest).toContain('Quellensteuer');
     expect(teilweise?.rest).toContain('kantonale Tarife');
     expect(teilweise?.rest).toContain('Rententabelle');
-    expect(teilweise?.rest).toContain('8 Werte');
+    expect(teilweise?.rest).toContain('6 Werte');
+    expect(teilweise?.rest).not.toContain('Amtlichen Sammlung');
     const fehlt = regeljahrBanner(2028);
     expect(fehlt?.rolle).toBe('alert');
     expect(fehlt?.stark).toContain('noch nicht erfasst');
@@ -295,11 +335,15 @@ describe('rules/2027.json', () => {
     expect(regeljahrBanner(2026)).toBeNull();
   });
 
-  it('Quellen der neuen DBG-Werte nennen die amtliche Seite und den Abrufstand', () => {
+  it('Quellen der DBG-Werte nennen das ESTV-Rundschreiben 2-220 und den Stand 2026-11-02', () => {
     for (const p of ['steuern.dbgTarifAlleinstehend', 'steuern.dbgTarifVerheiratet', 'steuern.dbgAbzugProKind']) {
       const e = regelEintraege(2027).find((x) => x.pfad === p);
-      expect(e?.source).toContain('https://www.efd.admin.ch/');
-      expect(e?.stand).toContain('02.10.2026');
+      expect(e?.status, p).toBe('verifiziert');
+      expect(e?.source, p).toContain('https://www.estv.admin.ch/dam/de/sd-web/sqbIsYvx0tZg/2-220-D-2026-de.pdf');
+      expect(e?.source, p).toContain('22.9.2026');
+      expect(e?.source, p).not.toContain('Vorabdruck');
+      expect(e?.stand, p).toContain('2026-11-02');
     }
+    expect(r27.steuern.dbgAbzugProKind).toBe(264);
   });
 });

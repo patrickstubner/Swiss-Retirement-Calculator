@@ -4,7 +4,7 @@
     "jahr": 2027,
     "stand": "2026-10-05",
     "quellenDokument": "docs/quellen.md",
-    "hinweis": "Beträge in CHF, Sätze als Dezimalzahl (0.053 = 5,3%). status 'offen' = nicht aus offizieller, aktueller Quelle verifiziert; darf nur als Default einer Nutzereingabe mit Warnung verwendet werden. Regeljahr 2027 (Stand 05.10.2026): Bundesratsentscheid vom 02.10.2026 zu AHV/IV/EO, BVG-Grenzbeträgen und Säule 3a ist eingearbeitet (Quellen in den einzelnen Werten). DBG-Tarife und Kinderermässigung bleiben der EFD-Vorabdruck. Weiter offen und mit «Fortgeschrieben» gekennzeichnet: BVG-Mindestzins 2027, Quellensteuer Bund auf Kapitalleistungen bis zur AS, kantonale Tarife, ALV-Höchstlohn und weitere nicht beschlossene Werte. Die Skala-44-Rententabelle ist aus Art. 34 AHVG abgeleitet (amtliche Rententabellen 2027 lagen nicht vor) und steht auf offen, ohne «Fortgeschrieben». Vorbezugs- und Aufschubsätze: Zahlen wie 2026 (6,8 % / 13,6 %), Status offen, weil die BSV-Seite AHV 21 eine Anpassung 2027 weiter ankündigt, die Berechnungsvorschriften 2027 aber die bisherigen Sätze zeigen."
+    "hinweis": "Beträge in CHF, Sätze als Dezimalzahl (0.053 = 5,3%). status 'offen' = nicht aus offizieller, aktueller Quelle verifiziert; darf nur als Default einer Nutzereingabe mit Warnung verwendet werden. Regeljahr 2027 (Stand 05.10.2026): Bundesratsentscheid vom 02.10.2026 zu AHV/IV/EO, BVG-Grenzbeträgen und Säule 3a ist eingearbeitet (Quellen in den einzelnen Werten). DBG-Tarife und Kinderermässigung: ESTV-Rundschreiben 2-220 vom 22.9.2026 (Stand 2026-11-02). Quellensteuer Bund auf Kapitalleistungen ist verifiziert (AS 2026 485, ESTV-Rundschreiben 2-221, Stand 2026-11-02; Stufe 125'000–150'000: 1,90 % alleinstehend, 1,70 % verheiratet, übrige Stufen unverändert). Weiter offen und mit «Fortgeschrieben» gekennzeichnet: BVG-Mindestzins 2027, kantonale Tarife, ALV-Höchstlohn und weitere nicht beschlossene Werte. Die Skala-44-Rententabelle ist verifiziert (Rententabellen 2027, AS 2026 542, Stand 2026-11-02). Vorbezugs- und Aufschubsätze: Zahlen wie 2026 (6,8 % / 13,6 %), Status offen, weil die BSV-Seite AHV 21 eine Anpassung 2027 weiter ankündigt, die Berechnungsvorschriften 2027 aber die bisherigen Sätze zeigen."
   },
   "ahv": {
     "minimalrenteMonat": {
@@ -59,10 +59,10 @@
     "rententabelleStufe": {
       "value": 1536,
       "einheit": "CHF mdJE",
-      "source": "https://www.fedlex.admin.ch/eli/cc/63/837_843_843/de ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf",
-      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
-      "status": "offen",
-      "hinweis": "Abgeleitet nach Art. 34 AHVG aus der festgesetzten Minimalrente 1'280, Stufenabstand 1'536 = 1/10 der jährlichen Minimalrente, Rente auf Franken gerundet. Dieselbe Formel reproduziert die amtliche Rententabelle 2025/2026 exakt. Die Publikation «Rententabellen 2027» bzw. Merkblatt 3.01 mit Anhang 2027 lag am 05.10.2026 nicht vor (nicht in den Beschluss-PDFs). OFFEN bis zur Gegenprobe mit dieser Publikation."
+      "source": "Rententabellen 2027 https://sozialversicherungen.admin.ch/de/d/6850/download ; AS 2026 542 https://www.fedlex.admin.ch/eli/oc/2026/542/de",
+      "stand": "Stand 2026-11-02",
+      "status": "verifiziert",
+      "hinweis": "Stufenabstand 1'536 = 1/10 der jährlichen Minimalrente. Mit den Rententabellen 2027 (gültig ab 1.1.2027) und AS 2026 542 abgeglichen, Stand 2026-11-02. Betrag unverändert."
     },
     "mdjeRundung": {
       "value": "aufrunden",
@@ -98,10 +98,10 @@
         ]
       ],
       "einheit": "[mdJE, CHF/Monat] Skala 44",
-      "source": "https://www.fedlex.admin.ch/eli/cc/63/837_843_843/de ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf",
-      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
-      "status": "offen",
-      "hinweis": "Abgeleitet nach Art. 34 AHVG aus der festgesetzten Minimalrente 1'280, Stufenabstand 1'536 = 1/10 der jährlichen Minimalrente, Rente auf Franken gerundet. Dieselbe Formel reproduziert die amtliche Rententabelle 2025/2026 exakt. Die Publikation «Rententabellen 2027» bzw. Merkblatt 3.01 mit Anhang 2027 lag am 05.10.2026 nicht vor (nicht in den Beschluss-PDFs). OFFEN bis zur Gegenprobe mit dieser Publikation."
+      "source": "Rententabellen 2027 https://sozialversicherungen.admin.ch/de/d/6850/download ; AS 2026 542 https://www.fedlex.admin.ch/eli/oc/2026/542/de",
+      "stand": "Stand 2026-11-02",
+      "status": "verifiziert",
+      "hinweis": "Stützpunkte der Skala 44 (Altersrente 1/1). Mit den Rententabellen 2027 (gültig ab 1.1.2027) und AS 2026 542 abgeglichen, Stand 2026-11-02. Beträge unverändert."
     },
     "rententabelleSkala44": {
       "value": [
@@ -311,10 +311,10 @@
         ]
       ],
       "einheit": "[mdJE, CHF/Monat] Altersrente 1/1, Skala 44",
-      "source": "https://www.fedlex.admin.ch/eli/cc/63/837_843_843/de ; https://cms.news.admin.ch/fileservice/sdweb-docs-prod-nsbcch-files/files/2026/10/01/d5ae6485-584b-4504-88f3-1c97761a8cb3.pdf",
-      "stand": "Bundesratsentscheid 02.10.2026, abgerufen 05.10.2026",
-      "status": "offen",
-      "hinweis": "Abgeleitet nach Art. 34 AHVG aus der festgesetzten Minimalrente 1'280, Stufenabstand 1'536 = 1/10 der jährlichen Minimalrente, Rente auf Franken gerundet. Dieselbe Formel reproduziert die amtliche Rententabelle 2025/2026 exakt. Die Publikation «Rententabellen 2027» bzw. Merkblatt 3.01 mit Anhang 2027 lag am 05.10.2026 nicht vor (nicht in den Beschluss-PDFs). OFFEN bis zur Gegenprobe mit dieser Publikation."
+      "source": "Rententabellen 2027 https://sozialversicherungen.admin.ch/de/d/6850/download ; AS 2026 542 https://www.fedlex.admin.ch/eli/oc/2026/542/de",
+      "stand": "Stand 2026-11-02",
+      "status": "verifiziert",
+      "hinweis": "Altersrente 1/1, Skala 44. Mit den Rententabellen 2027 (gültig ab 1.1.2027) und AS 2026 542 abgeglichen, Stand 2026-11-02. Beträge unverändert."
     },
     "schaetzhilfe": {
       "value": {
@@ -1223,10 +1223,10 @@
         "proportionalAb": 797500,
         "proportionalSatz": 0.115
       },
-      "source": "Art. 36 Abs. 1 DBG; VKP-Vorabdruck (EFD, Verordnung über die Anpassung der Tarife und Abzugsbeträge bei der direkten Bundessteuer an die Teuerung, Inkrafttreten 1.1.2027; Teuerung 0.47 % LIK 30.6.2026) https://www.efd.admin.ch/de/newnsb/rq9rumbCaofX ; ESTV-Erläuterungen vom 11.9.2026 (gleiche Seite); Medienmitteilung EFD 22.9.2026",
-      "stand": "in Kraft 1.1.2027 – Vorabdruck, abgerufen 02.10.2026; verbindlich ist die Veröffentlichung in der AS (Bundesblatt)",
+      "source": "Art. 36 Abs. 1 DBG; ESTV-Rundschreiben 2-220 vom 22.9.2026 https://www.estv.admin.ch/dam/de/sd-web/sqbIsYvx0tZg/2-220-D-2026-de.pdf",
+      "stand": "ESTV-Rundschreiben 2-220 vom 22.9.2026, Stand 2026-11-02",
       "status": "verifiziert",
-      "hinweis": "Ab 797 500 Franken proportional 11.5 % (797 400 → 91 699.70; 797 500 → 91 712.50 gemäss VKP)."
+      "hinweis": "Ab 797 500 Franken proportional 11.5 % (797 400 → 91 699.70; 797 500 → 91 712.50 gemäss ESTV-Rundschreiben 2-220)."
     },
     "dbgTarifVerheiratet": {
       "value": {
@@ -1301,16 +1301,16 @@
         "proportionalAb": 946000,
         "proportionalSatz": 0.115
       },
-      "source": "Art. 36 Abs. 2 DBG; VKP-Vorabdruck (EFD, Verordnung über die Anpassung der Tarife und Abzugsbeträge bei der direkten Bundessteuer an die Teuerung, Inkrafttreten 1.1.2027; Teuerung 0.47 % LIK 30.6.2026) https://www.efd.admin.ch/de/newnsb/rq9rumbCaofX ; ESTV-Erläuterungen vom 11.9.2026 (gleiche Seite); Medienmitteilung EFD 22.9.2026",
-      "stand": "in Kraft 1.1.2027 – Vorabdruck, abgerufen 02.10.2026; verbindlich ist die Veröffentlichung in der AS (Bundesblatt)",
+      "source": "Art. 36 Abs. 2 DBG; ESTV-Rundschreiben 2-220 vom 22.9.2026 https://www.estv.admin.ch/dam/de/sd-web/sqbIsYvx0tZg/2-220-D-2026-de.pdf",
+      "stand": "ESTV-Rundschreiben 2-220 vom 22.9.2026, Stand 2026-11-02",
       "status": "verifiziert",
-      "hinweis": "Ab 946 000 Franken proportional 11.5 % (945 900 → 108 778; 946 000 → 108 790 gemäss VKP)."
+      "hinweis": "Ab 946 000 Franken proportional 11.5 % (945 900 → 108 778; 946 000 → 108 790 gemäss ESTV-Rundschreiben 2-220)."
     },
     "dbgAbzugProKind": {
       "value": 264,
       "einheit": "CHF vom Steuerbetrag",
-      "source": "Art. 36 Abs. 2bis DBG; VKP-Vorabdruck (EFD, Verordnung über die Anpassung der Tarife und Abzugsbeträge bei der direkten Bundessteuer an die Teuerung, Inkrafttreten 1.1.2027; Teuerung 0.47 % LIK 30.6.2026) https://www.efd.admin.ch/de/newnsb/rq9rumbCaofX ; ESTV-Erläuterungen vom 11.9.2026 (gleiche Seite); Medienmitteilung EFD 22.9.2026",
-      "stand": "in Kraft 1.1.2027 – Vorabdruck, abgerufen 02.10.2026; verbindlich ist die Veröffentlichung in der AS (Bundesblatt)",
+      "source": "Art. 36 Abs. 2bis DBG; ESTV-Rundschreiben 2-220 vom 22.9.2026 https://www.estv.admin.ch/dam/de/sd-web/sqbIsYvx0tZg/2-220-D-2026-de.pdf",
+      "stand": "ESTV-Rundschreiben 2-220 vom 22.9.2026, Stand 2026-11-02",
       "status": "verifiziert"
     },
     "dbgTarifAuchFuerKapital": {
@@ -1394,7 +1394,7 @@
           },
           {
             "bis": 150000,
-            "satz": 0.0195
+            "satz": 0.019
           },
           {
             "bis": 750000,
@@ -1406,10 +1406,10 @@
           }
         ],
         "einheit": "Grenzsatz je Teilbetrag auf dem Bruttobetrag (bis = obere Grenze, null = alle weiteren)",
-        "source": "Art. 19 und Anhang Ziff. 3 QStV (SR 642.118.2), Änderung per 1.1.2027 (EFD-Vorabdruck, Quellensteuerverordnung) https://www.efd.admin.ch/de/newnsb/rq9rumbCaofX",
-        "stand": "in Kraft 1.1.2027 – Vorabdruck, abgerufen 02.10.2026; verbindlich ist die Veröffentlichung in der AS (Bundesblatt)",
-        "status": "offen",
-        "hinweis": "Bundesteil der Quellensteuer auf Kapitalleistungen aus Vorsorge an Personen im Ausland (immer erhoben, ungeachtet DBA; Rückerstattung auf Antrag innert 3 Jahren gemäss DBA, Art. 19 Abs. 2 QStV). OFFEN: Stufe 125 000–150 000: Vorabdruck 2027 nennt 1,90 %, die Regeldatei 2026 (und die Gegenrechnung mit dem TG-Tarif 2026) 1,95 %. Alle übrigen Stufen sind 2027 unverändert. Abweichung ungeklärt (Tippfehler im Vorabdruck oder echte Änderung); bis zur Veröffentlichung in der AS wird der Wert 2026 (höherer Satz) fortgeschrieben. Fortgeschrieben: Wert 2026."
+        "source": "Art. 19 und Anhang Ziff. 3 QStV (SR 642.118.2), AS 2026 485 https://www.fedlex.admin.ch/eli/oc/2026/485/de ; ESTV-Rundschreiben 2-221 vom 20.10.2026 https://www.estv.admin.ch/dam/de/sd-web/FFOcGTD6UMdr/2-221-D-2026-de.pdf",
+        "stand": "in Kraft 1.1.2027, AS 2026 485, Stand 2026-11-02",
+        "status": "verifiziert",
+        "hinweis": "Bundesteil der Quellensteuer auf Kapitalleistungen aus Vorsorge an Personen im Ausland (immer erhoben, ungeachtet DBA; Rückerstattung auf Antrag innert 3 Jahren gemäss DBA, Art. 19 Abs. 2 QStV). Stufe 125'000–150'000: 1,90 % (AS 2026 485, ESTV-Rundschreiben 2-221). Übrige Stufen unverändert. 150'000 Franken: 1'412.50."
       },
       "kapitalBundVerheiratet": {
         "value": [
@@ -1435,7 +1435,7 @@
           },
           {
             "bis": 150000,
-            "satz": 0.0175
+            "satz": 0.017
           },
           {
             "bis": 900000,
@@ -1447,10 +1447,10 @@
           }
         ],
         "einheit": "Grenzsatz je Teilbetrag auf dem Bruttobetrag (bis = obere Grenze, null = alle weiteren)",
-        "source": "Art. 19 und Anhang Ziff. 3 QStV (SR 642.118.2), Änderung per 1.1.2027 (EFD-Vorabdruck, Quellensteuerverordnung) https://www.efd.admin.ch/de/newnsb/rq9rumbCaofX",
-        "stand": "in Kraft 1.1.2027 – Vorabdruck, abgerufen 02.10.2026; verbindlich ist die Veröffentlichung in der AS (Bundesblatt)",
-        "status": "offen",
-        "hinweis": "Bundesteil der Quellensteuer auf Kapitalleistungen aus Vorsorge an Personen im Ausland (immer erhoben, ungeachtet DBA; Rückerstattung auf Antrag innert 3 Jahren gemäss DBA, Art. 19 Abs. 2 QStV). OFFEN: Stufe 125 000–150 000: Vorabdruck 2027 nennt 1,70 %, die Regeldatei 2026 (und die Gegenrechnung mit dem TG-Tarif 2026) 1,75 %. Alle übrigen Stufen sind 2027 unverändert. Abweichung ungeklärt (Tippfehler im Vorabdruck oder echte Änderung); bis zur Veröffentlichung in der AS wird der Wert 2026 (höherer Satz) fortgeschrieben. Fortgeschrieben: Wert 2026."
+        "source": "Art. 19 und Anhang Ziff. 3 QStV (SR 642.118.2), AS 2026 485 https://www.fedlex.admin.ch/eli/oc/2026/485/de ; ESTV-Rundschreiben 2-221 vom 20.10.2026 https://www.estv.admin.ch/dam/de/sd-web/FFOcGTD6UMdr/2-221-D-2026-de.pdf",
+        "stand": "in Kraft 1.1.2027, AS 2026 485, Stand 2026-11-02",
+        "status": "verifiziert",
+        "hinweis": "Bundesteil der Quellensteuer auf Kapitalleistungen aus Vorsorge an Personen im Ausland (immer erhoben, ungeachtet DBA; Rückerstattung auf Antrag innert 3 Jahren gemäss DBA, Art. 19 Abs. 2 QStV). Stufe 125'000–150'000: 1,70 % (AS 2026 485, ESTV-Rundschreiben 2-221). Übrige Stufen unverändert. 150'000 Franken: 1'075."
       },
       "rentenBund": {
         "value": 0.01,
