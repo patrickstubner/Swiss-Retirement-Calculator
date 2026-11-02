@@ -461,13 +461,13 @@ Die App berechnet die Tabelle aus denselben Daten (kein fest einprogrammierter W
 - Ein amtlich oder wissenschaftlich belegter **Erwartungswert** für die Zukunft: Die 7 % bleiben eine Modellannahme des Eigentümers (Auftrag vom 30.9.2026); belegt ist nur, dass sie in der historischen Spanne für 100 % Aktien liegt.
 - Eine Tabelle mit Richtwerten für Welt-Aktien in CHF nach Aktienanteil.
 
-## 21. Regeljahr 2027 – `src/rules/2027.json`, Stand 5.10.2026
+## 21. Regeljahr 2027 – `src/rules/2027.json`, Stand 5.10.2026, Nachtrag 2026-11-02
 
-**Grundsatz:** `2027.json` enthält nur dort neue Werte, wo ein amtlicher Text vorliegt. Alles andere führt den Wert 2026 fort, steht auf **offen** und trägt den Hinweis «Fortgeschrieben» (die App zeigt dazu ab 1.1.2027 den Hinweis «Regeln für 2027 teilweise erfasst» und nennt, was berücksichtigt ist und was offen bleibt). Für 2028 und später zeigt die App weiterhin «noch nicht erfasst». Die Skala-44-Rententabelle ist aus der Rentenformel abgeleitet und «offen», aber **ohne** «Fortgeschrieben» (die Beträge sind nicht die von 2026).
+**Grundsatz:** `2027.json` enthält nur dort neue Werte, wo ein amtlicher Text vorliegt. Alles andere führt den Wert 2026 fort, steht auf **offen** und trägt den Hinweis «Fortgeschrieben» (die App zeigt dazu ab 1.1.2027 den Hinweis «Regeln für 2027 teilweise erfasst» und nennt, was berücksichtigt ist und was offen bleibt). Für 2028 und später zeigt die App weiterhin «noch nicht erfasst». Die Skala-44-Rententabelle ist mit den Rententabellen 2027 und AS 2026 542 abgeglichen und **verifiziert** (Stand 2026-11-02; die Beträge sind nicht die von 2026).
 
 ### Amtlich bestätigt (Status «verifiziert»)
 
-Quelle: EFD, Vorabdruck der Verordnung über die Anpassung der Tarife und Abzugsbeträge bei der direkten Bundessteuer an die Teuerung (VKP), Erläuterungen der ESTV vom 11.9.2026 und Medienmitteilung vom 22.9.2026, https://www.efd.admin.ch/de/newnsb/rq9rumbCaofX (Beilagen als PDF, abgerufen 2.10.2026). **Vorabdruck:** verbindlich ist die Veröffentlichung in der AS (Bundesblatt). Inkrafttreten 1.1.2027, Teuerungsausgleich **0.47 %** (LIK-Stand 30.6.2026), gilt ab Steuerjahr 2027.
+Quelle: ESTV-Rundschreiben 2-220 vom 22.9.2026, «Ausgleich der Folgen der kalten Progression sowie Zinssätze bei der direkten Bundessteuer für das Steuerjahr 2027», https://www.estv.admin.ch/dam/de/sd-web/sqbIsYvx0tZg/2-220-D-2026-de.pdf (Stand 2026-11-02). Das Rundschreiben nennt den Teuerungsausgleich **0.47 %** (LIK 30.6.2026: 171.2 Punkte) und die Tarife sowie den Abzug vom Steuerbetrag pro Kind von **264** Franken (Art. 36 Abs. 2bis DBG; 2026: 263). Die Werte in der Regeldatei sind unverändert, die Quelle ersetzt den früheren EFD-Vorabdruck.
 
 | Wert | 2027 | 2026 |
 |---|---|---|
@@ -482,9 +482,9 @@ Quelle: EFD, Vorabdruck der Verordnung über die Anpassung der Tarife und Abzugs
 
 Die Tests in `src/rules/regeljahr2027.test.ts` prüfen alle Stützpunkte der beiden Tarife gegen diese Tabelle. Ein im Netz gefundener «Kinderabzug 8'100» ist **nicht belegt** und wurde nicht übernommen (die Kinderermässigung 264 ist der amtliche Abzug vom Steuerbetrag; der Kinderabzug vom Einkommen bei Art. 35 DBG ist ein anderer Wert und wird von der App nicht verwendet).
 
-### Quellensteuer Kapitalleistungen Bund (QStV, Anhang Ziff. 3): Abweichung, **OFFEN**
+### Quellensteuer Kapitalleistungen Bund (QStV, Anhang Ziff. 3): **verifiziert**
 
-Der EFD-Vorabdruck der QStV-Änderung per 1.1.2027 nennt für die Stufe 125'000–150'000 **1,90 %** (Alleinstehende) und **1,70 %** (Verheiratete). Die Regeldatei 2026 führt dort 1,95 % bzw. 1,75 % (Quelle: ESTV-Übersicht 2026, TG-Tarif 2026; Gegenrechnung TG: 150'000 → 11'925 Franken, passt zu 1,95 %). Alle anderen Stufen sind 2027 unverändert. Ob die Abweichung ein Tippfehler im Vorabdruck oder eine echte Änderung ist, ist nicht geklärt (Fedlex-Text per Abruf nicht lesbar). **Entscheid:** Status «offen», in der App gilt der Wert 2026 (höherer Satz, also vorsichtiger). Prüfen, sobald die AS-Veröffentlichung vorliegt.
+AS 2026 485 (Änderung der Quellensteuerverordnung vom 11.9.2026, in Kraft 1.1.2027, https://www.fedlex.admin.ch/eli/oc/2026/485/de) und ESTV-Rundschreiben 2-221 vom 20.10.2026 (https://www.estv.admin.ch/dam/de/sd-web/FFOcGTD6UMdr/2-221-D-2026-de.pdf, Beilagen 5 und 6) setzen für die Stufe 125'000–150'000 **1,90 %** (Alleinstehende) und **1,70 %** (Verheiratete). Die Regeldatei 2026 führt dort 1,95 % bzw. 1,75 %. Alle anderen Stufen sind 2027 unverändert. Stand 2026-11-02, Status **verifiziert**. Beispiel im Rundschreiben: 150'000 Franken ergeben 1'412.50 (alleinstehend) bzw. 1'075 (verheiratet).
 
 ### Bundesratsentscheid 2.10.2026 (AHV/IV/EO, BVG-Grenzen, Säule 3a)
 
@@ -517,17 +517,16 @@ Quellen, alle abgerufen 5.10.2026:
 
 **Freiwillige AHV/IV, Nichterwerbstätige (VFV Art. 13b, im Verordnungstext abgedruckt):** bis 610'000: 1'030; ab 610'000: 1'131.20 + 101 je 50'000; ab 1'760'000: 3'454.20 + 151.50; ab 9'160'000: 25'750. Die erste Schwelle ist 610'000, nicht die 360'000 der obligatorischen Tabelle. Befreiung des Ehegatten: doppelter Mindestbeitrag, also 2'060 (freiwillig) bzw. 1'082 (obligatorisch AHV/IV/EO).
 
-**Rententabelle Skala 44:** nicht in den Beschluss-PDFs. `rententabelleSkala44`, `rententabelleReferenz` und `rententabelleStufe` (1'536 = 1/10 von 15'360) sind nach Art. 34 AHVG aus der Minimalrente 1'280 gerechnet (auf Franken gerundet). Dieselbe Formel reproduziert die amtliche Tabelle 2025/2026 exakt. Status **offen**, ohne «Fortgeschrieben», bis Merkblatt 3.01 bzw. «Rententabellen 2027» vorliegt. Die Rentenformel selbst (Koeffizienten, mdJE 15'360 bis 92'160) ist verifiziert.
+**Rententabelle Skala 44:** `rententabelleSkala44`, `rententabelleReferenz` und `rententabelleStufe` (1'536) sind mit den Rententabellen 2027 (https://sozialversicherungen.admin.ch/de/d/6850/download, gültig ab 1.1.2027) und AS 2026 542 (https://www.fedlex.admin.ch/eli/oc/2026/542/de) abgeglichen. Die Beträge sind unverändert (15'360 → 1'280 bis 92'160 → 2'560). Status **verifiziert**, Stand 2026-11-02. Die Rentenformel selbst (Koeffizienten, mdJE 15'360 bis 92'160) bleibt verifiziert.
 
 **Vorbezug und Aufschub:** Sätze wie 2026 (Vorbezug 6,8 % pro Jahr, 13,6 % bei zwei Jahren, Aufschub 5,2 bis 31,5 %; reduzierte Jahressätze der Übergangsgeneration unverändert). Einkommensgrenzen 48 × und 60 × Minimalrente: 61'440 und 76'800 (Berechnungsvorschriften, Punkt 6.3.2; die Monatsstaffel darin ist feiner, der Rechner interpoliert die Jahreswerte weiterhin linear). Status der Vorbezugs- und Aufschubsätze: **offen**, nicht verifiziert. Die Zahlen bleiben für die Rechnung, bis geklärt ist, ob noch eine AHVV-Änderung kommt. **Widerspruch:** https://www.bsv.admin.ch/de/ahv-21 schrieb am 5.10.2026 weiterhin, die Kürzungssätze und Aufschubszuschläge würden ab 2027 an die Lebenserwartung angepasst und die Sätze seien noch nicht bekannt. Die Berechnungsvorschriften gültig ab 1.1.2027 zeigen weiterhin 6,8 % und 13,6 %.
 
 ### Weiter offen (Wert 2026 fortgeschrieben, sofern nichts anderes steht)
 
 - **Vorbezugs- und Aufschubsätze 2027:** Status offen. Die Rechnung verwendet weiter 6,8 % / 13,6 % bzw. Aufschub 5,2–31,5 %, wie in den Berechnungsvorschriften gültig ab 1.1.2027. Die BSV-Seite AHV 21 kündigt eine Anpassung weiterhin an.
-- **BVG-Mindestzins 2027:** Empfehlung der BVG-Kommission 1,75 % (31.08.2026), Bundesrat entscheidet erst im November. Nicht fortgeschrieben (der Wert ist die Empfehlung, nicht der Satz 2026 von 1,25 %), Status offen. Der Rechner verwendet für Schätzungen weiter `bvg.mindestzins2026`.
-- **Quellensteuer Bund auf Kapitalleistungen 2027:** bis zur AS-Fassung offen. Stufe 125'000–150'000 bleibt beim Wert 2026 (1,95 % / 1,75 %), Hinweis auf den Vorabdruck (1,90 % / 1,70 %) bleibt.
+- **BVG-Mindestzins 2027:** Empfehlung der BVG-Kommission 1,75 % (31.08.2026). Nicht fortgeschrieben (der Wert ist die Empfehlung, nicht der Satz 2026 von 1,25 %), Status offen. Der Rechner verwendet für Schätzungen weiter `bvg.mindestzins2026`.
 - **Kantonale Tarife, Steuerfüsse, Kapitalleistungssteuern 2027, Hypothekarzinsdurchschnitt, Quellensteuer-Rentensätze der Kantone, ALV-Höchstlohn:** nicht im Beschluss vom 2.10.2026, fortgeschrieben.
-- **Rententabellen-Publikation 2027 und Merkblatt 2.03 (gedruckte Kombinationstabelle):** siehe oben; die abgeleiteten Werte stehen in der Datei, die Gegenprobe fehlt.
+- **Merkblatt 2.03 (gedruckte Kombinationstabelle):** die kombinierte Beitragstabelle im Rechner bleibt die Summe nach den Sätzen 8,7 % / 1,4 % / 0,5 %.
 
 ## 22. Prüfung Audit-Bericht Punkte 7/8 (2.10.2026)
 

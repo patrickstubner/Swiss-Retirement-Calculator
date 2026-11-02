@@ -3,6 +3,14 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.3.9] - 2026-11-02
+
+### Geändert
+- Quellensteuer Bund auf Kapitalleistungen 2027, Stufe 125'000–150'000: 1,90 % alleinstehend (bisher 1,95 %) und 1,70 % verheiratet (bisher 1,75 %). Übrige Stufen unverändert. Status verifiziert. Quellen: AS 2026 485, ESTV-Rundschreiben 2-221 vom 20.10.2026. Stand 2026-11-02.
+- Skala-44-Rententabelle, Referenzpunkte und Stufenabstand 1'536: Beträge unverändert, Status verifiziert. Quellen: Rententabellen 2027, AS 2026 542. Stand 2026-11-02.
+- DBG-Tarife und Kinderermässigung 264: Werte unverändert. Quelle neu ESTV-Rundschreiben 2-220 vom 22.9.2026. Stand 2026-11-02.
+- BVG-Mindestzins 2027 bleibt offen (Empfehlung 1,75 %).
+
 ## [1.3.8] - 2026-10-09
 
 ### Geändert
