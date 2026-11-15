@@ -16,3 +16,8 @@ fortschritt.md
 *.tsbuildinfo
 .vitest-cache/
 coverage/
+
+# Lokale Code-Index-Ordner (Agent-Tools), nie committen
+.codegraph/
+graphify-out/
+.serena/
