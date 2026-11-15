@@ -76,7 +76,7 @@ describe('Schätzwerte: Pensionskasse (BVG-Minimum)', () => {
     // Jahrgang 1996, Lohn 100'000: koordinierter Lohn 90'720 − 26'460 = 64'260; 2021–2025 je 7%
     const p = person({ geburtsjahr: 1996, lohn: 100000 });
     const gs = 64260 * 0.07;
-    const z = regeln.bvg.mindestzins2026;
+    const z = regeln.bvg.mindestzinsVorjahr;
     let erwartet = 0;
     for (let i = 0; i < 5; i++) erwartet = erwartet * (1 + z) + gs;
     expect(schaetzePkGuthaben(p, regeln, heute)).toBe(Math.round(erwartet));

@@ -14,7 +14,8 @@ describe('rules/2026.json', () => {
     expect(r.ahv.plafondEhepaarFaktor * r.ahv.maximalrenteMonat).toBe(3780);
     expect(r.bvg.eintrittsschwelle).toBe(22680);
     expect(r.bvg.koordinationsabzug).toBe(26460);
-    expect(r.bvg.mindestzins2026).toBe(0.0125);
+    expect(r.bvg.mindestzins).toBe(0.0125);
+    expect(r.bvg.mindestzinsVorjahr).toBe(0.0125);
     expect(r.saeule3a.maxMitPk).toBe(7258);
     expect(r.saeule3a.maxOhnePk).toBe(36288);
     expect(r.beitraege.alvHoechstlohn).toBe(148200);
@@ -28,7 +29,7 @@ describe('rules/2026.json', () => {
       .filter((e) => e.status === 'offen')
       .map((e) => e.pfad);
     expect(offen).toContain('ahv.rentenanpassung2027');
-    expect(offen).not.toContain('bvg.mindestzins2027');
+    expect(offen).not.toContain('bvg.mindestzins');
     expect(offen).toContain('beitraege.freiwilligeAhv.vorsorgeguthabenImVermoegen');
     expect(offen).not.toContain('beitraege.freiwilligeAhv.tabelleNichterwerbstaetige');
     expect(offen).not.toContain('steuern.quellensteuer.uebrigeKantone');

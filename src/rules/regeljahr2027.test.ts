@@ -247,6 +247,8 @@ describe('rules/2027.json', () => {
       'bvg.eintrittsschwelle',
       'bvg.koordinationsabzug',
       'bvg.obereGrenzeJahreslohn',
+      'bvg.mindestzins',
+      'bvg.mindestzinsVorjahr',
       'ahv.rentenanpassung2027',
       'steuern.dbgTarifAlleinstehend',
       'steuern.dbgTarifVerheiratet',
@@ -260,12 +262,15 @@ describe('rules/2027.json', () => {
       expect(offen.has(p), p).toBe(false);
   });
 
-  it('BVG-Mindestzins 2027: 2 % laut Bundesratsentscheid 04.11.2026', () => {
-    expect(r27.bvg.mindestzins2027).toBe(0.02);
-    const zins = regelEintraege(2027).find((x) => x.pfad === 'bvg.mindestzins2027');
+  it('BVG-Mindestzins 2027: 2 % laut Bundesratsentscheid 04.11.2026, Vorjahr 1,25 %', () => {
+    expect(r27.bvg.mindestzins).toBe(0.02);
+    expect(r27.bvg.mindestzinsVorjahr).toBe(r26.bvg.mindestzins);
+    expect(r26.bvg.mindestzins).toBe(0.0125);
+    const zins = regelEintraege(2027).find((x) => x.pfad === 'bvg.mindestzins');
     expect(zins?.status).toBe('verifiziert');
     expect(zins?.source).toBe('https://www.bsv.admin.ch/de/newnsb/8DF8zxcfvu7l');
     expect(zins?.stand).toContain('04.11.2026');
+    expect(zins?.hinweis).not.toContain('Fortgeschrieben');
   });
 
   it('QStV-Kapitalsätze 125–150k: AS 2026 485, 1,90 % und 1,70 %, übrige Stufen unverändert', () => {
