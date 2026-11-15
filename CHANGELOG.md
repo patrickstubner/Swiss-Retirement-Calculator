@@ -13,6 +13,9 @@ Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1
 - Golden-Master pro Regelstand: 8 Referenzhaushalte (u. a. Ehepaar, Kapitalbezug, Vorbezug 63, Aufschub 70, ohne PK, Wegzug nach Portugal) mit Kennzahlen je Regeljahr in `src/golden/erwartet/<jahr>.json`. Bewusste Änderungen mit `npm run golden:update` neu schreiben und den Diff im PR begründen.
 - Regel-Prüftests: jeder Regelwert hat Quelle, Stand und gültigen Status, verifizierte Werte eine https-Quelle (Ausnahmeliste für Gesetzeszitate), Schlüssel ohne Jahreszahl (Ausnahmeliste), beide Regeljahre mit denselben Schlüsseln.
 
+### Werkzeuge
+- `node scripts/regeljahr-diff.mjs [von nach] [--json]`: zeigt geänderte, neue, entfernte und offene Regelwerte zwischen zwei Regeldateien (ohne Argumente die zwei neusten). Hilft beim Jahreswechsel und im Review von Regel-PRs.
+
 ## [1.3.9] - 2026-11-02
 
 ### Geändert
