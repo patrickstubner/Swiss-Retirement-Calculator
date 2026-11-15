@@ -1,0 +1,109 @@
+{
+  "regeljahr": 2027,
+  "haushalte": {
+    "zh-alleinstehend": {
+      "erfolg": true,
+      "ruinAlter": null,
+      "endVermoegen": 487656,
+      "ersteAhvJahr": 2031,
+      "ahvVollesJahr": 33020,
+      "pkRenteVollesJahr": 27599,
+      "steuernVollesJahr": 8580,
+      "steuernKapitalTotal": 4037,
+      "sozialabgabenErstesJahr": 7040,
+      "vermoegenMit75": 465265,
+      "vermoegenMit85": 476329
+    },
+    "ag-ehepaar": {
+      "erfolg": true,
+      "ruinAlter": null,
+      "endVermoegen": 1076698,
+      "ersteAhvJahr": 2031,
+      "ahvVollesJahr": 33280,
+      "pkRenteVollesJahr": 27599,
+      "steuernVollesJahr": 19825,
+      "steuernKapitalTotal": 4756,
+      "sozialabgabenErstesJahr": 11520,
+      "vermoegenMit75": 1022443,
+      "vermoegenMit85": 1046757
+    },
+    "lu-frau-1962": {
+      "erfolg": true,
+      "ruinAlter": null,
+      "endVermoegen": 395320,
+      "ersteAhvJahr": 2027,
+      "ahvVollesJahr": 30137,
+      "pkRenteVollesJahr": 24579,
+      "steuernVollesJahr": 7824,
+      "steuernKapitalTotal": 2992,
+      "sozialabgabenErstesJahr": 2133,
+      "vermoegenMit75": 377169,
+      "vermoegenMit85": 386138
+    },
+    "be-kapitalbezug": {
+      "erfolg": true,
+      "ruinAlter": null,
+      "endVermoegen": 929725,
+      "ersteAhvJahr": 2031,
+      "ahvVollesJahr": 33020,
+      "pkRenteVollesJahr": 0,
+      "steuernVollesJahr": 11811,
+      "steuernKapitalTotal": 52020,
+      "sozialabgabenErstesJahr": 7040,
+      "vermoegenMit75": 887035,
+      "vermoegenMit85": 908129
+    },
+    "zh-vorbezug-63": {
+      "erfolg": true,
+      "ruinAlter": null,
+      "endVermoegen": 437072,
+      "ersteAhvJahr": 2029,
+      "ahvVollesJahr": 28529,
+      "pkRenteVollesJahr": 26089,
+      "steuernVollesJahr": 7122,
+      "steuernKapitalTotal": 4135,
+      "sozialabgabenErstesJahr": 7040,
+      "vermoegenMit75": 417003,
+      "vermoegenMit85": 426920
+    },
+    "zh-aufschub-70": {
+      "erfolg": true,
+      "ruinAlter": null,
+      "endVermoegen": 625775,
+      "ersteAhvJahr": 2036,
+      "ahvVollesJahr": 43421,
+      "pkRenteVollesJahr": 31373,
+      "steuernVollesJahr": 12503,
+      "steuernKapitalTotal": 3809,
+      "sozialabgabenErstesJahr": 7040,
+      "vermoegenMit75": 597042,
+      "vermoegenMit85": 611240
+    },
+    "sg-ohne-pk": {
+      "erfolg": true,
+      "ruinAlter": null,
+      "endVermoegen": 604389,
+      "ersteAhvJahr": 2031,
+      "ahvVollesJahr": 31421,
+      "pkRenteVollesJahr": 0,
+      "steuernVollesJahr": 7452,
+      "steuernKapitalTotal": 20226,
+      "sozialabgabenErstesJahr": 5760,
+      "vermoegenMit75": 576637,
+      "vermoegenMit85": 590350
+    },
+    "zh-wegzug-pt": {
+      "erfolg": true,
+      "ruinAlter": null,
+      "endVermoegen": 487656,
+      "ersteAhvJahr": 2031,
+      "ahvVollesJahr": 33020,
+      "pkRenteVollesJahr": 27599,
+      "steuernVollesJahr": 19081,
+      "steuernKapitalTotal": 4037,
+      "sozialabgabenErstesJahr": 7040,
+      "vermoegenMit75": 465265,
+      "vermoegenMit85": 476329
+    }
+  }
+}
