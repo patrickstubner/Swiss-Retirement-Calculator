@@ -15,7 +15,8 @@ Nichts davon ist gebaut. Aufwand in Personentagen (PT) grob, jeweils mit Tests u
 ## 1. Regeljahr 2027 fertigstellen
 - Stand 5.10.2026: Bundesratsentscheid vom 2.10.2026 (AHV/IV/EO, BVG-Grenzen, Säule 3a) ist in `src/rules/2027.json` (Abschnitt 21 in `docs/quellen.md`).
 - Stand 2026-11-02: Quellensteuer Bund auf Kapitalleistungen (Stufe 125'000–150'000: 1,90 % / 1,70 %, AS 2026 485, ESTV-Rundschreiben 2-221) und die Skala-44-Rententabelle (Rententabellen 2027, AS 2026 542) sind verifiziert. DBG-Tarife und Kinderermässigung 264: Quelle ESTV-Rundschreiben 2-220 vom 22.9.2026, Werte unverändert.
-- Weiter offen: BVG-Mindestzins, kantonale Tarife.
+- Stand 2026-11-15: BVG-Mindestzins 2027 = 2 % (Bundesratsentscheid 04.11.2026) verifiziert.
+- Weiter offen: kantonale Tarife.
 - Abnahme: Banner ab 1.1.2027 sagt «teilweise erfasst» und trennt Beschlossenes von den fortgeschriebenen Werten; Wächter `regeljahr.yml` bleibt grün. Der Zähler geht auf 0, wenn keine Hinweise «Fortgeschrieben» mehr übrig sind.
 
 ## 2. Kirchensteuer übrige Kantone (3–5 PT)

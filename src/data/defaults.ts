@@ -98,7 +98,7 @@ export function neuePerson(regeln: Regeln, overrides: Partial<Person> = {}): Per
       beitragModus: 'eingabe',
       sparbeitragJahr: 0,
       anteilArbeitnehmer: 0.5,
-      zins: regeln.bvg.mindestzins2026,
+      zins: regeln.bvg.mindestzins,
       umwandlungssatz: regeln.bvg.mindestumwandlungssatz,
       kapitalanteil: 0,
       fruehestesAlter: regeln.bvg.bezugsalter.gesetzlichAb,

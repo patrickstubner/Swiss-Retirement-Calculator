@@ -319,7 +319,7 @@ function PersonVorsorge({ p, i, props }: { p: Person; i: number; props: SchrittP
             min={-0.05}
             max={0.1}
             onChange={(v) => set((x) => ({ ...x, pk: { ...x.pk, zins: v } }))}
-            hinweis={`BVG-Mindestzins 2026: ${fmtProzent(regeln.bvg.mindestzins2026, 2)}`}
+            hinweis={`BVG-Mindestzins ${regeln.meta.jahr}: ${fmtProzent(regeln.bvg.mindestzins, 2)}`}
           />
         </div>
         <div className="raster">

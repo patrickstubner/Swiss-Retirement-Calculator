@@ -48,7 +48,7 @@ export const SCHAETZ_LABEL: Record<SchaetzFeld, string> = {
  * Pensionskasse (BVG-Obligatorium – rules: bvg.*):
  * - Altersguthaben heute (falls nicht eingegeben): Summe der BVG-Altersgutschriften (Art. 16 BVG)
  *   auf dem koordinierten heutigen Lohn ab dem BVG-Alter 25 bzw. ab dem Zuzugsjahr bis zum
- *   Vorjahr, verzinst mit dem BVG-Mindestzins 2026 für alle Jahre. Grobe Schätzung: bei
+ *   Vorjahr, verzinst mit dem BVG-Mindestzins des Vorjahres (rules: bvg.mindestzinsVorjahr) für alle Jahre. Grobe Schätzung: bei
  *   umhüllenden Kassen (höhere Beiträge, Lohn über 90'720) meist deutlich zu tief; frühere
  *   Stellen/Freizügigkeitsguthaben sind nicht enthalten.
  * - Sparbeitrag: BVG-Minimum (Altersgutschrift auf dem koordinierten Lohn, altersabhängig).
@@ -333,7 +333,7 @@ export function schaetzePkGuthaben(p: Person, regeln: Regeln, heute: Monat): num
   const start = Math.max(p.geburtsjahr + abAlter, p.inChSeit > 0 ? p.inChSeit : 0);
   let g = 0;
   for (let jahr = start; jahr < heute.jahr; jahr++) {
-    g = g * (1 + bvg.mindestzins2026) + bvgAltersgutschrift(p.lohn, jahr - p.geburtsjahr, raJahre, bvg);
+    g = g * (1 + bvg.mindestzinsVorjahr) + bvgAltersgutschrift(p.lohn, jahr - p.geburtsjahr, raJahre, bvg);
   }
   return Math.round(g);
 }
