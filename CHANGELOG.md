@@ -9,6 +9,10 @@ Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1
 - BVG-Mindestzins 2027: 2,0 % (bisher «offen» mit der Empfehlung 1,75 %). Status verifiziert. Quelle: Bundesratsentscheid vom 04.11.2026, https://www.bsv.admin.ch/de/newnsb/8DF8zxcfvu7l. Der Regeljahr-Banner 2027 nennt den Mindestzins neu bei den berücksichtigten Werten.
 - Regelschlüssel ohne Jahreszahl: `bvg.mindestzins` (Satz des Regeljahres) und `bvg.mindestzinsVorjahr` ersetzen `bvg.mindestzins2026`/`bvg.mindestzins2027`. Der Default-PK-Zins und der Hinweis «BVG-Mindestzins <Jahr>» folgen dem Regeljahr: 2026 unverändert 1,25 %, ab dem Regeljahr 2027 2 %. Die Schätzung des heutigen PK-Guthabens verzinst weiter mit dem Satz des Vorjahres (2026 und 2027: 1,25 %), sie ändert sich also nicht.
 
+### Tests
+- Golden-Master pro Regelstand: 8 Referenzhaushalte (u. a. Ehepaar, Kapitalbezug, Vorbezug 63, Aufschub 70, ohne PK, Wegzug nach Portugal) mit Kennzahlen je Regeljahr in `src/golden/erwartet/<jahr>.json`. Bewusste Änderungen mit `npm run golden:update` neu schreiben und den Diff im PR begründen.
+- Regel-Prüftests: jeder Regelwert hat Quelle, Stand und gültigen Status, verifizierte Werte eine https-Quelle (Ausnahmeliste für Gesetzeszitate), Schlüssel ohne Jahreszahl (Ausnahmeliste), beide Regeljahre mit denselben Schlüsseln.
+
 ## [1.3.9] - 2026-11-02
 
 ### Geändert
