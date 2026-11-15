@@ -3,6 +3,11 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.3.10] - 2026-11-15
+
+### Geändert
+- BVG-Mindestzins 2027: 2,0 % (bisher «offen» mit der Empfehlung 1,75 %). Status verifiziert. Quelle: Bundesratsentscheid vom 04.11.2026, https://www.bsv.admin.ch/de/newnsb/8DF8zxcfvu7l. Der Regeljahr-Banner 2027 nennt den Mindestzins neu bei den berücksichtigten Werten.
+
 ## [1.3.9] - 2026-11-02
 
 ### Geändert

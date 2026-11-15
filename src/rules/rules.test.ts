@@ -28,7 +28,7 @@ describe('rules/2026.json', () => {
       .filter((e) => e.status === 'offen')
       .map((e) => e.pfad);
     expect(offen).toContain('ahv.rentenanpassung2027');
-    expect(offen).toContain('bvg.mindestzins2027');
+    expect(offen).not.toContain('bvg.mindestzins2027');
     expect(offen).toContain('beitraege.freiwilligeAhv.vorsorgeguthabenImVermoegen');
     expect(offen).not.toContain('beitraege.freiwilligeAhv.tabelleNichterwerbstaetige');
     expect(offen).not.toContain('steuern.quellensteuer.uebrigeKantone');

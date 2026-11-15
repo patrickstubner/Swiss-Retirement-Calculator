@@ -4,7 +4,7 @@
  * Quellensteuer Bund auf Kapitalleistungen: AS 2026 485 und ESTV-Rundschreiben 2-221.
  * Skala 44: Rententabellen 2027 und AS 2026 542.
  * Was nicht beschlossen ist, führt den Wert 2026 fort und ist «offen» (Hinweis «Fortgeschrieben»).
- * Der BVG-Mindestzins 2027 bleibt offen.
+ * BVG-Mindestzins 2027: 2 % (Bundesratsentscheid 04.11.2026), verifiziert.
  */
 import { describe, expect, it } from 'vitest';
 import { ahvRenteSkala44 } from '../core/ahv';
@@ -227,14 +227,12 @@ describe('rules/2027.json', () => {
 
   it('nicht beschlossene Grössen führen 2026 fort und sind «offen»', () => {
     expect(r27.beitraege.alvHoechstlohn).toBe(r26.beitraege.alvHoechstlohn);
-    expect(r27.bvg.mindestzins2027).toBe(0.0175);
     const offen = new Set(
       regelEintraege(2027)
         .filter((e) => e.status === 'offen')
         .map((e) => e.pfad),
     );
     for (const p of [
-      'bvg.mindestzins2027',
       'ahv.vorbezugKuerzung',
       'ahv.aufschubZuschlag',
       'ahv.neueVorbezugsAufschubsaetze',
@@ -260,9 +258,14 @@ describe('rules/2027.json', () => {
       'steuern.quellensteuer.kapitalBundVerheiratet',
     ])
       expect(offen.has(p), p).toBe(false);
+  });
+
+  it('BVG-Mindestzins 2027: 2 % laut Bundesratsentscheid 04.11.2026', () => {
+    expect(r27.bvg.mindestzins2027).toBe(0.02);
     const zins = regelEintraege(2027).find((x) => x.pfad === 'bvg.mindestzins2027');
-    expect(zins?.hinweis).not.toContain('Fortgeschrieben');
-    expect(zins?.hinweis).toContain('Empfehlung');
+    expect(zins?.status).toBe('verifiziert');
+    expect(zins?.source).toBe('https://www.bsv.admin.ch/de/newnsb/8DF8zxcfvu7l');
+    expect(zins?.stand).toContain('04.11.2026');
   });
 
   it('QStV-Kapitalsätze 125–150k: AS 2026 485, 1,90 % und 1,70 %, übrige Stufen unverändert', () => {
@@ -322,7 +325,8 @@ describe('rules/2027.json', () => {
     expect(teilweise?.rest).toContain('AHV-Renten');
     expect(teilweise?.rest).toContain('BVG-Grenzbeträge');
     expect(teilweise?.rest).toContain('Säule 3a');
-    expect(teilweise?.rest).toContain('BVG-Mindestzins');
+    expect(teilweise?.rest).toContain('der BVG-Mindestzins, Säule 3a');
+    expect(teilweise?.rest).not.toContain('unter anderem BVG-Mindestzins');
     expect(teilweise?.rest).toContain('Quellensteuer');
     expect(teilweise?.rest).toContain('kantonale Tarife');
     expect(teilweise?.rest).toContain('Rententabelle');

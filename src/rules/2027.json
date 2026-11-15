@@ -984,11 +984,11 @@
       "status": "verifiziert"
     },
     "mindestzins2027": {
-      "value": 0.0175,
-      "source": "BSV Medienmitteilung (Empfehlung BVG-Kommission 31.08.2026)",
-      "stand": "09/2026",
-      "status": "offen",
-      "hinweis": "Nur Empfehlung; Entscheid des Bundesrates offen."
+      "value": 0.02,
+      "source": "https://www.bsv.admin.ch/de/newnsb/8DF8zxcfvu7l",
+      "stand": "Bundesratsentscheid 04.11.2026, abgerufen 15.11.2026",
+      "status": "verifiziert",
+      "hinweis": "Anhebung von 1,25 % auf 2 % ab 1.1.2027 (Art. 12 BVV 2)."
     },
     "mindestumwandlungssatz": {
       "value": 0.068,

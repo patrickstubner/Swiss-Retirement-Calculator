@@ -102,7 +102,7 @@ export function regeljahrBanner(jahr: number): RegeljahrBanner | null {
     rolle: 'status',
     stark: `Regeln für ${status.angefragt} teilweise erfasst.`,
     rest:
-      `Berücksichtigt sind AHV-Renten (Minimum und Maximum) und Beiträge, die Skala-44-Rententabelle, BVG-Grenzbeträge, Säule 3a, die Tarife der direkten Bundessteuer sowie die Quellensteuer des Bundes auf Kapitalleistungen. Für ${n} Werte gibt es noch keinen amtlichen Beschluss (unter anderem BVG-Mindestzins, kantonale Tarife); dort gelten vorläufig die Werte von ${status.angefragt - 1}.` +
+      `Berücksichtigt sind AHV-Renten (Minimum und Maximum) und Beiträge, die Skala-44-Rententabelle, BVG-Grenzbeträge, der BVG-Mindestzins, Säule 3a, die Tarife der direkten Bundessteuer sowie die Quellensteuer des Bundes auf Kapitalleistungen. Für ${n} Werte gibt es noch keinen amtlichen Beschluss (unter anderem kantonale Tarife); dort gelten vorläufig die Werte von ${status.angefragt - 1}.` +
       `${rentenSatz} Die Ergebnisse können deshalb abweichen.`,
   };
 }
