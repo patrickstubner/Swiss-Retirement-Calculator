@@ -15,6 +15,7 @@ Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1
 
 ### Werkzeuge
 - `node scripts/regeljahr-diff.mjs [von nach] [--json]`: zeigt geänderte, neue, entfernte und offene Regelwerte zwischen zwei Regeldateien (ohne Argumente die zwei neusten). Hilft beim Jahreswechsel und im Review von Regel-PRs.
+- Teilen-Link: Charakterisierungstests halten fest, dass ein künftiges Feld `r` (Regeljahr) ignoriert wird und Links mit neuerem Schema heute still geladen werden. Vorbereitung, das Verhalten ändert sich nicht.
 
 ## [1.3.9] - 2026-11-02
 
