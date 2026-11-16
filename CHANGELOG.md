@@ -3,10 +3,15 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
-## [1.4.1] - 2026-11-16
+## [1.4.2] - 2026-11-16
 
 ### Geändert
 - Nur Doku für die Arbeit mit Agents: AGENTS.md (Arbeitsregeln, lokale Tools, Sicherheits- und Prüfregel), ARCHITECTURE.md und STATUS.md nachgeführt. Die App rechnet unverändert.
+
+## [1.4.1] - 2026-11-16
+
+### Tests
+- Erklärtest `src/golden/wegzugSteuer.test.ts` zum Golden-Master-Haushalt «zh-wegzug-pt»: Ab dem Wegzug nach Portugal 2032 steigen die Steuern um rund CHF 10'300 (Regeljahr 2026) bzw. 10'500 (2027) pro Jahr, das Vermögen bleibt gleich. Das ist kein Rechenfehler: Portugal besteuert AHV- und PK-Renten progressiv (IRS Art. 68, Grenzsatz 44,6 %) und Kapitalerträge mit 28 %, die Schweizer Vermögenssteuer fällt weg. Die Standardstrategie «gestaffelt» entnimmt einen festen Satz des Vermögens, deshalb sinkt die Lebenshaltung um die Mehrsteuer (2032: 61'113 statt 71'456). Rechnung und Golden Master unverändert.
 
 ## [1.4.0] - 2026-11-15
 

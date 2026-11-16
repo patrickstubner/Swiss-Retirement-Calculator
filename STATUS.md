@@ -1,9 +1,9 @@
-# STATUS.md – Stand 16.11.2026, Commit 0724fba (main 1.4.0), dieser PR 1.4.1
+# STATUS.md – Stand 16.11.2026, Basis main 88a25f9 (1.4.1), dieser PR 1.4.2
 ## Aktuelles Ziel
 Gesetzesänderungen sollen ein reines Datenupdate mit geprüftem Ergebnis-Diff sein. Regeljahr 2027 bis 1.1.2027 vollständig.
 ## Erledigt
 - Regel-Check November: Quellensteuer Bund Kapital 2027, AHV-Tabellen 2027 verifiziert (1.3.9, 02.11.2026)
-- Architekturprüfung lokal ohne Cloud Agent (15.11.2026, /workspace/retirement-architektur)
+- Architekturprüfung lokal ohne Cloud Agent (15.11.2026)
 - RR-1 BVG-Mindestzins 2027 = 2 % (Bundesratsentscheid 04.11.2026), Version 1.3.10 (PR #35 gemergt, live seit 15.11.2026)
 - RR-2 Schlüssel `bvg.mindestzins` / `bvg.mindestzinsVorjahr` ohne Jahreszahl (PR #35, live)
 - RR-3 AGENTS/ARCHITECTURE/STATUS, Index-Ordner in .gitignore
@@ -13,14 +13,19 @@ Gesetzesänderungen sollen ein reines Datenupdate mit geprüftem Ergebnis-Diff s
 - RR-7 nur Charakterisierungstests; Regeljahr im Link und Hinweis bei neuerem Schema zurückgestellt (ändert Verhalten)
 - Sicherheitsprüfung 15.11.2026 in docs/SECURITY.md: keine Schwachstellen
 - Homescreen-App (PWA): Manifest, Icons, Service Worker (Startseite Netzwerk zuerst), Version 1.4.0, Sicherheitsprüfung in docs/SECURITY.md (PR #36 gemergt, live seit 16.11.2026)
-- 1.4.1: AGENTS.md mit den Arbeitsregeln vom 15./16.11.2026, STATUS.md nachgeführt (dieser PR, nur Doku)
+- 1.4.1: Erklärtest Steuersprung beim Wegzug nach Portugal (zh-wegzug-pt), Rechnung unverändert (PR #37 gemergt, 16.11.2026)
+- 1.4.2: AGENTS.md mit den Arbeitsregeln vom 15./16.11.2026, ARCHITECTURE.md und STATUS.md nachgeführt (dieser PR, nur Doku)
 ## In Arbeit
-- Keine offene Arbeit. Keine offenen PRs ausser diesem Docs-PR (16.11.2026).
+- Keine offene Arbeit ausser den offenen PRs unten.
+## Offene PRs (16.11.2026, per gh)
+- #38 dieser Docs-PR (1.4.2, Draft)
+- #39 Ruhestandsrechner 1.4.3: IRS-Sätze Portugal 2026 nach Decreto-Lei 212/2026 (Draft, wird nach #38 nachgezogen)
 ## Plan ab 27.11.2026
 - Reserve-Kontingent (15–20 %, zusammen mit PadelCounterV2) für kleine Anpassungen.
 - Majors (Dependabot) erst ab 27.11., je PR mit Sicherheitsprüfung und Stabschef-Prüfung.
 - Regeljahr 2027 bis 1.1.2027 vollständig (Kantonstarife, sobald die ESTV sie publiziert).
 ## Offen / Entscheide nötig (wer?)
+- IRS-Sätze Portugal nach Decreto-Lei 212/2026 (ab 1.1.2026, 6 Stufen tiefer) in `data/laender-2026.json` nachführen, eigener Regel-PR mit Golden-Master-Update? In Arbeit als Draft-PR #39 (1.4.3), Merge-Entscheid – Patrick
 - RR-7 Produktteil (Feld `r` im Link, Hinweis bei `v > SCHEMA_VERSION`): eigener PR mit UI-Text? – Patrick
 - ADR-001 bis ADR-004 annehmen? Sie liegen noch nicht im Repo (nur lokal); als `docs/adr/` übernehmen? – Patrick
 - Kantonstarife 2027: warten auf ESTV, heute nur mit Code-Änderung möglich – Patrick/Entwickler
