@@ -3,6 +3,11 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.4.1] - 2026-11-16
+
+### Geändert
+- Nur Doku für die Arbeit mit Agents: AGENTS.md (Arbeitsregeln, lokale Tools, Sicherheits- und Prüfregel), ARCHITECTURE.md und STATUS.md nachgeführt. Die App rechnet unverändert.
+
 ## [1.4.0] - 2026-11-15
 
 ### Neu

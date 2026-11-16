@@ -1,4 +1,4 @@
-# STATUS.md – Stand 15.11.2026, Basis b2f5b8a (Version 1.4.0)
+# STATUS.md – Stand 16.11.2026, Commit 0724fba (main 1.4.0), dieser PR 1.4.1
 ## Aktuelles Ziel
 Gesetzesänderungen sollen ein reines Datenupdate mit geprüftem Ergebnis-Diff sein. Regeljahr 2027 bis 1.1.2027 vollständig.
 ## Erledigt
@@ -12,19 +12,25 @@ Gesetzesänderungen sollen ein reines Datenupdate mit geprüftem Ergebnis-Diff s
 - RR-6 `scripts/regeljahr-diff.mjs`
 - RR-7 nur Charakterisierungstests; Regeljahr im Link und Hinweis bei neuerem Schema zurückgestellt (ändert Verhalten)
 - Sicherheitsprüfung 15.11.2026 in docs/SECURITY.md: keine Schwachstellen
-- Homescreen-App (PWA): Manifest, Icons, Service Worker (Startseite Netzwerk zuerst), Version 1.4.0, Sicherheitsprüfung in docs/SECURITY.md
+- Homescreen-App (PWA): Manifest, Icons, Service Worker (Startseite Netzwerk zuerst), Version 1.4.0, Sicherheitsprüfung in docs/SECURITY.md (PR #36 gemergt, live seit 16.11.2026)
+- 1.4.1: AGENTS.md mit den Arbeitsregeln vom 15./16.11.2026, STATUS.md nachgeführt (dieser PR, nur Doku)
 ## In Arbeit
-- Keine offene Arbeit. 1.3.10 ist live (PR #35). 1.4.0 Homescreen-App über PR `feat/pwa-homescreen`.
+- Keine offene Arbeit. Keine offenen PRs ausser diesem Docs-PR (16.11.2026).
+## Plan ab 27.11.2026
+- Reserve-Kontingent (15–20 %, zusammen mit PadelCounterV2) für kleine Anpassungen.
+- Majors (Dependabot) erst ab 27.11., je PR mit Sicherheitsprüfung und Stabschef-Prüfung.
+- Regeljahr 2027 bis 1.1.2027 vollständig (Kantonstarife, sobald die ESTV sie publiziert).
 ## Offen / Entscheide nötig (wer?)
 - RR-7 Produktteil (Feld `r` im Link, Hinweis bei `v > SCHEMA_VERSION`): eigener PR mit UI-Text? – Patrick
-- ADR-001 bis ADR-004 annehmen? – Patrick
+- ADR-001 bis ADR-004 annehmen? Sie liegen noch nicht im Repo (nur lokal); als `docs/adr/` übernehmen? – Patrick
 - Kantonstarife 2027: warten auf ESTV, heute nur mit Code-Änderung möglich – Patrick/Entwickler
 - AHV 2030 und Hinterlassenenrenten: beobachten, noch nicht rechtskräftig
 ## Bekannte Probleme / Risiken
 - R-01: Kantons-/Länder-/QST-Daten nicht versioniert
 - R-03: ein Regelstand für die ganze Projektion, Ad-hoc-Felder für künftige Reformen
-- Alter lokaler Klon /workspace/ruhestandsrechner divergiert, nicht verwenden
+- Ein alter lokaler Klon auf dem gemeinsamen Rechner divergiert, nicht verwenden; immer frisch von `origin/main` arbeiten
 ## Genutzte lokale Tools & vermiedene Cloud-Agent-Nutzung
 - codebase-memory-mcp: Hotspots (ladeRegeln 58, simuliere 42 Fan-in), Aufrufer von simuliere (29). Geschätzt ~30k Token gespart
 - rg/ast-grep: Suche nach hartkodierten Gesetzeswerten (0 Treffer im core) und Jahreszahl-Schlüsseln
 - Graphify-CLI (--code-only/--no-label): 97 Cluster, Überblick; geringer Zusatznutzen
+- 16.11. (dieser PR): gh, rg, `npm audit` lokal (0 Funde). Kein Cloud Agent.

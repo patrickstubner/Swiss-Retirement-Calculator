@@ -1,4 +1,4 @@
-# ARCHITECTURE.md – Swiss Retirement Calculator
+# ARCHITECTURE.md – Swiss Retirement Calculator (Stand 16.11.2026, Commit 0724fba)
 
 ## Überblick
 ```
@@ -36,10 +36,16 @@ src/ui: Schritte · Auswertung · state.ts (URL #s=… / localStorage, Schema 15
 - Limits: Hash 20 000 Zeichen, JSON 1 000 000 Zeichen.
 - Geplant: Regeljahr `r` im Link (ADR-004).
 
+## PWA (ab 1.4.0)
+- `manifest.webmanifest`, Icons und Service Worker `sw.js`, beim Build aus `scripts/pwa-lib.mjs` erzeugt. Startseite, Manifest und Icons zuerst aus dem Netz, gehashte Dateien aus dem Cache, Cache pro Version.
+
 ## Deploy
 - GitHub Pages bei Push auf main (Build-Job mit Guards, Lint, Typecheck, Tests).
 - `security.yml` (Secret-Scan, Datenschutz, Versionsregel)
 - `regeljahr.yml` (wöchentlich)
 
 ## Entscheide
-ADR-001 (Regelstand bündelt alles), ADR-002 (gültig-ab-Zeitreihen), ADR-003 (Golden-Master pro Regelstand), ADR-004 (Regelstand im Link). Alle vorgeschlagen am 15.11.2026.
+ADR-001 (Regelstand bündelt alles), ADR-002 (gültig-ab-Zeitreihen), ADR-003 (Golden-Master pro Regelstand), ADR-004 (Regelstand im Link). Alle vorgeschlagen am 15.11.2026, noch nicht im Repo (offen, siehe STATUS.md).
+
+## Weitere Doku
+`docs/konzept.md`, `docs/umsetzungsplan.md`, `docs/quellen.md`, `docs/kantone.md`, `docs/laender.md`, `docs/krisen.md`, `docs/auslandsszenarien.md`, `docs/schnell-vergleich.md`, `docs/vorlesen.md`, `docs/SECURITY.md`, `CONTRIBUTING.md`.
