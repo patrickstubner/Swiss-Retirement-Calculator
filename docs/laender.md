@@ -94,9 +94,9 @@ Fussnoten 2-217: ³ Rückerstattung nur bei Nachweis der Besteuerung im Wohnsitz
 ### Portugal
 - DBA: 26.9.1974, SR 0.672.965.41; Protokoll 25.6.2012.
 - (a) PK-Kapital: CH-Quellensteuer rückforderbar. Besteuerung in Portugal: **OFFEN**.
-- (b) PK-Rente: keine CH-Quellensteuer. In Portugal Kategorie H, progressiv 12,5–48% plus Solidaritätszuschlag (2026, PwC *sekundär*).
+- (b) PK-Rente: keine CH-Quellensteuer. In Portugal Kategorie H, progressiv 12,2–48% (DL 212/2026) plus Solidaritätszuschlag (2026, PwC *sekundär*).
 - (d) 3a: Rente ohne QSt, Kapital rückforderbar.
-- (e) Regime: **NHR beendet** (Lei 82/2023); das Nachfolgeregime **IFICI** schliesst Renten aus. Am 17.9.2026 hat der Ministerrat eine Senkung der nationalen Sätze beschlossen; Details und Inkrafttreten **OFFEN** (portugal.gov.pt).
+- (e) Regime: **NHR beendet** (Lei 82/2023); das Nachfolgeregime **IFICI** schliesst Renten aus. Die Sätze der ersten sechs IRS-Stufen sind seit Decreto-Lei 212/2026 vom 4.11.2026 tiefer (12,2 / 15,2 / 20,7 / 23,6 / 30,6 / 34,6 %, Stufengrenzen und Sätze ab Stufe 7 unverändert), rückwirkend für Einkommen ab 1.1.2026: https://files.diariodarepublica.pt/1s/2026/11/21400/0000500006.pdf.
 - **Azoren:** −30% auf alle nationalen IRS-Sätze seit 1.1.2022 (DLR 15-A/2021/A Art. 47, ändert Art. 4 DLR 2/99/A): https://diariodarepublica.pt/dr/detalhe/decreto-legislativo-regional/15-a-2021-164454929. **Madeira:** −30% bis zur 9. Stufe (OCC, *sekundär*).
 
 ### Spanien
@@ -151,7 +151,7 @@ inkl. Renten, Kapitalerträge) und eigener Satz auf Vorsorgekapital ersetzen das
 | Thailand | Tarif 0–35 %, Freibetrag 60'000 THB, Rentenabzug 50 % max. 100'000 THB; alle Einkünfte als überwiesen angenommen | Revenue Department https://www.rd.go.th/english/6045.html (Seite 21.3.2024), Por. 161/162/2566 | amtlich, teils veraltet |
 | Zypern | 0/20/25/30/35 % bis 22k/32k/42k/72k EUR; Option 5 % auf Auslandsrenten über 5'000 EUR (günstigere Variante automatisch); Kapitalerträge 0 (Non-Dom) | Tax Department, Formular Foreign Pension (2026); PwC DTU 1/2026 | Option amtlich, Stufen sekundär |
 | Malta | Tarif ledig/verheiratet 2026 | Commissioner for Revenue https://cfr.gov.mt/en/individuals/Pages/Tax-Rates.aspx | Näherung |
-| Portugal | Art. 68 CIRS (Lei 73-A/2025), Rentenabzug 4'587.09 EUR (8,54 × IAS 537,13), Kapitalerträge 28 % (Art. 72); Option Azoren −30 % (DLR 15-A/2021/A Art. 47) | Portal das Finanças (30.12.2025) | amtlich |
+| Portugal | Art. 68 CIRS (Stufen Lei 73-A/2025, Sätze 1–6 Decreto-Lei 212/2026 ab 1.1.2026), Rentenabzug 4'587.09 EUR (8,54 × IAS 537,13), Kapitalerträge 28 % (Art. 72); Option Azoren −30 % (DLR 15-A/2021/A Art. 47) | Diário da República (4.11.2026), Portal das Finanças | amtlich |
 | Spanien | Staatstarif Art. 63 LIRPF × 2 (Näherung für Regionalanteil), persönliches Minimum 6'700 EUR ab 65, Spartarif 19–30 % | BOE Ley 35/2006 (konsolidiert 2026) | Näherung |
 | Italien | 5 % Ersatzsteuer auf AHV/PK-Renten und PK/FZ-Kapital (Art. 76 L. 413/1991, Risposta 125/2024), übrige Einkünfte IRPEF 23/33/43 %, Kapitalerträge 26 %, IVAFE 0,2 %; Option 7 % pauschal (Art. 24-ter TUIR, keine IVAFE) | Agenzia delle Entrate (3.6.2024 / 1.1.2026) | amtlich |
 | Liechtenstein | Art. 19 SteG (Fassung 1.7.2026) × 2,5 (Gemeindezuschlag Minimum 150 %, Art. 75), Vermögen als Sollertrag 4 % (Art. 56), Ehepaar-Tarif | gesetze.li LR 640.0 (1.7.2026), Finanzgesetz 2026 | Näherung |

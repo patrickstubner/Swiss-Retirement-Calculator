@@ -726,7 +726,7 @@
    },
    "pkRente": {
     "ch": "keine Quellensteuer",
-    "wohnsitzstaat": "IRS Kategorie H, progressiv 12,5–48% plus Solidaritätszuschlag (2026, PwC sekundär); NHR beendet (Lei 82/2023), IFICI schliesst Renten aus; Azoren −30% auf alle nationalen IRS-Sätze (DLR 15-A/2021/A Art. 47), Madeira −30% bis zur 9. Stufe",
+    "wohnsitzstaat": "IRS Kategorie H, progressiv 12,2–48% (Art. 68 CIRS, Fassung DL 212/2026, rückwirkend ab 1.1.2026) plus Solidaritätszuschlag (PwC sekundär); NHR beendet (Lei 82/2023), IFICI schliesst Renten aus; Azoren −30% auf alle nationalen IRS-Sätze (DLR 15-A/2021/A Art. 47), Madeira −30% bis zur 9. Stufe",
     "status": "naeherung",
     "quelle": "https://diariodarepublica.pt/dr/detalhe/decreto-legislativo-regional/15-a-2021-164454929 ; PwC Portugal (sekundär)"
    },
@@ -736,10 +736,10 @@
     "status": "verifiziert_ch"
    },
    "lokalesRegime": {
-    "text": "Progressiver IRS; Azoren-Reduktion 30%; Senkung der nationalen Sätze am 17.9.2026 vom Ministerrat beschlossen (Details/Inkrafttreten OFFEN)",
-    "quelle": "https://www.portugal.gov.pt ; OCC-Analyse OE 2026",
-    "quelleTyp": "amtlich/sekundaer",
-    "stand": "17.9.2026"
+    "text": "Progressiver IRS; Azoren-Reduktion 30%; Sätze der ersten sechs Stufen gesenkt durch Decreto-Lei 212/2026 vom 4.11.2026 (in Kraft 5.11.2026, gilt für Einkommen 2026 ab 1.1.2026)",
+    "quelle": "https://files.diariodarepublica.pt/1s/2026/11/21400/0000500006.pdf",
+    "quelleTyp": "amtlich",
+    "stand": "4.11.2026"
    },
    "regionen": [
     {
@@ -767,27 +767,27 @@
     "tarif": [
      [
       8342,
-      0.125
+      0.122
      ],
      [
       12587,
-      0.157
+      0.152
      ],
      [
       17838,
-      0.212
+      0.207
      ],
      [
       23089,
-      0.241
+      0.236
      ],
      [
       29397,
-      0.311
+      0.306
      ],
      [
       43090,
-      0.349
+      0.346
      ],
      [
       46566,
@@ -818,9 +818,14 @@
     ],
     "quellen": [
      {
-      "text": "Código do IRS Art. 68 (Stufen 2026, Lei 73-A/2025)",
+      "text": "Código do IRS Art. 68 (Stufengrenzen Lei 73-A/2025; Sätze der Stufen 1–6 Decreto-Lei 212/2026, Diário da República 1.ª série n.º 214, rückwirkend ab 1.1.2026)",
+      "url": "https://files.diariodarepublica.pt/1s/2026/11/21400/0000500006.pdf",
+      "stand": "4.11.2026"
+     },
+     {
+      "text": "Código do IRS Art. 68 (konsolidierte Fassung, Portal das Finanças)",
       "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs68.aspx",
-      "stand": "30.12.2025"
+      "stand": "16.11.2026"
      },
      {
       "text": "Código do IRS Art. 53 und 25 (Rentenabzug 8,54 × IAS)",
@@ -856,7 +861,7 @@
     "hinweise": [
      "Renten (AHV, PK, ausländische Renten) als Kategorie H nach dem progressiven IRS-Tarif, Abzug 4'587 EUR pro Person; Besteuerung pro Person (Ehepaare: getrennte Veranlagung).",
      "Kapitalerträge 28 % (Sondersatz). Keine allgemeine Vermögenssteuer.",
-     "Solidaritätszuschlag (ab 80'000 EUR) und die im September 2026 beschlossene Senkung der Sätze sind nicht abgebildet (OFFEN).",
+     "IRS-Sätze 2026 nach Decreto-Lei 212/2026 (Stufen 1–6: 12,2 / 15,2 / 20,7 / 23,6 / 30,6 / 34,6 %). Solidaritätszuschlag (ab 80'000 EUR) ist nicht abgebildet (OFFEN).",
      "Behandlung ausländischer Vorsorgekapitalien im IRS ist OFFEN."
     ]
    }

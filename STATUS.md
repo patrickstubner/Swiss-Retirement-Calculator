@@ -1,4 +1,4 @@
-# STATUS.md – Stand 16.11.2026, Basis main 88a25f9 (1.4.1), dieser PR 1.4.2
+# STATUS.md – Stand 16.11.2026, Basis main 1948ba2 (1.4.2), dieser Branch 1.4.3 (PR #39)
 ## Aktuelles Ziel
 Gesetzesänderungen sollen ein reines Datenupdate mit geprüftem Ergebnis-Diff sein. Regeljahr 2027 bis 1.1.2027 vollständig.
 ## Erledigt
@@ -14,18 +14,17 @@ Gesetzesänderungen sollen ein reines Datenupdate mit geprüftem Ergebnis-Diff s
 - Sicherheitsprüfung 15.11.2026 in docs/SECURITY.md: keine Schwachstellen
 - Homescreen-App (PWA): Manifest, Icons, Service Worker (Startseite Netzwerk zuerst), Version 1.4.0, Sicherheitsprüfung in docs/SECURITY.md (PR #36 gemergt, live seit 16.11.2026)
 - 1.4.1: Erklärtest Steuersprung beim Wegzug nach Portugal (zh-wegzug-pt), Rechnung unverändert (PR #37 gemergt, 16.11.2026)
-- 1.4.2: AGENTS.md mit den Arbeitsregeln vom 15./16.11.2026, ARCHITECTURE.md und STATUS.md nachgeführt (dieser PR, nur Doku)
+- 1.4.2: AGENTS.md mit den Arbeitsregeln vom 15./16.11.2026, ARCHITECTURE.md und STATUS.md nachgeführt (PR #38 gemergt `1948ba2`, live seit 16.11.2026)
 ## In Arbeit
-- Keine offene Arbeit ausser den offenen PRs unten.
+- #39 (1.4.3, Draft, offen): IRS-Sätze Portugal 2026 nach Decreto-Lei 212/2026, Golden Master «zh-wegzug-pt» −161 CHF/Jahr; auf main 1.4.2 nachgezogen (Merge, kein Rebase).
 ## Offene PRs (16.11.2026, per gh)
-- #38 dieser Docs-PR (1.4.2, Draft)
-- #39 Ruhestandsrechner 1.4.3: IRS-Sätze Portugal 2026 nach Decreto-Lei 212/2026 (Draft, wird nach #38 nachgezogen)
+- #39 Ruhestandsrechner 1.4.3: IRS-Sätze Portugal 2026 nach Decreto-Lei 212/2026 (Draft, Merge-Entscheid – Patrick)
 ## Plan ab 27.11.2026
 - Reserve-Kontingent (15–20 %, zusammen mit PadelCounterV2) für kleine Anpassungen.
 - Majors (Dependabot) erst ab 27.11., je PR mit Sicherheitsprüfung und Stabschef-Prüfung.
 - Regeljahr 2027 bis 1.1.2027 vollständig (Kantonstarife, sobald die ESTV sie publiziert).
 ## Offen / Entscheide nötig (wer?)
-- IRS-Sätze Portugal nach Decreto-Lei 212/2026 (ab 1.1.2026, 6 Stufen tiefer) in `data/laender-2026.json` nachführen, eigener Regel-PR mit Golden-Master-Update? In Arbeit als Draft-PR #39 (1.4.3), Merge-Entscheid – Patrick
+- #39 mergen (IRS Portugal 2026)? – Patrick
 - RR-7 Produktteil (Feld `r` im Link, Hinweis bei `v > SCHEMA_VERSION`): eigener PR mit UI-Text? – Patrick
 - ADR-001 bis ADR-004 annehmen? Sie liegen noch nicht im Repo (nur lokal); als `docs/adr/` übernehmen? – Patrick
 - Kantonstarife 2027: warten auf ESTV, heute nur mit Code-Änderung möglich – Patrick/Entwickler
@@ -38,4 +37,4 @@ Gesetzesänderungen sollen ein reines Datenupdate mit geprüftem Ergebnis-Diff s
 - codebase-memory-mcp: Hotspots (ladeRegeln 58, simuliere 42 Fan-in), Aufrufer von simuliere (29). Geschätzt ~30k Token gespart
 - rg/ast-grep: Suche nach hartkodierten Gesetzeswerten (0 Treffer im core) und Jahreszahl-Schlüsseln
 - Graphify-CLI (--code-only/--no-label): 97 Cluster, Überblick; geringer Zusatznutzen
-- 16.11. (dieser PR): gh, rg, `npm audit` lokal (0 Funde). Kein Cloud Agent.
+- 16.11. (#38, #39): gh, rg, `npm audit`, gitleaks lokal (0 Funde). Kein Cloud Agent.
