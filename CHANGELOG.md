@@ -3,6 +3,19 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.4.0] - 2026-11-15
+
+### Neu
+- Homescreen-App: Der Rechner lässt sich auf iPhone (Safari: Teilen → «Zum Home-Bildschirm») und Android (Chrome: «App installieren») wie eine App installieren. Neu `manifest.webmanifest` (Start und Bereich `/Swiss-Retirement-Calculator/`, Anzeige `standalone`), App-Icons 180/192/512 und 512 maskable, Favicons 32/16, Apple-Meta-Tags.
+- Service Worker (`sw.js`, beim Build erzeugt aus `scripts/pwa-lib.mjs`, ohne neue Abhängigkeit): Cache pro Version (`ruhestandsrechner-pwa-<version>`), die Startseite, Manifest und Icons kommen zuerst aus dem Netz (`no-cache`), nur offline aus dem Cache. Neue Versionen und Regeljahre erscheinen deshalb beim nächsten Laden. Gehashte Dateien unter `static/` kommen aus dem Cache. Alte Caches mit eigenem Präfix werden beim Aktivieren gelöscht, fremde Caches auf demselben Origin (z. B. PadelCounterV2) bleiben.
+- Offline: Nach dem ersten Besuch funktioniert der Rechner ohne Netz.
+
+### Geändert
+- Neues Favicon (Icon der App statt `favicon.svg`).
+
+### Hinweis
+- iOS: Die installierte App hat einen eigenen Speicher. In Safari gespeicherte Eingaben erscheinen dort nicht; Teilen-Links öffnen in Safari.
+
 ## [1.3.10] - 2026-11-15
 
 ### Geändert

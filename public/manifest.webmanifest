@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "Ruhestandsrechner Schweiz",
+  "short_name": "Ruhestand CH",
+  "description": "Reicht mein Vermögen für den Ruhestand? Alle Berechnungen laufen nur im Browser.",
+  "lang": "de-CH",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#174e5f",
+  "background_color": "#fd9a2a",
+  "categories": ["finance", "utilities"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
