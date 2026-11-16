@@ -6,13 +6,18 @@ Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1
 ## [1.4.3] - 2026-11-16
 
 ### Geändert
-- Wegzug Portugal: IRS-Sätze 2026 der ersten sechs Stufen nach Decreto-Lei 212/2026 vom 4.11.2026 (Diário da República 1.ª série n.º 214, in Kraft 5.11.2026, gilt für Einkommen ab 1.1.2026): 12,5 → 12,2 %, 15,7 → 15,2 %, 21,2 → 20,7 %, 24,1 → 23,6 %, 31,1 → 30,6 %, 34,9 → 34,6 %. Stufengrenzen und die Sätze 43,1 / 44,6 / 48 % unverändert. Quelle: https://files.diariodarepublica.pt/1s/2026/11/21400/0000500006.pdf. (1.4.2 ist für einen Doku-PR reserviert.)
+- Wegzug Portugal: IRS-Sätze 2026 der ersten sechs Stufen nach Decreto-Lei 212/2026 vom 4.11.2026 (Diário da República 1.ª série n.º 214, in Kraft 5.11.2026, gilt für Einkommen ab 1.1.2026): 12,5 → 12,2 %, 15,7 → 15,2 %, 21,2 → 20,7 %, 24,1 → 23,6 %, 31,1 → 30,6 %, 34,9 → 34,6 %. Stufengrenzen und die Sätze 43,1 / 44,6 / 48 % unverändert. Quelle: https://files.diariodarepublica.pt/1s/2026/11/21400/0000500006.pdf.
 
 ### Golden Master
 - «zh-wegzug-pt»: `steuernVollesJahr` 18'941 → 18'780 (Regeljahr 2026) und 19'081 → 18'919 (2027), also rund −161 CHF pro Jahr ab 2032 (Summe 2032–2061 je −4'837 CHF). Vermögen und übrige Kennzahlen unverändert, weil die gestaffelte Entnahme einen Satz des Vermögens entnimmt; die Lebenshaltung steigt um denselben Betrag (Regeljahr 2026, 2032: 61'274 statt 61'113).
 
 ### Tests
 - `src/core/zielland.test.ts`: Tarif Portugal exakt nach DL 212/2026, Grenzsätze ergeben die amtlichen Durchschnittssätze (Spalte B).
+
+## [1.4.2] - 2026-11-16
+
+### Geändert
+- Nur Doku für die Arbeit mit Agents: AGENTS.md (Arbeitsregeln, lokale Tools, Sicherheits- und Prüfregel), ARCHITECTURE.md und STATUS.md nachgeführt. Die App rechnet unverändert.
 
 ## [1.4.1] - 2026-11-16
 
