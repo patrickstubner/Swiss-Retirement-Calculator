@@ -1,4 +1,13 @@
-# STATUS.md – Stand 16.11.2026, Basis main 1948ba2 (1.4.2), dieser Branch 1.4.3 (PR #39)
+# STATUS.md – Stand 16.11.2026, Basis main 56424b6 (1.4.3), dieser Branch 1.4.4
+## Nachtrag 16.11.2026: Cloud-Agent-Setup (1.4.4)
+Branch `chore/cloud-agent-setup` (Draft-PR, nicht mergen bis Stabschef und Projektinhaber Ja sagen).
+- `.cursor/environment.json` und `.cursor/install-dev-tools.sh`: ripgrep 14.1.1, ast-grep 0.51.2, codebase-memory-mcp 0.12.1, Versionen und SHA-256 gepinnt. Bei `package-lock.json`: `npm ci --ignore-scripts` (Node laut `.nvmrc`/engines >= 22.12.0).
+- Binaries nur unter `~/.local/bin` (kein `sudo`, kein `/usr/local/bin`); PATH setzt das Skript in `~/.profile` und `~/.bashrc`.
+- `.cursorignore` für Lockfiles, Build, Screenshots, Index-Ordner. `data/` bleibt im Kontext.
+- `.codebase-memory/` in `.gitignore` und `.cursorignore`.
+- Abschnitt «Cursor Cloud specific instructions» in AGENTS.md ergänzt.
+- Der gehostete Graphify-MCP wird unter cursor.com/agents verbunden, nicht durch diesen PR.
+
 ## Aktuelles Ziel
 Gesetzesänderungen sollen ein reines Datenupdate mit geprüftem Ergebnis-Diff sein. Regeljahr 2027 bis 1.1.2027 vollständig.
 ## Erledigt
@@ -15,16 +24,17 @@ Gesetzesänderungen sollen ein reines Datenupdate mit geprüftem Ergebnis-Diff s
 - Homescreen-App (PWA): Manifest, Icons, Service Worker (Startseite Netzwerk zuerst), Version 1.4.0, Sicherheitsprüfung in docs/SECURITY.md (PR #36 gemergt, live seit 16.11.2026)
 - 1.4.1: Erklärtest Steuersprung beim Wegzug nach Portugal (zh-wegzug-pt), Rechnung unverändert (PR #37 gemergt, 16.11.2026)
 - 1.4.2: AGENTS.md mit den Arbeitsregeln vom 15./16.11.2026, ARCHITECTURE.md und STATUS.md nachgeführt (PR #38 gemergt `1948ba2`, live seit 16.11.2026)
+- 1.4.3: IRS-Sätze Portugal 2026 nach Decreto-Lei 212/2026, Golden Master «zh-wegzug-pt» (PR #39 gemergt `56424b6`, live seit 16.11.2026)
 ## In Arbeit
-- #39 (1.4.3, Draft, offen): IRS-Sätze Portugal 2026 nach Decreto-Lei 212/2026, Golden Master «zh-wegzug-pt» −161 CHF/Jahr; auf main 1.4.2 nachgezogen (Merge, kein Rebase).
+- dieser Branch 1.4.4 (Draft-PR, nicht mergen): Cloud-Agent-Setup.
 ## Offene PRs (16.11.2026, per gh)
-- #39 Ruhestandsrechner 1.4.3: IRS-Sätze Portugal 2026 nach Decreto-Lei 212/2026 (Draft, Merge-Entscheid – Patrick)
+- dieser Draft-PR: Ruhestandsrechner 1.4.4, Cloud-Agent-Setup (`chore/cloud-agent-setup`)
 ## Plan ab 27.11.2026
 - Reserve-Kontingent (15–20 %, zusammen mit PadelCounterV2) für kleine Anpassungen.
 - Majors (Dependabot) erst ab 27.11., je PR mit Sicherheitsprüfung und Stabschef-Prüfung.
 - Regeljahr 2027 bis 1.1.2027 vollständig (Kantonstarife, sobald die ESTV sie publiziert).
 ## Offen / Entscheide nötig (wer?)
-- #39 mergen (IRS Portugal 2026)? – Patrick
+- diesen Draft-PR (1.4.4, Cloud-Agent-Setup) mergen? – Projektinhaber, nach Stabschef-Ok
 - RR-7 Produktteil (Feld `r` im Link, Hinweis bei `v > SCHEMA_VERSION`): eigener PR mit UI-Text? – Patrick
 - ADR-001 bis ADR-004 annehmen? Sie liegen noch nicht im Repo (nur lokal); als `docs/adr/` übernehmen? – Patrick
 - Kantonstarife 2027: warten auf ESTV, heute nur mit Code-Änderung möglich – Patrick/Entwickler
@@ -38,3 +48,4 @@ Gesetzesänderungen sollen ein reines Datenupdate mit geprüftem Ergebnis-Diff s
 - rg/ast-grep: Suche nach hartkodierten Gesetzeswerten (0 Treffer im core) und Jahreszahl-Schlüsseln
 - Graphify-CLI (--code-only/--no-label): 97 Cluster, Überblick; geringer Zusatznutzen
 - 16.11. (#38, #39): gh, rg, `npm audit`, gitleaks lokal (0 Funde). Kein Cloud Agent.
+- 16.11. (1.4.4 Cloud-Agent-Setup): Vorlage-Skript, STATUS/SECURITY nachgeführt, Guards und Tests lokal. Kein Cloud Agent.

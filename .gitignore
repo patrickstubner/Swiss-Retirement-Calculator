@@ -21,3 +21,4 @@ coverage/
 .codegraph/
 graphify-out/
 .serena/
+.codebase-memory/
