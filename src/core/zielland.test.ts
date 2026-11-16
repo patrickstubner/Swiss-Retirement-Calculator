@@ -70,6 +70,33 @@ describe('Steuermodelle der Zielländer', () => {
     expect(az.einkommen).toBeCloseTo(erwartet * 0.7, 6);
   });
 
+  it('Portugal: Sätze 2026 nach Decreto-Lei 212/2026 (Stufen 1–6 gesenkt, Grenzen und Stufen 7–9 unverändert)', () => {
+    // Diário da República 1.ª série n.º 214, 4.11.2026, Art. 2 (neue Fassung Art. 68 n.º 1 CIRS), gilt ab 1.1.2026
+    expect(modell('PT').tarif).toEqual([
+      [8342, 0.122],
+      [12587, 0.152],
+      [17838, 0.207],
+      [23089, 0.236],
+      [29397, 0.306],
+      [43090, 0.346],
+      [46566, 0.431],
+      [86634, 0.446],
+      [null, 0.48],
+    ]);
+    // Grenzsätze ergeben die amtlichen Durchschnittssätze (Spalte B) an den Stufengrenzen
+    const tarif = (modell('PT').tarif ?? []) as [number | null, number][];
+    const media: [number, number][] = [
+      [12587, 0.13212],
+      [17838, 0.15416],
+      [23089, 0.17277],
+      [29397, 0.20136],
+      [43090, 0.24732],
+      [46566, 0.26103],
+      [86634, 0.34658],
+    ];
+    for (const [grenze, satz] of media) expect(stufenSteuer(grenze, tarif) / grenze).toBeCloseTo(satz, 4);
+  });
+
   it('Zypern: jeweils die günstigere Variante (5 % über 5 000 EUR oder ordentlicher Tarif)', () => {
     const m = modell('CY');
     const k = m.kursProChf ?? 1;

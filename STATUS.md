@@ -1,4 +1,4 @@
-# STATUS.md – Stand 16.11.2026, Basis 0724fba (Version 1.4.1, Branch)
+# STATUS.md – Stand 16.11.2026, Basis 88a25f9 (Version 1.4.3, Branch)
 ## Aktuelles Ziel
 Gesetzesänderungen sollen ein reines Datenupdate mit geprüftem Ergebnis-Diff sein. Regeljahr 2027 bis 1.1.2027 vollständig.
 ## Erledigt
@@ -12,12 +12,12 @@ Gesetzesänderungen sollen ein reines Datenupdate mit geprüftem Ergebnis-Diff s
 - RR-6 `scripts/regeljahr-diff.mjs`
 - RR-7 nur Charakterisierungstests; Regeljahr im Link und Hinweis bei neuerem Schema zurückgestellt (ändert Verhalten)
 - Sicherheitsprüfung 15.11.2026 in docs/SECURITY.md: keine Schwachstellen
-- Homescreen-App (PWA): Manifest, Icons, Service Worker (Startseite Netzwerk zuerst), Version 1.4.0, Sicherheitsprüfung in docs/SECURITY.md
+- Homescreen-App (PWA): Manifest, Icons, Service Worker (Startseite Netzwerk zuerst), Version 1.4.0 (PR #36, live)
+- Erklärtest Steuersprung «zh-wegzug-pt», kein Rechenfehler, Version 1.4.1 (PR #37, live 16.11.2026)
 ## In Arbeit
-- Draft-PR `docs/wegzug-pt-steuersprung` (1.4.1): Erklärtest Steuersprung «zh-wegzug-pt», kein Rechenfehler. Wartet auf Patricks Entscheid zum Merge.
-- Keine offene Arbeit. 1.3.10 ist live (PR #35). 1.4.0 Homescreen-App über PR `feat/pwa-homescreen`.
+- Draft-PR `rules/pt-irs-2026-dl212` (1.4.3): IRS-Sätze Portugal nach Decreto-Lei 212/2026, Golden Master «zh-wegzug-pt» −161 CHF/Jahr. Wartet auf Patricks Entscheid zum Merge.
+- 1.4.2 reserviert für Doku-PR #38.
 ## Offen / Entscheide nötig (wer?)
-- IRS-Sätze Portugal nach Decreto-Lei 212/2026 (ab 1.1.2026, 6 Stufen tiefer) in `data/laender-2026.json` nachführen, eigener Regel-PR mit Golden-Master-Update? – Patrick
 - RR-7 Produktteil (Feld `r` im Link, Hinweis bei `v > SCHEMA_VERSION`): eigener PR mit UI-Text? – Patrick
 - ADR-001 bis ADR-004 annehmen? – Patrick
 - Kantonstarife 2027: warten auf ESTV, heute nur mit Code-Änderung möglich – Patrick/Entwickler
