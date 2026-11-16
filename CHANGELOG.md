@@ -3,6 +3,11 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.4.4] - 2026-11-16
+
+### Geändert
+- Nur Einrichtung für Cursor Cloud Agents: `.cursor/environment.json`, Install-Skript mit gepinnten Releases (ripgrep 14.1.1, ast-grep 0.51.2, codebase-memory-mcp 0.12.1) und SHA-256, `.cursorignore`, Abschnitt «Cursor Cloud specific instructions» in AGENTS.md. Binaries nur unter `~/.local/bin` (kein `sudo`). `.codebase-memory/` in `.gitignore` und `.cursorignore`. Die App rechnet unverändert.
+
 ## [1.4.3] - 2026-11-16
 
 ### Geändert
