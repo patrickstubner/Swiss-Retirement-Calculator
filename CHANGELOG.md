@@ -3,6 +3,11 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.4.5] - 2026-11-20
+
+### Geändert
+- Nur Einrichtung für Cursor Cloud Agents: `.cursor/environment.json` erlaubt über `mcpServerAllowlist` nur den gehosteten Graphify-MCP (weniger Tool-Beschreibungen pro Anfrage, weniger Tokens). Neue Regel «MCP-Liste schlank halten» im Cloud-Abschnitt von AGENTS.md. Die App rechnet unverändert.
+
 ## [1.4.4] - 2026-11-16
 
 ### Geändert
