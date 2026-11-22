@@ -8,12 +8,11 @@ Klickbarer UX-Vorschlag für den Schweizer Ruhestandsrechner. Kein Ersatz für d
 
 ## Vorschau
 
-Nach dem Push auf `prototype/redesign`:
+Vorschau (eine Datei, ohne Build, kostenlos):
 
-- https://raw.githack.com/patrickstubner/Swiss-Retirement-Calculator/prototype/redesign/prototype/index.html
-- https://cdn.jsdelivr.net/gh/patrickstubner/Swiss-Retirement-Calculator@prototype/redesign/prototype/index.html
+- https://htmlpreview.github.io/?https://github.com/patrickstubner/Swiss-Retirement-Calculator/blob/prototype/redesign/prototype/standalone.html
 
-(jsDelivr kann neue Commits kurz verzögert ausliefern.)
+`index.html` mit getrennten CSS/JS-Dateien eignet sich für einen lokalen Server. raw.githack war von hier aus nicht erreichbar, jsDelivr liefert HTML als `text/plain` und eignet sich deshalb nicht als direkter Link.
 
 Lokal: Dateien in diesem Ordner mit einem beliebigen statischen Server öffnen, z. B. `python3 -m http.server`.
 
