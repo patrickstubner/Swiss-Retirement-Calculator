@@ -20,7 +20,7 @@ const MUSTER = [
   ['Zuweisung Passwort/Secret', /\b(password|passwort|secret|api[_-]?key|token)\b\s*[:=]\s*['"][^'"\s]{12,}['"]/i],
 ];
 const TEXT = /\.(md|ts|tsx|js|mjs|cjs|json|css|html|yml|yaml|txt|py|svg|toml|cfg|env)$/i;
-const AUSNAHME = new Set(['scripts/secret-scan.mjs', 'package-lock.json']);
+const AUSNAHME = new Set(['scripts/secret-scan.mjs', 'pnpm-lock.yaml']);
 
 function dateien(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {

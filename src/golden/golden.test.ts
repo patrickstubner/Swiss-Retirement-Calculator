@@ -1,7 +1,7 @@
 /**
  * Golden-Master pro Regelstand (ADR-003): Referenzhaushalte × Regeljahr → Kennzahlen.
  * Ein Daten- oder Code-Update, das Ergebnisse verändert, lässt diesen Test fehlschlagen. Bewusste Änderungen:
- * `npm run golden:update` schreibt src/golden/erwartet/<jahr>.json neu; der Diff im PR ist die fachliche Prüfung.
+ * `pnpm run golden:update` schreibt src/golden/erwartet/<jahr>.json neu; der Diff im PR ist die fachliche Prüfung.
  * Deterministisch: Start 1.1. des Regeljahres, keine Krisen, kein Monte Carlo.
  */
 import { readFileSync, writeFileSync } from 'node:fs';

@@ -1,6 +1,6 @@
 {
   "name": "ch-rentenrechner",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "private": true,
   "description": "Ruhestandsrechner Schweiz: Ruhestands- und Vermögensrechner für die Schweiz (statische Web-App)",
   "license": "MIT",
@@ -42,5 +42,6 @@
     "url": "https://github.com/patrickstubner/Swiss-Retirement-Calculator.git"
   },
   "homepage": "https://patrickstubner.github.io/Swiss-Retirement-Calculator/",
-  "author": "Patrick Stubner"
+  "author": "Patrick Stubner",
+  "packageManager": "pnpm@10.34.9"
 }

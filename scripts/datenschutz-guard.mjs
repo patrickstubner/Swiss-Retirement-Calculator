@@ -32,7 +32,7 @@ const PFAD_VERBOTEN = [
 const AUSNAHME_DATEIEN = new Set([
   'LICENSE',
   'package.json',
-  'package-lock.json',
+  'pnpm-lock.yaml',
   'scripts/datenschutz-guard.mjs',
   'scripts/datenschutz-lib.mjs',
 ]);

@@ -25,15 +25,16 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0 # voller Verlauf für die Prüfung der Commit-Metadaten
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci --ignore-scripts
-      - name: Abhängigkeiten (npm audit)
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Abhängigkeiten (pnpm audit)
         run: |
-          npm audit --omit=dev --audit-level=high
-          npm audit --audit-level=high
+          pnpm audit --prod --audit-level=high
+          pnpm audit --audit-level=high
       - name: Geheimnis-Scan (Muster über getrackte Dateien)
         run: node scripts/secret-scan.mjs
       - name: Guard lokale Daten und verbotene Wörter
@@ -55,7 +56,7 @@ jobs:
         run: node scripts/version-check.mjs "$ZIEL"
       - name: Build und Prüfung von dist
         run: |
-          npm run build
+          pnpm run build
           grep -q 'Content-Security-Policy' dist/index.html
           node scripts/secret-scan.mjs dist
           node scripts/datenschutz-guard.mjs dist
