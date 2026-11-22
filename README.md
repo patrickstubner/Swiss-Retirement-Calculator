@@ -29,7 +29,7 @@ Ergebnisse wird keine Haftung übernommen. Nicht-kommerzielles Projekt.
 
 ## Funktionsumfang (Version 1.4)
 
-Aktuelle Version: **1.4.5** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [CONTRIBUTING](CONTRIBUTING.md)).
+Aktuelle Version: **1.4.7** (siehe [CHANGELOG](CHANGELOG.md); Versionsregel in [CONTRIBUTING](CONTRIBUTING.md)).
 
 - **Neutrale Standardwerte:** Alle Beträge sind anfangs leer (0) und frei editierbar – keine Beispielvermögen.
   Gesetzliche Werte (z.B. BVG-Mindestzins) und Annahmen (Standard: 7 % Rendite nominal, 2 % Teuerung; eine Annahme, keine Garantie) sind vorbelegt und anpassbar. Der Schnellmodus rechnet mit denselben Annahmen wie «Detailliert» und zeigt sie sichtbar an.
@@ -305,14 +305,15 @@ Wegleitung freiwillige Versicherung (WFV), AHVG/VFV/BVG/DBG
 Voraussetzung: Node.js ≥ 22.12 (siehe `.nvmrc`).
 
 ```bash
-npm ci            # Abhängigkeiten installieren
-npm run dev       # Entwicklungsserver: http://localhost:3000/Swiss-Retirement-Calculator/
-npm test          # Unit-Tests (Vitest)
-npm run build     # Produktions-Build nach dist/
-npm run preview   # Build lokal ansehen
-npm run lint      # Biome (Lint + Format-Prüfung)
-npm run typecheck # TypeScript strict
-npm run screenshots -- http://localhost:4173/Swiss-Retirement-Calculator/  # Mobile-Screenshots (Playwright)
+corepack enable   # einmalig: pnpm in der gepinnten Version
+pnpm install --frozen-lockfile  # Abhängigkeiten installieren
+pnpm run dev       # Entwicklungsserver: http://localhost:3000/Swiss-Retirement-Calculator/
+pnpm test          # Unit-Tests (Vitest)
+pnpm run build     # Produktions-Build nach dist/
+pnpm run preview   # Build lokal ansehen
+pnpm run lint      # Biome (Lint + Format-Prüfung)
+pnpm run typecheck # TypeScript strict
+pnpm run screenshots -- http://localhost:4173/Swiss-Retirement-Calculator/  # Mobile-Screenshots (Playwright)
 node scripts/vorlesen-browsertest.mjs   # Browsertest «Vorlesen» mit gemocktem speechSynthesis (Preview muss laufen; --screenshots)
 ```
 

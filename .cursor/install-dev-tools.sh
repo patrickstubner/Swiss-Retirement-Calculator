@@ -204,7 +204,7 @@ elif [[ -f "${ROOT}/pnpm-lock.yaml" ]]; then
     fi
   fi
   echo "Installiere pnpm-Abhängigkeiten mit pnpm install --frozen-lockfile…"
-  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD="${PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD:-1}" pnpm install --frozen-lockfile
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD="${PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD:-1}" pnpm install --frozen-lockfile --ignore-scripts
 elif [[ -f "${ROOT}/yarn.lock" ]]; then
   require_node
   echo "error: yarn.lock gefunden, Yarn-Install ist in diesem Skript noch nicht hinterlegt. Bitte analog zu npm/pnpm ergänzen." >&2

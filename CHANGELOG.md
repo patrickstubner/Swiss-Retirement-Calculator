@@ -3,6 +3,12 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.4.7] - 2026-11-22
+
+### Geändert
+- Nur Werkzeuge, kein App-Code, keine Regeländerung: Umstellung von npm auf pnpm 10.34.9 (`packageManager`, `pnpm-lock.yaml` aus `pnpm import`, `package-lock.json` entfällt, `.npmrc` mit `ignore-scripts=true`). Workflows `deploy`, `regeljahr` und `security` installieren mit `pnpm install --frozen-lockfile --ignore-scripts` und prüfen mit `pnpm audit`. Keine Paketversion geändert, `pnpm audit` 0 Funde.
+- Geheimnis-Scan und Datenschutz-Guard nehmen `pnpm-lock.yaml` statt `package-lock.json` aus. `AGENTS.md`: Regel «nur pnpm».
+
 ## [1.4.6] - 2026-11-22
 
 ### Geändert

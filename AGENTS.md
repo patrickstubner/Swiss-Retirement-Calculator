@@ -12,28 +12,29 @@
 - Stand und Plan: STATUS.md
 
 ## Befehle (aus package.json und .github/workflows/)
-- `npm ci --ignore-scripts`
-- `npm run lint`
-- `npm run typecheck`
-- `npm test`
-- `npm run build`
+- `corepack enable`, dann `pnpm install --frozen-lockfile` (`.npmrc`: ignore-scripts)
+- `pnpm run lint`
+- `pnpm run typecheck`
+- `pnpm test`
+- `pnpm run build`
 - `node scripts/datenschutz-guard.mjs`, `node scripts/secret-scan.mjs`, `node scripts/email-guard.mjs --range origin/main..HEAD`
-- `npm audit --audit-level=high` (CI-Workflow `security`)
+- `pnpm audit --audit-level=high` und `pnpm audit --prod --audit-level=high` (CI-Workflow `security`)
 
 ## Projektregeln
 - **Gesetzeswerte nur in Regeldateien:**
   - Jeder Wert hat `source` (URL), `stand` und `status` (verifiziert/offen/geplant).
   - Keine Beträge oder Sätze im Code.
   - Keine Jahreszahl im Schlüssel. Datumsabhängige Werte gehören in `ab[]` mit `gueltigAb`.
-- Jede Regeländerung bringt einen Golden-Master-Diff mit (`npm run golden:update`), im PR erklärt.
+- Jede Regeländerung bringt einen Golden-Master-Diff mit (`pnpm run golden:update`), im PR erklärt.
 - Werte ohne amtliche Quelle bleiben `offen`, mit dem Hinweis «Fortgeschrieben».
 - Versionsregel: Jede Änderung erhöht die Version (CONTRIBUTING.md).
+- **Paketmanager: nur pnpm** (Version in `packageManager`, über `corepack enable`). Kein `npm`, kein `yarn`, kein `package-lock.json`. Fehlt ein Paket, wird es sauber in `package.json` eingetragen, kein `shamefully-hoist`. `.npmrc` setzt `ignore-scripts=true` (Sicherheitshaltung CA-3).
 - Keine persönlichen Daten in Repo oder Beispielen (Datenschutz-Guard).
 - Sicherheit: docs/SECURITY.md.
 - Die App soll als PWA auf dem Homescreen installierbar sein (wie PadelCounter und Travel Talk). Das Icon (Sonnenuntergang mit Strand, Palmen, Liegestuhl und frei wehender Schweizer Flagge ohne Stab) ist vom Projektinhaber genehmigt.
 - Gesetzesänderungen sollen als Datenänderung in den Regeldateien ins bestehende Produkt fliessen, nicht als Code. Der Rechner ersetzt keine Finanzberatung.
 - Der Datenschutz-Guard braucht die Wortliste (gesalzene Hashes) lokal in `lokal/datenschutz-woerter.json` oder in `DATENSCHUTZ_LISTE`. Sie liegt nicht im Repo und darf nie committet werden; ohne sie meldet der Guard «übersprungen».
-- **Versionsregel gilt auch für reine Doku-PRs** (CONTRIBUTING.md): `npm version <neu> --no-git-tag-version`, CHANGELOG-Eintrag, eine Zeile in `docs/SECURITY.md`. Commit-Autor nur mit der GitHub-noreply-Adresse.
+- **Versionsregel gilt auch für reine Doku-PRs** (CONTRIBUTING.md): `pnpm version <neu> --no-git-tag-version`, CHANGELOG-Eintrag, eine Zeile in `docs/SECURITY.md`. Commit-Autor nur mit der GitHub-noreply-Adresse.
 
 ## Arbeitsregeln für Agents
 
@@ -79,7 +80,7 @@ Nach jeder Code-Erstellung oder -Änderung, **bevor weitergebaut wird**, kurz pr
 - Eingabevalidierung und Injection (XSS, SQL/Command, Pfade, Prototype Pollution, Deserialisierung)
 - Geheimnisse und Zugangsdaten (Code, Konfiguration, Git-Historie, Logs)
 - Berechtigungen und Zugriffskontrolle
-- Abhängigkeiten und Versionen (direkt und indirekt, CDN, GitHub Actions): `npm audit` bzw. `pnpm audit`, verwundbare Libraries auf die nächste sichere Version heben; bei Major-Sprung vorher den Projektinhaber fragen
+- Abhängigkeiten und Versionen (direkt und indirekt, CDN, GitHub Actions): `pnpm audit`, verwundbare Libraries auf die nächste sichere Version heben; bei Major-Sprung vorher den Projektinhaber fragen
 - Fehlermeldungen und Logs mit sensiblen Daten
 - Neue Angriffsflächen (Endpunkte, Schnittstellen, Dateizugriff, Weiterleitungen, CSP/Header)
 
@@ -101,7 +102,7 @@ Schwachstellen mit **Schweregrad** (kritisch / hoch / mittel / niedrig) und Fix-
 - Antigravity: Konfiguration global in `~/.gemini/config/mcp_config.json` oder pro Workspace in `.agents/mcp_config.json` (nicht committen). Anleitung: https://antigravity.google/docs/mcp
 
 ### Lokaler Start
-Installation, Start und Tests stehen in `README.md` und im Abschnitt «Befehle» oben. Vor dem ersten Commit `npm test` bzw. die dort genannten Prüfungen ausführen.
+Installation, Start und Tests stehen in `README.md` und im Abschnitt «Befehle» oben. Vor dem ersten Commit `pnpm test` bzw. die dort genannten Prüfungen ausführen.
 
 ## Cursor Cloud specific instructions
 
@@ -121,7 +122,7 @@ Die Binaries liegen nur unter `~/.local/bin` (kein Kopieren nach `/usr/local/bin
 
 Weitere Tools können später im selben Skript ergänzt werden (Version und SHA-256 pinnen, kein `curl|bash`).
 
-Abhängigkeiten: das Skript erkennt `package-lock.json` (`npm ci --ignore-scripts`) oder `pnpm-lock.yaml` (`pnpm install --frozen-lockfile`, pnpm über corepack mit der in `packageManager` gepinnten Version). Node muss die `engines` in `package.json` erfüllen (typisch >= 22); das Skript installiert Node nicht.
+Abhängigkeiten: das Skript erkennt `pnpm-lock.yaml` (`pnpm install --frozen-lockfile --ignore-scripts`, pnpm über corepack mit der in `packageManager` gepinnten Version) oder `package-lock.json` (`npm ci --ignore-scripts`, nur für andere Repos). In diesem Repo gilt pnpm. Node muss die `engines` in `package.json` erfüllen (typisch >= 22); das Skript installiert Node nicht.
 
 ### Reihenfolge bei Struktur-Fragen
 1. STATUS.md und ARCHITECTURE.md.

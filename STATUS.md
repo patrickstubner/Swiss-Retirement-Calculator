@@ -1,4 +1,11 @@
-# STATUS.md – Stand 22.11.2026, beruht auf Commit 3ce4880 (Branch `docs/antigravity-setup`, Basis main fd82d71)
+# STATUS.md – Stand 22.11.2026, Branch `chore/pnpm-audit-fix`, Basis main 4ea31b5 (Version 1.4.7)
+
+## Nachtrag 22.11.2026 (Nachmittag): Umstellung auf pnpm (Version 1.4.7)
+Branch `chore/pnpm-audit-fix` (Draft-PR, Basis main 4ea31b5, nicht mergen bis Stabschef-Ok und Ja des Projektinhabers). Kein App-Code, keine Regeländerung, kein Cloud Agent.
+- pnpm 10.34.9 (`packageManager`), `pnpm-lock.yaml` aus `pnpm import`, `.npmrc` `ignore-scripts=true`. Workflows `deploy`, `regeljahr`, `security` auf pnpm. Geheimnis-Scan und Datenschutz-Guard nehmen die neue Lockdatei aus.
+- Audit: vorher `npm audit` 0, nachher `pnpm audit` 0 (mit und ohne `--prod`). Die Prüfung ist eine Pflicht-Prüfung des Rulesets (`security`); der Check heisst unverändert.
+- Geprüft lokal: Lint, tsc, 1094 Tests, Build, Guards, Versions-Check, `pnpm audit`.
+- AGENTS.md: Regel «nur pnpm». Offene Dependabot-PRs danach neu bauen lassen.
 
 ## Nachtrag 22.11.2026 (Abend): Korrekturen nach Stabschef-Prüfung (Version bleibt 1.4.6)
 Commit `3ce4880`. Nur Doku, kein App-Code, keine Regeländerung, kein Cloud Agent.
@@ -10,7 +17,7 @@ Branch `docs/antigravity-setup` (PR offen, nicht mergen bis Stabschef-Ok und Ja 
 - `AGENTS.md`: neuer Abschnitt «Zusammenarbeit mehrerer Agents» (ein Branch pro Aufgabe und Agent, nur PRs, Sicherheitsprüfung nach jeder Änderung, STATUS.md mit Commit, keine Secrets, keine Kosten ohne Ja, empfohlene lokale MCP-Server) und ergänzte Projektregeln (PWA/Icon, Gesetzesänderungen als Daten, lokale Wortliste des Datenschutz-Guards, Versionsregel auch für Doku). Antigravity liest `AGENTS.md` automatisch; keine zweite Regel-Datei.
 - `README.md`: Abschnitt «Mit Agents arbeiten» (der lokale Start stand schon im Abschnitt «Entwicklung»). `.gitignore`: `.agents/mcp_config.json`.
 - Fund beim Datenschutz-Guard mit lokaler Wortliste (auch auf `main` schon vorhanden, CI läuft ohne Liste grün): `AGENTS.md` und `STATUS.md` enthielten den Vornamen des Projektinhabers. In diesem PR durch «Projektinhaber» ersetzt; mit Liste danach 0 Funde.
-- Geprüft lokal: tsc, Lint, Tests, Geheimnis-Scan, E-Mail-Guard, Versions-Check, `npm audit` (0 Funde).
+- Geprüft lokal: tsc, Lint, Tests, Geheimnis-Scan, E-Mail-Guard, Versions-Check, `npm audit` (0 Funde; ab 1.4.7 `pnpm audit`).
 
 ## Nachtrag 20.11.2026: MCP-Allowlist für Cloud-Agent-Umgebung
 Branch `chore/mcp-allowlist` (Draft-PR, Basis main 53eac9a, nicht mergen bis Stabschef-Ok und Ja des Projektinhabers). Version 1.4.5 (Versionsregel: jeder PR erhöht die Version).
