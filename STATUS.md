@@ -6,6 +6,7 @@ Branch `chore/pnpm-audit-fix` (Draft-PR, Basis main 4ea31b5, nicht mergen bis St
 - Audit: vorher `npm audit` 0, nachher `pnpm audit` 0 (mit und ohne `--prod`). Die Prüfung ist eine Pflicht-Prüfung des Rulesets (`security`); der Check heisst unverändert.
 - Geprüft lokal: Lint, tsc, 1094 Tests, Build, Guards, Versions-Check, `pnpm audit`.
 - AGENTS.md: Regel «nur pnpm». Offene Dependabot-PRs danach neu bauen lassen.
+- Mindestalter neuer Paketversionen 4 Tage: `pnpm-workspace.yaml` mit `minimumReleaseAge: 5760`, Regel in `AGENTS.md` und Sicherheitsnotiz, Dependabot-`cooldown` (mindestens 4 Tage). Lockfile geprüft: alle Pakete älter als 4 Tage (jüngstes: 10,7 Tage). **Übergangsausnahmen in `minimumReleaseAgeExclude` (Kommentar «Übergang Einführung 4-Tage-Regel, entfernen ab 26.11.2026»): keine, weil kein bestehendes Paket jünger als 4 Tage ist.** Sicherheits-Ausnahmen: keine nötig.
 
 ## Nachtrag 22.11.2026 (Abend): Korrekturen nach Stabschef-Prüfung (Version bleibt 1.4.6)
 Commit `3ce4880`. Nur Doku, kein App-Code, keine Regeländerung, kein Cloud Agent.

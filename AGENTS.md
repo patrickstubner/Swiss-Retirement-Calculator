@@ -29,6 +29,7 @@
 - Werte ohne amtliche Quelle bleiben `offen`, mit dem Hinweis «Fortgeschrieben».
 - Versionsregel: Jede Änderung erhöht die Version (CONTRIBUTING.md).
 - **Paketmanager: nur pnpm** (Version in `packageManager`, über `corepack enable`). Kein `npm`, kein `yarn`, kein `package-lock.json`. Fehlt ein Paket, wird es sauber in `package.json` eingetragen, kein `shamefully-hoist`. `.npmrc` setzt `ignore-scripts=true` (Sicherheitshaltung CA-3).
+- **Mindestalter neuer Paketversionen: 4 Tage.** `pnpm-workspace.yaml` setzt `minimumReleaseAge: 5760` (Minuten): pnpm installiert keine Version, die jünger ist (Schutz vor kompromittierten Releases). Die Zeile nie senken oder entfernen. Ausnahme nur, wenn eine Sicherheitslücke sich anders nicht beheben lässt: das Paket gezielt unter `minimumReleaseAgeExclude` eintragen, mit Kommentar (CVE/GHSA, Datum), im PR melden und nach 4 Tagen wieder entfernen. Dependabot hat `cooldown` von mindestens 4 Tagen. Das gilt für alle Agents (Cursor, Antigravity, weitere).
 - Keine persönlichen Daten in Repo oder Beispielen (Datenschutz-Guard).
 - Sicherheit: docs/SECURITY.md.
 - Die App soll als PWA auf dem Homescreen installierbar sein (wie PadelCounter und Travel Talk). Das Icon (Sonnenuntergang mit Strand, Palmen, Liegestuhl und frei wehender Schweizer Flagge ohne Stab) ist vom Projektinhaber genehmigt.

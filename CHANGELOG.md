@@ -7,6 +7,7 @@ Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1
 
 ### Geändert
 - Nur Werkzeuge, kein App-Code, keine Regeländerung: Umstellung von npm auf pnpm 10.34.9 (`packageManager`, `pnpm-lock.yaml` aus `pnpm import`, `package-lock.json` entfällt, `.npmrc` mit `ignore-scripts=true`). Workflows `deploy`, `regeljahr` und `security` installieren mit `pnpm install --frozen-lockfile --ignore-scripts` und prüfen mit `pnpm audit`. Keine Paketversion geändert, `pnpm audit` 0 Funde.
+- Neue Paketversionen kommen erst ins Projekt, wenn sie mindestens 4 Tage alt sind: `pnpm-workspace.yaml` mit `minimumReleaseAge: 5760`, Dependabot-`cooldown` 4 Tage. Keine Ausnahme nötig.
 - Geheimnis-Scan und Datenschutz-Guard nehmen `pnpm-lock.yaml` statt `package-lock.json` aus. `AGENTS.md`: Regel «nur pnpm».
 
 ## [1.4.6] - 2026-11-22
