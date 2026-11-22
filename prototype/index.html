@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#153F4D" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'none'; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; frame-ancestors 'none'"
+    />
+    <meta
+      name="description"
+      content="Klickbarer Redesign-Vorschlag für den Schweizer Ruhestandsrechner. Prototyp mit Beispieldaten, nicht der echte Rechner."
+    />
+    <title>Ruhestandsrechner – Redesign-Vorschlag</title>
+    <link rel="icon" type="image/png" href="icon-192.png" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#inhalt">Zum Inhalt</a>
+
+    <div class="banner" role="status">
+      Prototyp mit Beispieldaten – nicht der echte Rechner, keine Beratung.
+    </div>
+
+    <header class="kopf" id="kopf">
+      <div class="kopf__inner">
+        <img class="logo" src="icon-192.png" width="40" height="40" alt="" />
+        <div>
+          <p class="kopf__marke">Ruhestandsrechner</p>
+          <p class="kopf__sub" id="kopf-sub">Redesign-Vorschlag</p>
+        </div>
+      </div>
+      <div class="fortschritt" id="fortschritt" hidden>
+        <p class="fortschritt__text" id="fortschritt-text">Schritt 1 von 5</p>
+        <div class="fortschritt__spur" aria-hidden="true">
+          <span class="fortschritt__fuellung" id="fortschritt-fuellung"></span>
+        </div>
+        <ol class="punkte" id="punkte"></ol>
+      </div>
+    </header>
+
+    <main id="inhalt">
+      <!-- START -->
+      <section class="schirm schirm--start" id="schirm-start" data-schirm="start">
+        <div class="hero">
+          <img class="hero__logo" src="icon-192.png" width="80" height="80" alt="Logo: Strand, Liegestuhl und Schweizer Flagge" />
+          <h1>Wann können Sie aufhören zu arbeiten?</h1>
+          <p class="lead">
+            In wenigen kurzen Schritten sehen Sie eine klare Antwort: das früheste Alter, in dem das Geld voraussichtlich reicht – plus eine einfache Grafik.
+          </p>
+        </div>
+        <ul class="versprechen">
+          <li>Wenige Angaben pro Bildschirm</li>
+          <li>Eine Kernzahl, der Rest erst auf Wunsch</li>
+          <li>Fachbegriffe nur dort, wo sie nötig sind</li>
+        </ul>
+        <p class="hinweis-beispiel">
+          Sie starten mit einem durchgehenden <strong>Beispielhaushalt</strong> (Jahrgang 1976, Kanton Zürich). Alle Zahlen dürfen Sie ändern.
+        </p>
+      </section>
+
+      <!-- WER -->
+      <section class="schirm" id="schirm-wer" data-schirm="wer" hidden>
+        <h1>Wer plant den Ruhestand?</h1>
+        <p class="lead">Zuerst die Person, um die es geht. Daraus folgt später das AHV-Alter.</p>
+
+        <fieldset class="wahl">
+          <legend>Haushalt</legend>
+          <div class="segmente" role="radiogroup" aria-label="Haushalt">
+            <label class="segment">
+              <input type="radio" name="zivilstand" value="allein" checked />
+              <span>Nur ich</span>
+            </label>
+            <label class="segment">
+              <input type="radio" name="zivilstand" value="paar" />
+              <span>Ehepaar</span>
+            </label>
+          </div>
+          <p class="hilfe">Eine eingetragene Partnerschaft behandeln wir wie eine Ehe.</p>
+        </fieldset>
+
+        <div class="feld">
+          <label for="geburtsjahr">Geburtsjahr</label>
+          <input id="geburtsjahr" name="geburtsjahr" type="number" inputmode="numeric" min="1930" max="2010" step="1" />
+          <p class="hilfe" id="alter-hinweis"></p>
+        </div>
+
+        <fieldset class="wahl">
+          <legend>Geschlecht</legend>
+          <div class="segmente" role="radiogroup" aria-label="Geschlecht">
+            <label class="segment">
+              <input type="radio" name="geschlecht" value="w" />
+              <span>Frau</span>
+            </label>
+            <label class="segment">
+              <input type="radio" name="geschlecht" value="m" checked />
+              <span>Mann</span>
+            </label>
+          </div>
+          <p class="hilfe">Wichtig für das AHV-Referenzalter, besonders bei älteren Jahrgängen.</p>
+        </fieldset>
+      </section>
+
+      <!-- PARTNER -->
+      <section class="schirm" id="schirm-partner" data-schirm="partner" hidden>
+        <h1>Und die zweite Person?</h1>
+        <p class="lead">Kurz die wichtigsten Angaben zur Partnerin oder zum Partner.</p>
+
+        <div class="feld">
+          <label for="p2-geburtsjahr">Geburtsjahr</label>
+          <input id="p2-geburtsjahr" name="p2-geburtsjahr" type="number" inputmode="numeric" min="1930" max="2010" step="1" />
+        </div>
+
+        <div class="feld">
+          <label for="p2-lohn">Bruttolohn pro Jahr, heute</label>
+          <div class="eingabe">
+            <input id="p2-lohn" name="p2-lohn" type="text" inputmode="numeric" autocomplete="off" />
+            <span class="einheit">CHF</span>
+          </div>
+        </div>
+
+        <div class="raster">
+          <div class="feld">
+            <label for="p2-pk">Pensionskasse heute</label>
+            <div class="eingabe">
+              <input id="p2-pk" name="p2-pk" type="text" inputmode="numeric" autocomplete="off" />
+              <span class="einheit">CHF</span>
+            </div>
+          </div>
+          <div class="feld">
+            <label for="p2-s3a">Säule 3a heute</label>
+            <div class="eingabe">
+              <input id="p2-s3a" name="p2-s3a" type="text" inputmode="numeric" autocomplete="off" />
+              <span class="einheit">CHF</span>
+            </div>
+          </div>
+        </div>
+        <p class="hilfe">Unbekannt? Eine grobe Schätzung reicht für diesen Prototyp.</p>
+      </section>
+
+      <!-- ARBEIT -->
+      <section class="schirm" id="schirm-arbeit" data-schirm="arbeit" hidden>
+        <h1>Wie sieht die Arbeit heute aus?</h1>
+        <p class="lead">Lohn und der Zeitpunkt, an dem Sie gerne aufhören würden.</p>
+
+        <div class="feld">
+          <label for="lohn">Bruttolohn pro Jahr, heute</label>
+          <div class="eingabe">
+            <input id="lohn" name="lohn" type="text" inputmode="numeric" autocomplete="off" />
+            <span class="einheit">CHF</span>
+          </div>
+          <p class="hilfe">Vor Abzügen, inkl. 13. Monatslohn.</p>
+        </div>
+
+        <div class="feld">
+          <label for="wunschalter">Gewünschter Ruhestand mit</label>
+          <div class="eingabe">
+            <input id="wunschalter" name="wunschalter" type="number" inputmode="numeric" min="55" max="75" step="1" />
+            <span class="einheit">Jahren</span>
+          </div>
+          <p class="hilfe">Ihr Wunsch. Das Ergebnis sagt danach, ob es auch früher reicht.</p>
+        </div>
+      </section>
+
+      <!-- VORSORGE -->
+      <section class="schirm" id="schirm-vorsorge" data-schirm="vorsorge" hidden>
+        <h1>Was ist bereits für später da?</h1>
+        <p class="lead">Die drei Säulen, knapp gehalten. Fehlt ein Wert, schätzen wir ihn.</p>
+
+        <fieldset class="wahl">
+          <legend>AHV-Rente (1. Säule)</legend>
+          <div class="segmente" role="radiogroup" aria-label="AHV-Rente">
+            <label class="segment">
+              <input type="radio" name="ahv-modus" value="schaetzen" checked />
+              <span>Bitte schätzen</span>
+            </label>
+            <label class="segment">
+              <input type="radio" name="ahv-modus" value="kennen" />
+              <span>Ich kenne sie</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <p class="schaetzung" id="ahv-schaetzung" role="status"></p>
+
+        <div class="feld" id="ahv-feld" hidden>
+          <label for="ahv">Erwartete AHV-Rente pro Monat</label>
+          <div class="eingabe">
+            <input id="ahv" name="ahv" type="text" inputmode="numeric" autocomplete="off" />
+            <span class="einheit">CHF</span>
+          </div>
+        </div>
+
+        <div class="feld">
+          <label for="pk">Pensionskassen-Guthaben heute</label>
+          <div class="eingabe">
+            <input id="pk" name="pk" type="text" inputmode="numeric" autocomplete="off" />
+            <span class="einheit">CHF</span>
+          </div>
+          <p class="hilfe">Stand laut Vorsorgeausweis, gesamtes Alterskapital.</p>
+        </div>
+
+        <div class="feld">
+          <label for="s3a">Säule 3a heute</label>
+          <div class="eingabe">
+            <input id="s3a" name="s3a" type="text" inputmode="numeric" autocomplete="off" />
+            <span class="einheit">CHF</span>
+          </div>
+          <p class="hilfe">Alle 3a-Konten und -Depots zusammen. 0, wenn keine vorhanden sind.</p>
+        </div>
+      </section>
+
+      <!-- ALLTAG -->
+      <section class="schirm" id="schirm-alltag" data-schirm="alltag" hidden>
+        <h1>Wovon leben Sie – und wovon später?</h1>
+        <p class="lead">Freies Vermögen, die jährlichen Ausgaben und der Wohnkanton.</p>
+
+        <div class="feld">
+          <label for="vermoegen">Freies Vermögen heute</label>
+          <div class="eingabe">
+            <input id="vermoegen" name="vermoegen" type="text" inputmode="numeric" autocomplete="off" />
+            <span class="einheit">CHF</span>
+          </div>
+          <p class="hilfe">Konten, Wertschriften und Ähnliches. Ohne Pensionskasse und 3a, die schon erfasst sind.</p>
+        </div>
+
+        <div class="feld">
+          <label for="ausgaben">Lebenshaltung pro Jahr, heute</label>
+          <div class="eingabe">
+            <input id="ausgaben" name="ausgaben" type="text" inputmode="numeric" autocomplete="off" />
+            <span class="einheit">CHF</span>
+          </div>
+          <p class="hilfe" id="ausgaben-hilfe">Ohne Steuern, die der Prototyp grob dazurechnet.</p>
+        </div>
+
+        <div class="feld">
+          <label for="kanton">Wohnkanton</label>
+          <select id="kanton" name="kanton">
+            <option value="ZH">Zürich</option>
+            <option value="BE">Bern</option>
+            <option value="LU">Luzern</option>
+            <option value="AG">Aargau</option>
+            <option value="SG">St. Gallen</option>
+            <option value="BS">Basel-Stadt</option>
+            <option value="VD">Waadt</option>
+            <option value="GE">Genf</option>
+            <option value="TI">Tessin</option>
+            <option value="andere">Anderer Kanton</option>
+          </select>
+          <p class="hilfe">Im Prototyp nur eine grobe Steuerannäherung, nicht die echten Tarife der App.</p>
+        </div>
+
+        <label class="schalter">
+          <input type="checkbox" id="eigentum" name="eigentum" />
+          <span>Ich wohne im eigenen Haus oder in der eigenen Wohnung</span>
+        </label>
+
+        <div class="raster" id="eigentum-felder" hidden>
+          <div class="feld">
+            <label for="verkehrswert">Verkehrswert</label>
+            <div class="eingabe">
+              <input id="verkehrswert" name="verkehrswert" type="text" inputmode="numeric" autocomplete="off" />
+              <span class="einheit">CHF</span>
+            </div>
+          </div>
+          <div class="feld">
+            <label for="hypothek">Hypothek</label>
+            <div class="eingabe">
+              <input id="hypothek" name="hypothek" type="text" inputmode="numeric" autocomplete="off" />
+              <span class="einheit">CHF</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ERGEBNIS -->
+      <section class="schirm schirm--ergebnis" id="schirm-ergebnis" data-schirm="ergebnis" hidden>
+        <p class="kicker">Beispielrechnung, in heutigen Franken</p>
+        <div class="kern" id="kern">
+          <p class="kern__label" id="kern-label">Frühester Ruhestand</p>
+          <p class="kern__zahl" id="kern-zahl">–</p>
+          <p class="kern__satz" id="kern-satz"></p>
+        </div>
+
+        <div class="kacheln" id="kacheln"></div>
+
+        <figure class="chart-karte">
+          <figcaption>
+            <strong>Vermögen im Verlauf</strong>
+            <span>Freies Vermögen inkl. 3a nach dem Bezug, in heutigen Franken</span>
+          </figcaption>
+          <canvas id="chart" width="640" height="320" role="img" aria-label="Vermögensverlauf über das Alter"></canvas>
+          <p class="chart-legende" id="chart-legende"></p>
+        </figure>
+
+        <section class="szenarien" aria-labelledby="szenarien-titel">
+          <h2 id="szenarien-titel">Was wäre wenn?</h2>
+          <p class="hilfe">Diese Schalter ändern nur die Beispielrechnung, nicht Ihre Eingaben der Schritte.</p>
+
+          <div class="feld">
+            <label for="faktor-ausgaben">
+              Lebenshaltung
+              <span class="wert-anzeige" id="faktor-ausgaben-wert">wie eingegeben</span>
+            </label>
+            <input id="faktor-ausgaben" type="range" min="70" max="140" step="5" value="100" />
+          </div>
+
+          <fieldset class="wahl">
+            <legend>Wohnsitz im Ruhestand</legend>
+            <div class="segmente" role="radiogroup" aria-label="Wohnsitz im Ruhestand">
+              <label class="segment">
+                <input type="radio" name="wegzug" value="ch" checked />
+                <span>In der Schweiz bleiben</span>
+              </label>
+              <label class="segment">
+                <input type="radio" name="wegzug" value="pt" />
+                <span>Wegzug nach Portugal</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <label class="schalter">
+            <input type="checkbox" id="krise" name="krise" />
+            <span>Börsenkrise zu Beginn des Ruhestands (etwa −30&nbsp;%)</span>
+          </label>
+        </section>
+
+        <div class="details">
+          <details>
+            <summary>Woher kommt das Geld im Ruhestand?</summary>
+            <div class="details__body" id="detail-einkommen"></div>
+          </details>
+          <details>
+            <summary>Welche Annahmen stecken dahinter?</summary>
+            <div class="details__body" id="detail-annahmen"></div>
+          </details>
+          <details>
+            <summary>Was der Prototyp bewusst weglässt</summary>
+            <div class="details__body">
+              <p>
+                Die bestehende App kann viel mehr: genaue Kantons- und Gemeindesteuern, AHV-Vorbezug und -Aufschub, Kapitalbezug aus der Pensionskasse, Freizügigkeit, Krisen historisch, Monte Carlo, Todesfall, Staffelung und einen Vergleich zweier Varianten.
+              </p>
+              <p>
+                Dieser Vorschlag zeigt zuerst den Kern. Alles Weitere käme als optionale Vertiefung – nicht als zweite, gleich lange Eingabemaske.
+              </p>
+            </div>
+          </details>
+        </div>
+
+        <aside class="disclaimer">
+          <p>
+            Unverbindliche Orientierung. Der Prototyp ersetzt weder die bestehende App noch eine Finanz-, Steuer-, Rechts- oder Vorsorgeberatung. Die Zahlen sind eine vereinfachte Beispielrechnung, nicht der echte Rechenkern.
+          </p>
+        </aside>
+      </section>
+    </main>
+
+    <footer class="leiste" id="leiste">
+      <button type="button" class="knopf knopf--geist" id="btn-zurueck" hidden>Zurück</button>
+      <button type="button" class="knopf knopf--primaer" id="btn-weiter">Mit dem Beispiel starten</button>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
