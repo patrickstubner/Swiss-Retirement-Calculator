@@ -347,3 +347,9 @@ aus der Jordà-Schularick-Taylor Macrohistory Database (R6) abgeleitete Daten un
 Taylor (2017), NBER Macroeconomics Annual 2016; Jordà, Knoll, Kuvshinov, Schularick, Taylor (2019), QJE 134(3).
 Schweiz 2021–2024: SNB-Datenportal (nicht kommerziell, mit Quellenangabe) und BFS.
 Quellen, Änderungen und Nutzungsbedingungen im Detail: [NOTICE](NOTICE).
+
+## Mit Agents arbeiten (Cursor, Google Antigravity)
+
+1. `AGENTS.md`, `ARCHITECTURE.md` und `STATUS.md` lesen. Antigravity lädt `AGENTS.md` automatisch.
+2. Ein Branch pro Aufgabe und Agent, Änderungen nur per Pull Request, nach jeder Änderung Sicherheitsprüfung, am Ende `STATUS.md` mit Commit nachführen.
+3. Keine Secrets ins Repo, keine kostenpflichtigen Dienste ohne Ja des Projektinhabers.

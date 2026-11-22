@@ -42,9 +42,9 @@ Gesetzesänderungen sollen ein reines Datenupdate mit geprüftem Ergebnis-Diff s
 - Regeljahr 2027 bis 1.1.2027 vollständig (Kantonstarife, sobald die ESTV sie publiziert).
 ## Offen / Entscheide nötig (wer?)
 - diesen Draft-PR (1.4.4, Cloud-Agent-Setup) mergen? – Projektinhaber, nach Stabschef-Ok
-- RR-7 Produktteil (Feld `r` im Link, Hinweis bei `v > SCHEMA_VERSION`): eigener PR mit UI-Text? – Patrick
-- ADR-001 bis ADR-004 annehmen? Sie liegen noch nicht im Repo (nur lokal); als `docs/adr/` übernehmen? – Patrick
-- Kantonstarife 2027: warten auf ESTV, heute nur mit Code-Änderung möglich – Patrick/Entwickler
+- RR-7 Produktteil (Feld `r` im Link, Hinweis bei `v > SCHEMA_VERSION`): eigener PR mit UI-Text? – Projektinhaber
+- ADR-001 bis ADR-004 annehmen? Sie liegen noch nicht im Repo (nur lokal); als `docs/adr/` übernehmen? – Projektinhaber
+- Kantonstarife 2027: warten auf ESTV, heute nur mit Code-Änderung möglich – Projektinhaber/Entwickler
 - AHV 2030 und Hinterlassenenrenten: beobachten, noch nicht rechtskräftig
 ## Bekannte Probleme / Risiken
 - R-01: Kantons-/Länder-/QST-Daten nicht versioniert
