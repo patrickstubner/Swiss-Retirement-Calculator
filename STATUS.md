@@ -1,4 +1,9 @@
-# STATUS.md – Stand 22.11.2026, beruht auf Commit aa6192d (Branch `docs/antigravity-setup`, Basis main fd82d71)
+# STATUS.md – Stand 22.11.2026, beruht auf Commit 3ce4880 (Branch `docs/antigravity-setup`, Basis main fd82d71)
+
+## Nachtrag 22.11.2026 (Abend): Korrekturen nach Stabschef-Prüfung (Version bleibt 1.4.6)
+Commit `3ce4880`. Nur Doku, kein App-Code, keine Regeländerung, kein Cloud Agent.
+- Abschnitt «Zusammenarbeit mehrerer Agents»: vor dem Merge geht der Head-SHA an Stabschef, auf dessen Ok warten, Merge erst nach dem Ja des Projektinhabers.
+- CHANGELOG und `docs/SECURITY.md` um diesen Nachtrag ergänzt.
 
 ## Nachtrag 22.11.2026: Vorbereitung für lokale Arbeit mit Google Antigravity (Version 1.4.6)
 Branch `docs/antigravity-setup` (PR offen, nicht mergen bis Stabschef-Ok und Ja des Projektinhabers). Nur Doku und `.gitignore`, kein App-Code, keine Regeländerung, kein Cloud Agent. `.cursor/` und `.cursorignore` unverändert. Versionsregel erfüllt (1.4.5 → 1.4.6, CHANGELOG, Zeile in `docs/SECURITY.md`).
