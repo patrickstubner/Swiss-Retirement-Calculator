@@ -3,6 +3,12 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.4.6] - 2026-11-22
+
+### Geändert
+- Nur Dokumentation und `.gitignore`: neuer Abschnitt «Zusammenarbeit mehrerer Agents» in `AGENTS.md` (ein Branch pro Aufgabe und Agent, nur PRs, Sicherheitsprüfung, STATUS.md mit Commit, keine Secrets, empfohlene lokale MCP-Server) und Hinweis in der README, damit lokale Agents wie Google Antigravity das Repo übernehmen können. Kein App-Code, keine Regeländerung.
+- Nachtrag nach Stabschef-Prüfung: im Abschnitt «Zusammenarbeit mehrerer Agents» die strenge Merge-Regel (Head-SHA an Stabschef, auf Ok warten, Merge erst nach Ja des Projektinhabers).
+
 ## [1.4.5] - 2026-11-20
 
 ### Geändert

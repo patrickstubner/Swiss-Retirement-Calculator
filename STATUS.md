@@ -1,4 +1,16 @@
-# STATUS.md – Stand 16.11.2026, Basis main 56424b6 (1.4.3), dieser Branch 1.4.4
+# STATUS.md – Stand 22.11.2026, beruht auf Commit 3ce4880 (Branch `docs/antigravity-setup`, Basis main fd82d71)
+
+## Nachtrag 22.11.2026 (Abend): Korrekturen nach Stabschef-Prüfung (Version bleibt 1.4.6)
+Commit `3ce4880`. Nur Doku, kein App-Code, keine Regeländerung, kein Cloud Agent.
+- Abschnitt «Zusammenarbeit mehrerer Agents»: vor dem Merge geht der Head-SHA an Stabschef, auf dessen Ok warten, Merge erst nach dem Ja des Projektinhabers.
+- CHANGELOG und `docs/SECURITY.md` um diesen Nachtrag ergänzt.
+
+## Nachtrag 22.11.2026: Vorbereitung für lokale Arbeit mit Google Antigravity (Version 1.4.6)
+Branch `docs/antigravity-setup` (PR offen, nicht mergen bis Stabschef-Ok und Ja des Projektinhabers). Nur Doku und `.gitignore`, kein App-Code, keine Regeländerung, kein Cloud Agent. `.cursor/` und `.cursorignore` unverändert. Versionsregel erfüllt (1.4.5 → 1.4.6, CHANGELOG, Zeile in `docs/SECURITY.md`).
+- `AGENTS.md`: neuer Abschnitt «Zusammenarbeit mehrerer Agents» (ein Branch pro Aufgabe und Agent, nur PRs, Sicherheitsprüfung nach jeder Änderung, STATUS.md mit Commit, keine Secrets, keine Kosten ohne Ja, empfohlene lokale MCP-Server) und ergänzte Projektregeln (PWA/Icon, Gesetzesänderungen als Daten, lokale Wortliste des Datenschutz-Guards, Versionsregel auch für Doku). Antigravity liest `AGENTS.md` automatisch; keine zweite Regel-Datei.
+- `README.md`: Abschnitt «Mit Agents arbeiten» (der lokale Start stand schon im Abschnitt «Entwicklung»). `.gitignore`: `.agents/mcp_config.json`.
+- Fund beim Datenschutz-Guard mit lokaler Wortliste (auch auf `main` schon vorhanden, CI läuft ohne Liste grün): `AGENTS.md` und `STATUS.md` enthielten den Vornamen des Projektinhabers. In diesem PR durch «Projektinhaber» ersetzt; mit Liste danach 0 Funde.
+- Geprüft lokal: tsc, Lint, Tests, Geheimnis-Scan, E-Mail-Guard, Versions-Check, `npm audit` (0 Funde).
 
 ## Nachtrag 20.11.2026: MCP-Allowlist für Cloud-Agent-Umgebung
 Branch `chore/mcp-allowlist` (Draft-PR, Basis main 53eac9a, nicht mergen bis Stabschef-Ok und Ja des Projektinhabers). Version 1.4.5 (Versionsregel: jeder PR erhöht die Version).
@@ -42,9 +54,9 @@ Gesetzesänderungen sollen ein reines Datenupdate mit geprüftem Ergebnis-Diff s
 - Regeljahr 2027 bis 1.1.2027 vollständig (Kantonstarife, sobald die ESTV sie publiziert).
 ## Offen / Entscheide nötig (wer?)
 - diesen Draft-PR (1.4.4, Cloud-Agent-Setup) mergen? – Projektinhaber, nach Stabschef-Ok
-- RR-7 Produktteil (Feld `r` im Link, Hinweis bei `v > SCHEMA_VERSION`): eigener PR mit UI-Text? – Patrick
-- ADR-001 bis ADR-004 annehmen? Sie liegen noch nicht im Repo (nur lokal); als `docs/adr/` übernehmen? – Patrick
-- Kantonstarife 2027: warten auf ESTV, heute nur mit Code-Änderung möglich – Patrick/Entwickler
+- RR-7 Produktteil (Feld `r` im Link, Hinweis bei `v > SCHEMA_VERSION`): eigener PR mit UI-Text? – Projektinhaber
+- ADR-001 bis ADR-004 annehmen? Sie liegen noch nicht im Repo (nur lokal); als `docs/adr/` übernehmen? – Projektinhaber
+- Kantonstarife 2027: warten auf ESTV, heute nur mit Code-Änderung möglich – Projektinhaber/Entwickler
 - AHV 2030 und Hinterlassenenrenten: beobachten, noch nicht rechtskräftig
 ## Bekannte Probleme / Risiken
 - R-01: Kantons-/Länder-/QST-Daten nicht versioniert
