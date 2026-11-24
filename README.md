@@ -8,6 +8,8 @@ Rechner sucht das **früheste Rücktrittsalter**, bei dem das Vermögen bis zum 
 
 **Live:** https://patrickstubner.github.io/Swiss-Retirement-Calculator/
 
+**Redesign-Prototyp** (Branch `prototype/redesign`, nicht die produktive App): https://ruhestandsrechner-prototyp.pstubner.workers.dev/ – Ordner `prototype/` in diesem Repo. Nicht nach main mergen; die Production-Pages bleiben unverändert.
+
 Alle Berechnungen laufen ausschliesslich im Browser. Es gibt keinen Server, keine Cookies und kein Tracking.
 
 **Speichern:** Ganz oben in der App steht der Schalter «Eingaben im Browser speichern» (Standard: an). Ist er an, wird

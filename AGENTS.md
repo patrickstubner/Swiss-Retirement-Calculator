@@ -8,6 +8,7 @@
   - `src/core` (Rechenkern, rein)
   - `src/ui` (Oberfläche, Zustand)
   - `scripts/` (ESTV-Import, Guards)
+  - `prototype/` (klickbarer Redesign-Vorschlag für den künftigen Rechner, Branch `prototype/redesign`; Live: https://ruhestandsrechner-prototyp.pstubner.workers.dev/; nicht nach main mergen, Production-Pages nicht anfassen)
 - Architektur-Doku: ARCHITECTURE.md, ADRs noch nicht im Repo (siehe STATUS.md), Quellen in docs/quellen.md
 - Stand und Plan: STATUS.md
 
@@ -41,7 +42,7 @@
 
 ### Vor dem Start
 - Vor jedem Cloud-Agent-Start AGENTS.md, ARCHITECTURE.md und STATUS.md lesen. Sie müssen aktuell sein. Fehlt etwas oder ist es unklar: zuerst konkret nachfragen, keinen Cloud Agent starten.
-- Zuerst lokal arbeiten, mit den lokalen Tools. Für neue Features oder grössere Umbauten zuerst einen klickbaren Prototyp und eine klare Spezifikation, erst dann einen Cloud Agent.
+- Zuerst lokal arbeiten, mit den lokalen Tools. Für neue Features oder grössere Umbauten zuerst einen klickbaren Prototyp und eine klare Spezifikation, erst dann einen Cloud Agent. Der aktuelle Redesign-Prototyp liegt in `prototype/` auf Branch `prototype/redesign` (https://ruhestandsrechner-prototyp.pstubner.workers.dev/).
 - Kontext schlank halten: Struktur-Fragen mit den Tools unten beantworten statt ganze Dateien zu lesen. STATUS.md nach jedem Arbeitspaket nachführen.
 - Pro grösserem Paket in STATUS.md festhalten: welche lokalen Tools genutzt wurden, wie viel Cloud-Agent-Nutzung das vermieden hat, Rückmeldung zu den Tools.
 - Keine Werte erfinden. Was nicht belegt ist, steht als «offen» da.

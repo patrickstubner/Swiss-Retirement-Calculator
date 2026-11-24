@@ -1,4 +1,8 @@
-# STATUS.md – Stand 22.11.2026, Branch `chore/pnpm-audit-fix`, Basis main 4ea31b5 (Version 1.4.7)
+# STATUS.md – Stand 24.11.2026, Branch `prototype/redesign`, Basis main da1633f (Version 1.4.7)
+
+## Nachtrag 24.11.2026: Redesign-Prototyp im Hauptrepo, Vorschau als Worker
+
+Branch `prototype/redesign` (nicht nach main mergen, keine Production-Pages der App anfassen, Version bleibt 1.4.7). Der klickbare Redesign-Vorschlag liegt in `prototype/` in diesem Repo – das ist das Zuhause für den künftigen neuen Rechner. Stand der Prototyp-Dateien identisch mit dem versehentlich angelegten Repo `Ruhestandsrechner-Prototyp` (nur eine leere `.nojekyll` war dort zusätzlich). Vorschau kostenlos als Cloudflare-Worker, analog zum Edovita-Prototyp, ohne die GitHub-Pages der App zu ersetzen: https://ruhestandsrechner-prototyp.pstubner.workers.dev/. Das separate Repo wird in diesem Auftrag nicht gelöscht. Kein Cloud Agent, kein neues npm-Paket.
 
 ## Nachtrag 22.11.2026 (Nachmittag): Umstellung auf pnpm (Version 1.4.7)
 Branch `chore/pnpm-audit-fix` (Draft-PR, Basis main 4ea31b5, nicht mergen bis Stabschef-Ok und Ja des Projektinhabers). Kein App-Code, keine Regeländerung, kein Cloud Agent.
