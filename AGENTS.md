@@ -8,6 +8,7 @@
   - `src/core` (Rechenkern, rein)
   - `src/ui` (Oberfläche, Zustand)
   - `scripts/` (ESTV-Import, Guards)
+  - `prototype/` (clickable UX redesign proposal; not part of the production app, lint, tests or build. Preview: https://ruhestandsrechner-prototyp.pstubner.workers.dev/. Agents must not deploy the Worker.)
 - Architektur-Doku: ARCHITECTURE.md, ADRs noch nicht im Repo (siehe STATUS.md), Quellen in docs/quellen.md
 - Stand und Plan: STATUS.md
 
@@ -41,7 +42,7 @@
 
 ### Vor dem Start
 - Vor jedem Cloud-Agent-Start AGENTS.md, ARCHITECTURE.md und STATUS.md lesen. Sie müssen aktuell sein. Fehlt etwas oder ist es unklar: zuerst konkret nachfragen, keinen Cloud Agent starten.
-- Zuerst lokal arbeiten, mit den lokalen Tools. Für neue Features oder grössere Umbauten zuerst einen klickbaren Prototyp und eine klare Spezifikation, erst dann einen Cloud Agent.
+- Zuerst lokal arbeiten, mit den lokalen Tools. Für neue Features oder grössere Umbauten zuerst einen klickbaren Prototyp und eine klare Spezifikation, erst dann einen Cloud Agent. The current redesign prototype lives in `prototype/` (preview: https://ruhestandsrechner-prototyp.pstubner.workers.dev/). It may be committed on `main` as a static folder; do not ship it as the production Pages app, and do not run `wrangler deploy`.
 - Kontext schlank halten: Struktur-Fragen mit den Tools unten beantworten statt ganze Dateien zu lesen. STATUS.md nach jedem Arbeitspaket nachführen.
 - Pro grösserem Paket in STATUS.md festhalten: welche lokalen Tools genutzt wurden, wie viel Cloud-Agent-Nutzung das vermieden hat, Rückmeldung zu den Tools.
 - Keine Werte erfinden. Was nicht belegt ist, steht als «offen» da.
