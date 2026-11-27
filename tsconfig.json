@@ -18,5 +18,6 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["src", "scripts", "rsbuild.config.ts", "vitest.config.ts"]
+  "include": ["src", "scripts", "rsbuild.config.ts", "vitest.config.ts"],
+  "exclude": ["prototype", "dist", "node_modules"]
 }

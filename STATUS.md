@@ -1,4 +1,9 @@
-# STATUS.md – Stand 22.11.2026, Branch `chore/pnpm-audit-fix`, Basis main 4ea31b5 (Version 1.4.7)
+# STATUS.md – Stand 27.11.2026, Branch `feat/prototype-folder`, Basis main da1633f (Version 1.4.8)
+
+## Addendum 27.11.2026: Redesign prototype in `prototype/` (Version 1.4.8)
+
+The clickable redesign prototype now lives in this repository under `prototype/`, taken from tag `archive/prototype-redesign` (commit e228fe3 of 24.11.2026). The HTML, CSS, JavaScript and icons are identical to the separate public repository that was created by mistake; that repository is left untouched. Preview: https://ruhestandsrechner-prototyp.pstubner.workers.dev/. The folder is excluded from app lint, tests and the production build. Production GitHub Pages are unchanged. No Worker deploy in this change. No cloud agent.
+
 
 ## Nachtrag 22.11.2026 (Nachmittag): Umstellung auf pnpm (Version 1.4.7)
 Branch `chore/pnpm-audit-fix` (Draft-PR, Basis main 4ea31b5, nicht mergen bis Stabschef-Ok und Ja des Projektinhabers). Kein App-Code, keine Regeländerung, kein Cloud Agent.

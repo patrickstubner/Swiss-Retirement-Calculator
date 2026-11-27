@@ -3,6 +3,11 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.4.8] - 2026-11-27
+
+### Added
+- Clickable redesign prototype under `prototype/` (static HTML, CSS and JavaScript; no calculation engine). It is excluded from the app lint, tests and production build. Preview: https://ruhestandsrechner-prototyp.pstubner.workers.dev/. Production GitHub Pages are unchanged. Source: tag `archive/prototype-redesign` (commit e228fe3, 24.11.2026).
+
 ## [1.4.7] - 2026-11-22
 
 ### Geändert
