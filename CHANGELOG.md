@@ -3,6 +3,11 @@
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 Regel: Jeder Pull Request erhöht die Version in `package.json` (Patch: 1.0.1, 1.0.2 …; grössere Änderungen: Minor: 1.1.0, 1.2.0 …), siehe [CONTRIBUTING](CONTRIBUTING.md).
 
+## [1.4.8] - 2026-11-27
+
+### Changed
+- Docs only: new `AGENTS.md` sections on branch hygiene, English GitHub issues, and English-on-GitHub for new commits (docs, comments, identifiers). Existing German docs and code are unchanged. Version bump 1.4.7 → 1.4.8 (required for every PR, including documentation). The app still calculates as before.
+
 ## [1.4.7] - 2026-11-22
 
 ### Geändert

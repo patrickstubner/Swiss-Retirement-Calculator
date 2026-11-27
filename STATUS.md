@@ -1,4 +1,10 @@
-# STATUS.md – Stand 22.11.2026, Branch `chore/pnpm-audit-fix`, Basis main 4ea31b5 (Version 1.4.7)
+# STATUS.md – as of 27 November 2026, branch `docs/branch-hygiene`, base main da1633f (version 1.4.8)
+
+## Update 27 November 2026: branch hygiene and English-on-GitHub rules (version 1.4.8)
+Branch `docs/branch-hygiene` (open PR, do not merge until review is complete and the project owner approves). Docs only; no app code, no rule-data change.
+- `AGENTS.md`: new English sections on branch hygiene, English GitHub issues, and English for everything newly committed to GitHub (docs, comments, identifiers). Existing German text is unchanged.
+- Version 1.4.7 → 1.4.8 (required for every PR, including documentation), with CHANGELOG, README current-version line, and a line in `docs/SECURITY.md`.
+
 
 ## Nachtrag 22.11.2026 (Nachmittag): Umstellung auf pnpm (Version 1.4.7)
 Branch `chore/pnpm-audit-fix` (Draft-PR, Basis main 4ea31b5, nicht mergen bis Stabschef-Ok und Ja des Projektinhabers). Kein App-Code, keine Regeländerung, kein Cloud Agent.
